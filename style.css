@@ -378,3 +378,12 @@ h2:first-child {
     color: #3498db;
     font-weight: 600;
 }
+
+/* --- GitHub Cards Grid --- */
+.github-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
