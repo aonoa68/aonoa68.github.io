@@ -290,3 +290,91 @@ h2:first-child {
     .info-grid, .teaching-grid { grid-template-columns: 1fr; gap: 20px; }
     .section-alt { margin: 0; }
 }
+
+/* --- Research Tree Section --- */
+.research-tree-card {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 15px;
+    box-shadow: 0 2.8px 2.2px rgba(0,0,0,0.02), 0 6.7px 5.3px rgba(0,0,0,0.028), 0 12.5px 10px rgba(0,0,0,0.035), 0 22.3px 17.9px rgba(0,0,0,0.042), 0 41.8px 33.4px rgba(0,0,0,0.05), 0 100px 80px rgba(0,0,0,0.07);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-top: 40px;
+}
+
+.research-tree-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 4px 3px rgba(0,0,0,0.03), 0 9.6px 7.2px rgba(0,0,0,0.04), 0 18.1px 13.6px rgba(0,0,0,0.05), 0 32.2px 24.2px rgba(0,0,0,0.06), 0 60.2px 45.2px rgba(0,0,0,0.07), 0 144px 108px rgba(0,0,0,0.1);
+}
+
+.research-tree-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.research-tree-thumbnail {
+    position: relative;
+    overflow: hidden;
+    height: 250px;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.thumbnail-content .thumbnail-icon {
+    font-size: 4em;
+    margin-bottom: 15px;
+}
+
+.thumbnail-content h4 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.thumbnail-content p {
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.research-tree-content {
+    padding: 30px;
+}
+
+.research-tree-content h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.research-tree-content p {
+    color: #5a6c7d;
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.research-tree-content ul {
+    list-style: none;
+    padding: 0;
+    color: #5a6c7d;
+    font-size: 0.95em;
+}
+
+.research-tree-content li {
+    margin-bottom: 10px;
+}
+
+.research-tree-content li i {
+    color: #27ae60;
+    margin-right: 10px;
+}
+
+.external-link-button {
+    margin-top: 25px;
+    color: #3498db;
+    font-weight: 600;
+}
