@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小野原彩香 - Research Profile</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", Meiryo, "メイリオ", sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 30px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-section {
+            background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(52, 73, 94, 0.8)), url('cosmic-language-map.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 3px solid #FFD700;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a"><stop offset="20%" stop-color="%23fff" stop-opacity=".05"/><stop offset="100%" stop-color="%23fff" stop-opacity="0"/></radialGradient></defs><circle fill="url(%23a)" cx="10" cy="10" r="10"/><circle fill="url(%23a)" cx="50" cy="10" r="10"/><circle fill="url(%23a)" cx="90" cy="10" r="10"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.9) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 215, 0, 0.5);
+            border: 3px solid #FFD700;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-image i {
+            font-size: 48px;
+            color: #2c3e50;
+        }
+        
+        h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .profile-info {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .profile-info:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-item i {
+            width: 25px;
+            color: #2c3e50;
+            margin-right: 15px;
+        }
+        
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #2c3e50;
+            color: #2c3e50;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-color: #2c3e50;
+            color: #ffffff;
+        }
+
+        h2 {
+            font-size: 2em;
+            margin: 40px 0 25px;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+            border-radius: 2px;
+        }
+
+        .research-themes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .theme-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+        }
+        
+        .theme-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        .theme-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .theme-card p {
+            color: #5a6c7d;
+            line-height: 1.7;
+        }
+        
+        .news-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #2c3e50;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .news-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(44, 62, 80, 0.02) 100%);
+            pointer-events: none;
+        }
+        
+        .news-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-left-color: #FFD700;
+        }
+        
+        .news-date {
+            display: inline-flex;
+            align-items: center;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+
+        .news-date i {
+            margin-right: 8px;
+        }
+        
+        .news-content {
+            color: #2c3e50;
+            line-height: 1.7;
+        }
+
+        .news-content a {
+            color: #2c3e50;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .news-content a:hover {
+            color: #FFD700;
+            text-decoration: none;
+            border-bottom-color: #FFD700;
+        }
+
+        .publications {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .publications h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+        }
+
+        .publications h3 i {
+            margin-right: 10px;
+            color: #2c3e50;
+        }
+
+        .publications ul {
+            list-style: none;
+        }
+
+        .publications li {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 3px solid #FFD700;
+            color: #2c3e50;
+        }
+
+        .publications li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-left-color: #2c3e50;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.05) 0%, rgba(52, 73, 94, 0.05) 100%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            width: 80px;
+            height: 80px;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            top: 20%;
+            right: 10%;
+            width: 60px;
+            height: 60px;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            width: 40px;
+            height: 40px;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header-section {
+                padding: 40px 25px;
+                min-height: 350px;
+                background-attachment: scroll;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2.2em;
+            }
+            
+            .links {
+                gap: 15px;
+            }
+            
+            .social-link {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+
+            .research-themes {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <div class="profile-image">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h1>小野原彩香（ONOHARA AYAKA）</h1>
+            <div class="subtitle">研究者</div>
+        </div>
+
+        <div class="content">
+            <div class="profile-info">
+                <div class="info-item">
+                    <i class="fas fa-university"></i>
+                    <span><strong>所属：</strong>小野原彩香の所属機関・職位</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-microscope"></i>
+                    <span><strong>専門：</strong>言語進化・言語系統樹・文化進化・言語地図・認知地図</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span><strong>学位：</strong>小野原彩香の学位</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span><strong>経歴：</strong>小野原彩香の主要な経歴</span>
+                </div>
+            </div>
+
+            <p style="text-align: center; color: #5a6c7d; font-size: 1.1em; line-height: 1.8; margin: 30px 0;">
+                小野原彩香の研究背景や現在の取り組み、興味関心についての詳細はこちらをご覧ください。
+                <a href="https://researchmap.jp/onohara-ayaka" target="_blank" style="color: #2c3e50; text-decoration: none; font-weight: 500; border-bottom: 1px solid rgba(255, 215, 0, 0.5);">researchmap</a>で詳細なプロフィールをご確認いただけます。
+            </p>
+
+            <p style="text-align: center; margin: 20px 0;">
+                <a href="research-themes.html" style="display: inline-flex; align-items: center; gap: 8px; padding: 15px 25px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; text-decoration: none; border-radius: 25px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3); border: 1px solid #FFD700;">
+                    <i class="fas fa-arrow-right"></i>
+                    研究テーマ・プロジェクトの詳細
+                </a>
+            </p>
+            
+            <div class="links">
+                <a href="https://researchmap.jp/onohara-ayaka" target="_blank" class="social-link">
+                    <i class="fas fa-search"></i>
+                    researchmap
+                </a>
+                <a href="https://scholar.google.com/citations?user=ONOHARA_ID" target="_blank" class="social-link">
+                    <i class="fab fa-google"></i>
+                    Google Scholar
+                </a>
+                <a href="https://orcid.org/0000-0000-0000-0000" target="_blank" class="social-link">
+                    <i class="fab fa-orcid"></i>
+                    ORCID
+                </a>
+                <a href="mailto:onohara.ayaka@example.ac.jp" class="social-link">
+                    <i class="fas fa-envelope"></i>
+                    Contact
+                </a>
+            </div>
+
+            <h2><i class="fas fa-project-diagram" style="margin-right: 10px; color: #2c3e50;"></i>研究テーマ・プロジェクト</h2>
+            <div class="research-themes">
+                <div class="theme-card">
+                    <h3><i class="fas fa-dna" style="margin-right: 8px; color: #2c3e50;"></i>言語進化</h3>
+                    <p>人類の言語がどのように進化してきたかを、生物学的進化と文化的進化の両面から研究しています。言語の起源から現代に至るまでの変遷を解明します。</p>
+                </div>
+                
+                <div class="theme-card">
+                    <h3><i class="fas fa-project-diagram" style="margin-right: 8px; color: #2c3e50;"></i>言語系統樹</h3>
+                    <p>世界の言語間の系統関係を樹形図として可視化し、言語ファミリーの分岐パターンや時系列変化を定量的に分析する研究を行っています。</p>
+                </div>
+
+                <div class="theme-card">
+                    <h3><i class="fas fa-users" style="margin-right: 8px; color: #2c3e50;"></i>文化進化</h3>
+                    <p>言語と文化の共進化メカニズムを探求し、社会構造や技術革新が言語変化に与える影響を多角的に研究しています。</p>
+                </div>
+
+                <div class="theme-card">
+                    <h3><i class="fas fa-globe" style="margin-right: 8px; color: #2c3e50;"></i>言語地図</h3>
+                    <p>地理空間における言語分布パターンの可視化と分析を通じて、地理的要因が言語多様性に与える影響を研究しています。</p>
+                </div>
+
+                <div class="theme-card">
+                    <h3><i class="fas fa-brain" style="margin-right: 8px; color: #2c3e50;"></i>認知地図</h3>
+                    <p>人間の認知プロセスにおける空間情報処理と言語の関係性を探り、認知言語学の視点から言語の空間概念を研究しています。</p>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-newspaper" style="margin-right: 10px; color: #2c3e50;"></i>NEWS</h2>
+            <div class="news-section">
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.09.05
+                    </div>
+                    <div class="news-content">
+                        ・研究発表<a href="https://speakerdeck.com/onohara-ayaka/presentation-title" target="_blank">「言語系統樹と文化進化の相関分析」</a>を<a href="#" target="_blank">国際言語学会2025</a>にて行いました。
+                        <div style="margin-top: 8px;">
+                            <a href="https://speakerdeck.com/onohara-ayaka/presentation-title" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
+                                <i class="fas fa-presentation"></i>
+                                発表スライド
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.08.31
+                    </div>
+                    <div class="news-content">
+                        ・文科省主催<a href="#" target="_blank">「言語多様性保護プロジェクト2025」</a>にて審査員を行いました。
+                    </div>
+                </div>
+                
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.08.19
+                    </div>
+                    <div class="news-content">
+                        ・パネル討論<a href="https://speakerdeck.com/onohara-ayaka/panel-discussion" target="_blank">「言語地図研究の現在地」へのコメント</a>を<a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank">言語地理学研究会</a>にて行いました。
+                        <div style="margin-top: 8px; display: flex; gap: 15px;">
+                            <a href="https://speakerdeck.com/onohara-ayaka/panel-discussion" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
+                                <i class="fas fa-presentation"></i>
+                                発表資料
+                            </a>
+                            <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e74c3c; text-decoration: none;">
+                                <i class="fab fa-youtube"></i>
+                                動画
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.07.31
+                    </div>
+                    <div class="news-content">
+                        ・論文「認知地図と言語系統樹の統合的分析」（単著）が、<a href="https://doi.org/10.xxxx/journal.2025.xxx" target="_blank">言語科学ジャーナル 63(2)</a>に掲載されました。
+                        <div style="margin-top: 8px;">
+                            <a href="https://doi.org/10.xxxx/journal.2025.xxx" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
+                                <i class="fas fa-external-link-alt"></i>
+                                DOI: 10.xxxx/journal.2025.xxx
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.07.07
+                    </div>
+                    <div class="news-content">
+                        ・受賞「言語地図データベースによる文化進化分析の試行」を<a href="#" target="_blank">「言語学会2025」ポスターセッション</a>で行い、「優秀ポスター賞」を受賞しました。
+                        <div style="margin-top: 8px;">
+                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #f39c12;">
+                                <i class="fas fa-trophy"></i>
+                                優秀ポスター賞受賞
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.05.26
+                    </div>
+                    <div class="news-content">
+                        ・雑誌<a href="https://example.com/magazine/article" target="_blank">「言語研究マガジン第3号」</a>に特別寄稿した記事が掲載されました。
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.03.22
+                    </div>
+                    <div class="news-content">
+                        ・基調講演「デジタル言語地図の活用による言語多様性研究の推進」を、○○大学「言語情報学人材育成プログラム」フォーラムで行いました。その様子が<a href="#" target="_blank">「言語学ニュース」</a>ならびに「言語研究 No.128」（2024.08.10）に掲載されました。
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <div class="news-date">
+                        <i class="fas fa-calendar"></i>
+                        2025.04.21
+                    </div>
+                    <div class="news-content">
+                        ・書籍論文「言語系統樹データの活用と実践例」が、<a href="https://example.com/book" target="_blank">計算言語学入門・改訂版（編著者名 編著）</a>に掲載されました。
+                    </div>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-medal" style="margin-right: 10px; color: #2c3e50;"></i>主要な業績</h2>
+            <div class="publications">
+                <h3><i class="fas fa-file-alt"></i>主要論文</h3>
+                <ul>
+                    <li>
+                        小野原彩香 (2025) "認知地図と言語系統樹の統合的分析手法の開発", 言語科学ジャーナル, Vol.63, No.2, pp.45-62.
+                        <div style="margin-top: 8px;">
+                            <a href="https://doi.org/10.xxxx/journal.2025.xxx" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
+                                <i class="fas fa-external-link-alt"></i>
+                                DOI: 10.xxxx/journal.2025.xxx
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        小野原彩香, 共著者名 (2024) "文化進化モデルを用いた言語分布パターンの解析", 国際言語学ジャーナル, Vol.42, No.1, pp.123-140.
+                        <div style="margin-top: 8px;">
+                            <a href="https://doi.org/10.xxxx/intjournal.2024.xxx" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
+                                <i class="fas fa-external-link-alt"></i>
+                                DOI: 10.xxxx/intjournal.2024.xxx
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        小野原彩香 (2023) "言語地図データベース構築における新手法の提案", 計算言語学研究, Vol.28, No.3, pp.78-95.
+                        <div style="margin-top: 8px;">
+                            <a href="https://researchmap.jp/onohara-ayaka/published_papers/paper_id" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #27ae60; text-decoration: none;">
+                                <i class="fas fa-search"></i>
+                                researchmap
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+                
+                <h3><i class="fas fa-microphone"></i>主要学会発表</h3>
+                <ul>
+                    <li>
+                        小野原彩香 (2025) "言語系統樹と認知地図の統合モデル", 第XX回国際言語学会, 東京.
+                        <div style="margin-top: 8px;">
+                            <a href="https://speakerdeck.com/onohara-ayaka/presentation2025" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
+                                <i class="fas fa-presentation"></i>
+                                発表スライド
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        小野原彩香, 共著者名 (2024) "文化進化による言語変化の定量分析", 言語学会2024年度大会, 大阪.
+                        <div style="margin-top: 8px;">
+                            <a href="https://speakerdeck.com/onohara-ayaka/presentation2024" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
+                                <i class="fas fa-presentation"></i>
+                                発表スライド
+                            </a>
+                        </div>
+                    </li>
+                    <li>小野原彩香 (2023) "言語地図における空間統計手法の応用", 計算言語学研究会, 京都.</li>
+                </ul>
+
+                <h3><i class="fas fa-trophy"></i>受賞・表彰</h3>
+                <ul>
+                    <li>
+                        2025年 言語学会「優秀論文賞」
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
+                            論文「認知地図と言語系統樹の統合的分析手法の開発」に対して
+                        </div>
+                    </li>
+                    <li>
+                        2024年 国際言語学会2024「Best Presentation Award」
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
+                            発表「文化進化による言語変化の定量分析」に対して
+                        </div>
+                    </li>
+                    <li>
+                        2023年 若手言語学者奨励賞（言語学振興財団）
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
+                            言語地理学分野での優れた研究成果に対して
+                        </div>
+                    </li>
+                </ul>
+
+                <h3><i class="fas fa-book"></i>書籍・著作</h3>
+                <ul>
+                    <li>
+                        小野原彩香 (2024) "言語進化と文化進化：統合的アプローチ", 言語学出版, 全256ページ.
+                        <div style="margin-top: 8px;">
+                            <a href="https://example.com/book-link" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #8e44ad; text-decoration: none;">
+                                <i class="fas fa-shopping-cart"></i>
+                                購入リンク
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        編著者名 編著, 小野原彩香 他 (2023) "計算言語学の最前線", 学術出版社, pp.45-78（第3章「言語地図と系統樹分析」担当）.
+                    </li>
+                </ul>
+
+                <h3><i class="fas fa-microscope"></i>研究助成・プロジェクト</h3>
+                <ul>
+                    <li>
+                        科学研究費助成事業 基盤研究(B) 2024-2027年度
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #2c3e50; font-weight: 500;">
+                            「言語系統樹と文化進化モデルの統合による言語変化予測システムの開発」（研究代表者）
+                        </div>
+                        <div style="margin-top: 3px; font-size: 0.85em; color: #5a6c7d;">
+                            研究課題番号：24H00000, 総額：8,000千円
+                        </div>
+                    </li>
+                    <li>
+                        言語学振興財団研究助成 2023-2024年度
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #2c3e50; font-weight: 500;">
+                            「認知地図データの言語地理学的分析手法開発」（研究代表者）
+                        </div>
+                        <div style="margin-top: 3px; font-size: 0.85em; color: #5a6c7d;">
+                            総額：2,000千円
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // スムーズスクロールとアニメーション効果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 要素が見えたときにアニメーション
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // アニメーション対象の要素を観察
+            document.querySelectorAll('.theme-card, .news-item, .publications').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+
+            // ソーシャルリンクにリップルエフェクト
+            document.querySelectorAll('.social-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    let ripple = document.createElement('span');
+                    let rect = this.getBoundingClientRect();
+                    let size = Math.max(rect.width, rect.height);
+                    let x = e.clientX - rect.left - size / 2;
+                    let y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255,255,255,0.5);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s linear;
+                        pointer-events: none;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        });
+
+        // CSSアニメーションの定義
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
