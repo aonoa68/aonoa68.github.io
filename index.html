@@ -136,9 +136,9 @@
 
         .info-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 15px;
-            font-size: 1.1em;
+            font-size: 1.05em;
             color: #2c3e50;
         }
 
@@ -150,6 +150,7 @@
             width: 25px;
             color: #2c3e50;
             margin-right: 15px;
+            margin-top: 3px;
         }
         
         .links {
@@ -202,6 +203,38 @@
             border-radius: 2px;
         }
 
+        .timeline {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .timeline-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #FFD700;
+        }
+
+        .timeline-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content {
+            color: #5a6c7d;
+            line-height: 1.6;
+        }
+
         .research-themes {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -247,67 +280,23 @@
             color: #5a6c7d;
             line-height: 1.7;
         }
-        
-        .news-item {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            padding: 25px;
-            border-radius: 12px;
-            border-left: 4px solid #2c3e50;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            border: 1px solid #d1d9ff;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #2c3e50;
+            margin: 4px 6px 4px 0;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
-        .news-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, transparent 0%, rgba(44, 62, 80, 0.02) 100%);
-            pointer-events: none;
-        }
-        
-        .news-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-left-color: #FFD700;
-        }
-        
-        .news-date {
-            display: inline-flex;
-            align-items: center;
-            color: #2c3e50;
-            font-weight: 600;
-            font-size: 0.95em;
-            margin-bottom: 8px;
-        }
-
-        .news-date i {
-            margin-right: 8px;
-        }
-        
-        .news-content {
-            color: #2c3e50;
-            line-height: 1.7;
-        }
-
-        .news-content a {
-            color: #2c3e50;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.5);
-        }
-
-        .news-content a:hover {
-            color: #FFD700;
-            text-decoration: none;
-            border-bottom-color: #FFD700;
+        .tag:hover {
+            background: linear-gradient(135deg, #FFD700 0%, #B8860B 100%);
+            border-color: #B8860B;
+            color: white;
         }
 
         .publications {
@@ -403,6 +392,22 @@
                 transform: translateY(-20px);
             }
         }
+
+        .pill {
+            display: inline-block;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin: 4px 6px 4px 0;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .muted {
+            color: #6b7280;
+            font-size: 0.9em;
+        }
         
         @media (max-width: 768px) {
             body {
@@ -455,314 +460,188 @@
             <div class="profile-image">
                 <i class="fas fa-user-graduate"></i>
             </div>
-            <h1>小野原彩香（ONOHARA AYAKA）</h1>
+            <h1>小野原彩香（Onohara, Ayaka）</h1>
+            <div class="subtitle">研究者</div>
         </div>
 
         <div class="content">
-            <div class="profile-info">
-                <div class="info-item">
-                    <i class="fas fa-university"></i>
-                    <span><strong>所属：</strong>小野原彩香の所属機関・職位</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-microscope"></i>
-                    <span><strong>専門：</strong>言語進化・言語系統樹・文化進化・言語地図・認知地図</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span><strong>学位：</strong>小野原彩香の学位</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span><strong>経歴：</strong>小野原彩香の主要な経歴</span>
-                </div>
-            </div>
-
-            <p style="text-align: center; color: #5a6c7d; font-size: 1.1em; line-height: 1.8; margin: 30px 0;">
-                小野原彩香の研究背景や現在の取り組み、興味関心についての詳細はこちらをご覧ください。
-                <a href="https://researchmap.jp/onohara-ayaka" target="_blank" style="color: #2c3e50; text-decoration: none; font-weight: 500; border-bottom: 1px solid rgba(255, 215, 0, 0.5);">researchmap</a>で詳細なプロフィールをご確認いただけます。
-            </p>
-
-            <p style="text-align: center; margin: 20px 0;">
-                <a href="research-themes.html" style="display: inline-flex; align-items: center; gap: 8px; padding: 15px 25px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; text-decoration: none; border-radius: 25px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(44, 62, 80, 0.3); border: 1px solid #FFD700;">
-                    <i class="fas fa-arrow-right"></i>
-                    研究テーマ・プロジェクトの詳細
-                </a>
-            </p>
-            
             <div class="links">
-                <a href="https://researchmap.jp/onohara-ayaka" target="_blank" class="social-link">
+                <a href="https://researchmap.jp/aonohr" target="_blank" class="social-link">
                     <i class="fas fa-search"></i>
                     researchmap
                 </a>
-                <a href="https://scholar.google.com/citations?user=ONOHARA_ID" target="_blank" class="social-link">
+                <a href="https://scholar.google.com/citations?user=ZlwLZWYAAAAJ&hl=ja" target="_blank" class="social-link">
                     <i class="fab fa-google"></i>
                     Google Scholar
                 </a>
-                <a href="https://orcid.org/0000-0000-0000-0000" target="_blank" class="social-link">
+                <a href="https://orcid.org/0009-0004-3082-3267" target="_blank" class="social-link">
                     <i class="fab fa-orcid"></i>
                     ORCID
                 </a>
-                <a href="mailto:onohara.ayaka@example.ac.jp" class="social-link">
+                <a href="mailto:aonohara@rikkyo.ac.jp" class="social-link">
                     <i class="fas fa-envelope"></i>
                     Contact
                 </a>
             </div>
 
-            <h2><i class="fas fa-project-diagram" style="margin-right: 10px; color: #2c3e50;"></i>研究テーマ・プロジェクト</h2>
+            <div class="profile-info">
+                <div class="info-item">
+                    <i class="fas fa-university"></i>
+                    <div>
+                        <strong>現在の所属：</strong>立教大学 社会情報教育研究センター 助教（2022年4月〜現在）
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-microscope"></i>
+                    <div>
+                        <strong>専門分野：</strong>言語学、言語進化、文化進化、音声・ピッチアクセント、地理情報科学（GIS）、計量/統計モデリング
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div>
+                        <strong>学歴：</strong>同志社大学 文化情報学研究科（学位：文化情報学、2014年3月）→ 東京大学 大学院
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-id-card"></i>
+                    <div>
+                        <strong>ORCID：</strong><a href="https://orcid.org/0009-0004-3082-3267" target="_blank" style="color: #2c3e50;">0009-0004-3082-3267</a>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <strong>Email：</strong><a href="mailto:aonohara@rikkyo.ac.jp" style="color: #2c3e50;">aonohara@rikkyo.ac.jp</a>
+                    </div>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-briefcase" style="margin-right: 10px; color: #2c3e50;"></i>職歴・所属</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">2022年4月〜現在</div>
+                    <div class="timeline-content">立教大学 社会情報教育研究センター 助教</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2018年4月〜2022年3月</div>
+                    <div class="timeline-content">東京大学 大学院理学系研究科 生物科学専攻 日本学術振興会 特別研究員（PD）</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2016年10月〜2018年3月</div>
+                    <div class="timeline-content">東京大学 大学院理学系研究科 生物科学専攻 日本学術振興会 特別研究員（RPD）</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2015年4月〜2016年9月</div>
+                    <div class="timeline-content">東京大学 大学院理学系研究科 生物科学専攻 日本学術振興会 特別研究員（PD）</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-date">2019年5月〜2021年3月</div>
+                    <div class="timeline-content">出産・育児に伴う研究中断（第2子）</div>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-tags" style="margin-right: 10px; color: #2c3e50;"></i>専門分野・研究キーワード</h2>
+            <div style="margin: 20px 0;">
+                <span class="tag">言語学</span>
+                <span class="tag">言語進化</span>
+                <span class="tag">文化進化</span>
+                <span class="tag">音声・ピッチアクセント</span>
+                <span class="tag">地理情報科学（GIS）</span>
+                <span class="tag">計量/統計モデリング</span>
+                <span class="tag">ベイズ系統解析</span>
+                <span class="tag">言語系統樹</span>
+                <span class="tag">認知地図</span>
+            </div>
+
+            <h2><i class="fas fa-chart-line" style="margin-right: 10px; color: #2c3e50;"></i>研究テーマ</h2>
             <div class="research-themes">
                 <div class="theme-card">
-                    <h3><i class="fas fa-dna" style="margin-right: 8px; color: #2c3e50;"></i>言語進化</h3>
-                    <p>人類の言語がどのように進化してきたかを、生物学的進化と文化的進化の両面から研究しています。言語の起源から現代に至るまでの変遷を解明します。</p>
+                    <h3><i class="fas fa-dna" style="margin-right: 8px; color: #2c3e50;"></i>言語進化の系統解析</h3>
+                    <p>ベイズ系統解析を用いて、日本語方言のピッチアクセント体系の進化過程を定量的に解明する研究を行っています。</p>
                 </div>
                 
                 <div class="theme-card">
-                    <h3><i class="fas fa-project-diagram" style="margin-right: 8px; color: #2c3e50;"></i>言語系統樹</h3>
-                    <p>世界の言語間の系統関係を樹形図として可視化し、言語ファミリーの分岐パターンや時系列変化を定量的に分析する研究を行っています。</p>
+                    <h3><i class="fas fa-microphone" style="margin-right: 8px; color: #2c3e50;"></i>音声・ピッチアクセント研究</h3>
+                    <p>アクセントクラス融合に基づく新しい分析手法を開発し、言語変化のメカニズムを探求しています。</p>
                 </div>
 
                 <div class="theme-card">
-                    <h3><i class="fas fa-users" style="margin-right: 8px; color: #2c3e50;"></i>文化進化</h3>
-                    <p>言語と文化の共進化メカニズムを探求し、社会構造や技術革新が言語変化に与える影響を多角的に研究しています。</p>
+                    <h3><i class="fas fa-globe" style="margin-right: 8px; color: #2c3e50;"></i>地理情報科学（GIS）</h3>
+                    <p>地理空間情報と言語データを統合し、言語の消失と獲得に関連する環境・社会的要因を解析しています。</p>
                 </div>
 
                 <div class="theme-card">
-                    <h3><i class="fas fa-globe" style="margin-right: 8px; color: #2c3e50;"></i>言語地図</h3>
-                    <p>地理空間における言語分布パターンの可視化と分析を通じて、地理的要因が言語多様性に与える影響を研究しています。</p>
-                </div>
-
-                <div class="theme-card">
-                    <h3><i class="fas fa-brain" style="margin-right: 8px; color: #2c3e50;"></i>認知地図</h3>
-                    <p>人間の認知プロセスにおける空間情報処理と言語の関係性を探り、認知言語学の視点から言語の空間概念を研究しています。</p>
+                    <h3><i class="fas fa-brain" style="margin-right: 8px; color: #2c3e50;"></i>進化的アプローチ</h3>
+                    <p>音声と場所の感情的関連性を進化的観点から解明し、言語と認知の相互作用を研究しています。</p>
                 </div>
             </div>
 
-            <h2><i class="fas fa-newspaper" style="margin-right: 10px; color: #2c3e50;"></i>NEWS</h2>
-            <div class="news-section">
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.09.05
-                    </div>
-                    <div class="news-content">
-                        ・研究発表<a href="https://speakerdeck.com/onohara-ayaka/presentation-title" target="_blank">「言語系統樹と文化進化の相関分析」</a>を<a href="#" target="_blank">国際言語学会2025</a>にて行いました。
-                        <div style="margin-top: 8px;">
-                            <a href="https://speakerdeck.com/onohara-ayaka/presentation-title" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
-                                <i class="fas fa-presentation"></i>
-                                発表スライド
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.08.31
-                    </div>
-                    <div class="news-content">
-                        ・文科省主催<a href="#" target="_blank">「言語多様性保護プロジェクト2025」</a>にて審査員を行いました。
-                    </div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.08.19
-                    </div>
-                    <div class="news-content">
-                        ・パネル討論<a href="https://speakerdeck.com/onohara-ayaka/panel-discussion" target="_blank">「言語地図研究の現在地」へのコメント</a>を<a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank">言語地理学研究会</a>にて行いました。
-                        <div style="margin-top: 8px; display: flex; gap: 15px;">
-                            <a href="https://speakerdeck.com/onohara-ayaka/panel-discussion" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
-                                <i class="fas fa-presentation"></i>
-                                発表資料
-                            </a>
-                            <a href="https://www.youtube.com/watch?v=VIDEO_ID" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e74c3c; text-decoration: none;">
-                                <i class="fab fa-youtube"></i>
-                                動画
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.07.31
-                    </div>
-                    <div class="news-content">
-                        ・論文「認知地図と言語系統樹の統合的分析」（単著）が、<a href="https://doi.org/10.xxxx/journal.2025.xxx" target="_blank">言語科学ジャーナル 63(2)</a>に掲載されました。
-                        <div style="margin-top: 8px;">
-                            <a href="https://doi.org/10.xxxx/journal.2025.xxx" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
-                                <i class="fas fa-external-link-alt"></i>
-                                DOI: 10.xxxx/journal.2025.xxx
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.07.07
-                    </div>
-                    <div class="news-content">
-                        ・受賞「言語地図データベースによる文化進化分析の試行」を<a href="#" target="_blank">「言語学会2025」ポスターセッション</a>で行い、「優秀ポスター賞」を受賞しました。
-                        <div style="margin-top: 8px;">
-                            <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #f39c12;">
-                                <i class="fas fa-trophy"></i>
-                                優秀ポスター賞受賞
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.05.26
-                    </div>
-                    <div class="news-content">
-                        ・雑誌<a href="https://example.com/magazine/article" target="_blank">「言語研究マガジン第3号」</a>に特別寄稿した記事が掲載されました。
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.03.22
-                    </div>
-                    <div class="news-content">
-                        ・基調講演「デジタル言語地図の活用による言語多様性研究の推進」を、○○大学「言語情報学人材育成プログラム」フォーラムで行いました。その様子が<a href="#" target="_blank">「言語学ニュース」</a>ならびに「言語研究 No.128」（2024.08.10）に掲載されました。
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <div class="news-date">
-                        <i class="fas fa-calendar"></i>
-                        2025.04.21
-                    </div>
-                    <div class="news-content">
-                        ・書籍論文「言語系統樹データの活用と実践例」が、<a href="https://example.com/book" target="_blank">計算言語学入門・改訂版（編著者名 編著）</a>に掲載されました。
-                    </div>
-                </div>
-            </div>
-
-            <h2><i class="fas fa-medal" style="margin-right: 10px; color: #2c3e50;"></i>主要な業績</h2>
+            <h2><i class="fas fa-medal" style="margin-right: 10px; color: #2c3e50;"></i>主要業績</h2>
             <div class="publications">
                 <h3><i class="fas fa-file-alt"></i>主要論文</h3>
                 <ul>
                     <li>
-                        小野原彩香 (2025) "認知地図と言語系統樹の統合的分析手法の開発", 言語科学ジャーナル, Vol.63, No.2, pp.45-62.
+                        <strong>Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects.</strong><br>
+                        Takuya Takahashi; Ayaka Onohara; Yasuo Ihara. <em>Journal of Language Evolution</em>, 8(2):169–191, 2023.<br>
                         <div style="margin-top: 8px;">
-                            <a href="https://doi.org/10.xxxx/journal.2025.xxx" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
+                            <a href="https://doi.org/10.1093/jole/lzae004" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
                                 <i class="fas fa-external-link-alt"></i>
-                                DOI: 10.xxxx/journal.2025.xxx
+                                DOI: 10.1093/jole/lzae004
                             </a>
                         </div>
                     </li>
                     <li>
-                        小野原彩香, 共著者名 (2024) "文化進化モデルを用いた言語分布パターンの解析", 国際言語学ジャーナル, Vol.42, No.1, pp.123-140.
-                        <div style="margin-top: 8px;">
-                            <a href="https://doi.org/10.xxxx/intjournal.2024.xxx" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #3498db; text-decoration: none;">
-                                <i class="fas fa-external-link-alt"></i>
-                                DOI: 10.xxxx/intjournal.2024.xxx
-                            </a>
-                        </div>
+                        <strong>Client‐Side Web Mapping System for Vineyard Suitability Assessment.</strong><br>
+                        N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <u>A. Onohara</u>; T. Oguchi. <em>ISPRS Archives</em>, 2022.
                     </li>
                     <li>
-                        小野原彩香 (2023) "言語地図データベース構築における新手法の提案", 計算言語学研究, Vol.28, No.3, pp.78-95.
-                        <div style="margin-top: 8px;">
-                            <a href="https://researchmap.jp/onohara-ayaka/published_papers/paper_id" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #27ae60; text-decoration: none;">
-                                <i class="fas fa-search"></i>
-                                researchmap
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-                
-                <h3><i class="fas fa-microphone"></i>主要学会発表</h3>
-                <ul>
-                    <li>
-                        小野原彩香 (2025) "言語系統樹と認知地図の統合モデル", 第XX回国際言語学会, 東京.
-                        <div style="margin-top: 8px;">
-                            <a href="https://speakerdeck.com/onohara-ayaka/presentation2025" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
-                                <i class="fas fa-presentation"></i>
-                                発表スライド
-                            </a>
-                        </div>
+                        <strong>Classification of land use/cover change in the Kanto region, Japan using FOSS4G and Open Data.</strong><br>
+                        N. Iwasaki; D. Sprague; <u>A. Onohara</u>. 2017.
                     </li>
                     <li>
-                        小野原彩香, 共著者名 (2024) "文化進化による言語変化の定量分析", 言語学会2024年度大会, 大阪.
-                        <div style="margin-top: 8px;">
-                            <a href="https://speakerdeck.com/onohara-ayaka/presentation2024" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #e67e22; text-decoration: none;">
-                                <i class="fas fa-presentation"></i>
-                                発表スライド
-                            </a>
-                        </div>
-                    </li>
-                    <li>小野原彩香 (2023) "言語地図における空間統計手法の応用", 計算言語学研究会, 京都.</li>
-                </ul>
-
-                <h3><i class="fas fa-trophy"></i>受賞・表彰</h3>
-                <ul>
-                    <li>
-                        2025年 言語学会「優秀論文賞」
-                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
-                            論文「認知地図と言語系統樹の統合的分析手法の開発」に対して
-                        </div>
-                    </li>
-                    <li>
-                        2024年 国際言語学会2024「Best Presentation Award」
-                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
-                            発表「文化進化による言語変化の定量分析」に対して
-                        </div>
-                    </li>
-                    <li>
-                        2023年 若手言語学者奨励賞（言語学振興財団）
-                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
-                            言語地理学分野での優れた研究成果に対して
-                        </div>
+                        <strong>言語の消失と獲得に関連する環境・社会的要因.</strong><br>
+                        小野原 彩香. 地理情報システム学会講演論文集 25, 2016.
                     </li>
                 </ul>
 
-                <h3><i class="fas fa-book"></i>書籍・著作</h3>
+                <h3><i class="fas fa-microscope"></i>研究課題・助成（近年）</h3>
                 <ul>
                     <li>
-                        小野原彩香 (2024) "言語進化と文化進化：統合的アプローチ", 言語学出版, 全256ページ.
-                        <div style="margin-top: 8px;">
-                            <a href="https://example.com/book-link" target="_blank" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.9em; color: #8e44ad; text-decoration: none;">
-                                <i class="fas fa-shopping-cart"></i>
-                                購入リンク
-                            </a>
+                        <strong>進化的アプローチを用いた音声と場所の感情的関連性の解明</strong>（2024—2027）<br>
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
+                            研究代表者として実施中
                         </div>
                     </li>
                     <li>
-                        編著者名 編著, 小野原彩香 他 (2023) "計算言語学の最前線", 学術出版社, pp.45-78（第3章「言語地図と系統樹分析」担当）.
+                        <strong>進化的アプローチによるアクセントの機能・役割解明</strong>（2022—2024）<br>
+                        <div style="margin-top: 5px; font-size: 0.9em; color: #5a6c7d;">
+                            研究代表者として実施
+                        </div>
+                    </li>
+                    <li>
+                        <strong>集団構造を考慮した言語変化のプロセス解明のための数理的研究</strong>（2018—2023）
+                    </li>
+                    <li>
+                        <strong>言語変化の要因と系譜の定量的評価に関する研究</strong>（2016—2019）
                     </li>
                 </ul>
 
-                <h3><i class="fas fa-microscope"></i>研究助成・プロジェクト</h3>
+                <h3><i class="fas fa-users"></i>所属学会</h3>
                 <ul>
-                    <li>
-                        科学研究費助成事業 基盤研究(B) 2024-2027年度
-                        <div style="margin-top: 5px; font-size: 0.9em; color: #2c3e50; font-weight: 500;">
-                            「言語系統樹と文化進化モデルの統合による言語変化予測システムの開発」（研究代表者）
-                        </div>
-                        <div style="margin-top: 3px; font-size: 0.85em; color: #5a6c7d;">
-                            研究課題番号：24H00000, 総額：8,000千円
-                        </div>
-                    </li>
-                    <li>
-                        言語学振興財団研究助成 2023-2024年度
-                        <div style="margin-top: 5px; font-size: 0.9em; color: #2c3e50; font-weight: 500;">
-                            「認知地図データの言語地理学的分析手法開発」（研究代表者）
-                        </div>
-                        <div style="margin-top: 3px; font-size: 0.85em; color: #5a6c7d;">
-                            総額：2,000千円
-                        </div>
-                    </li>
+                    <li>日本行動計量学会（The Behaviormetric Society of Japan）</li>
+                    <li>日本人間行動進化学会（Human Behavior & Evolution Society of Japan）</li>
+                    <li>情報処理学会（IPSJ）</li>
                 </ul>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
+                <p class="muted" style="text-align: center;">
+                    <small>
+                        本ページは、researchmap・大学研究者DB・KAKEN・J-GLOBAL等の公開情報に基づき構成されています。<br>
+                        最終更新：2025-09-14（自動生成）
+                    </small>
+                </p>
             </div>
         </div>
     </div>
@@ -786,7 +665,7 @@
             }, observerOptions);
 
             // アニメーション対象の要素を観察
-            document.querySelectorAll('.theme-card, .news-item, .publications').forEach(el => {
+            document.querySelectorAll('.theme-card, .timeline-item, .publications').forEach(el => {
                 el.style.opacity = '0';
                 el.style.transform = 'translateY(20px)';
                 el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
