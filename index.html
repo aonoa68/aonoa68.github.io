@@ -33,28 +33,28 @@
                     <a href="https://researchmap.jp/aonohr" target="_blank" rel="noopener noreferrer" class="social-link">
                         <i class="fas fa-search" aria-hidden="true"></i> researchmap
                     </a>
-                    <a href="https://scholar.google.com/citations?user=ZlwLZWYAAAAJ&hl=ja" target="_blank" class="social-link">
+                    <a href="https://scholar.google.com/citations?user=ZlwLZWYAAAAJ&hl=ja" target="_blank" rel="noopener noreferrer"　class="social-link">
                         <i class="fab fa-google"></i> Google Scholar
                     </a>
-                    <a href="https://orcid.org/0009-0004-3082-3267" target="_blank" class="social-link">
-                        <i class="fab fa-orcid"></i> ORCID
+                    <a href="https://orcid.org/0009-0004-3082-3267" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <i class="fab fa-orcid" aria-hidden="true"></i> ORCID
                     </a>
                     <a href="mailto:aonohara@rikkyo.ac.jp" class="social-link">
-                        <i class="fas fa-envelope"></i> Contact
+                        <i class="fas fa-envelope" aria-hidden="true"></i> Contact
                     </a>
                 </div>
 
                 <div class="profile-info" data-aos="fade-up">
                     <div class="info-grid">
-                        <div class="info-item"><i class="fas fa-university"></i><div><strong>現在の所属：</strong>立教大学 社会情報教育研究センター 助教（2022年4月〜現在）</div></div>
-                        <div class="info-item"><i class="fas fa-microscope"></i><div><strong>専門分野：</strong>言語学、言語進化、文化進化、音声・ピッチアクセント、地理情報科学（GIS）、計量/統計モデリング</div></div>
-                        <div class="info-item"><i class="fas fa-graduation-cap"></i><div><strong>学歴：</strong>同志社大学 文化情報学研究科（学位：文化情報学、2014年3月）</div></div>
-                        <div class="info-item"><i class="fas fa-id-card"></i><div><strong>ORCID：</strong><a href="https://orcid.org/0009-0004-3082-3267" target="_blank">0009-0004-3082-3267</a></div></div>
-                        <div class="info-item"><i class="fas fa-envelope"></i><div><strong>Email：</strong><a href="mailto:aonohara@rikkyo.ac.jp">aonohara@rikkyo.ac.jp</a></div></div>
+                        <div class="info-item"><i class="fas fa-university" aria-hidden="true"></i><div><strong>現在の所属：</strong>立教大学 社会情報教育研究センター 助教（2022年4月〜現在）</div></div>
+                        <div class="info-item"><i class="fas fa-microscope" aria-hidden="true"></i><div><strong>専門分野：</strong>言語学、言語進化、文化進化、音声・ピッチアクセント、地理情報科学（GIS）、計量/統計モデリング</div></div>
+                        <div class="info-item"><i class="fas fa-graduation-cap" aria-hidden="true"></i><div><strong>学歴：</strong>同志社大学 文化情報学研究科（学位：文化情報学、2014年3月）</div></div>
+                        <div class="info-item"><i class="fas fa-id-card" aria-hidden="true"></i><div><strong>ORCID：</strong><a href="https://orcid.org/0009-0004-3082-3267" target="_blank">0009-0004-3082-3267</a></div></div>
+                        <div class="info-item"><i class="fas fa-envelope" aria-hidden="true"></i><div><strong>Email：</strong><a href="mailto:aonohara@rikkyo.ac.jp">aonohara@rikkyo.ac.jp</a></div></div>
                     </div>
                 </div>
 
-                <<h2 data-aos="fade-up">
+                <h2 data-aos="fade-up">
                     <i class="fas fa-newspaper" aria-hidden="true"></i>
                     <span class="sr-only">ニュースと最新情報</span>NEWS・最新情報
                 </h2>
@@ -182,25 +182,13 @@
         </footer>
     </div>
 
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/lepture/github-cards@2.5.0/dist/widget.js"></script>
-
-    <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 800, // animation duration
-            once: true,    // animation happens only once
-        });
-
-        // Initialize Typed.js
-        var typed = new Typed('#subtitle-text', {
-            strings: ['文化進化', '境界', 'データサイエンス'],
-            typeSpeed: 60,
-            backSpeed: 40,
-            backDelay: 1500,
-            loop: true
-        });
+    <script defer src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/gh/lepture/github-cards@2.5.0/dist/widget.js"></script>
+    <script defer>
+      AOS.init({duration:800, once:true});
+      new Typed('#subtitle-text',{strings:['文化進化','境界','データサイエンス'],typeSpeed:60,backSpeed:40,backDelay:1500,loop:true});
     </script>
+
 </body>
 </html>
