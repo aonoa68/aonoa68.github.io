@@ -20,7 +20,7 @@
         <header class="header-section">
             <div class="header-content">
                 <div class="profile-image">
-                    <i class="fas fa-user-graduate"></i>
+                    <i class="fas fa-user-graduate" aria-hidden="true"></i>
                 </div>
                 <h1>小野原彩香（Onohara, Ayaka）</h1>
                 <div class="subtitle"><span id="subtitle-text"></span></div>
@@ -30,8 +30,8 @@
         <main class="content">
             <div class="content-wrapper">
                 <div class="links">
-                    <a href="https://researchmap.jp/aonohr" target="_blank" class="social-link">
-                        <i class="fas fa-search"></i> researchmap
+                    <a href="https://researchmap.jp/aonohr" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <i class="fas fa-search" aria-hidden="true"></i> researchmap
                     </a>
                     <a href="https://scholar.google.com/citations?user=ZlwLZWYAAAAJ&hl=ja" target="_blank" class="social-link">
                         <i class="fab fa-google"></i> Google Scholar
@@ -54,7 +54,10 @@
                     </div>
                 </div>
 
-                <h2 data-aos="fade-up"><i class="fas fa-newspaper"></i>NEWS・最新情報</h2>
+                <<h2 data-aos="fade-up">
+                    <i class="fas fa-newspaper" aria-hidden="true"></i>
+                    <span class="sr-only">ニュースと最新情報</span>NEWS・最新情報
+                </h2>
                 <div class="news-section">
                     <div class="news-item" data-aos="fade-up" data-aos-delay="100"><div class="news-date"><i class="fas fa-calendar"></i> 2025.11.19</div><div class="news-content"><strong>学会発表：</strong>Free and Open Source Software for Geospatial (FOSS4G) Conference 2025にて、Nobusuke Iwasaki氏との共同研究発表を行いました。</div></div>
                     <div class="news-item" data-aos="fade-up" data-aos-delay="150"><div class="news-date"><i class="fas fa-calendar"></i> 2025.08.19-20</div><div class="news-content"><strong>社会貢献活動：</strong><a href="https://researchmap.jp/aonohr/social_contribution/50666272" target="_blank">データサイエンス体験セミナー</a>にて講師・企画・実演・調査担当として参加しました（文京学院大学女子中学校 高等学校・CQ出版主催）。</div></div>
@@ -73,8 +76,12 @@
                     <div class="timeline-item" data-aos="fade-up" data-aos-delay="200"><div class="timeline-date">2016年10月〜2018年3月</div><div class="timeline-content">東京大学 大学院理学系研究科 生物科学専攻 日本学術振興会 特別研究員（RPD）</div></div>
                     <div class="timeline-item" data-aos="fade-up" data-aos-delay="250"><div class="timeline-date">2015年4月〜2016年9月</div><div class="timeline-content">東京大学 大学院理学系研究科 生物科学専攻 日本学術振興会 特別研究員（PD）</div></div>
                     <div class="timeline-item" data-aos="fade-up" data-aos-delay="300"><div class="timeline-date">2019年5月〜2021年3月</div><div class="timeline-content">出産・育児に伴う研究中断（第2子）</div></div>
-                    <p class="external-link-area"><a href="https://researchmap.jp/aonohr/research_experience" target="_blank"><i class="fas fa-external-link-alt"></i> 詳しい経歴を見る</a></p>
                 </div>
+                <p class="external-link-area">
+                  <a href="…" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-external-link-alt" aria-hidden="true"></i> 詳しい経歴を見る
+                  </a>
+                </p>
             </div>
         </section>
 
@@ -177,7 +184,6 @@
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/gh/lepture/github-cards@2.5.0/dist/widget.js"></script>
 
     <script>
