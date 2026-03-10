@@ -680,3 +680,127 @@ h2:first-child { margin-top: 0; }
     }
     .header-section { background-attachment: scroll; }
 }
+
+/* ============================================================
+   CONCEPT DIAGRAM: Spatial Cultural Dynamics
+   ============================================================ */
+.concept-diagram {
+    background: var(--white, #fff);
+    border: 1px solid rgba(0,0,0,0.07);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin: 32px 0 48px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.concept-title {
+    text-align: center;
+    margin-bottom: 32px;
+}
+.concept-title strong {
+    display: block;
+    font-size: 1.35em;
+    color: #2c3e50;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+}
+.concept-title span {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.concept-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+}
+
+.concept-layer {
+    width: 100%;
+    max-width: 680px;
+    border-radius: 10px;
+    padding: 16px 24px;
+    text-align: center;
+    border: 1.5px solid transparent;
+}
+
+.layer-label {
+    font-weight: 700;
+    font-size: 0.95em;
+    margin-bottom: 6px;
+    letter-spacing: 0.01em;
+}
+.layer-items {
+    font-size: 0.83em;
+    opacity: 0.85;
+    line-height: 1.6;
+}
+.layer-cycle {
+    font-weight: 600;
+    opacity: 1;
+    font-size: 0.88em;
+}
+
+/* Layer colours */
+.layer-space    { background: #eef3ff; border-color: #a8bef0; }
+.layer-space .layer-label    { color: #1c3fa0; }
+
+.layer-affective { background: #fdf0ff; border-color: #d8a8f0; }
+.layer-affective .layer-label { color: #7a1aaa; }
+
+.layer-traits   { background: #e8f7ee; border-color: #90cc90; }
+.layer-traits .layer-label   { color: #1a6a1a; }
+
+.layer-evo      { background: #fff4e0; border-color: #f0c880; }
+.layer-evo .layer-label      { color: #8a4800; }
+
+.layer-niche    { background: #f0f4f8; border-color: #aabbd0; }
+.layer-niche .layer-label    { color: #2c3e50; }
+
+.concept-arrow {
+    font-size: 1.4em;
+    color: #b0bec5;
+    line-height: 1;
+    padding: 4px 0;
+    user-select: none;
+}
+
+@media (max-width: 600px) {
+    .concept-diagram { padding: 24px 16px; }
+    .concept-layer { padding: 14px 16px; }
+    .layer-items { font-size: 0.8em; }
+}
+
+/* ============================================================
+   LANGUAGE SWITCHER
+   ============================================================ */
+.lang-switch {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+.lang-btn {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.6);
+    transition: all 0.2s;
+    line-height: 1;
+}
+.lang-btn:hover {
+    border-color: var(--gold, #c9a84c);
+    color: var(--gold, #c9a84c);
+}
+.lang-btn.active {
+    background: var(--gold, #c9a84c);
+    border-color: var(--gold, #c9a84c);
+    color: #1a2535;
+}
