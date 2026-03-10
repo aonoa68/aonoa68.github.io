@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayaka Onohara — Spatial Cultural Dynamics | Evolutionary Anthropology</title>
+
+    <meta name="description" content="Ayaka Onohara researches Spatial Cultural Dynamics — how cultural traits such as language and emotion are generated, interact, and evolve in structured space. Bayesian phylogeography, Japanese dialects, emotion maps.">
+    <meta name="keywords" content="evolutionary anthropology, cultural evolution, language evolution, spatial cultural dynamics, Bayesian phylogeography, Japanese dialects, pitch accent, emotion maps, cultural traits">
+    <meta name="author" content="Ayaka Onohara">
+
+    <meta property="og:title" content="Ayaka Onohara — Spatial Cultural Dynamics">
+    <meta property="og:description" content="Spatial Cultural Dynamics: how cultural traits (language, emotion) evolve in structured space. Bayesian phylogeography · emotion maps · Japanese dialects.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aonoa68.github.io/en/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Ayaka Onohara — Spatial Cultural Dynamics">
+    <meta name="twitter:description" content="Spatial Cultural Dynamics: how cultural traits (language, emotion) evolve in structured space.">
+
+    <link rel="alternate" hreflang="ja" href="https://aonoa68.github.io/">
+    <link rel="alternate" hreflang="en" href="https://aonoa68.github.io/en/">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Ayaka Onohara",
+      "alternateName": "小野原彩香",
+      "url": "https://aonoa68.github.io/en/",
+      "email": "aonohara@rikkyo.ac.jp",
+      "jobTitle": "Assistant Professor",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Rikkyo University, Center for Social Information Education and Research"
+      },
+      "sameAs": [
+        "https://researchmap.jp/aonohr",
+        "https://scholar.google.com/citations?user=ZlwLZWYAAAAJ&hl=ja",
+        "https://orcid.org/0009-0004-3082-3267",
+        "https://github.com/aonoa68"
+      ]
+    }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <nav class="site-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="#top" class="nav-logo">Ayaka Onohara</a>
+            <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-links" role="list">
+                <li><a href="#about">About</a></li>
+                <li><a href="#research">Research</a></li>
+                <li><a href="publications/">Publications</a></li>
+                <li><a href="projects/">Projects</a></li>
+                <li><a href="#data-code">Data &amp; Code</a></li>
+                <li><a href="#teaching">Teaching</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="lang-switch">
+                <a href="../" class="lang-btn">JA</a>
+                <span class="lang-btn active">EN</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" id="top">
+        <header class="header-section">
+            <div class="header-content">
+                <div class="profile-image">
+                    <i class="fas fa-user-graduate" aria-hidden="true"></i>
+                </div>
+
+                <p class="hero-tagline">Cultural traits evolve in structured space.</p>
+                <h1>Ayaka Onohara（小野原 彩香）</h1>
+
+                <p class="hero-sub">
+                    From the perspective of evolutionary anthropology and cultural evolution, I study <strong>Spatial Cultural Dynamics</strong> — the dynamics of cultural traits in structured space.<br>
+                    Focus: Japanese dialects (pitch accent, lexicon) &amp; emotion maps of place &nbsp;·&nbsp; Methods: Bayesian phylogeography · text embeddings · generative models
+                </p>
+
+                <div class="subtitle"><span id="subtitle-text"></span></div>
+
+                <div class="links">
+                    <a href="https://researchmap.jp/aonohr" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <i class="fas fa-search"></i> researchmap
+                    </a>
+                    <a href="https://scholar.google.com/citations?user=ZlwLZWYAAAAJ&hl=ja" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <i class="fab fa-google"></i> Google Scholar
+                    </a>
+                    <a href="https://orcid.org/0009-0004-3082-3267" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <i class="fab fa-orcid"></i> ORCID
+                    </a>
+                    <a href="https://github.com/aonoa68" target="_blank" rel="noopener noreferrer" class="social-link">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="mailto:aonohara@rikkyo.ac.jp" class="social-link">
+                        <i class="fas fa-envelope"></i> Contact
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- ABOUT -->
+        <main class="content" id="about">
+            <div class="content-wrapper">
+                <div class="profile-info" data-aos="fade-up">
+                    <div class="info-grid">
+                        <div class="info-item"><i class="fas fa-university"></i><div><strong>Affiliation:</strong> Rikkyo University, Center for Social Information Education and Research, Assistant Professor (Apr 2022–present)</div></div>
+                        <div class="info-item"><i class="fas fa-microscope"></i><div><strong>Research areas:</strong> Linguistics, language evolution, cultural evolution, speech &amp; pitch accent, GIS, quantitative/statistical modeling</div></div>
+                        <div class="info-item"><i class="fas fa-graduation-cap"></i><div><strong>Education:</strong> Ph.D., Culture and Information Science, Doshisha University, March 2014</div></div>
+                        <div class="info-item"><i class="fas fa-id-card"></i><div><strong>ORCID:</strong> <a href="https://orcid.org/0009-0004-3082-3267" target="_blank">0009-0004-3082-3267</a></div></div>
+                        <div class="info-item"><i class="fas fa-envelope"></i><div><strong>Email:</strong> <a href="mailto:aonohara@rikkyo.ac.jp">aonohara@rikkyo.ac.jp</a></div></div>
+                    </div>
+                </div>
+
+                <h2 data-aos="fade-up" id="news"><i class="fas fa-newspaper"></i> News</h2>
+                <div class="news-section">
+                    <div class="news-item" data-aos="fade-up" data-aos-delay="100"><div class="news-date"><i class="fas fa-calendar"></i> 2025.12.01</div><div class="news-content"><strong>Conference:</strong> Presented "GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction" (with Hiroki Ouchi) at Workshop on Computation: Theory and Practice (WCTP) 2025.</div></div>
+                    <div class="news-item" data-aos="fade-up" data-aos-delay="120"><div class="news-date"><i class="fas fa-calendar"></i> 2025.11.19</div><div class="news-content"><strong>Conference:</strong> Presented "Evaluating LLMs as Intermediaries for FOSS4G CLI-based Geospatial Analysis" (with N. Iwasaki) at FOSS4G 2025.</div></div>
+                    <div class="news-item" data-aos="fade-up" data-aos-delay="140"><div class="news-date"><i class="fas fa-calendar"></i> 2025.11.01</div><div class="news-content"><strong>Conference:</strong> Presented "Emotion Maps of Place: Testing an Environmental Stage Model Using Text Embeddings and Spatial Proximity" (with H. Ouchi) at GIS Association of Japan, 34th Annual Meeting.</div></div>
+                    <div class="news-item" data-aos="fade-up" data-aos-delay="160"><div class="news-date"><i class="fas fa-calendar"></i> 2024.12.08</div><div class="news-content"><strong>Conference:</strong> Presented research on "Evolutionary Approach to Emotional Motivations in Speech and Place" at the 17th Annual Meeting of the Japan Human Behavior and Evolution Society.</div></div>
+                    <div class="news-item" data-aos="fade-up" data-aos-delay="180"><div class="news-date"><i class="fas fa-calendar"></i> 2024–2027</div><div class="news-content"><strong>Grant:</strong> KAKENHI grant adopted — "Elucidating the Emotional Relationship between Speech and Place using an Evolutionary Approach" (Grant No. 24K16071, PI).</div></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- CAREER -->
+        <section class="section-alt">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-briefcase"></i> Career</h2>
+                <div class="timeline">
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="100"><div class="timeline-date">Apr 2022–present</div><div class="timeline-content">Rikkyo University, Center for Social Information Education and Research, Assistant Professor</div></div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="150"><div class="timeline-date">Apr 2018–Mar 2022</div><div class="timeline-content">University of Tokyo, Graduate School of Science, JSPS Postdoctoral Fellow (PD)</div></div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="180"><div class="timeline-date">May 2019–Mar 2021</div><div class="timeline-content">Research interruption (childbirth and childcare, 2nd child)</div></div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="200"><div class="timeline-date">Oct 2016–Mar 2018</div><div class="timeline-content">University of Tokyo, Graduate School of Science, JSPS Research Fellow (RPD)</div></div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="250"><div class="timeline-date">Apr 2015–Sep 2016</div><div class="timeline-content">University of Tokyo, Graduate School of Science, JSPS Postdoctoral Fellow (PD)</div></div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="270"><div class="timeline-date">Oct 2013–Mar 2015</div><div class="timeline-content">Research interruption (childbirth and childcare, 1st child)</div></div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="290"><div class="timeline-date">Apr 2013–Mar 2014</div><div class="timeline-content">Doshisha University, Graduate School of Culture and Information Science, JSPS DC2 Fellow</div></div>
+                </div>
+                <p class="external-link-area">
+                    <a href="https://researchmap.jp/aonohr/research_experience" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-external-link-alt"></i> Full career history (researchmap)
+                    </a>
+                </p>
+            </div>
+        </section>
+
+        <!-- AWARDS -->
+        <section class="content">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-award"></i> Awards</h2>
+                <div class="timeline">
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="100">
+                        <div class="timeline-date">Oct 2023</div>
+                        <div class="timeline-content"><strong>Best Poster Award</strong> — "Estimating vineyard suitability using machine learning"<br><span style="color:#5a6c7d;font-size:0.9em;">GIS Association of Japan | N. Iwasaki, T. Tanaka, A. Onohara, K. Hayashi, M. Katori, T. Oguchi</span></div>
+                    </div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="150">
+                        <div class="timeline-date">Dec 2016</div>
+                        <div class="timeline-content"><strong>Young Researcher Award</strong> — "Role of population size in lexical/grammatical gain and loss"<br><span style="color:#5a6c7d;font-size:0.9em;">Japan Human Behavior and Evolution Society | A. Onohara, Y. Ihara</span></div>
+                    </div>
+                    <div class="timeline-item" data-aos="fade-up" data-aos-delay="200">
+                        <div class="timeline-date">Oct 2016</div>
+                        <div class="timeline-content"><strong>Best Poster Award</strong> — "Environmental and social factors associated with language loss and gain"<br><span style="color:#5a6c7d;font-size:0.9em;">GIS Association of Japan | A. Onohara</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESEARCH -->
+        <section class="section-alt" id="research">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-tags"></i> Research Keywords</h2>
+                <div style="margin:30px 0;" data-aos="fade-up">
+                    <span class="tag">linguistics</span><span class="tag">language evolution</span><span class="tag">cultural evolution</span><span class="tag">Spatial Cultural Dynamics</span><span class="tag">speech &amp; pitch accent</span><span class="tag">GIS</span><span class="tag">statistical modeling</span><span class="tag">Bayesian phylogenetics</span><span class="tag">phylogeography</span><span class="tag">emotion maps</span><span class="tag">language phylogenetics</span><span class="tag">cognitive maps</span>
+                </div>
+
+                <h2 data-aos="fade-up"><i class="fas fa-chart-line"></i> Theoretical Framework</h2>
+
+                <div class="concept-diagram" data-aos="fade-up">
+                    <div class="concept-title">
+                        <strong>Spatial Cultural Dynamics</strong>
+                        <span>How cultural traits evolve in structured space</span>
+                    </div>
+                    <div class="concept-flow">
+                        <div class="concept-layer layer-space">
+                            <div class="layer-label">Space / Environment</div>
+                            <div class="layer-items">place &nbsp;·&nbsp; population &nbsp;·&nbsp; network &nbsp;·&nbsp; geography</div>
+                        </div>
+                        <div class="concept-arrow">↓</div>
+                        <div class="concept-layer layer-affective">
+                            <div class="layer-label">Affective &amp; Social Layer</div>
+                            <div class="layer-items">emotion &nbsp;·&nbsp; evaluation &nbsp;·&nbsp; cooperation &nbsp;·&nbsp; interaction</div>
+                        </div>
+                        <div class="concept-arrow">↓</div>
+                        <div class="concept-layer layer-traits">
+                            <div class="layer-label">Cultural Traits</div>
+                            <div class="layer-items">accent &nbsp;·&nbsp; lexicon &nbsp;·&nbsp; emotion map &nbsp;·&nbsp; action style</div>
+                        </div>
+                        <div class="concept-arrow">↓</div>
+                        <div class="concept-layer layer-evo">
+                            <div class="layer-label">Evolutionary Dynamics</div>
+                            <div class="layer-items">diffusion &nbsp;·&nbsp; divergence &nbsp;·&nbsp; convergence &nbsp;·&nbsp; phylogeny &nbsp;·&nbsp; simulation</div>
+                        </div>
+                        <div class="concept-arrow">↓</div>
+                        <div class="concept-layer layer-niche">
+                            <div class="layer-label">New niche / restructured environment</div>
+                            <div class="layer-items layer-cycle">↺ &nbsp;feeds back into spatial structure</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 data-aos="fade-up"><i class="fas fa-folder-open"></i> Research Themes</h2>
+                <div class="category-legend" data-aos="fade-up">
+                    <span class="cat-badge cat-a"><strong>A</strong> Core: Spatial Cultural Dynamics</span>
+                    <span class="cat-badge cat-b"><strong>B</strong> Adjacent: GeoAI / WebGIS</span>
+                    <span class="cat-badge cat-d"><strong>D</strong> Methods &amp; Education</span>
+                </div>
+
+                <div class="research-themes">
+                    <div class="theme-card" data-aos="fade-up" data-aos-delay="100">
+                        <span class="card-cat cat-a">A</span>
+                        <h3><i class="fas fa-dna"></i> Phylogenetic Analysis of Language Evolution</h3>
+                        <p>Using Bayesian phylogenetics to quantitatively reconstruct the evolutionary history of pitch-accent systems in Japanese dialects.</p>
+                    </div>
+                    <div class="theme-card" data-aos="fade-up" data-aos-delay="150">
+                        <span class="card-cat cat-a">A</span>
+                        <h3><i class="fas fa-microphone"></i> Speech &amp; Pitch Accent Research</h3>
+                        <p>Developing novel analytical methods based on accentual class merger to investigate mechanisms of language change.</p>
+                    </div>
+                    <div class="theme-card" data-aos="fade-up" data-aos-delay="200">
+                        <span class="card-cat cat-b">B</span>
+                        <h3><i class="fas fa-globe"></i> Geographic Information Science (GIS)</h3>
+                        <p>Integrating geospatial and linguistic data to analyze environmental and social factors associated with language loss and gain.</p>
+                    </div>
+                    <div class="theme-card" data-aos="fade-up" data-aos-delay="250">
+                        <span class="card-cat cat-a">A</span>
+                        <h3><i class="fas fa-brain"></i> Evolutionary Approach to Emotion &amp; Place</h3>
+                        <p>Investigating the emotional relationship between speech and place from an evolutionary perspective, examining the interaction between language and cognition.</p>
+                    </div>
+                </div>
+
+                <h2 data-aos="fade-up"><i class="fas fa-tree"></i> Research Trajectory</h2>
+                <div class="research-tree-card" data-aos="fade-up">
+                    <a href="https://aonoa68.github.io/research_tree/" target="_blank" class="research-tree-link">
+                        <div class="research-tree-thumbnail">
+                            <div class="thumbnail-content">
+                                <div class="thumbnail-icon">🌳</div>
+                                <h4>Research Growth Tree</h4>
+                                <p>Interactive research phylogeny</p>
+                            </div>
+                        </div>
+                        <div class="research-tree-content">
+                            <h4>Research Growth Tree</h4>
+                            <p>A phylogenetic diagram showing the growth of my research from roots to branches. From foundational work in 2010 to current AI-assisted educational applications.</p>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> 2010–2013: Dialect distribution &amp; cultural region analysis</li>
+                                <li><i class="fas fa-check-circle"></i> 2013–2017: Mathematical approaches to language dynamics</li>
+                                <li><i class="fas fa-check-circle"></i> 2018–2023: Population-structure models of language change</li>
+                                <li><i class="fas fa-check-circle"></i> 2024–: AI-assisted speech &amp; educational applications</li>
+                            </ul>
+                            <div class="external-link-button">
+                                <i class="fas fa-external-link-alt"></i> View interactive research tree
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- TEACHING -->
+        <section class="content" id="teaching">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-chalkboard-teacher"></i> Teaching</h2>
+                <div class="teaching-section" data-aos="fade-up">
+                    <div class="teaching-card">
+                        <h3>Courses</h3>
+                        <p>I teach statistics, data science, and related topics including:</p>
+                        <div class="teaching-grid">
+                            <div><i class="fab fa-python"></i><strong>Python Programming</strong><span>Data analysis and visualization, fundamentals to applications</span></div>
+                            <div><i class="fas fa-robot"></i><strong>Generative AI Applications</strong><span>Effective use in research and educational settings</span></div>
+                            <div><i class="fas fa-map-marked-alt"></i><strong>Geographic Information Systems</strong><span>Spatial data analysis and visualization</span></div>
+                        </div>
+                        <p class="external-link-area"><a href="https://researchmap.jp/aonohr/teaching_experience" target="_blank"><i class="fas fa-external-link-alt"></i> Full teaching history (researchmap)</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PUBLICATIONS -->
+        <section class="section-alt" id="publications">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-medal"></i> Selected Publications</h2>
+                <div class="publications" data-aos="fade-up">
+                    <h3><i class="fas fa-star"></i> Representative Papers</h3>
+                    <ul>
+                        <li>
+                            <span class="pub-cat cat-a">A</span>
+                            <strong>Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects.</strong><br>
+                            Takuya Takahashi; <u>Ayaka Onohara</u>; Yasuo Ihara. <em>Journal of Language Evolution</em>, 8(2):169–191, <strong>2024</strong>.<br>
+                            Role: Co-author &nbsp;|&nbsp; Peer-reviewed<br>
+                            <div class="pub-link">
+                                <a href="https://doi.org/10.1093/jole/lzae004" target="_blank"><i class="fas fa-external-link-alt"></i> DOI: 10.1093/jole/lzae004</a>
+                                &nbsp;
+                                <a href="https://doi.org/10.5281/zenodo.11154180" target="_blank">
+                                    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.11154180.svg" alt="Zenodo DOI" style="vertical-align:middle;">
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="pub-cat cat-a">A</span>
+                            <strong>Inferring the temporal and spatial evolution of accent systems in Japanese dialects: a phylogeographic approach.</strong><br>
+                            <u>Ayaka Onohara</u> et al. <em>Proceedings of JCoLE</em>, 2022.<br>
+                            Role: Lead author &nbsp;|&nbsp; Peer-reviewed
+                        </li>
+                        <li>
+                            <span class="pub-cat cat-b">B</span>
+                            <strong>Client-Side Web Mapping System for Vineyard Suitability Assessment.</strong><br>
+                            N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <u>A. Onohara</u>; T. Oguchi. <em>ISPRS Archives</em>, 2022.<br>
+                            Role: Co-author &nbsp;|&nbsp; Peer-reviewed
+                        </li>
+                        <li>
+                            <span class="pub-cat cat-b">B</span>
+                            <strong>Classification of land use/cover change in the Kanto region, Japan using FOSS4G and Open Data.</strong><br>
+                            N. Iwasaki; D. Sprague; <u>A. Onohara</u>. FOSS4G 2016 Proceedings, <strong>2016</strong>.<br>
+                            Role: Co-author
+                            <div class="pub-link"><a href="https://doi.org/10.7275/R5PN93TQ" target="_blank"><i class="fas fa-external-link-alt"></i> DOI: 10.7275/R5PN93TQ</a></div>
+                        </li>
+                        <li>
+                            <span class="pub-cat cat-a">A</span>
+                            <strong>Environmental and social factors associated with language loss and gain.</strong><br>
+                            <u>A. Onohara</u>. <em>Proc. GIS Association of Japan</em> 25, 2016.
+                        </li>
+                    </ul>
+
+                    <h3><i class="fas fa-microscope"></i> Research Grants</h3>
+                    <ul>
+                        <li><span class="pub-cat cat-a">A</span> <strong>Elucidating the emotional relationship between speech and place using an evolutionary approach</strong> (2024–2027)<br><div class="grant-note">PI | KAKENHI 24K16071</div></li>
+                        <li><span class="pub-cat cat-a">A</span> <strong>Elucidating the function and role of accent using an evolutionary approach</strong> (2022–2024)<br><div class="grant-note">PI</div></li>
+                        <li><span class="pub-cat cat-a">A</span> <strong>Mathematical study of language change processes considering population structure</strong> (2018–2023)</li>
+                        <li><span class="pub-cat cat-a">A</span> <strong>Quantitative evaluation of factors and genealogy of language change</strong> (2016–2019)</li>
+                    </ul>
+
+                    <p class="external-link-area">
+                        <a href="publications/" ><i class="fas fa-list"></i> Full publication list</a>
+                        &nbsp;&nbsp;
+                        <a href="https://researchmap.jp/aonohr/published_papers" target="_blank"><i class="fas fa-external-link-alt"></i> researchmap</a>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DATA & CODE -->
+        <section class="content" id="data-code">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-database"></i> Data &amp; Code</h2>
+                <p data-aos="fade-up" style="margin-bottom:30px;">I prioritize reproducible research and make data and code publicly available.</p>
+                <div class="data-cards" data-aos="fade-up">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <i class="fas fa-archive"></i>
+                            <h3>Pitch-accent phylogeography data &amp; code</h3>
+                        </div>
+                        <p>Full dataset and analysis code for "Bayesian phylogenetic analysis of pitch-accent systems…" (<em>Journal of Language Evolution</em>, 2024).</p>
+                        <div class="data-card-meta">
+                            <span><i class="fas fa-tag"></i> Zenodo</span>
+                            <span><i class="fas fa-balance-scale"></i> CC BY 4.0</span>
+                        </div>
+                        <a href="https://doi.org/10.5281/zenodo.11154180" target="_blank" class="data-badge">
+                            <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.11154180.svg" alt="DOI 10.5281/zenodo.11154180">
+                        </a>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <i class="fab fa-github"></i>
+                            <h3>GitHub Repositories</h3>
+                        </div>
+                        <p>Analysis code, teaching materials, and data preprocessing scripts.</p>
+                        <div class="data-card-meta">
+                            <span><i class="fas fa-code-branch"></i> aonoa68</span>
+                        </div>
+                        <a href="https://github.com/aonoa68" target="_blank" class="social-link" style="margin-top:15px;display:inline-flex;">
+                            <i class="fab fa-github"></i> GitHub Profile
+                        </a>
+                        <br>
+                        <a href="https://github.com/aonoa68/excel-ol-series" target="_blank" class="social-link" style="margin-top:10px;display:inline-flex;">
+                            <i class="fab fa-github"></i> excel-ol-series
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="section-alt" id="contact">
+            <div class="content-wrapper">
+                <h2 data-aos="fade-up"><i class="fas fa-handshake"></i> Contact</h2>
+                <div class="contact-card" data-aos="fade-up">
+                    <p>I welcome inquiries regarding collaboration (cultural evolution / language evolution / GeoAI), lectures, and media interviews.</p>
+                    <div class="contact-grid">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div><strong>Email</strong><br><a href="mailto:aonohara@rikkyo.ac.jp">aonohara@rikkyo.ac.jp</a></div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-search"></i>
+                            <div><strong>researchmap</strong><br><a href="https://researchmap.jp/aonohr" target="_blank">researchmap.jp/aonohr</a></div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fab fa-orcid"></i>
+                            <div><strong>ORCID</strong><br><a href="https://orcid.org/0009-0004-3082-3267" target="_blank">0009-0004-3082-3267</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="content-wrapper">
+                <p>This page is based on publicly available information (researchmap, university databases, KAKEN, J-GLOBAL, etc.).<br>Last updated: 2026-03-06</p>
+            </div>
+        </footer>
+    </div>
+
+    <script defer src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script defer src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({duration:800, once:true});
+        new Typed('#subtitle-text',{
+          strings:['Evolutionary Anthropology','Cultural Evolution','Spatial Cultural Dynamics','Data Science'],
+          typeSpeed:60, backSpeed:40, backDelay:1800, loop:true
+        });
+        const toggle = document.querySelector('.nav-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        if (toggle && navLinks) {
+          toggle.addEventListener('click', function() {
+            const isOpen = navLinks.classList.toggle('open');
+            toggle.setAttribute('aria-expanded', isOpen);
+          });
+        }
+        let lastY = window.scrollY;
+        const nav = document.querySelector('.site-nav');
+        window.addEventListener('scroll', function() {
+          const y = window.scrollY;
+          nav.classList.toggle('nav-hidden', y > lastY && y > 80);
+          lastY = y;
+        }, {passive:true});
+      });
+    </script>
+</body>
+</html>
