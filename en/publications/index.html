@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -6,467 +7,471 @@
     <title>Publications — 小野原彩香 | Spatial Cultural Dynamics</title>
     <meta name="description" content="小野原彩香の全出版物一覧（22件）。Spatial Cultural Dynamics（A）／GeoAI・WebGIS（B）／方法・教育（D）で整理し、DOI・データ（Zenodo）・コード（GitHub）へのリンクを付与。">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+```
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --navy:   #1a2535;
-            --navy2:  #2c3e50;
-            --gold:   #c9a84c;
-            --gold-lt:#f0d98a;
-            --teal:   #2a7d7d;
-            --teal-lt:#e6f5f5;
-            --col-a:  #1e5c1e;
-            --col-a-bg:#e8f5e8;
-            --col-a-bd:#a8d5a2;
-            --col-b:  #1c3fa0;
-            --col-b-bg:#eef0ff;
-            --col-b-bd:#a8b8f0;
-            --col-d:  #7a4500;
-            --col-d-bg:#fff4e0;
-            --col-d-bd:#f0cc88;
-            --text:   #2c3e50;
-            --muted:  #5a6c7d;
-            --bg:     #f7f8fa;
-            --white:  #ffffff;
-            --radius: 12px;
-        }
+<style>
+    :root {
+        --navy:   #1a2535;
+        --navy2:  #2c3e50;
+        --gold:   #c9a84c;
+        --gold-lt:#f0d98a;
+        --teal:   #2a7d7d;
+        --teal-lt:#e6f5f5;
+        --col-a:  #1e5c1e;
+        --col-a-bg:#e8f5e8;
+        --col-a-bd:#a8d5a2;
+        --col-b:  #1c3fa0;
+        --col-b-bg:#eef0ff;
+        --col-b-bd:#a8b8f0;
+        --col-d:  #7a4500;
+        --col-d-bg:#fff4e0;
+        --col-d-bd:#f0cc88;
+        --text:   #2c3e50;
+        --muted:  #5a6c7d;
+        --bg:     #f7f8fa;
+        --white:  #ffffff;
+        --radius: 12px;
+    }
 
-        * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
-        body {
-            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.7;
-        }
+    body {
+        font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+    }
 
-        /* ── NAV ── */
-        .site-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(26,37,53,0.97);
-            backdrop-filter: blur(12px);
-            border-bottom: 2px solid var(--gold);
-            height: 56px;
-            display: flex;
-            align-items: center;
-        }
-        .nav-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 32px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            width: 100%;
-        }
-        .nav-logo {
-            color: var(--gold);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.95em;
-            white-space: nowrap;
-            font-family: 'DM Serif Display', serif;
-        }
-        .nav-sep { color: rgba(255,255,255,0.3); }
-        .nav-current {
-            color: rgba(255,255,255,0.85);
-            font-size: 0.9em;
-        }
-        .nav-links-right {
-            margin-left: auto;
-            display: flex;
-            gap: 4px;
-        }
-        .nav-links-right a {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 0.85em;
-            padding: 6px 14px;
-            border-radius: 20px;
-            transition: all 0.2s;
-        }
-        .nav-links-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
-        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
-        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
-        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+    /* ── NAV ── */
+    .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(26,37,53,0.97);
+        backdrop-filter: blur(12px);
+        border-bottom: 2px solid var(--gold);
+        height: 56px;
+        display: flex;
+        align-items: center;
+    }
+    .nav-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        width: 100%;
+    }
+    .nav-logo {
+        color: var(--gold);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95em;
+        white-space: nowrap;
+        font-family: 'DM Serif Display', serif;
+    }
+    .nav-sep { color: rgba(255,255,255,0.3); }
+    .nav-current {
+        color: rgba(255,255,255,0.85);
+        font-size: 0.9em;
+    }
+    .nav-links-right {
+        margin-left: auto;
+        display: flex;
+        gap: 4px;
+    }
+    .nav-links-right a {
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        font-size: 0.85em;
+        padding: 6px 14px;
+        border-radius: 20px;
+        transition: all 0.2s;
+    }
+    .nav-links-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+    .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+    .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+    .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+    .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
 
-        /* ── PAGE HEADER ── */
-        .page-header {
-            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
-            color: white;
-            padding: 64px 0 56px;
-            position: relative;
-            overflow: hidden;
-        }
-        .page-header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 40px,
-                rgba(201,168,76,0.03) 40px,
-                rgba(201,168,76,0.03) 41px
-            );
-        }
-        .page-header-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 32px;
-            position: relative;
-            z-index: 1;
-        }
-        .page-header h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2.8em;
-            font-weight: 400;
-            letter-spacing: -0.01em;
-            margin-bottom: 10px;
-            line-height: 1.2;
-        }
-        .page-header h1 span { color: var(--gold); font-style: italic; }
-        .page-header .lead {
-            color: rgba(255,255,255,0.75);
-            font-size: 1em;
-            max-width: 600px;
-            line-height: 1.8;
-        }
+    /* ── PAGE HEADER ── */
+    .page-header {
+        background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+        color: white;
+        padding: 64px 0 56px;
+        position: relative;
+        overflow: hidden;
+    }
+    .page-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 40px,
+            rgba(201,168,76,0.03) 40px,
+            rgba(201,168,76,0.03) 41px
+        );
+    }
+    .page-header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 32px;
+        position: relative;
+        z-index: 1;
+    }
+    .page-header h1 {
+        font-family: 'DM Serif Display', serif;
+        font-size: 2.8em;
+        font-weight: 400;
+        letter-spacing: -0.01em;
+        margin-bottom: 10px;
+        line-height: 1.2;
+    }
+    .page-header h1 span { color: var(--gold); font-style: italic; }
+    .page-header .lead {
+        color: rgba(255,255,255,0.75);
+        font-size: 1em;
+        max-width: 600px;
+        line-height: 1.8;
+    }
 
-        /* ── STATS BAR ── */
-        .stats-bar {
-            background: var(--white);
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            padding: 18px 0;
-        }
-        .stats-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 32px;
-            display: flex;
-            align-items: center;
-            gap: 0;
-            flex-wrap: wrap;
-        }
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 28px;
-            border-right: 1px solid rgba(0,0,0,0.1);
-            min-width: 90px;
-        }
-        .stat-item:last-child { border-right: none; }
-        .stat-num {
-            font-size: 2em;
-            font-weight: 700;
-            font-family: 'DM Serif Display', serif;
-            line-height: 1;
-            color: var(--navy2);
-        }
-        .stat-num.cat-a { color: var(--col-a); }
-        .stat-num.cat-b { color: var(--col-b); }
-        .stat-num.cat-d { color: var(--col-d); }
-        .stat-label {
-            font-size: 0.75em;
-            color: var(--muted);
-            margin-top: 4px;
-            text-align: center;
-        }
+    /* ── STATS BAR ── */
+    .stats-bar {
+        background: var(--white);
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding: 18px 0;
+    }
+    .stats-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        flex-wrap: wrap;
+    }
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 28px;
+        border-right: 1px solid rgba(0,0,0,0.1);
+        min-width: 90px;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+        font-size: 2em;
+        font-weight: 700;
+        font-family: 'DM Serif Display', serif;
+        line-height: 1;
+        color: var(--navy2);
+    }
+    .stat-num.cat-a { color: var(--col-a); }
+    .stat-num.cat-b { color: var(--col-b); }
+    .stat-num.cat-d { color: var(--col-d); }
+    .stat-label {
+        font-size: 0.75em;
+        color: var(--muted);
+        margin-top: 4px;
+        text-align: center;
+    }
 
-        /* ── FILTER BAR ── */
-        .filter-bar {
-            background: var(--white);
-            border-bottom: 1px solid rgba(0,0,0,0.07);
-            padding: 20px 0;
-            position: sticky;
-            top: 56px;
-            z-index: 90;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-        }
-        .filter-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 32px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .filter-tabs {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .filter-tab {
-            padding: 8px 18px;
-            border-radius: 20px;
-            border: 1.5px solid rgba(0,0,0,0.12);
-            background: transparent;
-            color: var(--muted);
-            font-size: 0.88em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        .filter-tab:hover { border-color: var(--navy2); color: var(--navy2); }
-        .filter-tab.active { background: var(--navy2); border-color: var(--navy2); color: white; }
-        .filter-tab.tab-a.active { background: var(--col-a); border-color: var(--col-a); }
-        .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
-        .filter-tab.tab-d.active { background: var(--col-d); border-color: var(--col-d); }
+    /* ── FILTER BAR ── */
+    .filter-bar {
+        background: var(--white);
+        border-bottom: 1px solid rgba(0,0,0,0.07);
+        padding: 20px 0;
+        position: sticky;
+        top: 56px;
+        z-index: 90;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .filter-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .filter-tabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .filter-tab {
+        padding: 8px 18px;
+        border-radius: 20px;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        background: transparent;
+        color: var(--muted);
+        font-size: 0.88em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    .filter-tab:hover { border-color: var(--navy2); color: var(--navy2); }
+    .filter-tab.active { background: var(--navy2); border-color: var(--navy2); color: white; }
+    .filter-tab.tab-a.active { background: var(--col-a); border-color: var(--col-a); }
+    .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
+    .filter-tab.tab-d.active { background: var(--col-d); border-color: var(--col-d); }
 
-        .filter-search {
-            margin-left: auto;
-            position: relative;
-            min-width: 220px;
-        }
-        .filter-search input {
-            width: 100%;
-            padding: 8px 16px 8px 36px;
-            border: 1.5px solid rgba(0,0,0,0.12);
-            border-radius: 20px;
-            font-size: 0.88em;
-            font-family: inherit;
-            color: var(--text);
-            outline: none;
-            background: var(--bg);
-            transition: border-color 0.2s;
-        }
-        .filter-search input:focus { border-color: var(--navy2); background: white; }
-        .filter-search .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--muted);
-            font-size: 0.85em;
-        }
+    .filter-search {
+        margin-left: auto;
+        position: relative;
+        min-width: 220px;
+    }
+    .filter-search input {
+        width: 100%;
+        padding: 8px 16px 8px 36px;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        border-radius: 20px;
+        font-size: 0.88em;
+        font-family: inherit;
+        color: var(--text);
+        outline: none;
+        background: var(--bg);
+        transition: border-color 0.2s;
+    }
+    .filter-search input:focus { border-color: var(--navy2); background: white; }
+    .filter-search .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 0.85em;
+    }
 
-        .year-select {
-            padding: 8px 16px;
-            border: 1.5px solid rgba(0,0,0,0.12);
-            border-radius: 20px;
-            font-size: 0.88em;
-            font-family: inherit;
-            color: var(--text);
-            background: var(--bg);
-            cursor: pointer;
-            outline: none;
-        }
-        .year-select:focus { border-color: var(--navy2); }
+    .year-select {
+        padding: 8px 16px;
+        border: 1.5px solid rgba(0,0,0,0.12);
+        border-radius: 20px;
+        font-size: 0.88em;
+        font-family: inherit;
+        color: var(--text);
+        background: var(--bg);
+        cursor: pointer;
+        outline: none;
+    }
+    .year-select:focus { border-color: var(--navy2); }
 
-        /* ── RESULT COUNT ── */
-        .result-bar {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 16px 32px 0;
-            font-size: 0.88em;
-            color: var(--muted);
-        }
+    /* ── RESULT COUNT ── */
+    .result-bar {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px 32px 0;
+        font-size: 0.88em;
+        color: var(--muted);
+    }
 
-        /* ── MAIN LAYOUT ── */
-        .main-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 28px 32px 80px;
-        }
+    /* ── MAIN LAYOUT ── */
+    .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 32px 80px;
+    }
 
-        /* ── SELECTED SECTION ── */
-        .section-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 36px 0 20px;
-            font-size: 0.8em;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: rgba(0,0,0,0.1);
-        }
+    /* ── SELECTED SECTION ── */
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 36px 0 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(0,0,0,0.1);
+    }
 
-        /* ── PUB CARD ── */
-        .pub-card {
-            background: var(--white);
-            border: 1px solid rgba(0,0,0,0.07);
-            border-radius: var(--radius);
-            padding: 24px 28px;
-            margin-bottom: 14px;
-            position: relative;
-            transition: all 0.25s ease;
-            border-left: 4px solid transparent;
-        }
-        .pub-card[data-cat="A"] { border-left-color: var(--col-a); }
-        .pub-card[data-cat="B"] { border-left-color: var(--col-b); }
-        .pub-card[data-cat="D"] { border-left-color: var(--col-d); }
+    /* ── PUB CARD ── */
+    .pub-card {
+        background: var(--white);
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: var(--radius);
+        padding: 24px 28px;
+        margin-bottom: 14px;
+        position: relative;
+        transition: all 0.25s ease;
+        border-left: 4px solid transparent;
+    }
+    .pub-card[data-cat="A"] { border-left-color: var(--col-a); }
+    .pub-card[data-cat="B"] { border-left-color: var(--col-b); }
+    .pub-card[data-cat="D"] { border-left-color: var(--col-d); }
 
-        .pub-card:hover {
-            transform: translateX(4px);
-            box-shadow: 0 6px 24px rgba(0,0,0,0.09);
-        }
+    .pub-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+    }
 
-        .pub-card.selected-pub {
-            background: linear-gradient(135deg, #fffef7 0%, #fffdf2 100%);
-            border-top: none;
-        }
+    .pub-card.selected-pub {
+        background: linear-gradient(135deg, #fffef7 0%, #fffdf2 100%);
+        border-top: none;
+    }
 
-        .pub-card.hidden { display: none; }
+    .pub-card.hidden { display: none; }
 
-        .pub-top {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
+    .pub-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
 
-        /* badges */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 0.74em;
-            font-weight: 700;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .badge-a  { background: var(--col-a-bg); color: var(--col-a); border: 1px solid var(--col-a-bd); }
-        .badge-b  { background: var(--col-b-bg); color: var(--col-b); border: 1px solid var(--col-b-bd); }
-        .badge-d  { background: var(--col-d-bg); color: var(--col-d); border: 1px solid var(--col-d-bd); }
-        .badge-peer { background: #e8f4fd; color: #1a6fa8; border: 1px solid #a8d0f0; }
-        .badge-nonpeer { background: #f5f5f5; color: #777; border: 1px solid #ddd; }
-        .badge-lead { background: #fff0e0; color: #c06000; border: 1px solid #f0c080; }
-        .badge-coauth { background: #f0f0f0; color: #555; border: 1px solid #d0d0d0; }
-        .badge-selected {
-            background: linear-gradient(135deg, var(--gold) 0%, #e0b030 100%);
-            color: #3a2800;
-            border: none;
-        }
-        .badge-thesis { background: #f0e8ff; color: #5a1a9a; border: 1px solid #c8a0e8; }
+    /* badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 10px;
+        font-size: 0.74em;
+        font-weight: 700;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .badge-a  { background: var(--col-a-bg); color: var(--col-a); border: 1px solid var(--col-a-bd); }
+    .badge-b  { background: var(--col-b-bg); color: var(--col-b); border: 1px solid var(--col-b-bd); }
+    .badge-d  { background: var(--col-d-bg); color: var(--col-d); border: 1px solid var(--col-d-bd); }
+    .badge-peer { background: #e8f4fd; color: #1a6fa8; border: 1px solid #a8d0f0; }
+    .badge-nonpeer { background: #f5f5f5; color: #777; border: 1px solid #ddd; }
+    .badge-lead { background: #fff0e0; color: #c06000; border: 1px solid #f0c080; }
+    .badge-coauth { background: #f0f0f0; color: #555; border: 1px solid #d0d0d0; }
+    .badge-selected {
+        background: linear-gradient(135deg, var(--gold) 0%, #e0b030 100%);
+        color: #3a2800;
+        border: none;
+    }
+    .badge-thesis { background: #f0e8ff; color: #5a1a9a; border: 1px solid #c8a0e8; }
 
-        .pub-year {
-            font-size: 0.78em;
-            font-weight: 700;
-            color: var(--muted);
-            min-width: 36px;
-            padding-top: 4px;
-        }
+    .pub-year {
+        font-size: 0.78em;
+        font-weight: 700;
+        color: var(--muted);
+        min-width: 36px;
+        padding-top: 4px;
+    }
 
-        /* title */
-        .pub-title {
-            font-size: 1.02em;
-            font-weight: 600;
-            color: var(--navy2);
-            line-height: 1.5;
-            margin-bottom: 6px;
-            font-family: 'DM Serif Display', serif;
-            font-style: italic;
-        }
+    /* title */
+    .pub-title {
+        font-size: 1.02em;
+        font-weight: 600;
+        color: var(--navy2);
+        line-height: 1.5;
+        margin-bottom: 6px;
+        font-family: 'DM Serif Display', serif;
+        font-style: italic;
+    }
 
-        /* authors */
-        .pub-authors {
-            font-size: 0.88em;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .pub-authors u, .pub-authors strong { color: var(--navy2); }
+    /* authors */
+    .pub-authors {
+        font-size: 0.88em;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+    .pub-authors u, .pub-authors strong { color: var(--navy2); }
 
-        /* venue */
-        .pub-venue {
-            font-size: 0.88em;
-            color: var(--text);
-            margin-bottom: 12px;
-        }
-        .pub-venue em { font-style: italic; font-weight: 500; }
+    /* venue */
+    .pub-venue {
+        font-size: 0.88em;
+        color: var(--text);
+        margin-bottom: 12px;
+    }
+    .pub-venue em { font-style: italic; font-weight: 500; }
 
-        /* metadata row */
-        .pub-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
+    /* metadata row */
+    .pub-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
 
-        /* links */
-        .pub-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 4px;
-        }
-        .pub-link-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.82em;
-            font-weight: 500;
-            text-decoration: none;
-            padding: 5px 14px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .btn-doi   { background: #e8f4fd; color: #1a6fa8; border: 1px solid #a8d0f0; }
-        .btn-doi:hover { background: #1a6fa8; color: white; }
-        .btn-zenodo { background: #e8f0ff; color: #2a4fa8; border: 1px solid #a8bef0; }
-        .btn-zenodo:hover { background: #2a4fa8; color: white; }
-        .btn-github { background: #f0f0f0; color: #333; border: 1px solid #d0d0d0; }
-        .btn-github:hover { background: #333; color: white; }
-        .btn-researchmap { background: #f0faf0; color: #1a6a1a; border: 1px solid #90cc90; }
-        .btn-researchmap:hover { background: #1a6a1a; color: white; }
+    /* links */
+    .pub-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 4px;
+    }
+    .pub-link-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82em;
+        font-weight: 500;
+        text-decoration: none;
+        padding: 5px 14px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .btn-doi   { background: #e8f4fd; color: #1a6fa8; border: 1px solid #a8d0f0; }
+    .btn-doi:hover { background: #1a6fa8; color: white; }
+    .btn-zenodo { background: #e8f0ff; color: #2a4fa8; border: 1px solid #a8bef0; }
+    .btn-zenodo:hover { background: #2a4fa8; color: white; }
+    .btn-github { background: #f0f0f0; color: #333; border: 1px solid #d0d0d0; }
+    .btn-github:hover { background: #333; color: white; }
+    .btn-researchmap { background: #f0faf0; color: #1a6a1a; border: 1px solid #90cc90; }
+    .btn-researchmap:hover { background: #1a6a1a; color: white; }
 
-        /* no results */
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--muted);
-            font-size: 1.1em;
-            display: none;
-        }
-        .no-results.visible { display: block; }
+    /* no results */
+    .no-results {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+        font-size: 1.1em;
+        display: none;
+    }
+    .no-results.visible { display: block; }
 
-        /* ── FOOTER ── */
-        .page-footer {
-            background: var(--navy2);
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-            padding: 32px 0;
-            font-size: 0.88em;
-        }
-        .page-footer a { color: var(--gold); text-decoration: none; }
+    /* ── FOOTER ── */
+    .page-footer {
+        background: var(--navy2);
+        color: rgba(255,255,255,0.7);
+        text-align: center;
+        padding: 32px 0;
+        font-size: 0.88em;
+    }
+    .page-footer a { color: var(--gold); text-decoration: none; }
 
-        /* ── RESPONSIVE ── */
-        @media (max-width: 700px) {
-            .page-header h1 { font-size: 2em; }
-            .main-content { padding: 20px 16px 60px; }
-            .filter-inner { padding: 0 16px; gap: 10px; }
-            .filter-search { min-width: 100%; }
-            .stat-item { padding: 0 16px; }
-            .result-bar { padding: 12px 16px 0; }
-            .pub-card { padding: 18px 16px; }
-            .nav-links-right { display: none; }
-        }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+        .page-header h1 { font-size: 2em; }
+        .main-content { padding: 20px 16px 60px; }
+        .filter-inner { padding: 0 16px; gap: 10px; }
+        .filter-search { min-width: 100%; }
+        .stat-item { padding: 0 16px; }
+        .result-bar { padding: 12px 16px 0; }
+        .pub-card { padding: 18px 16px; }
+        .nav-links-right { display: none; }
+    }
 
-        @media (prefers-reduced-motion: reduce) {
-            .pub-card { transition: none; }
-        }
-    </style>
+    @media (prefers-reduced-motion: reduce) {
+        .pub-card { transition: none; }
+    }
+</style>
+```
+
 </head>
 <body>
 
 <!-- NAV -->
+
 <nav class="site-nav" role="navigation" aria-label="メインナビゲーション">
     <div class="nav-inner">
         <a href="../" class="nav-logo">小野原彩香</a>
@@ -481,12 +486,13 @@
         </div>
         <div class="lang-switch">
             <span class="lang-btn active">JA</span>
-            <a href="../en/publications/" class="lang-btn">EN</a>
+            <a href="/en/publications/" class="lang-btn">EN</a>
         </div>
     </div>
 </nav>
 
 <!-- PAGE HEADER -->
+
 <header class="page-header">
     <div class="page-header-inner">
         <h1>Publications <span>&amp; Outputs</span></h1>
@@ -496,6 +502,7 @@
 </header>
 
 <!-- STATS BAR -->
+
 <div class="stats-bar">
     <div class="stats-inner">
         <div class="stat-item">
@@ -522,6 +529,7 @@
 </div>
 
 <!-- FILTER BAR -->
+
 <div class="filter-bar">
     <div class="filter-inner">
         <div class="filter-tabs" role="group" aria-label="カテゴリ絞り込み">
@@ -532,528 +540,535 @@
             <button class="filter-tab" data-filter="selected">★ Selected</button>
         </div>
 
-        <select class="year-select" id="year-filter" aria-label="年代で絞り込み">
-            <option value="all">すべての年代</option>
-            <option value="2020s">2020年代（2020–）</option>
-            <option value="2010s">2010年代（2010–2019）</option>
-        </select>
+```
+    <select class="year-select" id="year-filter" aria-label="年代で絞り込み">
+        <option value="all">すべての年代</option>
+        <option value="2020s">2020年代（2020–）</option>
+        <option value="2010s">2010年代（2010–2019）</option>
+    </select>
 
-        <div class="filter-search">
-            <i class="fas fa-search search-icon" aria-hidden="true"></i>
-            <input type="search" id="search-input" placeholder="タイトル・著者・雑誌で検索…" aria-label="論文を検索">
-        </div>
+    <div class="filter-search">
+        <i class="fas fa-search search-icon" aria-hidden="true"></i>
+        <input type="search" id="search-input" placeholder="タイトル・著者・雑誌で検索…" aria-label="論文を検索">
     </div>
+</div>
+```
+
 </div>
 
 <!-- RESULT COUNT -->
+
 <div class="result-bar">
     <span id="result-count">22件を表示中</span>
 </div>
 
 <!-- MAIN -->
+
 <main class="main-content">
 
-    <!-- ── SELECTED ── -->
-    <div class="section-label" id="label-selected">★ 代表論文 Selected 5</div>
+```
+<!-- ── SELECTED ── -->
+<div class="section-label" id="label-selected">★ 代表論文 Selected 5</div>
 
-    <!-- ── ALL PAPERS ── -->
-    <div id="pub-list">
+<!-- ── ALL PAPERS ── -->
+<div id="pub-list">
 
-        <!-- 1. 2025 A SELECTED -->
-        <article class="pub-card selected-pub" data-cat="A" data-year="2025" data-selected="true"
-            data-search="phase-dependent emotion maps place mantel analysis text embeddings spatial proximity ayaka onohara 場所 感情地図 埋め込み">
-            <div class="pub-top">
-                <span class="pub-year">2025</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-selected">★ Selected</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">Phase-Dependent Emotion Maps of Place — Mantel Analysis Using Text Embeddings and Spatial Proximity</div>
-            <div class="pub-authors"><strong><u>小野原彩香</u></strong></div>
-            <div class="pub-venue">発表・査読中（詳細はresearchmapにて確認）</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">感情地図</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">テキスト埋め込み</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">空間自己相関</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 1. 2025 A SELECTED -->
+    <article class="pub-card selected-pub" data-cat="A" data-year="2025" data-selected="true"
+        data-search="phase-dependent emotion maps place mantel analysis text embeddings spatial proximity ayaka onohara 場所 感情地図 埋め込み">
+        <div class="pub-top">
+            <span class="pub-year">2025</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-selected">★ Selected</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">Phase-Dependent Emotion Maps of Place — Mantel Analysis Using Text Embeddings and Spatial Proximity</div>
+        <div class="pub-authors"><strong><u>小野原彩香</u></strong></div>
+        <div class="pub-venue">発表・査読中（詳細はresearchmapにて確認）</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">感情地図</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">テキスト埋め込み</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">空間自己相関</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 2. 2024 A SELECTED -->
-        <article class="pub-card selected-pub" data-cat="A" data-year="2024" data-selected="true"
-            data-search="bayesian phylogenetic analysis pitch-accent accentual class merger japanese dialects takuya takahashi ayaka onohara yasuo ihara journal language evolution ピッチアクセント 系統解析">
-            <div class="pub-top">
-                <span class="pub-year">2024</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-selected">★ Selected</span>
-                <span class="badge badge-coauth">Co-author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects</div>
-            <div class="pub-authors">Takuya Takahashi; <strong><u>Ayaka Onohara</u></strong>; Yasuo Ihara</div>
-            <div class="pub-venue"><em>Journal of Language Evolution</em>, 8(2): 169–191, 2024.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">ベイズ系統解析</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">ピッチアクセント</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">日本語方言</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">系統地理</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://doi.org/10.1093/jole/lzae004" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.1093/jole/lzae004</a>
-                <a href="https://doi.org/10.5281/zenodo.11154180" target="_blank" class="pub-link-btn btn-zenodo"><i class="fas fa-database"></i> Data &amp; Code (Zenodo)</a>
-            </div>
-        </article>
+    <!-- 2. 2024 A SELECTED -->
+    <article class="pub-card selected-pub" data-cat="A" data-year="2024" data-selected="true"
+        data-search="bayesian phylogenetic analysis pitch-accent accentual class merger japanese dialects takuya takahashi ayaka onohara yasuo ihara journal language evolution ピッチアクセント 系統解析">
+        <div class="pub-top">
+            <span class="pub-year">2024</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-selected">★ Selected</span>
+            <span class="badge badge-coauth">Co-author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects</div>
+        <div class="pub-authors">Takuya Takahashi; <strong><u>Ayaka Onohara</u></strong>; Yasuo Ihara</div>
+        <div class="pub-venue"><em>Journal of Language Evolution</em>, 8(2): 169–191, 2024.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">ベイズ系統解析</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">ピッチアクセント</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">日本語方言</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">系統地理</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://doi.org/10.1093/jole/lzae004" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.1093/jole/lzae004</a>
+            <a href="https://doi.org/10.5281/zenodo.11154180" target="_blank" class="pub-link-btn btn-zenodo"><i class="fas fa-database"></i> Data &amp; Code (Zenodo)</a>
+        </div>
+    </article>
 
-        <!-- 3. 2024 D -->
-        <article class="pub-card" data-cat="D" data-year="2024" data-selected="false"
-            data-search="対話型 AI モデル 音声 教育 コンテンツ 作成 生成AI 教育応用 小野原彩香">
-            <div class="pub-top">
-                <span class="pub-year">2024</span>
-                <span class="badge badge-d">D — 方法・教育</span>
-                <span class="badge badge-lead">Lead author</span>
-            </div>
-            <div class="pub-title">対話型AIモデル並びにAI音声を活用した教育コンテンツ作成 ―AI技術の新たな展開―</div>
-            <div class="pub-authors"><strong><u>小野原彩香</u></strong></div>
-            <div class="pub-venue">教育関連誌・報告書（詳細はresearchmapにて確認）</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">生成AI</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">音声合成</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">教育応用</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 3. 2024 D -->
+    <article class="pub-card" data-cat="D" data-year="2024" data-selected="false"
+        data-search="対話型 AI モデル 音声 教育 コンテンツ 作成 生成AI 教育応用 小野原彩香">
+        <div class="pub-top">
+            <span class="pub-year">2024</span>
+            <span class="badge badge-d">D — 方法・教育</span>
+            <span class="badge badge-lead">Lead author</span>
+        </div>
+        <div class="pub-title">対話型AIモデル並びにAI音声を活用した教育コンテンツ作成 ―AI技術の新たな展開―</div>
+        <div class="pub-authors"><strong><u>小野原彩香</u></strong></div>
+        <div class="pub-venue">教育関連誌・報告書（詳細はresearchmapにて確認）</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">生成AI</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">音声合成</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">教育応用</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 4. 2023 B -->
-        <article class="pub-card" data-cat="B" data-year="2023" data-selected="false"
-            data-search="機械学習 ワイン ブドウ 栽培 適地 推定 GIS 地理 ML 小野原彩香 岩崎 machine learning vineyard suitability">
-            <div class="pub-top">
-                <span class="pub-year">2023</span>
-                <span class="badge badge-b">B — 隣接</span>
-                <span class="badge badge-coauth">Co-author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">機械学習を用いたワイン用ブドウ栽培適地の推定</div>
-            <div class="pub-authors">N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <strong><u>A. Onohara</u></strong>; et al.</div>
-            <div class="pub-venue">学術発表・論文（詳細はresearchmapにて確認）</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">GeoAI</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">機械学習</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">適地評価</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 4. 2023 B -->
+    <article class="pub-card" data-cat="B" data-year="2023" data-selected="false"
+        data-search="機械学習 ワイン ブドウ 栽培 適地 推定 GIS 地理 ML 小野原彩香 岩崎 machine learning vineyard suitability">
+        <div class="pub-top">
+            <span class="pub-year">2023</span>
+            <span class="badge badge-b">B — 隣接</span>
+            <span class="badge badge-coauth">Co-author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">機械学習を用いたワイン用ブドウ栽培適地の推定</div>
+        <div class="pub-authors">N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <strong><u>A. Onohara</u></strong>; et al.</div>
+        <div class="pub-venue">学術発表・論文（詳細はresearchmapにて確認）</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">GeoAI</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">機械学習</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">適地評価</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 5. 2022 A SELECTED -->
-        <article class="pub-card selected-pub" data-cat="A" data-year="2022" data-selected="true"
-            data-search="inferring temporal spatial evolution accent systems japanese dialects phylogeographic approach ayaka onohara アクセント 時空間進化 系統地理">
-            <div class="pub-top">
-                <span class="pub-year">2022</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-selected">★ Selected</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">Inferring the temporal and spatial evolution of accent systems in Japanese dialects: a phylogeographic approach</div>
-            <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; et al.</div>
-            <div class="pub-venue"><em>Journal of Cultural and Language Evolution</em>, 2022.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">系統地理</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">アクセント</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">時空間進化</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 5. 2022 A SELECTED -->
+    <article class="pub-card selected-pub" data-cat="A" data-year="2022" data-selected="true"
+        data-search="inferring temporal spatial evolution accent systems japanese dialects phylogeographic approach ayaka onohara アクセント 時空間進化 系統地理">
+        <div class="pub-top">
+            <span class="pub-year">2022</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-selected">★ Selected</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">Inferring the temporal and spatial evolution of accent systems in Japanese dialects: a phylogeographic approach</div>
+        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; et al.</div>
+        <div class="pub-venue"><em>Journal of Cultural and Language Evolution</em>, 2022.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">系統地理</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">アクセント</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">時空間進化</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 6. 2022 B SELECTED -->
-        <article class="pub-card selected-pub" data-cat="B" data-year="2022" data-selected="true"
-            data-search="client side web mapping vineyard suitability assessment isprs iwasaki hayashi tanaka katori onohara oguchi WebGIS">
-            <div class="pub-top">
-                <span class="pub-year">2022</span>
-                <span class="badge badge-b">B — 隣接</span>
-                <span class="badge badge-selected">★ Selected</span>
-                <span class="badge badge-coauth">Co-author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">Client-Side Web Mapping System for Vineyard Suitability Assessment</div>
-            <div class="pub-authors">N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <strong><u>A. Onohara</u></strong>; T. Oguchi</div>
-            <div class="pub-venue"><em>ISPRS Archives</em>, 2022. （FOSS4G 2022）</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">WebGIS</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">オープンデータ</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">FOSS4G</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 6. 2022 B SELECTED -->
+    <article class="pub-card selected-pub" data-cat="B" data-year="2022" data-selected="true"
+        data-search="client side web mapping vineyard suitability assessment isprs iwasaki hayashi tanaka katori onohara oguchi WebGIS">
+        <div class="pub-top">
+            <span class="pub-year">2022</span>
+            <span class="badge badge-b">B — 隣接</span>
+            <span class="badge badge-selected">★ Selected</span>
+            <span class="badge badge-coauth">Co-author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">Client-Side Web Mapping System for Vineyard Suitability Assessment</div>
+        <div class="pub-authors">N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <strong><u>A. Onohara</u></strong>; T. Oguchi</div>
+        <div class="pub-venue"><em>ISPRS Archives</em>, 2022. （FOSS4G 2022）</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">WebGIS</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">オープンデータ</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">FOSS4G</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 7. 2016 A SELECTED -->
-        <article class="pub-card selected-pub" data-cat="A" data-year="2016" data-selected="true"
-            data-search="言語 消失 獲得 環境 社会 要因 小野原彩香 地理情報 GIS language loss gain environmental social factors">
-            <div class="pub-top">
-                <span class="pub-year">2016</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-selected">★ Selected</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">言語の消失と獲得に関連する環境・社会的要因</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue"><em>地理情報システム学会講演論文集</em>, 25, 2016.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語動態</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">GIS</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">環境要因</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 7. 2016 A SELECTED -->
+    <article class="pub-card selected-pub" data-cat="A" data-year="2016" data-selected="true"
+        data-search="言語 消失 獲得 環境 社会 要因 小野原彩香 地理情報 GIS language loss gain environmental social factors">
+        <div class="pub-top">
+            <span class="pub-year">2016</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-selected">★ Selected</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">言語の消失と獲得に関連する環境・社会的要因</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue"><em>地理情報システム学会講演論文集</em>, 25, 2016.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語動態</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">GIS</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">環境要因</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 8. 2016 A -->
-        <article class="pub-card" data-cat="A" data-year="2016" data-selected="false"
-            data-search="environmental social factors gain loss language change ayaka onohara 言語変化 環境 社会">
-            <div class="pub-top">
-                <span class="pub-year">2016</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">Environmental and social factors associated with the gain or loss rate of language change</div>
-            <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div>
-            <div class="pub-venue">国際発表・論文（詳細はresearchmapにて確認）</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語変化</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化進化</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 8. 2016 A -->
+    <article class="pub-card" data-cat="A" data-year="2016" data-selected="false"
+        data-search="environmental social factors gain loss language change ayaka onohara 言語変化 環境 社会">
+        <div class="pub-top">
+            <span class="pub-year">2016</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">Environmental and social factors associated with the gain or loss rate of language change</div>
+        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div>
+        <div class="pub-venue">国際発表・論文（詳細はresearchmapにて確認）</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語変化</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化進化</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 9. 2016 B -->
-        <article class="pub-card" data-cat="B" data-year="2016" data-selected="false"
-            data-search="classification land use cover change kanto region foss4g open data iwasaki sprague onohara 土地利用 関東">
-            <div class="pub-top">
-                <span class="pub-year">2016</span>
-                <span class="badge badge-b">B — 隣接</span>
-                <span class="badge badge-coauth">Co-author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">Classification of land use/cover change in the Kanto region, Japan using FOSS4G and Open Data</div>
-            <div class="pub-authors">N. Iwasaki; D. Sprague; <strong><u>A. Onohara</u></strong></div>
-            <div class="pub-venue">FOSS4G 2016 Conference Proceedings, 2016.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">土地利用変化</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">FOSS4G</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">オープンデータ</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://doi.org/10.7275/R5PN93TQ" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.7275/R5PN93TQ</a>
-            </div>
-        </article>
+    <!-- 9. 2016 B -->
+    <article class="pub-card" data-cat="B" data-year="2016" data-selected="false"
+        data-search="classification land use cover change kanto region foss4g open data iwasaki sprague onohara 土地利用 関東">
+        <div class="pub-top">
+            <span class="pub-year">2016</span>
+            <span class="badge badge-b">B — 隣接</span>
+            <span class="badge badge-coauth">Co-author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">Classification of land use/cover change in the Kanto region, Japan using FOSS4G and Open Data</div>
+        <div class="pub-authors">N. Iwasaki; D. Sprague; <strong><u>A. Onohara</u></strong></div>
+        <div class="pub-venue">FOSS4G 2016 Conference Proceedings, 2016.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">土地利用変化</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">FOSS4G</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">オープンデータ</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://doi.org/10.7275/R5PN93TQ" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.7275/R5PN93TQ</a>
+        </div>
+    </article>
 
-        <!-- 10. 2014 A (Thesis) -->
-        <article class="pub-card" data-cat="A" data-year="2014" data-selected="false"
-            data-search="数理的アプローチ 言語変化 外言語的要素 博士論文 小野原彩香 同志社大学 文化情報学">
-            <div class="pub-top">
-                <span class="pub-year">2014</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">著者</span>
-                <span class="badge badge-thesis">博士論文</span>
-            </div>
-            <div class="pub-title">数理的アプローチからの言語変化と外言語的要素との関わりに関する研究</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">同志社大学大学院 文化情報学研究科 博士論文, 2014年3月.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語変化</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">数理モデル</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">外言語的要因</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 10. 2014 A (Thesis) -->
+    <article class="pub-card" data-cat="A" data-year="2014" data-selected="false"
+        data-search="数理的アプローチ 言語変化 外言語的要素 博士論文 小野原彩香 同志社大学 文化情報学">
+        <div class="pub-top">
+            <span class="pub-year">2014</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">著者</span>
+            <span class="badge badge-thesis">博士論文</span>
+        </div>
+        <div class="pub-title">数理的アプローチからの言語変化と外言語的要素との関わりに関する研究</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">同志社大学大学院 文化情報学研究科 博士論文, 2014年3月.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語変化</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">数理モデル</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">外言語的要因</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 11. 2013 D -->
-        <article class="pub-card" data-cat="D" data-year="2013" data-selected="false"
-            data-search="統計教育 授業内容 傾向 学生 授業評価 小野原彩香 statistics education">
-            <div class="pub-top">
-                <span class="pub-year">2013</span>
-                <span class="badge badge-d">D — 方法・教育</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">統計教育に関する授業内容の傾向と学生の授業評価</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">教育関連誌（詳細はresearchmapにて確認）, 2013.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">統計教育</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">教育実践</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">授業評価</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 11. 2013 D -->
+    <article class="pub-card" data-cat="D" data-year="2013" data-selected="false"
+        data-search="統計教育 授業内容 傾向 学生 授業評価 小野原彩香 statistics education">
+        <div class="pub-top">
+            <span class="pub-year">2013</span>
+            <span class="badge badge-d">D — 方法・教育</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">統計教育に関する授業内容の傾向と学生の授業評価</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">教育関連誌（詳細はresearchmapにて確認）, 2013.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">統計教育</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">教育実践</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">授業評価</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 12. 2012 A -->
-        <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
-            data-search="揖斐川上流域 語彙 類型 地理的分布 小野原彩香 方言 岐阜">
-            <div class="pub-top">
-                <span class="pub-year">2012</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">揖斐川上流域における語彙の類型と地理的分布</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・言語地理学関連誌（詳細はresearchmapにて確認）, 2012.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">語彙類型</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">地理分布</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">揖斐川</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 12. 2012 A -->
+    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
+        data-search="揖斐川上流域 語彙 類型 地理的分布 小野原彩香 方言 岐阜">
+        <div class="pub-top">
+            <span class="pub-year">2012</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">揖斐川上流域における語彙の類型と地理的分布</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・言語地理学関連誌（詳細はresearchmapにて確認）, 2012.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">語彙類型</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">地理分布</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">揖斐川</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 13. 2012 A -->
-        <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
-            data-search="方言分布 データ 数理的分析 小野原彩香 計量 モデル">
-            <div class="pub-top">
-                <span class="pub-year">2012</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">方言分布データの数理的分析</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">計量言語学・方言学関連誌（詳細はresearchmapにて確認）, 2012.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">方言分布</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">数理分析</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">計量言語学</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 13. 2012 A -->
+    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
+        data-search="方言分布 データ 数理的分析 小野原彩香 計量 モデル">
+        <div class="pub-top">
+            <span class="pub-year">2012</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">方言分布データの数理的分析</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">計量言語学・方言学関連誌（詳細はresearchmapにて確認）, 2012.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">方言分布</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">数理分析</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">計量言語学</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 14. 2012 A -->
-        <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
-            data-search="揖斐川上流域 語彙 系統推定 小野原彩香 系統解析 方言">
-            <div class="pub-top">
-                <span class="pub-year">2012</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">揖斐川上流域の語彙に関する系統推定</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・言語地理学関連誌（詳細はresearchmapにて確認）, 2012.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">語彙</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">系統推定</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">揖斐川</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 14. 2012 A -->
+    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
+        data-search="揖斐川上流域 語彙 系統推定 小野原彩香 系統解析 方言">
+        <div class="pub-top">
+            <span class="pub-year">2012</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">揖斐川上流域の語彙に関する系統推定</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・言語地理学関連誌（詳細はresearchmapにて確認）, 2012.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">語彙</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">系統推定</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">揖斐川</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 15. 2012 A -->
-        <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
-            data-search="岐阜県 旧徳山村 地理的ネットワーク 言語的距離 小野原彩香 network analysis language distance">
-            <div class="pub-top">
-                <span class="pub-year">2012</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">岐阜県旧徳山村における地理的ネットワーク分析と言語的距離</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">計量言語学・方言学関連誌（詳細はresearchmapにて確認）, 2012.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">地理ネットワーク</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語距離</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 15. 2012 A -->
+    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false"
+        data-search="岐阜県 旧徳山村 地理的ネットワーク 言語的距離 小野原彩香 network analysis language distance">
+        <div class="pub-top">
+            <span class="pub-year">2012</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">岐阜県旧徳山村における地理的ネットワーク分析と言語的距離</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">計量言語学・方言学関連誌（詳細はresearchmapにて確認）, 2012.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">地理ネットワーク</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語距離</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 16. 2011 A -->
-        <article class="pub-card" data-cat="A" data-year="2011" data-selected="false"
-            data-search="岐阜県 旧徳山村 アクセント 交通状況 小野原彩香 accent traffic network">
-            <div class="pub-top">
-                <span class="pub-year">2011</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">岐阜県旧徳山村におけるアクセント様相と交通状況との関係性</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・音声学関連誌（詳細はresearchmapにて確認）, 2011.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">アクセント</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">交通ネットワーク</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 16. 2011 A -->
+    <article class="pub-card" data-cat="A" data-year="2011" data-selected="false"
+        data-search="岐阜県 旧徳山村 アクセント 交通状況 小野原彩香 accent traffic network">
+        <div class="pub-top">
+            <span class="pub-year">2011</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">岐阜県旧徳山村におけるアクセント様相と交通状況との関係性</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・音声学関連誌（詳細はresearchmapにて確認）, 2011.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">アクセント</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">交通ネットワーク</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 17. 2011 A -->
-        <article class="pub-card" data-cat="A" data-year="2011" data-selected="false"
-            data-search="岐阜県 旧徳山村 言語動態 空間的検討 2 小野原彩香">
-            <div class="pub-top">
-                <span class="pub-year">2011</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">岐阜県旧徳山村における言語動態についての空間的検討（2）</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・計量言語学関連誌（詳細はresearchmapにて確認）, 2011.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語動態</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">空間分析</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 17. 2011 A -->
+    <article class="pub-card" data-cat="A" data-year="2011" data-selected="false"
+        data-search="岐阜県 旧徳山村 言語動態 空間的検討 2 小野原彩香">
+        <div class="pub-top">
+            <span class="pub-year">2011</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">岐阜県旧徳山村における言語動態についての空間的検討（2）</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・計量言語学関連誌（詳細はresearchmapにて確認）, 2011.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語動態</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">空間分析</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 18. 2011 A -->
-        <article class="pub-card" data-cat="A" data-year="2011" data-selected="false"
-            data-search="岐阜県 旧徳山村 言語動態 空間的検討 小野原彩香">
-            <div class="pub-top">
-                <span class="pub-year">2011</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">岐阜県旧徳山村における言語動態についての空間的検討</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・計量言語学関連誌（詳細はresearchmapにて確認）, 2011.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語動態</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">空間分析</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 18. 2011 A -->
+    <article class="pub-card" data-cat="A" data-year="2011" data-selected="false"
+        data-search="岐阜県 旧徳山村 言語動態 空間的検討 小野原彩香">
+        <div class="pub-top">
+            <span class="pub-year">2011</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">岐阜県旧徳山村における言語動態についての空間的検討</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・計量言語学関連誌（詳細はresearchmapにて確認）, 2011.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">言語動態</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">空間分析</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">旧徳山村</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 19. 2010 D -->
-        <article class="pub-card" data-cat="D" data-year="2010" data-selected="false"
-            data-search="ITMA NCD UML 分析プロセス 可視化 共有 情報科学 小野原彩香">
-            <div class="pub-top">
-                <span class="pub-year">2010</span>
-                <span class="badge badge-d">D — 方法・教育</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">ITMAにおけるNCDの実用性とUMLを用いた分析プロセスの可視化と共有について</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">情報学・計量言語学関連誌（詳細はresearchmapにて確認）, 2010.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">NCD</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">UML</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">情報可視化</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 19. 2010 D -->
+    <article class="pub-card" data-cat="D" data-year="2010" data-selected="false"
+        data-search="ITMA NCD UML 分析プロセス 可視化 共有 情報科学 小野原彩香">
+        <div class="pub-top">
+            <span class="pub-year">2010</span>
+            <span class="badge badge-d">D — 方法・教育</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">ITMAにおけるNCDの実用性とUMLを用いた分析プロセスの可視化と共有について</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">情報学・計量言語学関連誌（詳細はresearchmapにて確認）, 2010.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">NCD</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">UML</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">情報可視化</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 20. 2010 A -->
-        <article class="pub-card" data-cat="A" data-year="2010" data-selected="false"
-            data-search="岐阜県 方言語彙 仮想的文化領域 抽出 語彙変化 方向 小野原彩香 文化領域">
-            <div class="pub-top">
-                <span class="pub-year">2010</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">岐阜県方言語彙による仮想的文化領域抽出と語彙変化の方向</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・文化情報学関連誌（詳細はresearchmapにて確認）, 2010.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化領域</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">語彙変化</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化流通</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 20. 2010 A -->
+    <article class="pub-card" data-cat="A" data-year="2010" data-selected="false"
+        data-search="岐阜県 方言語彙 仮想的文化領域 抽出 語彙変化 方向 小野原彩香 文化領域">
+        <div class="pub-top">
+            <span class="pub-year">2010</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">岐阜県方言語彙による仮想的文化領域抽出と語彙変化の方向</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・文化情報学関連誌（詳細はresearchmapにて確認）, 2010.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化領域</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">語彙変化</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化流通</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 21. 2010 A -->
-        <article class="pub-card" data-cat="A" data-year="2010" data-selected="false"
-            data-search="方言分布 文化事象 流通 滞留 小野原彩香 cultural flow diffusion">
-            <div class="pub-top">
-                <span class="pub-year">2010</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">方言分布から見た文化事象の流通と滞留</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">方言学・文化情報学関連誌（詳細はresearchmapにて確認）, 2010.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化流通</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">方言分布</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">滞留モデル</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 21. 2010 A -->
+    <article class="pub-card" data-cat="A" data-year="2010" data-selected="false"
+        data-search="方言分布 文化事象 流通 滞留 小野原彩香 cultural flow diffusion">
+        <div class="pub-top">
+            <span class="pub-year">2010</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">方言分布から見た文化事象の流通と滞留</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">方言学・文化情報学関連誌（詳細はresearchmapにて確認）, 2010.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化流通</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">方言分布</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">滞留モデル</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-        <!-- 22. 2010 A -->
-        <article class="pub-card" data-cat="A" data-year="2010" data-selected="false"
-            data-search="文化的情報 流通路 滞留 小野原彩香 cultural information diffusion">
-            <div class="pub-top">
-                <span class="pub-year">2010</span>
-                <span class="badge badge-a">A — 中核</span>
-                <span class="badge badge-lead">Lead author</span>
-                <span class="badge badge-peer">Peer-reviewed</span>
-            </div>
-            <div class="pub-title">文化的情報の流通路とその滞留</div>
-            <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
-            <div class="pub-venue">文化情報学・方言学関連誌（詳細はresearchmapにて確認）, 2010.</div>
-            <div class="pub-meta">
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化情報</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">流通路</span>
-                <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">拡散モデル</span>
-            </div>
-            <div class="pub-links">
-                <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
-            </div>
-        </article>
+    <!-- 22. 2010 A -->
+    <article class="pub-card" data-cat="A" data-year="2010" data-selected="false"
+        data-search="文化的情報 流通路 滞留 小野原彩香 cultural information diffusion">
+        <div class="pub-top">
+            <span class="pub-year">2010</span>
+            <span class="badge badge-a">A — 中核</span>
+            <span class="badge badge-lead">Lead author</span>
+            <span class="badge badge-peer">Peer-reviewed</span>
+        </div>
+        <div class="pub-title">文化的情報の流通路とその滞留</div>
+        <div class="pub-authors"><strong><u>小野原 彩香</u></strong></div>
+        <div class="pub-venue">文化情報学・方言学関連誌（詳細はresearchmapにて確認）, 2010.</div>
+        <div class="pub-meta">
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">文化情報</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">流通路</span>
+            <span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">拡散モデル</span>
+        </div>
+        <div class="pub-links">
+            <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a>
+        </div>
+    </article>
 
-    </div><!-- /#pub-list -->
+</div><!-- /#pub-list -->
 
-    <p class="no-results" id="no-results">
-        <i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>
-        条件に一致する論文が見つかりませんでした。
-    </p>
+<p class="no-results" id="no-results">
+    <i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>
+    条件に一致する論文が見つかりませんでした。
+</p>
+```
 
 </main>
 
@@ -1063,74 +1078,77 @@
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
 (function() {
-    const cards = Array.from(document.querySelectorAll('.pub-card'));
-    const noResults = document.getElementById('no-results');
-    const countEl = document.getElementById('result-count');
-    const labelSelected = document.getElementById('label-selected');
+const cards = Array.from(document.querySelectorAll(’.pub-card’));
+const noResults = document.getElementById(‘no-results’);
+const countEl = document.getElementById(‘result-count’);
+const labelSelected = document.getElementById(‘label-selected’);
 
-    let activeFilter = 'all';
-    let activeYear = 'all';
-    let activeSearch = '';
+```
+let activeFilter = 'all';
+let activeYear = 'all';
+let activeSearch = '';
 
-    function applyFilters() {
-        let visible = 0;
-        let hasSelected = false;
+function applyFilters() {
+    let visible = 0;
+    let hasSelected = false;
 
-        cards.forEach(card => {
-            const cat = card.dataset.cat;
-            const year = parseInt(card.dataset.year);
-            const isSelected = card.dataset.selected === 'true';
-            const searchText = card.dataset.search + ' ' + card.textContent.toLowerCase();
+    cards.forEach(card => {
+        const cat = card.dataset.cat;
+        const year = parseInt(card.dataset.year);
+        const isSelected = card.dataset.selected === 'true';
+        const searchText = card.dataset.search + ' ' + card.textContent.toLowerCase();
 
-            let show = true;
+        let show = true;
 
-            // category filter
-            if (activeFilter === 'selected') {
-                show = isSelected;
-            } else if (activeFilter !== 'all') {
-                show = (cat === activeFilter);
-            }
-
-            // year filter
-            if (show && activeYear !== 'all') {
-                if (activeYear === '2020s') show = year >= 2020;
-                if (activeYear === '2010s') show = year >= 2010 && year < 2020;
-            }
-
-            // search filter
-            if (show && activeSearch) {
-                show = searchText.includes(activeSearch);
-            }
-
-            card.classList.toggle('hidden', !show);
-            if (show) {
-                visible++;
-                if (isSelected) hasSelected = true;
-            }
-        });
-
-        countEl.textContent = visible + '件を表示中';
-        noResults.classList.toggle('visible', visible === 0);
-
-        // show/hide "Selected" section label
-        if (activeFilter === 'all' && !activeSearch && activeYear === 'all') {
-            labelSelected.style.display = '';
-        } else {
-            labelSelected.style.display = 'none';
+        // category filter
+        if (activeFilter === 'selected') {
+            show = isSelected;
+        } else if (activeFilter !== 'all') {
+            show = (cat === activeFilter);
         }
-    }
 
-    // Tab buttons
-    document.querySelectorAll('.filter-tab').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            activeFilter = this.dataset.filter;
-            applyFilters();
-        });
+        // year filter
+        if (show && activeYear !== 'all') {
+            if (activeYear === '2020s') show = year >= 2020;
+            if (activeYear === '2010s') show = year >= 2010 && year < 2020;
+        }
+
+        // search filter
+        if (show && activeSearch) {
+            show = searchText.includes(activeSearch);
+        }
+
+        card.classList.toggle('hidden', !show);
+        if (show) {
+            visible++;
+            if (isSelected) hasSelected = true;
+        }
     });
 
-    // Year select
-    document.getElementById('year-filter').addEventListener('change', function() {
-        activeYear = this.value;
+    countEl.textContent = visible + '件を表示中';
+    noResults.classList.toggle('visible', visible === 0);
+
+    // show/hide "Selected" section label
+    if (activeFilter === 'all' && !activeSearch && activeYear === 'all') {
+        labelSelected.style.display = '';
+    } else {
+        labelSelected.style.display = 'none';
+    }
+}
+
+// Tab buttons
+document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        activeFilter = this.dataset.filter;
+        applyFilters();
+    });
+});
+
+// Year select
+document.getElementById('year-filter').addEventListener('change', function() {
+    activeYear = this.value;
+```
