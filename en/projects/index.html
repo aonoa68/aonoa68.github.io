@@ -1,217 +1,87 @@
 <!DOCTYPE html>
 
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects — 小野原彩香 | Spatial Cultural Dynamics</title>
-    <meta name="description" content="小野原彩香の進行中・準備中プロジェクト一覧。Spatial Cultural Dynamics の枠組みで進める研究プロジェクトのステータスを掲載。">
+    <title>Projects — Ayaka Onohara | Spatial Cultural Dynamics</title>
+    <meta name="description" content="Research projects by Ayaka Onohara. Emotion maps, GAN-based cultural evolution, pitch-accent phylogeography, datasets, and more.">
+    <link rel="alternate" hreflang="ja" href="https://aonoa68.github.io/projects/">
+    <link rel="alternate" hreflang="en" href="https://aonoa68.github.io/en/projects/">
 
 ```
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
-    :root {
-        --navy:    #1a2535;
-        --navy2:   #2c3e50;
-        --gold:    #c9a84c;
-        --col-a:   #1e5c1e;
-        --col-a-bg:#e8f5e8;
-        --col-a-bd:#a8d5a2;
-        --col-b:   #1c3fa0;
-        --col-b-bg:#eef0ff;
-        --col-b-bd:#a8b8f0;
-        --col-d:   #7a4500;
-        --col-d-bg:#fff4e0;
-        --col-d-bd:#f0cc88;
-        --text:    #2c3e50;
-        --muted:   #5a6c7d;
-        --bg:      #f7f8fa;
-        --white:   #ffffff;
-        --radius:  12px;
-        --status-prep-bg:  #f0f4ff;
-        --status-prep-col: #2a4fb0;
-        --status-rev-bg:   #fff8e0;
-        --status-rev-col:  #8a5500;
-        --status-pub-bg:   #e8f5e8;
-        --status-pub-col:  #1a6a1a;
-    }
+    :root{--navy:#1a2535;--navy2:#2c3e50;--gold:#c9a84c;--col-a:#1e5c1e;--col-a-bg:#e8f5e8;--col-a-bd:#a8d5a2;--col-b:#1c3fa0;--col-b-bg:#eef0ff;--col-b-bd:#a8b8f0;--text:#2c3e50;--muted:#5a6c7d;--bg:#f7f8fa;--white:#ffffff;--radius:14px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;}
+    .site-nav{position:sticky;top:0;z-index:100;background:rgba(26,37,53,0.97);backdrop-filter:blur(12px);border-bottom:2px solid var(--gold);height:56px;display:flex;align-items:center;}
+    .nav-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:24px;width:100%;}
+    .nav-logo{color:var(--gold);text-decoration:none;font-weight:600;font-size:0.95em;font-family:'DM Serif Display',serif;}
+    .nav-sep{color:rgba(255,255,255,0.3);}
+    .nav-current{color:rgba(255,255,255,0.85);font-size:0.9em;}
+    .nav-links-right{margin-left:auto;display:flex;gap:4px;}
+    .nav-links-right a{color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.85em;padding:6px 14px;border-radius:20px;transition:all 0.2s;}
+    .nav-links-right a:hover{background:rgba(255,215,0,0.15);color:var(--gold);}
+    .lang-switch{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+    .lang-btn{padding:4px 10px;border-radius:12px;font-size:0.78em;font-weight:700;text-decoration:none;border:1.5px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.6);transition:all 0.2s;}
+    .lang-btn:hover{border-color:var(--gold);color:var(--gold);}
+    .lang-btn.active{background:var(--gold);border-color:var(--gold);color:#1a2535;}
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    .page-header{background:linear-gradient(135deg,var(--navy) 0%,#1e3045 60%,#1a2a3a 100%);color:white;padding:64px 0 56px;position:relative;overflow:hidden;}
+    .page-header::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(60deg,transparent,transparent 50px,rgba(201,168,76,0.025) 50px,rgba(201,168,76,0.025) 51px);}
+    .page-header-inner{max-width:1200px;margin:0 auto;padding:0 32px;position:relative;z-index:1;}
+    .page-header h1{font-family:'DM Serif Display',serif;font-size:2.8em;font-weight:400;margin-bottom:10px;line-height:1.2;}
+    .page-header h1 span{color:var(--gold);font-style:italic;}
+    .page-header .lead{color:rgba(255,255,255,0.75);font-size:1em;max-width:640px;line-height:1.8;}
 
-    body {
-        font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.7;
-    }
+    .filter-bar{background:var(--white);border-bottom:1px solid rgba(0,0,0,0.07);padding:18px 0;position:sticky;top:56px;z-index:90;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+    .filter-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+    .filter-tab{padding:7px 16px;border-radius:20px;border:1.5px solid rgba(0,0,0,0.12);background:transparent;color:var(--muted);font-size:0.87em;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+    .filter-tab:hover{border-color:var(--navy2);color:var(--navy2);}
+    .filter-tab.active{background:var(--navy2);border-color:var(--navy2);color:white;}
+    .filter-tab.tab-a.active{background:var(--col-a);border-color:var(--col-a);}
+    .filter-tab.tab-b.active{background:var(--col-b);border-color:var(--col-b);}
 
-    /* NAV */
-    .site-nav {
-        position: sticky; top:0; z-index:100;
-        background: rgba(26,37,53,0.97);
-        backdrop-filter: blur(12px);
-        border-bottom: 2px solid var(--gold);
-        height: 56px;
-        display: flex; align-items: center;
-    }
-    .nav-inner {
-        max-width: 1100px; margin: 0 auto;
-        padding: 0 32px;
-        display: flex; align-items: center; gap: 20px; width: 100%;
-    }
-    .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
-    .nav-sep  { color: rgba(255,255,255,0.3); }
-    .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
-    .nav-right { margin-left: auto; display: flex; gap: 4px; }
-    .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
-    .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
-    .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-    .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
-    .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
-    .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+    .main-content{max-width:1200px;margin:0 auto;padding:40px 32px 80px;}
+    .group-section{margin-bottom:48px;}
+    .group-header{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+    .group-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1em;flex-shrink:0;}
+    .group-icon-a{background:var(--col-a-bg);color:var(--col-a);}
+    .group-icon-b{background:var(--col-b-bg);color:var(--col-b);}
+    .group-title{font-family:'DM Serif Display',serif;font-size:1.4em;color:var(--navy2);}
+    .group-title small{font-family:'DM Sans',sans-serif;font-size:0.6em;font-weight:400;color:var(--muted);display:block;margin-top:2px;}
+    .group-divider{flex:1;height:1px;background:rgba(0,0,0,0.08);}
 
-    /* PAGE HEADER */
-    .page-header {
-        background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
-        color: white; padding: 60px 0 52px;
-        position: relative; overflow: hidden;
-    }
-    .page-header::before {
-        content:''; position:absolute; inset:0;
-        background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
-    }
-    .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
-    .page-header h1 {
-        font-family: 'DM Serif Display', serif;
-        font-size: 2.6em; font-weight: 400;
-        margin-bottom: 10px; line-height: 1.2;
-    }
-    .page-header h1 span { color: var(--gold); font-style: italic; }
-    .page-header .lead { color: rgba(255,255,255,0.72); font-size: 0.97em; max-width: 560px; line-height: 1.8; }
+    .project-card{background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:var(--radius);padding:24px 26px;margin-bottom:14px;position:relative;transition:all 0.25s;border-left:4px solid transparent;}
+    .project-card[data-cat="A"]{border-left-color:var(--col-a);}
+    .project-card[data-cat="B"]{border-left-color:var(--col-b);}
+    .project-card:hover{transform:translateX(4px);box-shadow:0 6px 24px rgba(0,0,0,0.09);}
+    .project-card.hidden{display:none;}
 
-    /* STATS */
-    .stats-bar { background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 16px 0; }
-    .stats-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; flex-wrap: wrap; }
-    .stat-item { display: flex; flex-direction: column; align-items: center; padding: 0 24px; border-right: 1px solid rgba(0,0,0,0.1); min-width: 80px; }
-    .stat-item:last-child { border-right: none; }
-    .stat-num { font-size: 1.8em; font-weight: 700; font-family: 'DM Serif Display', serif; line-height: 1; color: var(--navy2); }
-    .stat-label { font-size: 0.72em; color: var(--muted); margin-top: 4px; text-align: center; }
+    .card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+    .card-id{font-size:0.75em;font-weight:700;letter-spacing:0.08em;color:var(--muted);min-width:32px;padding-top:5px;}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:10px;font-size:0.73em;font-weight:700;white-space:nowrap;}
+    .badge-a{background:var(--col-a-bg);color:var(--col-a);border:1px solid var(--col-a-bd);}
+    .badge-b{background:var(--col-b-bg);color:var(--col-b);border:1px solid var(--col-b-bd);}
+    .badge-status{padding:3px 10px;border-radius:10px;font-size:0.73em;font-weight:700;}
+    .status-prep{background:#f5f5f5;color:#555;border:1px solid #ddd;}
+    .status-rev{background:#fff8e0;color:#8a6000;border:1px solid #f0d060;}
+    .status-pub{background:#e0f5e8;color:#1a6a1a;border:1px solid #90cc90;}
+    .card-title{font-size:1.04em;font-weight:600;color:var(--navy2);line-height:1.45;margin-bottom:6px;font-family:'DM Serif Display',serif;font-style:italic;}
+    .card-meta{font-size:0.87em;color:var(--muted);margin-bottom:8px;}
+    .card-target{font-size:0.85em;color:var(--text);background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 14px;margin-top:10px;display:inline-flex;align-items:center;gap:8px;}
+    .card-target i{color:var(--muted);font-size:0.85em;}
+    .card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+    .card-tag{font-size:0.78em;background:var(--bg);color:var(--muted);padding:3px 10px;border-radius:8px;border:1px solid rgba(0,0,0,0.1);}
 
-    /* FILTER */
-    .filter-bar { background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.07); padding: 16px 0; position: sticky; top: 56px; z-index: 90; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .filter-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .filter-tab { padding: 7px 18px; border-radius: 20px; border: 1.5px solid rgba(0,0,0,0.12); background: transparent; color: var(--muted); font-size: 0.86em; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-    .filter-tab:hover { border-color: var(--navy2); color: var(--navy2); }
-    .filter-tab.active { background: var(--navy2); border-color: var(--navy2); color: white; }
-    .filter-tab.tab-a.active { background: var(--col-a); border-color: var(--col-a); }
-    .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
-    .filter-tab.tab-prep.active { background: var(--status-prep-col); border-color: var(--status-prep-col); }
-    .filter-tab.tab-rev.active  { background: var(--status-rev-col);  border-color: var(--status-rev-col); }
-
-    /* MAIN */
-    .main-content { max-width: 1100px; margin: 0 auto; padding: 32px 32px 80px; }
-
-    /* GROUP LABELS */
-    .group-label {
-        display: flex; align-items: center; gap: 12px;
-        margin: 40px 0 16px;
-        font-size: 0.78em; font-weight: 700; letter-spacing: 0.12em;
-        text-transform: uppercase; color: var(--muted);
-    }
-    .group-label::after { content:''; flex:1; height:1px; background: rgba(0,0,0,0.1); }
-    .group-label:first-child { margin-top: 8px; }
-
-    /* PROJECT CARD */
-    .project-card {
-        background: var(--white);
-        border: 1px solid rgba(0,0,0,0.07);
-        border-left: 4px solid transparent;
-        border-radius: var(--radius);
-        padding: 22px 24px;
-        margin-bottom: 12px;
-        display: grid;
-        grid-template-columns: 48px 1fr auto;
-        gap: 0 18px;
-        align-items: start;
-        transition: all 0.22s ease;
-    }
-    .project-card[data-cat="A"] { border-left-color: var(--col-a); }
-    .project-card[data-cat="B"] { border-left-color: var(--col-b); }
-    .project-card:hover { transform: translateX(4px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-    .project-card.hidden { display: none; }
-
-    /* ID badge */
-    .project-id {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.3em;
-        font-weight: 400;
-        color: var(--muted);
-        padding-top: 2px;
-        line-height: 1.2;
-    }
-
-    /* Body */
-    .project-body { }
-    .project-title {
-        font-weight: 600;
-        font-size: 1.0em;
-        color: var(--navy2);
-        margin-bottom: 6px;
-        line-height: 1.5;
-    }
-    .project-meta {
-        display: flex; flex-wrap: wrap; gap: 8px;
-        align-items: center;
-    }
-
-    /* Badges */
-    .badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 3px 10px; border-radius: 10px;
-        font-size: 0.74em; font-weight: 600; white-space: nowrap;
-    }
-    .badge-a { background: var(--col-a-bg); color: var(--col-a); border: 1px solid var(--col-a-bd); }
-    .badge-b { background: var(--col-b-bg); color: var(--col-b); border: 1px solid var(--col-b-bd); }
-    .badge-prep { background: var(--status-prep-bg); color: var(--status-prep-col); border: 1px solid #c0cff8; }
-    .badge-rev  { background: var(--status-rev-bg);  color: var(--status-rev-col);  border: 1px solid #f0d888; }
-    .badge-pub  { background: var(--status-pub-bg);  color: var(--status-pub-col);  border: 1px solid var(--col-a-bd); }
-
-    /* Journal */
-    .project-journal {
-        font-size: 0.86em;
-        color: var(--muted);
-        font-style: italic;
-        display: flex; align-items: center; gap: 6px;
-    }
-    .project-journal i { font-style: normal; color: #b0bec5; }
-
-    /* Right col: empty for now, reserved for future links */
-    .project-action { }
-
-    /* No results */
-    .no-results { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1.05em; display: none; }
-    .no-results.visible { display: block; }
-
-    /* FOOTER */
-    .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 0; font-size: 0.88em; }
-    .page-footer a { color: var(--gold); text-decoration: none; }
-
-    /* RESPONSIVE */
-    @media (max-width: 640px) {
-        .page-header h1 { font-size: 2em; }
-        .main-content { padding: 20px 16px 60px; }
-        .filter-inner, .nav-inner { padding: 0 16px; }
-        .project-card { grid-template-columns: 40px 1fr; }
-        .project-action { display: none; }
-        .nav-right { display: none; }
-        .stat-item { padding: 0 14px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .project-card { transition: none; }
-    }
+    .no-results{text-align:center;padding:60px 20px;color:var(--muted);font-size:1.1em;display:none;}
+    .no-results.visible{display:block;}
+    .page-footer{background:var(--navy2);color:rgba(255,255,255,0.7);text-align:center;padding:32px 0;font-size:0.88em;}
+    .page-footer a{color:var(--gold);text-decoration:none;}
+    @media(max-width:700px){.page-header h1{font-size:2em;}.main-content{padding:20px 16px 60px;}.filter-inner,.nav-inner{padding:0 16px;}.nav-links-right{display:none;}}
 </style>
 ```
 
@@ -220,255 +90,224 @@
 
 <nav class="site-nav">
     <div class="nav-inner">
-        <a href="../" class="nav-logo">小野原彩香</a>
+        <a href="../" class="nav-logo">Ayaka Onohara</a>
         <span class="nav-sep">/</span>
         <span class="nav-current">Projects</span>
-        <div class="nav-right">
+        <div class="lang-switch">
+            <a href="/projects/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+        <div class="nav-links-right">
             <a href="../#about">About</a>
             <a href="../#research">Research</a>
             <a href="../publications/">Publications</a>
             <a href="../#data-code">Data &amp; Code</a>
             <a href="../#contact">Contact</a>
         </div>
-        <div class="lang-switch">
-            <span class="lang-btn active">JA</span>
-            <a href="/en/projects/" class="lang-btn">EN</a>
-        </div>
     </div>
 </nav>
 
 <header class="page-header">
     <div class="page-header-inner">
-        <h1>Projects <span>&amp; Work in Progress</span></h1>
-        <p class="lead">進行中・準備中の研究プロジェクト一覧。<br>
-        ステータスは随時更新します。</p>
+        <h1>Research <span>Projects</span></h1>
+        <p class="lead">10 ongoing projects across two categories.<br>
+        A: Spatial Cultural Dynamics (core) &nbsp;·&nbsp; B: GeoAI / WebGIS (adjacent)</p>
     </div>
 </header>
 
-<div class="stats-bar">
-    <div class="stats-inner">
-        <div class="stat-item"><span class="stat-num" id="count-all">10</span><span class="stat-label">Total</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-a)">9</span><span class="stat-label">A — 中核</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-b)">1</span><span class="stat-label">B — 隣接</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--status-prep-col)">9</span><span class="stat-label">In preparation</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--status-rev-col)">1</span><span class="stat-label">Under review</span></div>
-    </div>
-</div>
-
 <div class="filter-bar">
     <div class="filter-inner">
-        <button class="filter-tab active" data-filter="all">すべて</button>
-        <button class="filter-tab tab-a" data-filter="A">A — 中核</button>
-        <button class="filter-tab tab-b" data-filter="B">B — 隣接</button>
-        <button class="filter-tab tab-prep" data-filter="prep">In preparation</button>
-        <button class="filter-tab tab-rev"  data-filter="rev">Under review</button>
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab tab-a" data-filter="A">A — Core</button>
+        <button class="filter-tab tab-b" data-filter="B">B — Adjacent</button>
+        <button class="filter-tab" data-filter="prep">In Preparation</button>
+        <button class="filter-tab" data-filter="rev">Under Review</button>
     </div>
 </div>
 
 <main class="main-content">
+    <p id="no-results" class="no-results"><i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>No matching projects found.</p>
 
 ```
-<!-- GROUP: Place × Emotion -->
-<div class="group-label" data-group="W">W — Place &times; Emotion</div>
-
-<div class="project-card" data-cat="A" data-status="rev">
-    <div class="project-id">W1</div>
-    <div class="project-body">
-        <div class="project-title">Place &times; Emotion（GAN・感度分析）</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> WCTP 2025</span>
+<!-- W GROUP (A) -->
+<div class="group-section" data-group="W">
+    <div class="group-header">
+        <div class="group-icon group-icon-a"><i class="fas fa-brain"></i></div>
+        <div>
+            <div class="group-title">W — Emotion Maps of Place<small>Spatial Cultural Dynamics: affective / niche construction axis</small></div>
         </div>
+        <div class="group-divider"></div>
     </div>
-    <div class="project-action"></div>
+
+    <div class="project-card" data-cat="A" data-status="rev">
+        <div class="card-top"><span class="card-id">W1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-rev">Under Review</span></div>
+        <div class="card-title">GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction</div>
+        <div class="card-meta">Ayaka Onohara; Hiroki Ouchi</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: workshop proceedings (WCTP 2025 → journal)</div>
+        <div class="card-tags"><span class="card-tag">GAN</span><span class="card-tag">cultural evolution</span><span class="card-tag">niche construction</span><span class="card-tag">emotion maps</span></div>
+    </div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">W2</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">PlaceEmotion-GAN: Implementation and Documentation</div>
+        <div class="card-meta">Ayaka Onohara; Hiroki Ouchi</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Journal of Open Source Software (JOSS)</div>
+        <div class="card-tags"><span class="card-tag">open source</span><span class="card-tag">software paper</span><span class="card-tag">Python</span><span class="card-tag">GAN</span></div>
+    </div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">W3</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">PlaceEmotion-GAN: Data Descriptor</div>
+        <div class="card-meta">Ayaka Onohara; Hiroki Ouchi</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Scientific Data</div>
+        <div class="card-tags"><span class="card-tag">dataset</span><span class="card-tag">text embeddings</span><span class="card-tag">emotion</span><span class="card-tag">place</span></div>
+    </div>
 </div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">W2</div>
-    <div class="project-body">
-        <div class="project-title">PlaceEmotion-GAN：実装論文</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> JOSS</span>
+<!-- S GROUP (A) -->
+<div class="group-section" data-group="S">
+    <div class="group-header">
+        <div class="group-icon group-icon-a"><i class="fas fa-microphone"></i></div>
+        <div>
+            <div class="group-title">S — Speech &amp; Pitch Accent<small>Spatial Cultural Dynamics: acoustic / functional axis</small></div>
         </div>
+        <div class="group-divider"></div>
     </div>
-    <div class="project-action"></div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">S1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">Automatic Classification of Accentual Class Using Speaker-Normalized Acoustic Distance</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: TACL / Journal of Phonetics</div>
+        <div class="card-tags"><span class="card-tag">DTW</span><span class="card-tag">acoustic distance</span><span class="card-tag">speaker normalization</span><span class="card-tag">pitch accent</span></div>
+    </div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">S4</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">Pitch Accent × Cooperative Games: A Study in Language Game Theory</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Evolution and Human Behavior</div>
+        <div class="card-tags"><span class="card-tag">game theory</span><span class="card-tag">cooperation</span><span class="card-tag">accent</span><span class="card-tag">evolutionary linguistics</span></div>
+    </div>
 </div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">W3</div>
-    <div class="project-body">
-        <div class="project-title">Place &times; Emotion：データ記述論文</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
+<!-- G GROUP (A) -->
+<div class="group-section" data-group="G">
+    <div class="group-header">
+        <div class="group-icon group-icon-a"><i class="fas fa-project-diagram"></i></div>
+        <div>
+            <div class="group-title">G — Phylogeography of Language<small>Spatial Cultural Dynamics: spatial evolution axis</small></div>
         </div>
+        <div class="group-divider"></div>
     </div>
-    <div class="project-action"></div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">G1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">Geo-Social Drivers of Dialectal Gain and Loss in Japanese</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: iScience</div>
+        <div class="card-tags"><span class="card-tag">GIS</span><span class="card-tag">language dynamics</span><span class="card-tag">spatial analysis</span><span class="card-tag">Japanese dialects</span></div>
+    </div>
 </div>
 
-<!-- GROUP: Accent -->
-<div class="group-label" data-group="S">S — Accent &amp; Cooperation</div>
-
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">S1</div>
-    <div class="project-body">
-        <div class="project-title">アクセント自動分類</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> TACL &nbsp;/&nbsp; Journal of Phonetics</span>
+<!-- P GROUP (A) -->
+<div class="group-section" data-group="P">
+    <div class="group-header">
+        <div class="group-icon group-icon-a"><i class="fas fa-dna"></i></div>
+        <div>
+            <div class="group-title">P — Phylogenetic Signals<small>Spatial Cultural Dynamics: evolutionary tree axis</small></div>
         </div>
+        <div class="group-divider"></div>
     </div>
-    <div class="project-action"></div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">P1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">Different Phylogenetic Signals in Emotional vs. Action-Oriented Speech: A Comparative Study</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: PLOS Computational Biology</div>
+        <div class="card-tags"><span class="card-tag">phylogenetic signal</span><span class="card-tag">emotion</span><span class="card-tag">pragmatics</span><span class="card-tag">Bayesian</span></div>
+    </div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">L1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">Phylogenetic Analysis of Mainland and Ryukyuan Pitch-Accent Systems</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Journal of Language Evolution</div>
+        <div class="card-tags"><span class="card-tag">Ryukyuan</span><span class="card-tag">pitch accent</span><span class="card-tag">Bayesian phylogenetics</span><span class="card-tag">Japanese</span></div>
+    </div>
 </div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">S4</div>
-    <div class="project-body">
-        <div class="project-title">アクセントと協力ゲームの関係</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Evolution and Human Behavior</span>
+<!-- D GROUP (A) -->
+<div class="group-section" data-group="D">
+    <div class="group-header">
+        <div class="group-icon group-icon-a"><i class="fas fa-database"></i></div>
+        <div>
+            <div class="group-title">D — Data<small>Datasets for open science</small></div>
         </div>
+        <div class="group-divider"></div>
     </div>
-    <div class="project-action"></div>
+
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">D1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">National Pitch-Accent GIS Dataset</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Scientific Data</div>
+        <div class="card-tags"><span class="card-tag">open data</span><span class="card-tag">GIS</span><span class="card-tag">pitch accent</span><span class="card-tag">nationwide</span></div>
+    </div>
 </div>
 
-<!-- GROUP: Population & Lexicon -->
-<div class="group-label" data-group="G">G — Population &amp; Lexicon</div>
-
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">G1</div>
-    <div class="project-body">
-        <div class="project-title">Geo-social drivers of dialectal gain and loss</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> iScience</span>
+<!-- J GROUP (A) -->
+<div class="group-section" data-group="J">
+    <div class="group-header">
+        <div class="group-icon group-icon-b"><i class="fas fa-map-marked-alt"></i></div>
+        <div>
+            <div class="group-title">J — Place &amp; Psychology<small>Spatial Cultural Dynamics: cognitive expansion axis</small></div>
         </div>
+        <div class="group-divider"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<!-- GROUP: Phylogenetics -->
-<div class="group-label" data-group="P">P — Phylogenetics &amp; Signals</div>
-
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">P1</div>
-    <div class="project-body">
-        <div class="project-title">Different phylogenetic signals for emotional vs. action expressions</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> PLOS Computational Biology</span>
-        </div>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="card-top"><span class="card-id">J1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+        <div class="card-title">Place and Emotion: A Psychological Extension — Testing the Environmental Stage Model</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Journal of Environmental Psychology</div>
+        <div class="card-tags"><span class="card-tag">place identity</span><span class="card-tag">environmental psychology</span><span class="card-tag">affective maps</span></div>
     </div>
-    <div class="project-action"></div>
-</div>
-
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">L1</div>
-    <div class="project-body">
-        <div class="project-title">本土・沖縄アクセント系統</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of Language Evolution</span>
-        </div>
-    </div>
-    <div class="project-action"></div>
-</div>
-
-<!-- GROUP: Datasets -->
-<div class="group-label" data-group="D">D — Datasets</div>
-
-<div class="project-card" data-cat="B" data-status="prep">
-    <div class="project-id">D1</div>
-    <div class="project-body">
-        <div class="project-title">全国アクセントGISデータ</div>
-        <div class="project-meta">
-            <span class="badge badge-b">B</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
-        </div>
-    </div>
-    <div class="project-action"></div>
-</div>
-
-<!-- GROUP: Psychology -->
-<div class="group-label" data-group="J">J — Psychology</div>
-
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">J1</div>
-    <div class="project-body">
-        <div class="project-title">場所と感情（心理学的拡張）</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of Environmental Psychology</span>
-        </div>
-    </div>
-    <div class="project-action"></div>
-</div>
-
-<div class="no-results" id="no-results">
-    <i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>
-    条件に一致するプロジェクトが見つかりませんでした。
 </div>
 ```
 
 </main>
 
 <footer class="page-footer">
-    <p>ステータスは随時更新。詳細は <a href="/cdn-cgi/l/email-protection#44252b2a2b2c25362504362d2f2f3d2b6a25276a2e34"><span class="__cf_email__" data-cfemail="64050b0a0b0c05160524160d0f0f1d0b4a05074a0e14">[email&#160;protected]</span></a> まで。<br>
-    最終更新：2026-03-06 &nbsp;|&nbsp; <a href="../">← トップページへ戻る</a></p>
+    <p>Based on publicly available information. For corrections: <a href="/cdn-cgi/l/email-protection#34555b5a5b5c55465574465d5f5f4d5b1a55571a5e44"><span class="__cf_email__" data-cfemail="9bfaf4f5f4f3fae9fadbe9f2f0f0e2f4b5faf8b5f1eb">[email&#160;protected]</span></a><br>
+    Last updated: 2026-03-06 &nbsp;|&nbsp; <a href="../">← Back to top</a></p>
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
-(function() {
-const cards = Array.from(document.querySelectorAll(’.project-card’));
-const groups = Array.from(document.querySelectorAll(’.group-label’));
-const noResults = document.getElementById(‘no-results’);
-
-```
-let activeFilter = 'all';
-
-function applyFilter() {
-    let visible = 0;
-
-    cards.forEach(card => {
-        const cat = card.dataset.cat;
-        const status = card.dataset.status;
-
-        let show = true;
-        if (activeFilter === 'A')    show = cat === 'A';
-        if (activeFilter === 'B')    show = cat === 'B';
-        if (activeFilter === 'prep') show = status === 'prep';
-        if (activeFilter === 'rev')  show = status === 'rev';
-
-        card.classList.toggle('hidden', !show);
-        if (show) visible++;
-    });
-
-    // Show/hide group labels based on whether any card in group is visible
-    groups.forEach(label => {
-        const group = label.dataset.group;
-        const groupCards = cards.filter(c => c.querySelector('.project-id').textContent.startsWith(group));
-        const anyVisible = groupCards.some(c => !c.classList.contains('hidden'));
-        label.style.display = anyVisible ? '' : 'none';
-    });
-
-    noResults.classList.toggle('visible', visible === 0);
-    document.getElementById('count-all').textContent = visible;
+(function(){
+const cards=Array.from(document.querySelectorAll(’.project-card’));
+const noResults=document.getElementById(‘no-results’);
+let activeFilter=‘all’;
+function applyFilters(){
+let visible=0;
+cards.forEach(card=>{
+const cat=card.dataset.cat,status=card.dataset.status;
+let show=true;
+if(activeFilter===‘A’) show=(cat===‘A’);
+else if(activeFilter===‘B’) show=(cat===‘B’);
+else if(activeFilter===‘prep’) show=(status===‘prep’);
+else if(activeFilter===‘rev’) show=(status===‘rev’);
+card.classList.toggle(‘hidden’,!show);
+if(show)visible++;
+});
+noResults.classList.toggle(‘visible’,visible===0);
+// hide/show group headers based on visible cards
+document.querySelectorAll(’.group-section’).forEach(sec=>{
+const hasVisible=sec.querySelectorAll(’.project-card:not(.hidden)’).length>0;
+sec.style.display=hasVisible?’’:‘none’;
+});
 }
-
-document.querySelectorAll('.filter-tab').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document
-```
+document.querySelectorAll(’.filter-tab’).forEach(btn=>{
+btn.addEventListener(‘click’,function(){
+docu
