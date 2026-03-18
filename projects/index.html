@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -7,214 +6,211 @@
     <title>Projects — 小野原彩香 | Spatial Cultural Dynamics</title>
     <meta name="description" content="小野原彩香の進行中・準備中プロジェクト一覧。Spatial Cultural Dynamics の枠組みで進める研究プロジェクトのステータスを掲載。">
 
-```
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<style>
-    :root {
-        --navy:    #1a2535;
-        --navy2:   #2c3e50;
-        --gold:    #c9a84c;
-        --col-a:   #1e5c1e;
-        --col-a-bg:#e8f5e8;
-        --col-a-bd:#a8d5a2;
-        --col-b:   #1c3fa0;
-        --col-b-bg:#eef0ff;
-        --col-b-bd:#a8b8f0;
-        --col-d:   #7a4500;
-        --col-d-bg:#fff4e0;
-        --col-d-bd:#f0cc88;
-        --text:    #2c3e50;
-        --muted:   #5a6c7d;
-        --bg:      #f7f8fa;
-        --white:   #ffffff;
-        --radius:  12px;
-        --status-prep-bg:  #f0f4ff;
-        --status-prep-col: #2a4fb0;
-        --status-rev-bg:   #fff8e0;
-        --status-rev-col:  #8a5500;
-        --status-pub-bg:   #e8f5e8;
-        --status-pub-col:  #1a6a1a;
-    }
+    <style>
+        :root {
+            --navy:    #1a2535;
+            --navy2:   #2c3e50;
+            --gold:    #c9a84c;
+            --col-a:   #1e5c1e;
+            --col-a-bg:#e8f5e8;
+            --col-a-bd:#a8d5a2;
+            --col-b:   #1c3fa0;
+            --col-b-bg:#eef0ff;
+            --col-b-bd:#a8b8f0;
+            --col-d:   #7a4500;
+            --col-d-bg:#fff4e0;
+            --col-d-bd:#f0cc88;
+            --text:    #2c3e50;
+            --muted:   #5a6c7d;
+            --bg:      #f7f8fa;
+            --white:   #ffffff;
+            --radius:  12px;
+            --status-prep-bg:  #f0f4ff;
+            --status-prep-col: #2a4fb0;
+            --status-rev-bg:   #fff8e0;
+            --status-rev-col:  #8a5500;
+            --status-pub-bg:   #e8f5e8;
+            --status-pub-col:  #1a6a1a;
+        }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+        * { margin:0; padding:0; box-sizing:border-box; }
 
-    body {
-        font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.7;
-    }
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
 
-    /* NAV */
-    .site-nav {
-        position: sticky; top:0; z-index:100;
-        background: rgba(26,37,53,0.97);
-        backdrop-filter: blur(12px);
-        border-bottom: 2px solid var(--gold);
-        height: 56px;
-        display: flex; align-items: center;
-    }
-    .nav-inner {
-        max-width: 1100px; margin: 0 auto;
-        padding: 0 32px;
-        display: flex; align-items: center; gap: 20px; width: 100%;
-    }
-    .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
-    .nav-sep  { color: rgba(255,255,255,0.3); }
-    .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
-    .nav-right { margin-left: auto; display: flex; gap: 4px; }
-    .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
-    .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
-    .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-    .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
-    .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
-    .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner {
+            max-width: 1100px; margin: 0 auto;
+            padding: 0 32px;
+            display: flex; align-items: center; gap: 20px; width: 100%;
+        }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
 
-    /* PAGE HEADER */
-    .page-header {
-        background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
-        color: white; padding: 60px 0 52px;
-        position: relative; overflow: hidden;
-    }
-    .page-header::before {
-        content:''; position:absolute; inset:0;
-        background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
-    }
-    .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
-    .page-header h1 {
-        font-family: 'DM Serif Display', serif;
-        font-size: 2.6em; font-weight: 400;
-        margin-bottom: 10px; line-height: 1.2;
-    }
-    .page-header h1 span { color: var(--gold); font-style: italic; }
-    .page-header .lead { color: rgba(255,255,255,0.72); font-size: 0.97em; max-width: 560px; line-height: 1.8; }
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 60px 0 52px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.6em; font-weight: 400;
+            margin-bottom: 10px; line-height: 1.2;
+        }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.72); font-size: 0.97em; max-width: 560px; line-height: 1.8; }
 
-    /* STATS */
-    .stats-bar { background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 16px 0; }
-    .stats-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; flex-wrap: wrap; }
-    .stat-item { display: flex; flex-direction: column; align-items: center; padding: 0 24px; border-right: 1px solid rgba(0,0,0,0.1); min-width: 80px; }
-    .stat-item:last-child { border-right: none; }
-    .stat-num { font-size: 1.8em; font-weight: 700; font-family: 'DM Serif Display', serif; line-height: 1; color: var(--navy2); }
-    .stat-label { font-size: 0.72em; color: var(--muted); margin-top: 4px; text-align: center; }
+        /* STATS */
+        .stats-bar { background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 16px 0; }
+        .stats-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; flex-wrap: wrap; }
+        .stat-item { display: flex; flex-direction: column; align-items: center; padding: 0 24px; border-right: 1px solid rgba(0,0,0,0.1); min-width: 80px; }
+        .stat-item:last-child { border-right: none; }
+        .stat-num { font-size: 1.8em; font-weight: 700; font-family: 'DM Serif Display', serif; line-height: 1; color: var(--navy2); }
+        .stat-label { font-size: 0.72em; color: var(--muted); margin-top: 4px; text-align: center; }
 
-    /* FILTER */
-    .filter-bar { background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.07); padding: 16px 0; position: sticky; top: 56px; z-index: 90; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .filter-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .filter-tab { padding: 7px 18px; border-radius: 20px; border: 1.5px solid rgba(0,0,0,0.12); background: transparent; color: var(--muted); font-size: 0.86em; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-    .filter-tab:hover { border-color: var(--navy2); color: var(--navy2); }
-    .filter-tab.active { background: var(--navy2); border-color: var(--navy2); color: white; }
-    .filter-tab.tab-a.active { background: var(--col-a); border-color: var(--col-a); }
-    .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
-    .filter-tab.tab-prep.active { background: var(--status-prep-col); border-color: var(--status-prep-col); }
-    .filter-tab.tab-rev.active  { background: var(--status-rev-col);  border-color: var(--status-rev-col); }
+        /* FILTER */
+        .filter-bar { background: var(--white); border-bottom: 1px solid rgba(0,0,0,0.07); padding: 16px 0; position: sticky; top: 56px; z-index: 90; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .filter-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .filter-tab { padding: 7px 18px; border-radius: 20px; border: 1.5px solid rgba(0,0,0,0.12); background: transparent; color: var(--muted); font-size: 0.86em; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .filter-tab:hover { border-color: var(--navy2); color: var(--navy2); }
+        .filter-tab.active { background: var(--navy2); border-color: var(--navy2); color: white; }
+        .filter-tab.tab-a.active { background: var(--col-a); border-color: var(--col-a); }
+        .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
+        .filter-tab.tab-prep.active { background: var(--status-prep-col); border-color: var(--status-prep-col); }
+        .filter-tab.tab-rev.active  { background: var(--status-rev-col);  border-color: var(--status-rev-col); }
 
-    /* MAIN */
-    .main-content { max-width: 1100px; margin: 0 auto; padding: 32px 32px 80px; }
+        /* MAIN */
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 32px 32px 80px; }
 
-    /* GROUP LABELS */
-    .group-label {
-        display: flex; align-items: center; gap: 12px;
-        margin: 40px 0 16px;
-        font-size: 0.78em; font-weight: 700; letter-spacing: 0.12em;
-        text-transform: uppercase; color: var(--muted);
-    }
-    .group-label::after { content:''; flex:1; height:1px; background: rgba(0,0,0,0.1); }
-    .group-label:first-child { margin-top: 8px; }
+        /* GROUP LABELS */
+        .group-label {
+            display: flex; align-items: center; gap: 12px;
+            margin: 40px 0 16px;
+            font-size: 0.78em; font-weight: 700; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--muted);
+        }
+        .group-label::after { content:''; flex:1; height:1px; background: rgba(0,0,0,0.1); }
+        .group-label:first-child { margin-top: 8px; }
 
-    /* PROJECT CARD */
-    .project-card {
-        background: var(--white);
-        border: 1px solid rgba(0,0,0,0.07);
-        border-left: 4px solid transparent;
-        border-radius: var(--radius);
-        padding: 22px 24px;
-        margin-bottom: 12px;
-        display: grid;
-        grid-template-columns: 48px 1fr auto;
-        gap: 0 18px;
-        align-items: start;
-        transition: all 0.22s ease;
-    }
-    .project-card[data-cat="A"] { border-left-color: var(--col-a); }
-    .project-card[data-cat="B"] { border-left-color: var(--col-b); }
-    .project-card:hover { transform: translateX(4px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
-    .project-card.hidden { display: none; }
+        /* PROJECT CARD */
+        .project-card {
+            background: var(--white);
+            border: 1px solid rgba(0,0,0,0.07);
+            border-left: 4px solid transparent;
+            border-radius: var(--radius);
+            padding: 22px 24px;
+            margin-bottom: 12px;
+            display: grid;
+            grid-template-columns: 48px 1fr auto;
+            gap: 0 18px;
+            align-items: start;
+            transition: all 0.22s ease;
+        }
+        .project-card[data-cat="A"] { border-left-color: var(--col-a); }
+        .project-card[data-cat="B"] { border-left-color: var(--col-b); }
+        .project-card:hover { transform: translateX(4px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .project-card.hidden { display: none; }
 
-    /* ID badge */
-    .project-id {
-        font-family: 'DM Serif Display', serif;
-        font-size: 1.3em;
-        font-weight: 400;
-        color: var(--muted);
-        padding-top: 2px;
-        line-height: 1.2;
-    }
+        /* ID badge */
+        .project-id {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.3em;
+            font-weight: 400;
+            color: var(--muted);
+            padding-top: 2px;
+            line-height: 1.2;
+        }
 
-    /* Body */
-    .project-body { }
-    .project-title {
-        font-weight: 600;
-        font-size: 1.0em;
-        color: var(--navy2);
-        margin-bottom: 6px;
-        line-height: 1.5;
-    }
-    .project-meta {
-        display: flex; flex-wrap: wrap; gap: 8px;
-        align-items: center;
-    }
+        /* Body */
+        .project-body { }
+        .project-title {
+            font-weight: 600;
+            font-size: 1.0em;
+            color: var(--navy2);
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        .project-meta {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            align-items: center;
+        }
 
-    /* Badges */
-    .badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 3px 10px; border-radius: 10px;
-        font-size: 0.74em; font-weight: 600; white-space: nowrap;
-    }
-    .badge-a { background: var(--col-a-bg); color: var(--col-a); border: 1px solid var(--col-a-bd); }
-    .badge-b { background: var(--col-b-bg); color: var(--col-b); border: 1px solid var(--col-b-bd); }
-    .badge-prep { background: var(--status-prep-bg); color: var(--status-prep-col); border: 1px solid #c0cff8; }
-    .badge-rev  { background: var(--status-rev-bg);  color: var(--status-rev-col);  border: 1px solid #f0d888; }
-    .badge-pub  { background: var(--status-pub-bg);  color: var(--status-pub-col);  border: 1px solid var(--col-a-bd); }
+        /* Badges */
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 10px;
+            font-size: 0.74em; font-weight: 600; white-space: nowrap;
+        }
+        .badge-a { background: var(--col-a-bg); color: var(--col-a); border: 1px solid var(--col-a-bd); }
+        .badge-b { background: var(--col-b-bg); color: var(--col-b); border: 1px solid var(--col-b-bd); }
+        .badge-prep { background: var(--status-prep-bg); color: var(--status-prep-col); border: 1px solid #c0cff8; }
+        .badge-rev  { background: var(--status-rev-bg);  color: var(--status-rev-col);  border: 1px solid #f0d888; }
+        .badge-pub  { background: var(--status-pub-bg);  color: var(--status-pub-col);  border: 1px solid var(--col-a-bd); }
 
-    /* Journal */
-    .project-journal {
-        font-size: 0.86em;
-        color: var(--muted);
-        font-style: italic;
-        display: flex; align-items: center; gap: 6px;
-    }
-    .project-journal i { font-style: normal; color: #b0bec5; }
+        /* Journal */
+        .project-journal {
+            font-size: 0.86em;
+            color: var(--muted);
+            font-style: italic;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .project-journal i { font-style: normal; color: #b0bec5; }
 
-    /* Right col: empty for now, reserved for future links */
-    .project-action { }
+        /* Right col: empty for now, reserved for future links */
+        .project-action { }
 
-    /* No results */
-    .no-results { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1.05em; display: none; }
-    .no-results.visible { display: block; }
+        /* No results */
+        .no-results { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1.05em; display: none; }
+        .no-results.visible { display: block; }
 
-    /* FOOTER */
-    .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 0; font-size: 0.88em; }
-    .page-footer a { color: var(--gold); text-decoration: none; }
+        /* FOOTER */
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 0; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
 
-    /* RESPONSIVE */
-    @media (max-width: 640px) {
-        .page-header h1 { font-size: 2em; }
-        .main-content { padding: 20px 16px 60px; }
-        .filter-inner, .nav-inner { padding: 0 16px; }
-        .project-card { grid-template-columns: 40px 1fr; }
-        .project-action { display: none; }
-        .nav-right { display: none; }
-        .stat-item { padding: 0 14px; }
-    }
+        /* RESPONSIVE */
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .filter-inner, .nav-inner { padding: 0 16px; }
+            .project-card { grid-template-columns: 40px 1fr; }
+            .project-action { display: none; }
+            .nav-right { display: none; }
+            .stat-item { padding: 0 14px; }
+        }
 
-    @media (prefers-reduced-motion: reduce) {
-        .project-card { transition: none; }
-    }
-</style>
-```
-
+        @media (prefers-reduced-motion: reduce) {
+            .project-card { transition: none; }
+        }
+    </style>
 </head>
 <body>
 
@@ -267,160 +263,158 @@
 
 <main class="main-content">
 
-```
-<!-- GROUP: Place × Emotion -->
-<div class="group-label" data-group="W">W — Place &times; Emotion</div>
+    <!-- GROUP: Place × Emotion -->
+    <div class="group-label" data-group="W">W — Place &times; Emotion</div>
 
-<div class="project-card" data-cat="A" data-status="rev">
-    <div class="project-id">W1</div>
-    <div class="project-body">
-        <div class="project-title">Place &times; Emotion（GAN・感度分析）</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> WCTP 2025</span>
+    <div class="project-card" data-cat="A" data-status="rev">
+        <div class="project-id">W1</div>
+        <div class="project-body">
+            <div class="project-title">Place &times; Emotion（GAN・感度分析）</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> WCTP 2025</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">W2</div>
-    <div class="project-body">
-        <div class="project-title">PlaceEmotion-GAN：実装論文</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> JOSS</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">W2</div>
+        <div class="project-body">
+            <div class="project-title">PlaceEmotion-GAN：実装論文</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> JOSS</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">W3</div>
-    <div class="project-body">
-        <div class="project-title">Place &times; Emotion：データ記述論文</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">W3</div>
+        <div class="project-body">
+            <div class="project-title">Place &times; Emotion：データ記述論文</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<!-- GROUP: Accent -->
-<div class="group-label" data-group="S">S — Accent &amp; Cooperation</div>
+    <!-- GROUP: Accent -->
+    <div class="group-label" data-group="S">S — Accent &amp; Cooperation</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">S1</div>
-    <div class="project-body">
-        <div class="project-title">アクセント自動分類</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> TACL &nbsp;/&nbsp; Journal of Phonetics</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">S1</div>
+        <div class="project-body">
+            <div class="project-title">アクセント自動分類</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> TACL &nbsp;/&nbsp; Journal of Phonetics</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">S4</div>
-    <div class="project-body">
-        <div class="project-title">アクセントと協力ゲームの関係</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Evolution and Human Behavior</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">S4</div>
+        <div class="project-body">
+            <div class="project-title">アクセントと協力ゲームの関係</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Evolution and Human Behavior</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<!-- GROUP: Population & Lexicon -->
-<div class="group-label" data-group="G">G — Population &amp; Lexicon</div>
+    <!-- GROUP: Population & Lexicon -->
+    <div class="group-label" data-group="G">G — Population &amp; Lexicon</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">G1</div>
-    <div class="project-body">
-        <div class="project-title">Geo-social drivers of dialectal gain and loss</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> iScience</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">G1</div>
+        <div class="project-body">
+            <div class="project-title">Geo-social drivers of dialectal gain and loss</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> iScience</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<!-- GROUP: Phylogenetics -->
-<div class="group-label" data-group="P">P — Phylogenetics &amp; Signals</div>
+    <!-- GROUP: Phylogenetics -->
+    <div class="group-label" data-group="P">P — Phylogenetics &amp; Signals</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">P1</div>
-    <div class="project-body">
-        <div class="project-title">Different phylogenetic signals for emotional vs. action expressions</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> PLOS Computational Biology</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">P1</div>
+        <div class="project-body">
+            <div class="project-title">Different phylogenetic signals for emotional vs. action expressions</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> PLOS Computational Biology</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">L1</div>
-    <div class="project-body">
-        <div class="project-title">本土・沖縄アクセント系統</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of Language Evolution</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">L1</div>
+        <div class="project-body">
+            <div class="project-title">本土・沖縄アクセント系統</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of Language Evolution</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<!-- GROUP: Datasets -->
-<div class="group-label" data-group="D">D — Datasets</div>
+    <!-- GROUP: Datasets -->
+    <div class="group-label" data-group="D">D — Datasets</div>
 
-<div class="project-card" data-cat="B" data-status="prep">
-    <div class="project-id">D1</div>
-    <div class="project-body">
-        <div class="project-title">全国アクセントGISデータ</div>
-        <div class="project-meta">
-            <span class="badge badge-b">B</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
+    <div class="project-card" data-cat="B" data-status="prep">
+        <div class="project-id">D1</div>
+        <div class="project-body">
+            <div class="project-title">全国アクセントGISデータ</div>
+            <div class="project-meta">
+                <span class="badge badge-b">B</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<!-- GROUP: Psychology -->
-<div class="group-label" data-group="J">J — Psychology</div>
+    <!-- GROUP: Psychology -->
+    <div class="group-label" data-group="J">J — Psychology</div>
 
-<div class="project-card" data-cat="A" data-status="prep">
-    <div class="project-id">J1</div>
-    <div class="project-body">
-        <div class="project-title">場所と感情（心理学的拡張）</div>
-        <div class="project-meta">
-            <span class="badge badge-a">A</span>
-            <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-            <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of Environmental Psychology</span>
+    <div class="project-card" data-cat="A" data-status="prep">
+        <div class="project-id">J1</div>
+        <div class="project-body">
+            <div class="project-title">場所と感情（心理学的拡張）</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of Environmental Psychology</span>
+            </div>
         </div>
+        <div class="project-action"></div>
     </div>
-    <div class="project-action"></div>
-</div>
 
-<div class="no-results" id="no-results">
-    <i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>
-    条件に一致するプロジェクトが見つかりませんでした。
-</div>
-```
+    <div class="no-results" id="no-results">
+        <i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>
+        条件に一致するプロジェクトが見つかりませんでした。
+    </div>
 
 </main>
 
@@ -430,45 +424,51 @@
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-
 (function() {
-const cards = Array.from(document.querySelectorAll(’.project-card’));
-const groups = Array.from(document.querySelectorAll(’.group-label’));
-const noResults = document.getElementById(‘no-results’);
+    const cards = Array.from(document.querySelectorAll('.project-card'));
+    const groups = Array.from(document.querySelectorAll('.group-label'));
+    const noResults = document.getElementById('no-results');
 
-```
-let activeFilter = 'all';
+    let activeFilter = 'all';
 
-function applyFilter() {
-    let visible = 0;
+    function applyFilter() {
+        let visible = 0;
 
-    cards.forEach(card => {
-        const cat = card.dataset.cat;
-        const status = card.dataset.status;
+        cards.forEach(card => {
+            const cat = card.dataset.cat;
+            const status = card.dataset.status;
 
-        let show = true;
-        if (activeFilter === 'A')    show = cat === 'A';
-        if (activeFilter === 'B')    show = cat === 'B';
-        if (activeFilter === 'prep') show = status === 'prep';
-        if (activeFilter === 'rev')  show = status === 'rev';
+            let show = true;
+            if (activeFilter === 'A')    show = cat === 'A';
+            if (activeFilter === 'B')    show = cat === 'B';
+            if (activeFilter === 'prep') show = status === 'prep';
+            if (activeFilter === 'rev')  show = status === 'rev';
 
-        card.classList.toggle('hidden', !show);
-        if (show) visible++;
+            card.classList.toggle('hidden', !show);
+            if (show) visible++;
+        });
+
+        // Show/hide group labels based on whether any card in group is visible
+        groups.forEach(label => {
+            const group = label.dataset.group;
+            const groupCards = cards.filter(c => c.querySelector('.project-id').textContent.startsWith(group));
+            const anyVisible = groupCards.some(c => !c.classList.contains('hidden'));
+            label.style.display = anyVisible ? '' : 'none';
+        });
+
+        noResults.classList.toggle('visible', visible === 0);
+        document.getElementById('count-all').textContent = visible;
+    }
+
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            activeFilter = this.dataset.filter;
+            applyFilters();
+        });
     });
-
-    // Show/hide group labels based on whether any card in group is visible
-    groups.forEach(label => {
-        const group = label.dataset.group;
-        const groupCards = cards.filter(c => c.querySelector('.project-id').textContent.startsWith(group));
-        const anyVisible = groupCards.some(c => !c.classList.contains('hidden'));
-        label.style.display = anyVisible ? '' : 'none';
-    });
-
-    noResults.classList.toggle('visible', visible === 0);
-    document.getElementById('count-all').textContent = visible;
-}
-
-document.querySelectorAll('.filter-tab').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document
-```
+})();
+</script>
+</body>
+</html>
