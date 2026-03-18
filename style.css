@@ -804,3 +804,11 @@ h2:first-child { margin-top: 0; }
     border-color: var(--gold, #c9a84c);
     color: #1a2535;
 }
+
+/* ============================================================
+   AOS FAILSAFE — show content even if AOS.js fails to load
+   ============================================================ */
+html:not(.aos-initialized) [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+}
