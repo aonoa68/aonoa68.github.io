@@ -812,3 +812,166 @@ html:not(.aos-initialized) [data-aos] {
     opacity: 1 !important;
     transform: none !important;
 }
+
+/* ============================================================
+   THEORY DIAGRAM (新理論図: 情動×言語→文化進化→計算モデル)
+   ============================================================ */
+.theory-diagram .concept-title span {
+    font-size: 0.92em;
+    color: rgba(255,255,255,0.7);
+}
+.theory-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 8px 0;
+}
+.theory-inputs {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 680px;
+    justify-content: center;
+}
+.theory-connector-h {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: #b0bec5;
+    flex-shrink: 0;
+}
+.theory-node {
+    background: white;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    flex: 1;
+    max-width: 280px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+}
+.theory-node:hover { transform: translateY(-2px); }
+.node-icon { font-size: 1.8em; margin-bottom: 6px; }
+.node-label {
+    font-weight: 700;
+    font-size: 1em;
+    color: #2c3e50;
+    line-height: 1.3;
+    margin-bottom: 6px;
+}
+.node-label span { display: block; font-size: 0.78em; font-weight: 400; color: #7f8c8d; }
+.node-sub { font-size: 0.78em; color: #7f8c8d; line-height: 1.5; }
+
+.node-emotion { border-color: #d8a8f0; background: linear-gradient(135deg, #fdf0ff 0%, #fff 100%); }
+.node-language { border-color: #a8bef0; background: linear-gradient(135deg, #eef0ff 0%, #fff 100%); }
+.node-core {
+    border-color: #90cc90;
+    background: linear-gradient(135deg, #e8f5e8 0%, #fff 100%);
+    width: 100%;
+    max-width: 480px;
+}
+.node-model {
+    border-color: #f0c880;
+    background: linear-gradient(135deg, #fff4e0 0%, #fff 100%);
+    width: 100%;
+    max-width: 480px;
+}
+
+.theory-arrow-down {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #b0bec5;
+    font-size: 1.4em;
+    line-height: 1;
+    padding: 6px 0;
+    gap: 2px;
+}
+.theory-arrow-down span {
+    font-size: 0.5em;
+    color: #aabbc8;
+    letter-spacing: 0.03em;
+    font-weight: 500;
+}
+
+.theory-data-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 680px;
+    margin-top: 4px;
+}
+.data-chip {
+    background: #f0f4f8;
+    border: 1px solid #d0dce8;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 0.85em;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* ============================================================
+   LAYERED RESEARCH THEMES (理論層/方法層/データ層)
+   ============================================================ */
+.research-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-top: 32px;
+}
+.layer-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+.layer-row-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding-top: 28px;
+}
+.layer-row-tag {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.82em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+.tag-theory  { background: #e8f5e8; color: #1a6a1a; border: 1px solid #90cc90; }
+.tag-method  { background: #eef0ff; color: #1c3fa0; border: 1px solid #a8b8f0; }
+.tag-data    { background: #fff4e0; color: #8a4800; border: 1px solid #f0c880; }
+.layer-row-desc { font-size: 0.75em; color: #7f8c8d; }
+.layer-row-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+/* theory note in data cards */
+.data-theory-note {
+    font-size: 0.85em;
+    color: #5a6c7d;
+    background: #f0f4f8;
+    border-left: 3px solid #2c3e50;
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 12px;
+    line-height: 1.55;
+}
+.data-theory-note i { margin-right: 6px; color: #2c3e50; }
+
+@media (max-width: 768px) {
+    .theory-inputs { flex-direction: column; gap: 8px; }
+    .theory-connector-h { transform: rotate(90deg); }
+    .theory-node { max-width: 100%; }
+    .layer-row { grid-template-columns: 1fr; gap: 12px; }
+    .layer-row-label { flex-direction: row; align-items: center; padding-top: 0; }
+}
