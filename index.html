@@ -79,13 +79,14 @@
                     <i class="fas fa-user-graduate" aria-hidden="true"></i>
                 </div>
 
-                <!-- Dual-label hero -->
-                <p class="hero-tagline">文化的形質は、空間構造の中で進化する。</p>
+                <!-- Theory-first hero -->
+                <p class="hero-tagline">人間と文化の進化を数理的に再定式化し、<br>情動・言語・社会の変化を統一的に説明する。</p>
                 <h1>小野原彩香（Onohara, Ayaka）</h1>
 
                 <p class="hero-sub">
-                    進化人類学／文化進化の視点から、<strong>Spatial Cultural Dynamics</strong>（構造化された空間における文化的形質の動態）を研究。<br>
-                    対象：日本語方言（ピッチアクセント・語彙）／場所の感情地図　方法：ベイズ系統解析・系統地理・テキスト埋め込み・生成モデル
+                    <strong>Spatial Cultural Dynamics</strong> ——
+                    情動と言語が空間構造の中でどのように生成・拡散・淘汰されるかを、計算モデルと実データの往還によって記述する研究プログラム。<br>
+                    <span style="opacity:0.82;font-size:0.95em;">音声・方言・地理データを通じてこの理論を検証しています。</span>
                 </p>
 
                 <div class="subtitle"><span id="subtitle-text"></span></div>
@@ -188,69 +189,130 @@
 
                 <h2 data-aos="fade-up"><i class="fas fa-chart-line"></i>理論的枠組み</h2>
 
-                <!-- Concept diagram: Spatial Cultural Dynamics -->
-                <div class="concept-diagram" data-aos="fade-up">
+                <!-- ② NEW theory diagram: emotion×language → cultural evolution → computational model -->
+                <div class="concept-diagram theory-diagram" data-aos="fade-up">
                     <div class="concept-title">
                         <strong>Spatial Cultural Dynamics</strong>
-                        <span>How cultural traits evolve in structured space</span>
+                        <span>情動と言語の共進化を空間・計算・データで記述する</span>
                     </div>
-                    <div class="concept-flow">
-                        <div class="concept-layer layer-space">
-                            <div class="layer-label">Space / Environment</div>
-                            <div class="layer-items">place &nbsp;·&nbsp; population &nbsp;·&nbsp; network &nbsp;·&nbsp; geography</div>
+                    <div class="theory-flow">
+                        <!-- Input nodes -->
+                        <div class="theory-inputs">
+                            <div class="theory-node node-emotion">
+                                <div class="node-icon">💡</div>
+                                <div class="node-label">情動<br><span>Emotion</span></div>
+                                <div class="node-sub">場所・社会・経験への感情反応</div>
+                            </div>
+                            <div class="theory-connector-h">×</div>
+                            <div class="theory-node node-language">
+                                <div class="node-icon">🗣</div>
+                                <div class="node-label">言語<br><span>Language</span></div>
+                                <div class="node-sub">音声・アクセント・語彙の体系</div>
+                            </div>
                         </div>
-                        <div class="concept-arrow">↓</div>
-                        <div class="concept-layer layer-affective">
-                            <div class="layer-label">Affective &amp; Social Layer</div>
-                            <div class="layer-items">emotion &nbsp;·&nbsp; evaluation &nbsp;·&nbsp; cooperation &nbsp;·&nbsp; interaction</div>
+
+                        <div class="theory-arrow-down">↓<span>空間構造の中で相互作用</span></div>
+
+                        <!-- Core -->
+                        <div class="theory-node node-core" data-aos="fade-up" data-aos-delay="100">
+                            <div class="node-icon">🌐</div>
+                            <div class="node-label">文化進化<br><span>Cultural Evolution</span></div>
+                            <div class="node-sub">拡散・分岐・収束・系統・ニッチ構築</div>
                         </div>
-                        <div class="concept-arrow">↓</div>
-                        <div class="concept-layer layer-traits">
-                            <div class="layer-label">Cultural Traits</div>
-                            <div class="layer-items">accent &nbsp;·&nbsp; lexicon &nbsp;·&nbsp; emotion map &nbsp;·&nbsp; action style</div>
+
+                        <div class="theory-arrow-down">↓<span>計算モデルとして定式化</span></div>
+
+                        <!-- Output -->
+                        <div class="theory-node node-model" data-aos="fade-up" data-aos-delay="150">
+                            <div class="node-icon">⚙️</div>
+                            <div class="node-label">計算モデル<br><span>Computational Model</span></div>
+                            <div class="node-sub">ベイズ系統解析 · GAN · テキスト埋め込み · GIS</div>
                         </div>
-                        <div class="concept-arrow">↓</div>
-                        <div class="concept-layer layer-evo">
-                            <div class="layer-label">Evolutionary Dynamics</div>
-                            <div class="layer-items">diffusion &nbsp;·&nbsp; divergence &nbsp;·&nbsp; convergence &nbsp;·&nbsp; phylogeny &nbsp;·&nbsp; simulation</div>
-                        </div>
-                        <div class="concept-arrow">↓</div>
-                        <div class="concept-layer layer-niche">
-                            <div class="layer-label">New niche / restructured environment</div>
-                            <div class="layer-items layer-cycle">↺ &nbsp;循環して空間構造に作用する</div>
+
+                        <div class="theory-arrow-down">↓<span>実データで検証・更新</span></div>
+
+                        <!-- Data -->
+                        <div class="theory-data-row" data-aos="fade-up" data-aos-delay="200">
+                            <div class="data-chip">🎙 音声・アクセント</div>
+                            <div class="data-chip">🗺 方言地図</div>
+                            <div class="data-chip">📍 場所の感情地図</div>
+                            <div class="data-chip">🌍 地理空間データ</div>
                         </div>
                     </div>
                 </div>
 
-                <h2 data-aos="fade-up"><i class="fas fa-folder-open"></i>研究テーマ</h2>
-
-                <!-- Portfolio category legend -->
+                <!-- ③ Layered research themes: 理論層 / 方法層 / データ層 -->
+                <h2 data-aos="fade-up"><i class="fas fa-layer-group"></i>研究の構造</h2>
                 <div class="category-legend" data-aos="fade-up">
                     <span class="cat-badge cat-a"><strong>A</strong> 中核：Spatial Cultural Dynamics</span>
                     <span class="cat-badge cat-b"><strong>B</strong> 隣接：GeoAI / WebGIS</span>
-                    <span class="cat-badge cat-d"><strong>D</strong> 方法・教育</span>
+                    <span class="cat-badge cat-c"><strong>C</strong> 方法・教育</span>
                 </div>
 
-                <div class="research-themes">
-                    <div class="theme-card" data-aos="fade-up" data-aos-delay="100">
-                        <span class="card-cat cat-a">A</span>
-                        <h3><i class="fas fa-dna"></i>言語進化の系統解析</h3>
-                        <p>ベイズ系統解析を用いて、日本語方言のピッチアクセント体系の進化過程を定量的に解明する研究を行っています。</p>
+                <div class="research-layers" data-aos="fade-up">
+                    <!-- 理論層 -->
+                    <div class="layer-row">
+                        <div class="layer-row-label">
+                            <span class="layer-row-tag tag-theory">理論層</span>
+                            <span class="layer-row-desc">何を明らかにするか</span>
+                        </div>
+                        <div class="layer-row-cards">
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="80">
+                                <span class="card-cat cat-a">A</span>
+                                <h3><i class="fas fa-dna"></i>文化的形質の系統進化</h3>
+                                <p>言語（アクセント・語彙）が空間ネットワーク上でどのように分岐・拡散・消失するかをベイズ系統解析で復元する。</p>
+                            </div>
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="120">
+                                <span class="card-cat cat-a">A</span>
+                                <h3><i class="fas fa-heart-pulse" style="font-family:inherit"></i><i class="fas fa-brain"></i>情動と場所の共進化</h3>
+                                <p>場所に対する感情反応が文化的形質としてどのように構造化・伝播されるかを、ニッチ構築理論の枠組みで記述する。</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="theme-card" data-aos="fade-up" data-aos-delay="150">
-                        <span class="card-cat cat-a">A</span>
-                        <h3><i class="fas fa-microphone"></i>音声・ピッチアクセント研究</h3>
-                        <p>アクセントクラス融合に基づく新しい分析手法を開発し、言語変化のメカニズムを探求しています。</p>
+
+                    <!-- 方法層 -->
+                    <div class="layer-row">
+                        <div class="layer-row-label">
+                            <span class="layer-row-tag tag-method">方法層</span>
+                            <span class="layer-row-desc">どう記述するか</span>
+                        </div>
+                        <div class="layer-row-cards">
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="80">
+                                <span class="card-cat cat-a">A</span>
+                                <h3><i class="fas fa-microphone"></i>音声・ピッチアクセント分析</h3>
+                                <p>アクセントクラス融合を基軸とした話者正規化・距離尺度により、音響データから文化変化の痕跡を抽出する。</p>
+                            </div>
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="120">
+                                <span class="card-cat cat-b">B</span>
+                                <h3><i class="fas fa-robot"></i>生成モデル（GAN）</h3>
+                                <p>文化進化の段階的ダイナミクスを条件付きGANとして実装し、情動パターンの変化を生成的に記述する。</p>
+                            </div>
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="160">
+                                <span class="card-cat cat-b">B</span>
+                                <h3><i class="fas fa-globe"></i>GIS・空間統計</h3>
+                                <p>地理空間情報と言語・感情データを統合し、環境要因と文化変化の空間的相関を解析する。</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="theme-card" data-aos="fade-up" data-aos-delay="200">
-                        <span class="card-cat cat-b">B</span>
-                        <h3><i class="fas fa-globe"></i>地理情報科学（GIS）</h3>
-                        <p>地理空間情報と言語データを統合し、言語の消失と獲得に関連する環境・社会的要因を解析しています。</p>
-                    </div>
-                    <div class="theme-card" data-aos="fade-up" data-aos-delay="250">
-                        <span class="card-cat cat-a">A</span>
-                        <h3><i class="fas fa-brain"></i>進化的アプローチ</h3>
-                        <p>音声と場所の感情的関連性を進化的観点から解明し、言語と認知の相互作用を研究しています。</p>
+
+                    <!-- データ層 -->
+                    <div class="layer-row">
+                        <div class="layer-row-label">
+                            <span class="layer-row-tag tag-data">データ層</span>
+                            <span class="layer-row-desc">何で検証するか</span>
+                        </div>
+                        <div class="layer-row-cards">
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="80">
+                                <span class="card-cat cat-a">A</span>
+                                <h3><i class="fas fa-map-marked-alt"></i>日本語方言データ</h3>
+                                <p>全国ピッチアクセント分布・語彙変化データを整備し、系統解析・GIS分析の基盤として公開する（Scientific Data投稿予定）。</p>
+                            </div>
+                            <div class="theme-card" data-aos="fade-up" data-aos-delay="120">
+                                <span class="card-cat cat-a">A</span>
+                                <h3><i class="fas fa-comment-dots"></i>場所×感情テキストデータ</h3>
+                                <p>場所記述テキストの埋め込みベクトルと空間的近接性のMantel検定により、感情地図の構造を定量化する。</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -377,7 +439,7 @@
                             「地図はデータ・サイエンス！ 私も地図マスター」第1–5回 <em>Interface</em> 別冊付録, CQ出版, 2022–2023年.<br>
                             <span style="color:#5a6c7d;font-size:0.88em;">小野原彩香・岩崎亘典（共著）</span>
                         </li>
-                        <li><span class="pub-cat cat-d">D</span>
+                        <li><span class="pub-cat cat-c">C</span>
                             『テキストマイニングによる言語研究』（分担執筆）. ひつじ書房, 2014年12月.<br>
                             <span style="color:#5a6c7d;font-size:0.88em;">小野原彩香・矢野環</span>
                         </li>
@@ -404,6 +466,7 @@
                             <i class="fas fa-archive"></i>
                             <h3>Pitch-accent phylogeography data &amp; code</h3>
                         </div>
+                        <p class="data-theory-note"><i class="fas fa-link"></i> 日本語方言アクセントの系統進化を計算的に復元する試み——Spatial Cultural Dynamics 理論の中核的検証。</p>
                         <p>「Bayesian phylogenetic analysis of pitch-accent systems …」（<em>Journal of Language Evolution</em>, 2024）の解析データおよびコード一式。</p>
                         <div class="data-card-meta">
                             <span><i class="fas fa-tag"></i> Zenodo</span>
@@ -420,6 +483,7 @@
                             <i class="fab fa-github"></i>
                             <h3>GitHub リポジトリ</h3>
                         </div>
+                        <p class="data-theory-note"><i class="fas fa-link"></i> 理論の計算実装・再現可能な分析パイプライン・教育的応用を公開しています。</p>
                         <p>解析コード・教材・データ前処理スクリプトを公開しています。</p>
                         <div class="data-card-meta">
                             <span><i class="fas fa-code-branch"></i> aonoa68</span>
