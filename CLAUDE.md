@@ -91,7 +91,10 @@ xattr -w com.dropbox.ignored 1 .git
 
 ## 参考：所属・肩書きの現状
 
-- **現所属**：北星学園大学 情報科学科 准教授（2026年4月〜）／北海道大学 非常勤講師（兼任）
-- **旧所属**：立教大学 社会情報教育研究センター 助教（〜2026年3月）
+- **現所属**：北星学園大学 国際学部 准教授（2026年4月〜）
+  - English: Associate Professor, School of International Studies, Hokusei Gakuen University
+  - 担当講義：「情報入門」ほか
+- **旧所属**：立教大学 社会情報教育研究センター 助教（2022年4月〜2026年3月）
+- **将来予定**：北星学園大学に2027年度開設予定の情報科学部に関連する立ち上げ業務に関与（カリキュラム設計、データサイエンス・AI 関連科目の整備など）
 
-サイト本文・JSON-LD（`<script type="application/ld+json">` 内の `jobTitle` と `affiliation`）・メールアドレス（`aonohara@rikkyo.ac.jp`）には旧所属の記述が残っている。所属移行に伴う更新は**段階的に**行い、一括書き換えはしない。更新時は必ずユーザーに「どこを今回変更するか」確認する。
+サイト本文・JSON-LD（`<script type="application/ld+json">` 内の `jobTitle` と `affiliation`）・メールアドレス（`aonohara@rikkyo.ac.jp`）には旧所属の記述が残っている。所属移行に伴う更新は**段階的に**行い、どこを今回変更するかは必ずユーザーに確認する。
