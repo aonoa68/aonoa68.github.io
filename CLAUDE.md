@@ -94,7 +94,9 @@ xattr -w com.dropbox.ignored 1 .git
 - **現所属**：北星学園大学 国際学部 准教授（2026年4月〜）
   - English: Associate Professor, School of International Studies, Hokusei Gakuen University
   - 担当講義：「情報入門」ほか
+  - Email: a-onohara@hokusei.ac.jp
 - **旧所属**：立教大学 社会情報教育研究センター 助教（2022年4月〜2026年3月）
 - **将来予定**：北星学園大学に2027年度開設予定の情報科学部に関連する立ち上げ業務に関与（カリキュラム設計、データサイエンス・AI 関連科目の整備など）
+- **学部の英語表記**：国際学部 = School of International Studies（公式表記、北星 DGi サイトより）
 
-サイト本文・JSON-LD（`<script type="application/ld+json">` 内の `jobTitle` と `affiliation`）・メールアドレス（`aonohara@rikkyo.ac.jp`）には旧所属の記述が残っている。所属移行に伴う更新は**段階的に**行い、どこを今回変更するかは必ずユーザーに確認する。
+サイト更新時は「どこを今回変更するか」を必ずユーザーに確認してから行う（一括変更で意図しない箇所を書き換えないため）。
