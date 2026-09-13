@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publications — 小野原彩香 | Spatial Cultural Dynamics</title>
-    <meta name="description" content="小野原彩香の全出版物一覧（25件）。Spatial Cultural Dynamics（A）／GeoAI・WebGIS（B）／方法・教育（D）で整理し、DOI・データ（Zenodo）・コード（GitHub）へのリンクを付与。">
+    <meta name="description" content="小野原彩香の全出版物一覧（25件）。A 中核／B 中核隣接／C 周辺／D 教育・普及 の4分類で整理し、DOI・データ（Zenodo）・コード（GitHub）へのリンクを付与。">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -26,6 +26,9 @@
             --col-d:  #7a4500;
             --col-d-bg:#fff4e0;
             --col-d-bd:#f0cc88;
+            --col-c:  #5b3f8c;
+            --col-c-bg:#f3effa;
+            --col-c-bd:#cdbbe8;
             --text:   #2c3e50;
             --muted:  #5a6c7d;
             --bg:     #f7f8fa;
@@ -171,6 +174,7 @@
         }
         .stat-num.cat-a { color: var(--col-a); }
         .stat-num.cat-b { color: var(--col-b); }
+        .stat-num.cat-c { color: var(--col-c); }
         .stat-num.cat-d { color: var(--col-d); }
         .stat-label {
             font-size: 0.75em;
@@ -219,6 +223,7 @@
         .filter-tab.active { background: var(--navy2); border-color: var(--navy2); color: white; }
         .filter-tab.tab-a.active { background: var(--col-a); border-color: var(--col-a); }
         .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
+        .filter-tab.tab-c.active { background: var(--col-c); border-color: var(--col-c); }
         .filter-tab.tab-d.active { background: var(--col-d); border-color: var(--col-d); }
 
         .filter-search {
@@ -345,6 +350,7 @@
         }
         .badge-a  { background: var(--col-a-bg); color: var(--col-a); border: 1px solid var(--col-a-bd); }
         .badge-b  { background: var(--col-b-bg); color: var(--col-b); border: 1px solid var(--col-b-bd); }
+        .badge-c  { background: var(--col-c-bg); color: var(--col-c); border: 1px solid var(--col-c-bd); }
         .badge-d  { background: var(--col-d-bg); color: var(--col-d); border: 1px solid var(--col-d-bd); }
         .badge-peer { background: #e8f4fd; color: #1a6fa8; border: 1px solid #a8d0f0; }
         .badge-nonpeer { background: #f5f5f5; color: #777; border: 1px solid #ddd; }
@@ -462,7 +468,18 @@
         @media (prefers-reduced-motion: reduce) {
             .pub-card { transition: none; }
         }
-    </style>
+    
+        /* category definitions (A/B/C/D, 2026-09-14) */
+        .cat-defs{max-width:1100px;margin:20px auto 4px;padding:0 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;box-sizing:border-box;}
+        .cat-def{border-radius:10px;padding:10px 14px;font-size:.82em;line-height:1.6;border:1px solid;color:#2c3e50;}
+        .cat-def b{display:block;font-size:1.02em;margin-bottom:2px;}
+        .cat-def.def-a{background:#e8f5e8;border-color:#a8d5a2;} .cat-def.def-a b{color:#1e5c1e;}
+        .cat-def.def-b{background:#eef0ff;border-color:#a8b8f0;} .cat-def.def-b b{color:#1c3fa0;}
+        .cat-def.def-c{background:#f3effa;border-color:#cdbbe8;} .cat-def.def-c b{color:#5b3f8c;}
+        .cat-def.def-d{background:#fff4e0;border-color:#f0cc88;} .cat-def.def-d b{color:#7a4500;}
+        @media(max-width:860px){.cat-defs{grid-template-columns:1fr 1fr;padding:0 16px;}}
+        @media(max-width:480px){.cat-defs{grid-template-columns:1fr;}}
+</style>
 </head>
 <body>
 
@@ -504,15 +521,19 @@
         </div>
         <div class="stat-item">
             <span class="stat-num cat-a">17</span>
-            <span class="stat-label">A — Spatial Cultural<br>Dynamics（中核）</span>
+            <span class="stat-label">A — 中核</span>
         </div>
         <div class="stat-item">
             <span class="stat-num cat-b">4</span>
-            <span class="stat-label">B — GeoAI /<br>WebGIS（隣接）</span>
+            <span class="stat-label">B — 中核隣接</span>
         </div>
         <div class="stat-item">
-            <span class="stat-num cat-d">4</span>
-            <span class="stat-label">D — 方法・<br>教育</span>
+            <span class="stat-num cat-c">2</span>
+            <span class="stat-label">C — 周辺</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-num cat-d">2</span>
+            <span class="stat-label">D — 教育・普及</span>
         </div>
         <div class="stat-item">
             <span class="stat-num" style="color:var(--teal)">5</span>
@@ -521,14 +542,23 @@
     </div>
 </div>
 
+<!-- CATEGORY DEFINITIONS -->
+<div class="cat-defs" role="list" aria-label="分類の定義">
+    <div class="cat-def def-a" role="listitem"><b>A — 中核</b>Spatial Cultural Dynamics（空間×文化信号×動態推定）の主戦場。言語変化・感情・系統・拡散の研究。</div>
+    <div class="cat-def def-b" role="listitem"><b>B — 中核隣接</b>空間×計算（地理AI・深層学習・実装）で中核に接続しうる研究。</div>
+    <div class="cat-def def-c" role="listitem"><b>C — 周辺</b>情報学一般・統計教育など、中核と直接結びつかない研究。</div>
+    <div class="cat-def def-d" role="listitem"><b>D — 教育・普及</b>教材、連載、教育実践。</div>
+</div>
+
 <!-- FILTER BAR -->
 <div class="filter-bar">
     <div class="filter-inner">
         <div class="filter-tabs" role="group" aria-label="カテゴリ絞り込み">
             <button class="filter-tab active" data-filter="all">すべて</button>
             <button class="filter-tab tab-a" data-filter="A">A — 中核</button>
-            <button class="filter-tab tab-b" data-filter="B">B — 隣接</button>
-            <button class="filter-tab tab-d" data-filter="D">D — 方法・教育</button>
+            <button class="filter-tab tab-b" data-filter="B">B — 中核隣接</button>
+            <button class="filter-tab tab-c" data-filter="C">C — 周辺</button>
+            <button class="filter-tab tab-d" data-filter="D">D — 教育・普及</button>
             <button class="filter-tab" data-filter="selected">★ Selected</button>
         </div>
 
@@ -564,7 +594,7 @@
             data-search="tatara iron production grassland distribution western japan open geospatial approach historical landscape analysis ayaka onohara takatora bito nobusuke iwasaki isprs archives foss4g 2026 たたら製鉄 草原 景観">
             <div class="pub-top">
                 <span class="pub-year">2026</span>
-                <span class="badge badge-b">B — 隣接</span>
+                <span class="badge badge-b">B — 中核隣接</span>
                 <span class="badge badge-lead">Lead author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
             </div>
@@ -611,7 +641,7 @@
             data-search="dialogue with the inner other generative ai statistics exercises reflection metacognition learning emotion remedial education jade ayaka onohara 内なる他者 生成AI 統計演習 リフレクション メタ認知 学習感情 リメディアル教育研究">
             <div class="pub-top">
                 <span class="pub-year">2026</span>
-                <span class="badge badge-d">D — 方法・教育</span>
+                <span class="badge badge-d">D — 教育・普及</span>
                 <span class="badge badge-lead">Lead author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
             </div>
@@ -679,7 +709,7 @@
             data-search="対話型 AI モデル 音声 教育 コンテンツ 作成 生成AI 教育応用 小野原彩香">
             <div class="pub-top">
                 <span class="pub-year">2024</span>
-                <span class="badge badge-d">D — 方法・教育</span>
+                <span class="badge badge-d">D — 教育・普及</span>
                 <span class="badge badge-lead">Lead author</span>
             </div>
             <div class="pub-title">対話型AIモデル並びにAI音声を活用した教育コンテンツ作成 ―AI技術の新たな展開―</div>
@@ -700,7 +730,7 @@
             data-search="機械学習 ワイン ブドウ 栽培 適地 推定 GIS 地理 ML 小野原彩香 岩崎 machine learning vineyard suitability">
             <div class="pub-top">
                 <span class="pub-year">2023</span>
-                <span class="badge badge-b">B — 隣接</span>
+                <span class="badge badge-b">B — 中核隣接</span>
                 <span class="badge badge-coauth">Co-author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
             </div>
@@ -745,7 +775,7 @@
             data-search="client side web mapping vineyard suitability assessment isprs iwasaki hayashi tanaka katori onohara oguchi WebGIS">
             <div class="pub-top">
                 <span class="pub-year">2022</span>
-                <span class="badge badge-b">B — 隣接</span>
+                <span class="badge badge-b">B — 中核隣接</span>
                 <span class="badge badge-selected">★ Selected</span>
                 <span class="badge badge-coauth">Co-author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
@@ -812,7 +842,7 @@
             data-search="classification land use cover change kanto region foss4g open data iwasaki sprague onohara 土地利用 関東">
             <div class="pub-top">
                 <span class="pub-year">2016</span>
-                <span class="badge badge-b">B — 隣接</span>
+                <span class="badge badge-b">B — 中核隣接</span>
                 <span class="badge badge-coauth">Co-author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
             </div>
@@ -852,11 +882,11 @@
         </article>
 
         <!-- 11. 2013 D -->
-        <article class="pub-card" data-cat="D" data-year="2013" data-selected="false"
+        <article class="pub-card" data-cat="C" data-year="2013" data-selected="false"
             data-search="統計教育 授業内容 傾向 学生 授業評価 小野原彩香 statistics education">
             <div class="pub-top">
                 <span class="pub-year">2013</span>
-                <span class="badge badge-d">D — 方法・教育</span>
+                <span class="badge badge-c">C — 周辺</span>
                 <span class="badge badge-lead">Lead author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
             </div>
@@ -1028,11 +1058,11 @@
         </article>
 
         <!-- 19. 2010 D -->
-        <article class="pub-card" data-cat="D" data-year="2010" data-selected="false"
+        <article class="pub-card" data-cat="C" data-year="2010" data-selected="false"
             data-search="ITMA NCD UML 分析プロセス 可視化 共有 情報科学 小野原彩香">
             <div class="pub-top">
                 <span class="pub-year">2010</span>
-                <span class="badge badge-d">D — 方法・教育</span>
+                <span class="badge badge-c">C — 周辺</span>
                 <span class="badge badge-lead">Lead author</span>
                 <span class="badge badge-peer">Peer-reviewed</span>
             </div>
@@ -1126,7 +1156,7 @@
 
 <footer class="page-footer">
     <p>情報は公開情報（researchmap・KAKEN・J-GLOBAL等）に基づき構成。詳細・修正は <a href="mailto:a-onohara@hokusei.ac.jp">a-onohara@hokusei.ac.jp</a> まで。<br>
-    最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../">← トップページへ戻る</a></p>
+    最終更新：2026-09-14 &nbsp;|&nbsp; <a href="../">← トップページへ戻る</a></p>
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>

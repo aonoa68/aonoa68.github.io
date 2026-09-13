@@ -215,7 +215,18 @@
         @media (prefers-reduced-motion: reduce) {
             .project-card { transition: none; }
         }
-    </style>
+    
+        /* category definitions (A/B/C/D, 2026-09-14) */
+        .cat-defs{max-width:1100px;margin:20px auto 4px;padding:0 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;box-sizing:border-box;}
+        .cat-def{border-radius:10px;padding:10px 14px;font-size:.82em;line-height:1.6;border:1px solid;color:#2c3e50;}
+        .cat-def b{display:block;font-size:1.02em;margin-bottom:2px;}
+        .cat-def.def-a{background:#e8f5e8;border-color:#a8d5a2;} .cat-def.def-a b{color:#1e5c1e;}
+        .cat-def.def-b{background:#eef0ff;border-color:#a8b8f0;} .cat-def.def-b b{color:#1c3fa0;}
+        .cat-def.def-c{background:#f3effa;border-color:#cdbbe8;} .cat-def.def-c b{color:#5b3f8c;}
+        .cat-def.def-d{background:#fff4e0;border-color:#f0cc88;} .cat-def.def-d b{color:#7a4500;}
+        @media(max-width:860px){.cat-defs{grid-template-columns:1fr 1fr;padding:0 16px;}}
+        @media(max-width:480px){.cat-defs{grid-template-columns:1fr;}}
+</style>
 </head>
 <body>
 
@@ -250,7 +261,7 @@
     <div class="stats-inner">
         <div class="stat-item"><span class="stat-num" id="count-all">13</span><span class="stat-label">Total</span></div>
         <div class="stat-item"><span class="stat-num" style="color:var(--col-a)">10</span><span class="stat-label">A — 中核</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-b)">3</span><span class="stat-label">B — 隣接</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--col-b)">3</span><span class="stat-label">B — 中核隣接</span></div>
         <div class="stat-item"><span class="stat-num" style="color:var(--status-prep-col)">7</span><span class="stat-label">In preparation</span></div>
         <div class="stat-item"><span class="stat-num" style="color:var(--status-rev-col)">3</span><span class="stat-label">Under review</span></div>
         <div class="stat-item"><span class="stat-num" style="color:var(--status-pub-col)">2</span><span class="stat-label">Published</span></div>
@@ -258,11 +269,18 @@
     </div>
 </div>
 
+<div class="cat-defs" role="list" aria-label="分類の定義">
+    <div class="cat-def def-a" role="listitem"><b>A — 中核</b>Spatial Cultural Dynamics（空間×文化信号×動態推定）の主戦場。言語変化・感情・系統・拡散の研究。</div>
+    <div class="cat-def def-b" role="listitem"><b>B — 中核隣接</b>空間×計算（地理AI・深層学習・実装）で中核に接続しうる研究。</div>
+    <div class="cat-def def-c" role="listitem"><b>C — 周辺</b>情報学一般・統計教育など、中核と直接結びつかない研究。</div>
+    <div class="cat-def def-d" role="listitem"><b>D — 教育・普及</b>教材、連載、教育実践。</div>
+</div>
+
 <div class="filter-bar">
     <div class="filter-inner">
         <button class="filter-tab active" data-filter="all">すべて</button>
         <button class="filter-tab tab-a" data-filter="A">A — 中核</button>
-        <button class="filter-tab tab-b" data-filter="B">B — 隣接</button>
+        <button class="filter-tab tab-b" data-filter="B">B — 中核隣接</button>
         <button class="filter-tab tab-prep" data-filter="prep">In preparation</button>
         <button class="filter-tab tab-rev"  data-filter="rev">Under review</button>
         <button class="filter-tab tab-pub"  data-filter="pub">Published</button>

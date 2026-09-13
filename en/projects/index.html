@@ -82,6 +82,17 @@
     .page-footer{background:var(--navy2);color:rgba(255,255,255,0.7);text-align:center;padding:32px 0;font-size:0.88em;}
     .page-footer a{color:var(--gold);text-decoration:none;}
     @media(max-width:700px){.page-header h1{font-size:2em;}.main-content{padding:20px 16px 60px;}.filter-inner,.nav-inner{padding:0 16px;}.nav-links-right{display:none;}}
+
+        /* category definitions (A/B/C/D, 2026-09-14) */
+        .cat-defs{max-width:1100px;margin:20px auto 4px;padding:0 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;box-sizing:border-box;}
+        .cat-def{border-radius:10px;padding:10px 14px;font-size:.82em;line-height:1.6;border:1px solid;color:#2c3e50;}
+        .cat-def b{display:block;font-size:1.02em;margin-bottom:2px;}
+        .cat-def.def-a{background:#e8f5e8;border-color:#a8d5a2;} .cat-def.def-a b{color:#1e5c1e;}
+        .cat-def.def-b{background:#eef0ff;border-color:#a8b8f0;} .cat-def.def-b b{color:#1c3fa0;}
+        .cat-def.def-c{background:#f3effa;border-color:#cdbbe8;} .cat-def.def-c b{color:#5b3f8c;}
+        .cat-def.def-d{background:#fff4e0;border-color:#f0cc88;} .cat-def.def-d b{color:#7a4500;}
+        @media(max-width:860px){.cat-defs{grid-template-columns:1fr 1fr;padding:0 16px;}}
+        @media(max-width:480px){.cat-defs{grid-template-columns:1fr;}}
 </style>
 
 </head>
@@ -109,16 +120,22 @@
 <header class="page-header">
     <div class="page-header-inner">
         <h1>Research <span>Projects</span></h1>
-        <p class="lead">13 projects across two categories.<br>
-        A: Spatial Cultural Dynamics (core) &nbsp;·&nbsp; B: GeoAI / WebGIS (adjacent)</p>
+        <p class="lead">13 projects in categories A (Core) and B (Core-adjacent).<br>Category definitions are shown below.</p>
     </div>
 </header>
+
+<div class="cat-defs" role="list" aria-label="Category definitions">
+    <div class="cat-def def-a" role="listitem"><b>A — Core</b>The main arena of Spatial Cultural Dynamics (space × cultural signals × dynamics): language change, emotion, phylogeny, and diffusion.</div>
+    <div class="cat-def def-b" role="listitem"><b>B — Core-adjacent</b>Space × computation (GeoAI, deep learning, implementation) that can connect to the core.</div>
+    <div class="cat-def def-c" role="listitem"><b>C — Peripheral</b>General informatics and statistics education, not directly tied to the core.</div>
+    <div class="cat-def def-d" role="listitem"><b>D — Education &amp; Outreach</b>Teaching materials, serial articles, and educational practice.</div>
+</div>
 
 <div class="filter-bar">
     <div class="filter-inner">
         <button class="filter-tab active" data-filter="all">All</button>
         <button class="filter-tab tab-a" data-filter="A">A — Core</button>
-        <button class="filter-tab tab-b" data-filter="B">B — Adjacent</button>
+        <button class="filter-tab tab-b" data-filter="B">B — Core-adjacent</button>
         <button class="filter-tab" data-filter="prep">In Preparation</button>
         <button class="filter-tab" data-filter="rev">Under Review</button>
         <button class="filter-tab" data-filter="pub">Published</button>
@@ -298,7 +315,7 @@
     </div>
 
     <div class="project-card" data-cat="B" data-status="pub">
-        <div class="card-top"><span class="card-id">F1</span><span class="badge badge-b">B — Adjacent</span><span class="badge-status status-pub">Published</span></div>
+        <div class="card-top"><span class="card-id">F1</span><span class="badge badge-b">B — Core-adjacent</span><span class="badge-status status-pub">Published</span></div>
         <div class="card-title">Examining the Relationship Between Tatara Iron Production and Grassland Distribution in Western Japan: An Open Geospatial Approach to Historical Landscape Analysis</div>
         <div class="card-meta">Ayaka Onohara; Takatora Bito; Nobusuke Iwasaki</div>
         <div class="card-target"><i class="fas fa-paper-plane"></i> Published: <a href="https://doi.org/10.5194/isprs-archives-L-4-W1-2026-205-2026" target="_blank"><em>ISPRS Archives</em>, L-4/W1-2026, pp. 205–211</a></div>
@@ -317,7 +334,7 @@
     </div>
 
     <div class="project-card" data-cat="B" data-status="dev">
-        <div class="card-top"><span class="card-id">C1</span><span class="badge badge-b">B — Adjacent</span><span class="badge-status status-dev">In Development</span></div>
+        <div class="card-top"><span class="card-id">C1</span><span class="badge badge-b">B — Core-adjacent</span><span class="badge-status status-dev">In Development</span></div>
         <div class="card-title">Hackable Campus: A Campus Digital Twin That Students Can Extend with Code</div>
         <div class="card-meta">Ayaka Onohara</div>
         <div class="card-target"><i class="fas fa-paper-plane"></i> <a href="https://hokusei-newcampus-preview.aonoa68.workers.dev/" target="_blank">Public web demo</a> — new information science faculty building (opening April 2027)</div>
