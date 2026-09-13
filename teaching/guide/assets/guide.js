@@ -31,8 +31,9 @@
     G.rng = seed => { if (seed === undefined) return Math.random; let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
     G.shuffle = (a, rnd = Math.random) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     G.normalPdf = (x, mu, s) => Math.exp(-((x - mu) ** 2) / (2 * s * s)) / (s * Math.sqrt(2 * Math.PI));
-    // t分布の両側 97.5% 点（自由度 df）。df>=1 の近似（Hill 1970 の簡略式）
-    G.t975 = df => { const z = 1.959964; const g1 = (z ** 3 + z) / 4, g2 = (5 * z ** 5 + 16 * z ** 3 + 3 * z) / 96, g3 = (3 * z ** 7 + 19 * z ** 5 + 17 * z ** 3 - 15 * z) / 384; return z + g1 / df + g2 / df ** 2 + g3 / df ** 3; };
+    // t分布の 97.5% 点（自由度 df）。df=1〜30 は正確な値の表（scipy.stats.t.ppf で作成）、31以上は Hill (1970) の展開式（誤差 0.001 未満）
+    const T975 = [12.7062,4.3027,3.1824,2.7764,2.5706,2.4469,2.3646,2.3060,2.2622,2.2281,2.2010,2.1788,2.1604,2.1448,2.1314,2.1199,2.1098,2.1009,2.0930,2.0860,2.0796,2.0739,2.0687,2.0639,2.0595,2.0555,2.0518,2.0484,2.0452,2.0423];
+    G.t975 = df => { if (df >= 1 && df <= 30 && Number.isInteger(df)) return T975[df - 1]; const z = 1.959964; const g1 = (z ** 3 + z) / 4, g2 = (5 * z ** 5 + 16 * z ** 3 + 3 * z) / 96, g3 = (3 * z ** 7 + 19 * z ** 5 + 17 * z ** 3 - 15 * z) / 384; return z + g1 / df + g2 / df ** 2 + g3 / df ** 3; };
 
     /* ---- 表示 ---- */
     G.fmt = (v, d = 0) => Number(v).toLocaleString("ja-JP", { minimumFractionDigits: d, maximumFractionDigits: d });
