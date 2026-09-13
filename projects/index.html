@@ -34,6 +34,8 @@
             --status-rev-col:  #8a5500;
             --status-pub-bg:   #e8f5e8;
             --status-pub-col:  #1a6a1a;
+            --status-dev-bg:   #eaf3ff;
+            --status-dev-col:  #1f5fa8;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -107,6 +109,8 @@
         .filter-tab.tab-b.active { background: var(--col-b); border-color: var(--col-b); }
         .filter-tab.tab-prep.active { background: var(--status-prep-col); border-color: var(--status-prep-col); }
         .filter-tab.tab-rev.active  { background: var(--status-rev-col);  border-color: var(--status-rev-col); }
+        .filter-tab.tab-pub.active  { background: var(--status-pub-col);  border-color: var(--status-pub-col); }
+        .filter-tab.tab-dev.active  { background: var(--status-dev-col);  border-color: var(--status-dev-col); }
 
         /* MAIN */
         .main-content { max-width: 1100px; margin: 0 auto; padding: 32px 32px 80px; }
@@ -175,6 +179,7 @@
         .badge-prep { background: var(--status-prep-bg); color: var(--status-prep-col); border: 1px solid #c0cff8; }
         .badge-rev  { background: var(--status-rev-bg);  color: var(--status-rev-col);  border: 1px solid #f0d888; }
         .badge-pub  { background: var(--status-pub-bg);  color: var(--status-pub-col);  border: 1px solid var(--col-a-bd); }
+        .badge-dev  { background: var(--status-dev-bg);  color: var(--status-dev-col);  border: 1px solid #b8d4f5; }
 
         /* Journal */
         .project-journal {
@@ -243,11 +248,13 @@
 
 <div class="stats-bar">
     <div class="stats-inner">
-        <div class="stat-item"><span class="stat-num" id="count-all">10</span><span class="stat-label">Total</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-a)">9</span><span class="stat-label">A — 中核</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-b)">1</span><span class="stat-label">B — 隣接</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--status-prep-col)">9</span><span class="stat-label">In preparation</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--status-rev-col)">1</span><span class="stat-label">Under review</span></div>
+        <div class="stat-item"><span class="stat-num" id="count-all">13</span><span class="stat-label">Total</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--col-a)">10</span><span class="stat-label">A — 中核</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--col-b)">3</span><span class="stat-label">B — 隣接</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--status-prep-col)">7</span><span class="stat-label">In preparation</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--status-rev-col)">3</span><span class="stat-label">Under review</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--status-pub-col)">2</span><span class="stat-label">Published</span></div>
+        <div class="stat-item"><span class="stat-num" style="color:var(--status-dev-col)">1</span><span class="stat-label">In development</span></div>
     </div>
 </div>
 
@@ -258,6 +265,8 @@
         <button class="filter-tab tab-b" data-filter="B">B — 隣接</button>
         <button class="filter-tab tab-prep" data-filter="prep">In preparation</button>
         <button class="filter-tab tab-rev"  data-filter="rev">Under review</button>
+        <button class="filter-tab tab-pub"  data-filter="pub">Published</button>
+        <button class="filter-tab tab-dev"  data-filter="dev">In development</button>
     </div>
 </div>
 
@@ -266,14 +275,14 @@
     <!-- GROUP: Place × Emotion -->
     <div class="group-label" data-group="W">W — Place &times; Emotion</div>
 
-    <div class="project-card" data-cat="A" data-status="rev">
+    <div class="project-card" data-cat="A" data-status="pub">
         <div class="project-id">W1</div>
         <div class="project-body">
             <div class="project-title">Place &times; Emotion（GAN・感度分析）</div>
             <div class="project-meta">
                 <span class="badge badge-a">A</span>
-                <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
-                <span class="project-journal"><i class="fas fa-journal-whills"></i> WCTP 2025</span>
+                <span class="badge badge-pub"><i class="fas fa-check"></i> Published</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> <a href="https://doi.org/10.2991/978-94-6239-638-8_25" target="_blank">WCTP 2025（Atlantis Press, 2026）</a></span>
             </div>
         </div>
         <div class="project-action"></div>
@@ -282,24 +291,40 @@
     <div class="project-card" data-cat="A" data-status="prep">
         <div class="project-id">W2</div>
         <div class="project-body">
-            <div class="project-title">PlaceEmotion-GAN：実装論文</div>
+            <div class="project-title">重み付き情動適応指標の同定可能性と頑健性</div>
             <div class="project-meta">
                 <span class="badge badge-a">A</span>
                 <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-                <span class="project-journal"><i class="fas fa-journal-whills"></i> JOSS</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> 投稿先を再選定中</span>
             </div>
         </div>
         <div class="project-action"></div>
     </div>
 
-    <div class="project-card" data-cat="A" data-status="prep">
+    <div class="project-card" data-cat="A" data-status="rev">
         <div class="project-id">W3</div>
         <div class="project-body">
             <div class="project-title">Place &times; Emotion：データ記述論文</div>
             <div class="project-meta">
                 <span class="badge badge-a">A</span>
-                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
+                <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
                 <span class="project-journal"><i class="fas fa-journal-whills"></i> Scientific Data</span>
+            </div>
+        </div>
+        <div class="project-action"></div>
+    </div>
+
+    <!-- GROUP: Streetscape × Affect -->
+    <div class="group-label" data-group="M">M — Streetscape &times; Affect</div>
+
+    <div class="project-card" data-cat="A" data-status="rev">
+        <div class="project-id">M1</div>
+        <div class="project-body">
+            <div class="project-title">Mapping Place, or Mapping Pictures?（Mapillary による街路景観と感情）</div>
+            <div class="project-meta">
+                <span class="badge badge-a">A</span>
+                <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Cities</span>
             </div>
         </div>
         <div class="project-action"></div>
@@ -308,14 +333,14 @@
     <!-- GROUP: Accent -->
     <div class="group-label" data-group="S">S — Accent &amp; Cooperation</div>
 
-    <div class="project-card" data-cat="A" data-status="prep">
+    <div class="project-card" data-cat="A" data-status="rev">
         <div class="project-id">S1</div>
         <div class="project-body">
             <div class="project-title">アクセント自動分類</div>
             <div class="project-meta">
                 <span class="badge badge-a">A</span>
-                <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-                <span class="project-journal"><i class="fas fa-journal-whills"></i> TACL &nbsp;/&nbsp; Journal of Phonetics</span>
+                <span class="badge badge-rev"><i class="fas fa-spinner"></i> Under review</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Journal of the Acoustical Society of America（JASA）</span>
             </div>
         </div>
         <div class="project-action"></div>
@@ -344,7 +369,7 @@
             <div class="project-meta">
                 <span class="badge badge-a">A</span>
                 <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-                <span class="project-journal"><i class="fas fa-journal-whills"></i> iScience</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> Evolution and Human Behavior</span>
             </div>
         </div>
         <div class="project-action"></div>
@@ -360,7 +385,7 @@
             <div class="project-meta">
                 <span class="badge badge-a">A</span>
                 <span class="badge badge-prep"><i class="fas fa-pen"></i> In preparation</span>
-                <span class="project-journal"><i class="fas fa-journal-whills"></i> PLOS Computational Biology</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> 投稿先を再構成中</span>
             </div>
         </div>
         <div class="project-action"></div>
@@ -411,6 +436,38 @@
         <div class="project-action"></div>
     </div>
 
+    <!-- GROUP: Historical Landscape -->
+    <div class="group-label" data-group="F">F — Historical Landscape</div>
+
+    <div class="project-card" data-cat="B" data-status="pub">
+        <div class="project-id">F1</div>
+        <div class="project-body">
+            <div class="project-title">たたら製鉄と草原分布：オープン地理空間ワークフローによる歴史的景観分析</div>
+            <div class="project-meta">
+                <span class="badge badge-b">B</span>
+                <span class="badge badge-pub"><i class="fas fa-check"></i> Published</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> <a href="https://doi.org/10.5194/isprs-archives-L-4-W1-2026-205-2026" target="_blank">ISPRS Archives, L-4/W1-2026</a></span>
+            </div>
+        </div>
+        <div class="project-action"></div>
+    </div>
+
+    <!-- GROUP: Campus Digital Twin -->
+    <div class="group-label" data-group="C">C — Campus Digital Twin</div>
+
+    <div class="project-card" data-cat="B" data-status="dev">
+        <div class="project-id">C1</div>
+        <div class="project-body">
+            <div class="project-title">Hackable Campus：学生がコードで拡張できる新校舎デジタルツイン</div>
+            <div class="project-meta">
+                <span class="badge badge-b">B</span>
+                <span class="badge badge-dev"><i class="fas fa-code"></i> In development</span>
+                <span class="project-journal"><i class="fas fa-journal-whills"></i> <a href="https://hokusei-newcampus-preview.aonoa68.workers.dev/" target="_blank">Web デモ公開中（2027年4月開設予定の情報科学部 新校舎）</a></span>
+            </div>
+        </div>
+        <div class="project-action"></div>
+    </div>
+
     <div class="no-results" id="no-results">
         <i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>
         条件に一致するプロジェクトが見つかりませんでした。
@@ -420,7 +477,7 @@
 
 <footer class="page-footer">
     <p>ステータスは随時更新。詳細は <a href="mailto:a-onohara@hokusei.ac.jp">a-onohara@hokusei.ac.jp</a> まで。<br>
-    最終更新：2026-03-06 &nbsp;|&nbsp; <a href="../">← トップページへ戻る</a></p>
+    最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../">← トップページへ戻る</a></p>
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -443,6 +500,8 @@
             if (activeFilter === 'B')    show = cat === 'B';
             if (activeFilter === 'prep') show = status === 'prep';
             if (activeFilter === 'rev')  show = status === 'rev';
+            if (activeFilter === 'pub')  show = status === 'pub';
+            if (activeFilter === 'dev')  show = status === 'dev';
 
             card.classList.toggle('hidden', !show);
             if (show) visible++;
@@ -465,7 +524,7 @@
             document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             activeFilter = this.dataset.filter;
-            applyFilters();
+            applyFilter();
         });
     });
 })();

@@ -506,4 +506,20 @@
     const navLinks = document.querySelector('.nav-links');
     if (toggle && navLinks) {
       toggle.addEventListener('click', function() {
-        const isOpen = navLinks.classList.toggle('
+        const isOpen = navLinks.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', isOpen.toString());
+      });
+    }
+    let lastY = window.scrollY;
+    const nav = document.querySelector('.site-nav');
+    if (nav) {
+      window.addEventListener('scroll', function() {
+        const y = window.scrollY;
+        nav.classList.toggle('nav-hidden', y > lastY && y > 80);
+        lastY = y;
+      }, {passive: true});
+    }
+  });
+</script>
+</body>
+</html>

@@ -343,27 +343,32 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 (function(){
-const cards=Array.from(document.querySelectorAll(’.pub-card’));
-const noResults=document.getElementById(‘no-results’);
-const countEl=document.getElementById(‘result-count’);
-const labelSelected=document.getElementById(‘label-selected’);
-let activeFilter=‘all’,activeYear=‘all’,activeSearch=’’;
+const cards=Array.from(document.querySelectorAll('.pub-card'));
+const noResults=document.getElementById('no-results');
+const countEl=document.getElementById('result-count');
+const labelSelected=document.getElementById('label-selected');
+let activeFilter='all',activeYear='all',activeSearch='';
 function applyFilters(){
 let visible=0;
 cards.forEach(card=>{
-const cat=card.dataset.cat,year=parseInt(card.dataset.year),isSelected=card.dataset.selected===‘true’;
-const searchText=card.dataset.search+’ ‘+card.textContent.toLowerCase();
+const cat=card.dataset.cat,year=parseInt(card.dataset.year),isSelected=card.dataset.selected==='true';
+const searchText=card.dataset.search+' '+card.textContent.toLowerCase();
 let show=true;
-if(activeFilter===‘selected’) show=isSelected;
-else if(activeFilter!==‘all’) show=(cat===activeFilter);
-if(show&&activeYear!==‘all’){if(activeYear===‘2020s’)show=year>=2020;if(activeYear===‘2010s’)show=year>=2010&&year<2020;}
+if(activeFilter==='selected') show=isSelected;
+else if(activeFilter!=='all') show=(cat===activeFilter);
+if(show&&activeYear!=='all'){if(activeYear==='2020s')show=year>=2020;if(activeYear==='2010s')show=year>=2010&&year<2020;}
 if(show&&activeSearch) show=searchText.includes(activeSearch);
-card.classList.toggle(‘hidden’,!show);
+card.classList.toggle('hidden',!show);
 if(show)visible++;
 });
-countEl.textContent=‘Showing ‘+visible+’ item’+(visible===1?’’:‘s’);
-noResults.classList.toggle(‘visible’,visible===0);
-labelSelected.style.display=(activeFilter===‘all’&&!activeSearch&&activeYear===‘all’)?’’:‘none’;
+countEl.textContent='Showing '+visible+' item'+(visible===1?'':'s');
+noResults.classList.toggle('visible',visible===0);
+labelSelected.style.display=(activeFilter==='all'&&!activeSearch&&activeYear==='all')?'':'none';
 }
-document.querySelectorAll(’.filter-tab’).forEach(btn=>{btn.addEventListener(‘click’,function(){document.querySelectorAll(’.filter-tab’).forEach(b=>b.classList.remove(‘active’));this.classList.add(‘active’);activeFilter=this.dataset.filter;applyFilters();});});
-document.getElementById(‘year-filter’).addEven
+document.querySelectorAll('.filter-tab').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));this.classList.add('active');activeFilter=this.dataset.filter;applyFilters();});});
+document.getElementById('year-filter').addEventListener('change',function(){activeYear=this.value;applyFilters();});
+document.getElementById('search-input').addEventListener('input',function(){activeSearch=this.value.toLowerCase().trim();applyFilters();});
+})();
+</script>
+</body>
+</html>

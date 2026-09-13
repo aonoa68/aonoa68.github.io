@@ -9,7 +9,6 @@
     <link rel="alternate" hreflang="ja" href="https://aonoa68.github.io/projects/">
     <link rel="alternate" hreflang="en" href="https://aonoa68.github.io/en/projects/">
 
-```
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -70,6 +69,7 @@
     .status-prep{background:#f5f5f5;color:#555;border:1px solid #ddd;}
     .status-rev{background:#fff8e0;color:#8a6000;border:1px solid #f0d060;}
     .status-pub{background:#e0f5e8;color:#1a6a1a;border:1px solid #90cc90;}
+    .status-dev{background:#eaf3ff;color:#1f5fa8;border:1px solid #b8d4f5;}
     .card-title{font-size:1.04em;font-weight:600;color:var(--navy2);line-height:1.45;margin-bottom:6px;font-family:'DM Serif Display',serif;font-style:italic;}
     .card-meta{font-size:0.87em;color:var(--muted);margin-bottom:8px;}
     .card-target{font-size:0.85em;color:var(--text);background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 14px;margin-top:10px;display:inline-flex;align-items:center;gap:8px;}
@@ -83,7 +83,6 @@
     .page-footer a{color:var(--gold);text-decoration:none;}
     @media(max-width:700px){.page-header h1{font-size:2em;}.main-content{padding:20px 16px 60px;}.filter-inner,.nav-inner{padding:0 16px;}.nav-links-right{display:none;}}
 </style>
-```
 
 </head>
 <body>
@@ -110,7 +109,7 @@
 <header class="page-header">
     <div class="page-header-inner">
         <h1>Research <span>Projects</span></h1>
-        <p class="lead">10 ongoing projects across two categories.<br>
+        <p class="lead">13 projects across two categories.<br>
         A: Spatial Cultural Dynamics (core) &nbsp;·&nbsp; B: GeoAI / WebGIS (adjacent)</p>
     </div>
 </header>
@@ -122,13 +121,14 @@
         <button class="filter-tab tab-b" data-filter="B">B — Adjacent</button>
         <button class="filter-tab" data-filter="prep">In Preparation</button>
         <button class="filter-tab" data-filter="rev">Under Review</button>
+        <button class="filter-tab" data-filter="pub">Published</button>
+        <button class="filter-tab" data-filter="dev">In Development</button>
     </div>
 </div>
 
 <main class="main-content">
     <p id="no-results" class="no-results"><i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>No matching projects found.</p>
 
-```
 <!-- W GROUP (A) -->
 <div class="group-section" data-group="W">
     <div class="group-header">
@@ -139,28 +139,47 @@
         <div class="group-divider"></div>
     </div>
 
-    <div class="project-card" data-cat="A" data-status="rev">
-        <div class="card-top"><span class="card-id">W1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-rev">Under Review</span></div>
+    <div class="project-card" data-cat="A" data-status="pub">
+        <div class="card-top"><span class="card-id">W1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-pub">Published</span></div>
         <div class="card-title">GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction</div>
         <div class="card-meta">Ayaka Onohara; Hiroki Ouchi</div>
-        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: workshop proceedings (WCTP 2025 → journal)</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Published: <a href="https://doi.org/10.2991/978-94-6239-638-8_25" target="_blank"><em>Proceedings of WCTP 2025</em> (Atlantis Press, 2026)</a></div>
         <div class="card-tags"><span class="card-tag">GAN</span><span class="card-tag">cultural evolution</span><span class="card-tag">niche construction</span><span class="card-tag">emotion maps</span></div>
     </div>
 
     <div class="project-card" data-cat="A" data-status="prep">
         <div class="card-top"><span class="card-id">W2</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
-        <div class="card-title">PlaceEmotion-GAN: Implementation and Documentation</div>
-        <div class="card-meta">Ayaka Onohara; Hiroki Ouchi</div>
-        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Journal of Open Source Software (JOSS)</div>
-        <div class="card-tags"><span class="card-tag">open source</span><span class="card-tag">software paper</span><span class="card-tag">Python</span><span class="card-tag">GAN</span></div>
+        <div class="card-title">Identifiability and Robustness of Weighted Emotion Adaptation Metrics</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: to be decided (venue under reconsideration)</div>
+        <div class="card-tags"><span class="card-tag">sensitivity analysis</span><span class="card-tag">robustness</span><span class="card-tag">emotion adaptation</span></div>
     </div>
 
-    <div class="project-card" data-cat="A" data-status="prep">
-        <div class="card-top"><span class="card-id">W3</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+    <div class="project-card" data-cat="A" data-status="rev">
+        <div class="card-top"><span class="card-id">W3</span><span class="badge badge-a">A — Core</span><span class="badge-status status-rev">Under Review</span></div>
         <div class="card-title">PlaceEmotion-GAN: Data Descriptor</div>
         <div class="card-meta">Ayaka Onohara; Hiroki Ouchi</div>
-        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Scientific Data</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Under review: Scientific Data</div>
         <div class="card-tags"><span class="card-tag">dataset</span><span class="card-tag">text embeddings</span><span class="card-tag">emotion</span><span class="card-tag">place</span></div>
+    </div>
+</div>
+
+<!-- M GROUP -->
+<div class="group-section" data-group="M">
+    <div class="group-header">
+        <div class="group-icon group-icon-a"><i class="fas fa-street-view"></i></div>
+        <div>
+            <div class="group-title">M — Streetscape &amp; Affect<small>Spatial Cultural Dynamics: environment → affect axis</small></div>
+        </div>
+        <div class="group-divider"></div>
+    </div>
+
+    <div class="project-card" data-cat="A" data-status="rev">
+        <div class="card-top"><span class="card-id">M1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-rev">Under Review</span></div>
+        <div class="card-title">Mapping Place, or Mapping Pictures? A Mapillary Pilot of Urban Streetscape Affect</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Under review: Cities</div>
+        <div class="card-tags"><span class="card-tag">Mapillary</span><span class="card-tag">streetscape</span><span class="card-tag">affect</span><span class="card-tag">urban</span></div>
     </div>
 </div>
 
@@ -174,11 +193,11 @@
         <div class="group-divider"></div>
     </div>
 
-    <div class="project-card" data-cat="A" data-status="prep">
-        <div class="card-top"><span class="card-id">S1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
+    <div class="project-card" data-cat="A" data-status="rev">
+        <div class="card-top"><span class="card-id">S1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-rev">Under Review</span></div>
         <div class="card-title">Automatic Classification of Accentual Class Using Speaker-Normalized Acoustic Distance</div>
         <div class="card-meta">Ayaka Onohara</div>
-        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: TACL / Journal of Phonetics</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Under review: Journal of the Acoustical Society of America (JASA)</div>
         <div class="card-tags"><span class="card-tag">DTW</span><span class="card-tag">acoustic distance</span><span class="card-tag">speaker normalization</span><span class="card-tag">pitch accent</span></div>
     </div>
 
@@ -204,8 +223,8 @@
     <div class="project-card" data-cat="A" data-status="prep">
         <div class="card-top"><span class="card-id">G1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
         <div class="card-title">Geo-Social Drivers of Dialectal Gain and Loss in Japanese</div>
-        <div class="card-meta">Ayaka Onohara</div>
-        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: iScience</div>
+        <div class="card-meta">Ayaka Onohara; Yasuo Ihara; Kenichi Aoki</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: Evolution and Human Behavior</div>
         <div class="card-tags"><span class="card-tag">GIS</span><span class="card-tag">language dynamics</span><span class="card-tag">spatial analysis</span><span class="card-tag">Japanese dialects</span></div>
     </div>
 </div>
@@ -224,7 +243,7 @@
         <div class="card-top"><span class="card-id">P1</span><span class="badge badge-a">A — Core</span><span class="badge-status status-prep">In Preparation</span></div>
         <div class="card-title">Different Phylogenetic Signals in Emotional vs. Action-Oriented Speech: A Comparative Study</div>
         <div class="card-meta">Ayaka Onohara</div>
-        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: PLOS Computational Biology</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Target: to be decided (manuscript being restructured)</div>
         <div class="card-tags"><span class="card-tag">phylogenetic signal</span><span class="card-tag">emotion</span><span class="card-tag">pragmatics</span><span class="card-tag">Bayesian</span></div>
     </div>
 
@@ -274,40 +293,89 @@
         <div class="card-tags"><span class="card-tag">place identity</span><span class="card-tag">environmental psychology</span><span class="card-tag">affective maps</span></div>
     </div>
 </div>
-```
+
+<!-- F GROUP -->
+<div class="group-section" data-group="F">
+    <div class="group-header">
+        <div class="group-icon group-icon-b"><i class="fas fa-mountain"></i></div>
+        <div>
+            <div class="group-title">F — Historical Landscape<small>GeoAI / WebGIS: open geospatial workflows</small></div>
+        </div>
+        <div class="group-divider"></div>
+    </div>
+
+    <div class="project-card" data-cat="B" data-status="pub">
+        <div class="card-top"><span class="card-id">F1</span><span class="badge badge-b">B — Adjacent</span><span class="badge-status status-pub">Published</span></div>
+        <div class="card-title">Examining the Relationship Between Tatara Iron Production and Grassland Distribution in Western Japan: An Open Geospatial Approach to Historical Landscape Analysis</div>
+        <div class="card-meta">Ayaka Onohara; Takatora Bito; Nobusuke Iwasaki</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> Published: <a href="https://doi.org/10.5194/isprs-archives-L-4-W1-2026-205-2026" target="_blank"><em>ISPRS Archives</em>, L-4/W1-2026, pp. 205–211</a></div>
+        <div class="card-tags"><span class="card-tag">tatara iron production</span><span class="card-tag">grassland</span><span class="card-tag">open geospatial</span><span class="card-tag">reproducibility</span></div>
+    </div>
+</div>
+
+<!-- C GROUP -->
+<div class="group-section" data-group="C">
+    <div class="group-header">
+        <div class="group-icon group-icon-b"><i class="fas fa-cube"></i></div>
+        <div>
+            <div class="group-title">C — Campus Digital Twin<small>GeoAI / WebGIS: education and campus infrastructure</small></div>
+        </div>
+        <div class="group-divider"></div>
+    </div>
+
+    <div class="project-card" data-cat="B" data-status="dev">
+        <div class="card-top"><span class="card-id">C1</span><span class="badge badge-b">B — Adjacent</span><span class="badge-status status-dev">In Development</span></div>
+        <div class="card-title">Hackable Campus: A Campus Digital Twin That Students Can Extend with Code</div>
+        <div class="card-meta">Ayaka Onohara</div>
+        <div class="card-target"><i class="fas fa-paper-plane"></i> <a href="https://hokusei-newcampus-preview.aonoa68.workers.dev/" target="_blank">Public web demo</a> — new information science faculty building (opening April 2027)</div>
+        <div class="card-tags"><span class="card-tag">digital twin</span><span class="card-tag">Three.js</span><span class="card-tag">BIM × PLATEAU</span><span class="card-tag">education</span></div>
+    </div>
+</div>
+
 
 </main>
 
 <footer class="page-footer">
     <p>Based on publicly available information. For corrections: <a href="mailto:a-onohara@hokusei.ac.jp">a-onohara@hokusei.ac.jp</a><br>
-    Last updated: 2026-03-06 &nbsp;|&nbsp; <a href="../">← Back to top</a></p>
+    Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../">← Back to top</a></p>
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 (function(){
-const cards=Array.from(document.querySelectorAll(’.project-card’));
-const noResults=document.getElementById(‘no-results’);
-let activeFilter=‘all’;
+const cards=Array.from(document.querySelectorAll('.project-card'));
+const noResults=document.getElementById('no-results');
+let activeFilter='all';
 function applyFilters(){
 let visible=0;
 cards.forEach(card=>{
 const cat=card.dataset.cat,status=card.dataset.status;
 let show=true;
-if(activeFilter===‘A’) show=(cat===‘A’);
-else if(activeFilter===‘B’) show=(cat===‘B’);
-else if(activeFilter===‘prep’) show=(status===‘prep’);
-else if(activeFilter===‘rev’) show=(status===‘rev’);
-card.classList.toggle(‘hidden’,!show);
+if(activeFilter==='A') show=(cat==='A');
+else if(activeFilter==='B') show=(cat==='B');
+else if(activeFilter==='prep') show=(status==='prep');
+else if(activeFilter==='rev') show=(status==='rev');
+else if(activeFilter==='pub') show=(status==='pub');
+else if(activeFilter==='dev') show=(status==='dev');
+card.classList.toggle('hidden',!show);
 if(show)visible++;
 });
-noResults.classList.toggle(‘visible’,visible===0);
+noResults.classList.toggle('visible',visible===0);
 // hide/show group headers based on visible cards
-document.querySelectorAll(’.group-section’).forEach(sec=>{
-const hasVisible=sec.querySelectorAll(’.project-card:not(.hidden)’).length>0;
-sec.style.display=hasVisible?’’:‘none’;
+document.querySelectorAll('.group-section').forEach(sec=>{
+const hasVisible=sec.querySelectorAll('.project-card:not(.hidden)').length>0;
+sec.style.display=hasVisible?'':'none';
 });
 }
-document.querySelectorAll(’.filter-tab’).forEach(btn=>{
-btn.addEventListener(‘click’,function(){
-docu
+document.querySelectorAll('.filter-tab').forEach(btn=>{
+btn.addEventListener('click',function(){
+document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+this.classList.add('active');
+activeFilter=this.dataset.filter;
+applyFilters();
+});
+});
+})();
+</script>
+</body>
+</html>
