@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グラフで見る — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="ヒストグラムの階級幅と対数軸で、同じデータがどう違って見えるか。霊長類の体重と行動圏の広さのデータで、グラフの読み方を自分の手で確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .fig-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .fig-pair h3 { font-size:0.9em; color:var(--muted); font-weight:600; margin-bottom:6px; }
+        .fig-pair canvas { height:230px; }
+        .lab + .lab { margin-top:28px; }
+        .between { margin-top:28px; }
+        .ctrl { display:flex; flex-direction:column; gap:10px; }
+        .ctrl .range-row b { min-width:9.5em; text-align:right; font-variant-numeric:tabular-nums; color:var(--navy2); }
+        .toggle.plain { border-color:color-mix(in srgb,var(--navy2) 35%,white); }
+        .toggle.plain input { accent-color:var(--navy2); }
+        .hover-note { margin-top:10px; font-size:0.86em; color:var(--muted); min-height:1.8em; }
+        .hover-note i { font-style:italic; color:var(--text); }
+        @media (max-width:720px) { .fig-pair { grid-template-columns:minmax(0,1fr); } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">グラフで見る</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>02</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>軸ひとつで、データは別の姿になる</h1>
+        <p class="sub">グラフで見る ── ヒストグラム・散布図・対数軸</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>グラフは、データをそのまま写したものではない。区切り方と目盛りを決めた時点で、何が見えて何が隠れるかが決まる。桁が何けたも違う量は、対数の目盛りで見ないと大部分が見えない。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>霊長類の体重は、何けたにもまたがる</h2>
+        <p>体重が記録されている霊長類265種のうち、いちばん軽い種は31グラム、いちばん重いヒガシゴリラは149,325グラムです。その差は約4,800倍あります。行動圏の広さ（群れや個体がふだん動きまわる範囲）も、記録のある種の中で約1万4千倍の開きがあります。</p>
+        <p>こうした量をグラフにするとき、2つの選択がそのまま見え方を左右します。値をどの幅で区切るか、そして目盛りを等間隔の「差」で刻むか「比」で刻むかです。</p>
+        <dl class="terms">
+            <dt>ヒストグラム</dt><dd>値を幅の等しい区間に分け、各区間に入る種の数を棒の高さで表す図。分布の形を見るために使う。</dd>
+            <dt>階級・階級幅</dt><dd>その区間のこと、および区間の幅。ビン、ビン幅ともいう。</dd>
+            <dt>対数軸</dt><dd>目盛りが1つ進むごとに値が10倍になる軸。等しい間隔が等しい「比」を表す。</dd>
+            <dt>散布図</dt><dd>2つの量を縦軸と横軸にとり、1種を1つの点で打った図。2つの量の関係を見るために使う。</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>同じ265種を、2通りの目盛りで描く</h2>
+        <div class="figure">
+            <div class="fig-pair">
+                <div>
+                    <h3>そのままの目盛り（階級幅 5,000 g）</h3>
+                    <canvas id="figRaw" role="img" aria-label="体重のヒストグラム。そのままの目盛りでは、0から5,000グラムの階級に158種が集まり、右に長い裾を引く。"></canvas>
+                </div>
+                <div>
+                    <h3>対数の目盛り（階級幅 0.25 けた）</h3>
+                    <canvas id="figLog" role="img" aria-label="体重のヒストグラム。対数の目盛りでは、およそ5,600から1万グラムの階級を頂点とする1つの山になる。"></canvas>
+                </div>
+            </div>
+            <div class="stat-row">
+                <div><span>いちばん軽い種</span><b class="num">31 g</b></div>
+                <div><span>いちばん重い種</span><b class="num">149,325 g</b></div>
+                <div><span>1万 g 未満の種</span><b class="num">234 種（88 %）</b></div>
+            </div>
+            <p class="figcap">左の図では、最初の棒（0〜5,000 g）に158種が入り、残りは右へ細く伸びるだけです。右の図では同じ265種が1つの山にまとまり、いちばん多いのは約5,600〜1万 g の階級（66種）です。</p>
+        </div>
+        <p style="margin-top:18px">どちらの図も、使っている値はまったく同じです。違うのは横軸の刻み方だけです。左の図が伝えるのは「ほとんどの種は小さく、ごく一部に巨大な種がいる」という事実で、右の図が伝えるのは「種の体重は、比で見ると1つのまとまった分布をなす」という事実です。</p>
+    </section>
+
+</div>
+
+<div class="lab" id="labHist">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">階級幅と目盛りを変えてみる</div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="histChart" role="img" aria-label="体重のヒストグラム。階級幅と目盛りを切り替えられる。"></canvas>
+            </div>
+            <div class="side">
+                <div class="ctrl">
+                    <div class="toggle plain">
+                        <input type="checkbox" id="logA">
+                        <label for="logA">横軸を対数にする<small>目盛り1つで値が10倍になる軸に切り替える。</small></label>
+                    </div>
+                    <div>
+                        <span class="seg-cap">階級幅</span>
+                        <div class="range-row">
+                            <input type="range" id="binA" min="0" max="4" step="1" value="2" aria-label="階級幅">
+                            <b id="binAval">—</b>
+                        </div>
+                    </div>
+                </div>
+                <dl class="readout" aria-live="polite">
+                    <dt>階級の数</dt><dd id="rA1">—</dd>
+                    <dt>いちばん多い階級</dt><dd id="rA2">—</dd>
+                    <dt>その階級の種数</dt><dd id="rA3">—</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="hint" id="hintA"></div>
+    </div>
+</div>
+
+<div class="article between">
+    <p>ヒストグラムは1つの量の分布を見る図でした。2つの量の関係を見るときは散布図を使います。ここでは、体重と行動圏の広さの両方が記録されている153種を、1種1点で打ちます。</p>
+</div>
+
+<div class="lab" id="labScatter">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">散布図を両対数にしてみる</div>
+            <div>
+                <label class="seg-cap" for="famB">科を選んで強調する</label>
+                <select class="select" id="famB">
+                    <option value="">強調しない</option>
+                </select>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="scatterChart" role="img" aria-label="体重と行動圏の広さの散布図。153種。"></canvas>
+                <div class="hover-note" id="hoverB" aria-live="polite">点にカーソルを重ねると、その種の学名と値が出ます。</div>
+            </div>
+            <div class="side">
+                <div class="toggle plain">
+                    <input type="checkbox" id="logB">
+                    <label for="logB">両対数にする<small>横軸・縦軸の両方を対数の目盛りにする。</small></label>
+                </div>
+                <dl class="readout" aria-live="polite">
+                    <dt>点の数</dt><dd id="rB1">—</dd>
+                    <dt>強調した科</dt><dd id="rB2">—</dd>
+                    <dt>左下 1割×1割の枠の点</dt><dd id="rB3">—</dd>
+                </dl>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">「左下 1割×1割の枠」は、横軸と縦軸それぞれの表示範囲の下から1割ずつを取った小さな四角です。</p>
+            </div>
+        </div>
+        <div class="hint" id="hintB"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>しくみ：対数は「差」を「比」に置き換える</h2>
+        <p>対数の目盛りでは、値そのものではなく、その常用対数を等間隔に並べます。常用対数とは「10を何乗するとその値になるか」という数です。</p>
+        <div class="formula-block"><span class="formula">対数の値 ＝ log<sub>10</sub>（体重） 　例：31 g → 1.49、149,325 g → 5.17</span></div>
+        <p>31グラムから149,325グラムまでが、対数では1.49から5.17まで、わずか3.7ほどの幅に収まります。100グラムと1,000グラムの間隔と、1万グラムと10万グラムの間隔が同じ長さになります。つまり、対数軸の上での距離は「何倍違うか」を表しています。</p>
+        <p>分布の左右の偏りを表す<b>歪度</b>（0なら左右対称、正の値が大きいほど右に長い裾を引く）で比べると、体重そのものは 7.60、体重の対数は −0.40 です。対数にすると、ほぼ左右対称の分布になります。</p>
+        <p>散布図でも同じことが起きます。そのままの値で描くと、少数の大型種や行動圏の広い種が軸の範囲を決めてしまい、残りの点は隅に押し込まれます。両対数にすると、点は左下から右上へ帯のように並びます。2つの量の関係の強さを表す相関係数（<a href="../correlation/">03 相関と因果</a>で扱います）も、そのままの値では 0.35、対数どうしでは 0.68 と、目盛りの選び方で変わります。</p>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「階級幅は好みの問題で、分布の形の読み取りには影響しない」</h3>
+                <p>影響します。体重を1,000 g 幅で区切ると最初の棒は95種ですが、20,000 g 幅にすると階級は8個しかなく、最初の棒に265種中258種が入ります。これでは形はほとんど読めません。反対に幅を細かくしすぎると、棒がまばらになって偶然の凹凸が目立ちます。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「対数にするのは、データを加工してごまかすことだ」</h3>
+                <p>対数をとっても、種の並び順も、どの種がどの種の何倍かも変わりません。変わるのは、目盛りの等しい間隔が「差」を表すか「比」を表すかです。体重のように比で意味を持つ量では、対数軸のほうが事実をそのまま見せます。ただし、軸が対数であることは図に必ず明記します。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「散布図で点が固まって見えるのは、関係が弱いからだ」</h3>
+                <p>そのままの目盛りで体重と行動圏の広さを描くと、153種のうち136種（89 %）が図の左下の1割×1割の枠に収まります。関係が弱いのではなく、軸の範囲が少数の極端な種で決まっているためです。同じ153種を両対数で描くと、はっきりした右上がりの並びが見えます。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「ゴリラのような極端な値は、邪魔なので外して描けばよい」</h3>
+                <p>ゴリラやヒトは測り間違いではなく、実在する種の値です。外すと「霊長類の体重の分布」という事実そのものが変わります。極端な値を残したまま全体の形を見たいときに使うのが、対数の目盛りです。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第5回</b><span>散布図と相関係数を扱い、体重や行動圏のように何けたにもまたがる量を対数の目盛りで読む。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week09/" target="_blank" rel="noopener noreferrer"><b>情報活用 第9回</b><span>「グラフを選ぶことは、何を主張するかを選ぶことである」を問いに、悪いグラフとよいグラフの実例を見て、自分のデータでグラフを描く。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/03.html" target="_blank" rel="noopener noreferrer"><b>行動計量学 第3回</b><span>R の ggplot2 で散布図・ヒストグラム・棒グラフを作り、ヒストグラムのビンの幅を調整する。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/04.html" target="_blank" rel="noopener noreferrer"><b>行動計量学 第4回</b><span>ggplot2 のテーマ・色・軸・凡例を整え、複数のグラフを並べて保存する。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#767c84" href="https://aonoa68.github.io/joho-nyumon/week10/" target="_blank" rel="noopener noreferrer"><b>情報入門 第10回</b><span>棒グラフとヒストグラムの違いと、軸ラベルのないグラフや3Dグラフなど避けるべきグラフを確かめる。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <a class="pg" href="../describe/"><small>← 01</small>データを要約する</a>
+        <a class="pg next" href="../correlation/"><small>03 →</small>相関と因果</a>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 霊長類376種のうち、ヒストグラムは成体の体重が記録されている265種、散布図は体重と行動圏の広さの両方が記録されている153種を使用。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const MASS = G.select(["体重g"]).map(d => d.v[0]).filter(v => v > 0);
+    const LOGM = MASS.map(v => Math.log10(v));
+    const PTS = G.select(["体重g", "行動圏km2"]).filter(d => d.v[0] > 0 && d.v[1] > 0)
+        .map(d => ({ x: d.v[0], y: d.v[1], lx: Math.log10(d.v[0]), ly: Math.log10(d.v[1]), sp: G.species(d.row), fam: G.family(d.row) }));
+    const gram = v => v === 0 ? "0" : G.man(v);
+    const logLabel = k => G.pow10Label(k);
+
+    /* ---------- ヒストグラム ---------- */
+    function histogram(canvas, values, o) {
+        const { ctx, w, h } = G.setup(canvas);
+        const nb = Math.round((o.xmax - o.xmin) / o.bw);
+        const counts = new Array(nb).fill(0);
+        values.forEach(v => { let i = Math.floor((v - o.xmin) / o.bw + 1e-9); if (i >= nb) i = nb - 1; if (i >= 0) counts[i]++; });
+        const top = Math.max(...counts);
+        const step = G.niceStep(top, 4), ymax = Math.max(step, Math.ceil(top / step) * step);
+        const yticks = []; for (let v = 0; v <= ymax + 1e-9; v += step) yticks.push(v);
+        const a = G.axes(ctx, w, h, { L: 40, R: 26, T: 30, B: 32, xmin: o.xmin, xmax: o.xmax, ymin: 0, ymax, xticks: o.xticks, yticks, xfmt: o.xfmt, ylabel: "種の数", xlabel: o.xlabel });
+        ctx.fillStyle = o.color || G.css("--pop");
+        const bwpx = a.x(o.xmin + o.bw) - a.x(o.xmin);
+        counts.forEach((c, i) => { if (c) ctx.fillRect(a.x(o.xmin + i * o.bw) + (bwpx > 3 ? 0.5 : 0), a.y(c), Math.max(1, bwpx - (bwpx > 3 ? 1 : 0)), a.y(0) - a.y(c)); });
+        let mi = 0; counts.forEach((c, i) => { if (c > counts[mi]) mi = i; });
+        return { counts, nb, mode: mi, modeCount: counts[mi] };
+    }
+    const RAW_TICKS = [0, 50000, 100000, 150000];
+    const rawFmt = v => v === 150000 ? gram(v) + " g" : gram(v);
+
+    function drawFigures() {
+        histogram(document.getElementById("figRaw"), MASS, { xmin: 0, xmax: 150000, bw: 5000, xticks: RAW_TICKS, xfmt: rawFmt, xlabel: "体重" });
+        histogram(document.getElementById("figLog"), LOGM, { xmin: 1.25, xmax: 5.25, bw: 0.25, xticks: G.logTicks(1.25, 5.25), xfmt: k => logLabel(k) + (k === 5 ? " g" : ""), xlabel: "体重（対数軸）" });
+    }
+
+    const RAW_W = [1000, 2000, 5000, 10000, 20000];
+    const LOG_W = [0.05, 0.1, 0.25, 0.5, 1];
+    const logA = document.getElementById("logA"), binA = document.getElementById("binA");
+    function drawHist() {
+        const isLog = logA.checked, wIdx = +binA.value;
+        let r, rangeText;
+        if (!isLog) {
+            const bw = RAW_W[wIdx], xmax = Math.ceil(Math.max(...MASS) / bw) * bw;
+            document.getElementById("binAval").textContent = G.fmt(bw) + " g";
+            r = histogram(document.getElementById("histChart"), MASS, { xmin: 0, xmax: Math.max(xmax, 150000), bw, xticks: RAW_TICKS, xfmt: rawFmt, xlabel: "横軸：体重（そのままの目盛り）" });
+            rangeText = `${G.fmt(r.mode * bw)}〜${G.fmt((r.mode + 1) * bw)} g`;
+        } else {
+            const bw = LOG_W[wIdx];
+            const xmin = Math.floor(Math.min(...LOGM) / bw + 1e-9) * bw;
+            let xmax = Math.ceil(Math.max(...LOGM) / bw - 1e-9) * bw; if (xmax <= Math.max(...LOGM)) xmax += bw;
+            document.getElementById("binAval").textContent = `${bw} けた（${G.fmt(10 ** bw, 2)}倍）`;
+            r = histogram(document.getElementById("histChart"), LOGM, { xmin, xmax, bw, xticks: G.logTicks(xmin, xmax), xfmt: k => logLabel(k) + " g", xlabel: "横軸：体重（対数の目盛り）" });
+            const lo = 10 ** (xmin + r.mode * bw), hi = 10 ** (xmin + (r.mode + 1) * bw);
+            const sig = v => v >= 100 ? G.fmt(Math.round(v)) : G.fmt(v, 1);
+            rangeText = `${sig(lo)}〜${sig(hi)} g`;
+        }
+        document.getElementById("rA1").textContent = r.nb + " 個";
+        document.getElementById("rA2").textContent = rangeText;
+        document.getElementById("rA3").textContent = r.modeCount + " 種";
+        const hint = document.getElementById("hintA");
+        if (!isLog && wIdx >= 3) hint.innerHTML = `階級幅を広げると、最初の棒に265種中 <b>${r.modeCount}種</b> が入ります。分布の形はほとんど読めません。`;
+        else if (!isLog) hint.innerHTML = `左端の棒に <b>${r.modeCount}種</b> が集まり、残りは右へ細く伸びるだけです。「横軸を対数にする」を押して、同じ265種を比の目盛りで見てください。`;
+        else if (wIdx === 4) hint.innerHTML = `1けたずつ区切ると階級は <b>${r.nb}個</b> しかなく、山の形の細部は消えます。階級幅を狭めると、山の頂点と裾が見えてきます。`;
+        else if (wIdx === 0) hint.innerHTML = `0.05けたまで細かく区切ると、1つの階級に入る種が少なくなり、偶然の凹凸が目立ちます。どの幅なら形がいちばん読みやすいかを比べてください。`;
+        else hint.innerHTML = `対数の目盛りでは、265種が1つの山にまとまって見えます。いちばん多いのは <b>${rangeText}</b> の階級です。`;
+    }
+
+    /* ---------- 散布図 ---------- */
+    const famB = document.getElementById("famB"), logB = document.getElementById("logB");
+    const famCount = {}; PTS.forEach(p => famCount[p.fam] = (famCount[p.fam] || 0) + 1);
+    ["オナガザル科", "オマキザル科", "クモザル科", "キツネザル科", "テナガザル科", "ヒト科"].forEach(f => {
+        const o = document.createElement("option"); o.value = f; o.textContent = `${f}（${famCount[f]}種）`; famB.appendChild(o);
+    });
+    let hovered = -1, screen = [];
+    function scatterRanges(isLog) {
+        if (!isLog) return { xmin: 0, xmax: 120000, ymin: 0, ymax: 30, xticks: [0, 30000, 60000, 90000, 120000], yticks: [0, 10, 20, 30], xfmt: v => gram(v), yfmt: v => G.fmt(v) };
+        const lx = PTS.map(p => p.lx), ly = PTS.map(p => p.ly);
+        const xmin = Math.floor(Math.min(...lx)), xmax = Math.ceil(Math.max(...lx)), ymin = Math.floor(Math.min(...ly)), ymax = Math.ceil(Math.max(...ly));
+        return { xmin, xmax, ymin, ymax, xticks: G.logTicks(xmin, xmax), yticks: G.logTicks(ymin, ymax), xfmt: logLabel, yfmt: logLabel };
+    }
+    function drawScatter() {
+        const isLog = logB.checked, fam = famB.value;
+        const canvas = document.getElementById("scatterChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const rg = scatterRanges(isLog);
+        const a = G.axes(ctx, w, h, { L: 46, R: 24, T: 30, B: 50, ...rg, xgrid: true, ylabel: "行動圏の広さ（km²）" });
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        ctx.fillText(isLog ? "体重（g・対数の目盛り）" : "体重（g）", a.L + a.pw / 2, h - 4);
+        const px = p => a.x(isLog ? p.lx : p.x), py = p => a.y(isLog ? p.ly : p.y);
+        screen = PTS.map(p => [px(p), py(p)]);
+        const base = G.css("--pop"), hi = G.css("--mean"), faint = G.css("--faint");
+        const order = PTS.map((p, i) => i).sort((i, j) => (PTS[i].fam === fam) - (PTS[j].fam === fam));
+        order.forEach(i => {
+            const p = PTS[i], on = fam && p.fam === fam;
+            ctx.globalAlpha = fam ? (on ? 0.95 : 0.35) : 0.7;
+            ctx.fillStyle = fam ? (on ? hi : faint) : base;
+            ctx.beginPath(); ctx.arc(screen[i][0], screen[i][1], on ? 4 : 3.2, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        if (hovered >= 0) { ctx.strokeStyle = G.css("--navy2"); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(screen[hovered][0], screen[hovered][1], 7, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1; }
+        if (fam) G.legend(ctx, w, [{ color: faint, label: "その他", kind: "dot" }, { color: hi, label: fam, kind: "dot" }], 12);
+        // 左下1割×1割の枠
+        const cx = rg.xmin + 0.1 * (rg.xmax - rg.xmin), cy = rg.ymin + 0.1 * (rg.ymax - rg.ymin);
+        ctx.strokeStyle = G.css("--gold-deep"); ctx.setLineDash([4, 3]); ctx.strokeRect(a.x(rg.xmin), a.y(cy), a.x(cx) - a.x(rg.xmin), a.y(rg.ymin) - a.y(cy)); ctx.setLineDash([]);
+        const k = PTS.filter(p => (isLog ? p.lx : p.x) < cx && (isLog ? p.ly : p.y) < cy).length;
+        document.getElementById("rB1").textContent = PTS.length + " 種";
+        document.getElementById("rB2").textContent = fam ? `${fam} ${famCount[fam]}種` : "なし";
+        document.getElementById("rB3").textContent = `${k} 種（${Math.round(k / PTS.length * 100)} %）`;
+        const hint = document.getElementById("hintB");
+        let msg = isLog
+            ? `両対数にすると、点が左下から右上へ帯のように並びます。点線の枠に入る点は${k ? ` <b>${k}種</b> だけです。` : "1つもありません。"}`
+            : `そのままの目盛りでは、153種のうち <b>${k}種</b> が点線で囲んだ左下の小さな枠に収まり、その中の並びは見えません。「両対数にする」を押してください。`;
+        if (fam) msg += ` 強調した${fam}の${famCount[fam]}種が、全体のどのあたりにいるかも見てください。`;
+        hint.innerHTML = msg;
+    }
+    document.getElementById("scatterChart").addEventListener("mousemove", e => {
+        const rect = e.currentTarget.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        let best = -1, bd = 100;
+        screen.forEach((s, i) => { const d = (s[0] - mx) ** 2 + (s[1] - my) ** 2; if (d < bd) { bd = d; best = i; } });
+        if (best !== hovered) {
+            hovered = best; drawScatter();
+            const note = document.getElementById("hoverB");
+            if (best >= 0) { const p = PTS[best]; note.innerHTML = `<i>${p.sp}</i>（${p.fam}）　体重 ${G.fmt(Math.round(p.x))} g ／ 行動圏 ${p.y < 0.1 ? G.fmt(p.y, 4) : G.fmt(p.y, 2)} km²`; }
+            else note.textContent = "点にカーソルを重ねると、その種の学名と値が出ます。";
+        }
+    });
+    document.getElementById("scatterChart").addEventListener("mouseleave", () => { if (hovered >= 0) { hovered = -1; drawScatter(); } });
+
+    logA.addEventListener("change", drawHist);
+    binA.addEventListener("input", drawHist);
+    logB.addEventListener("change", () => { hovered = -1; drawScatter(); });
+    famB.addEventListener("change", drawScatter);
+    G.onRedraw(() => { drawFigures(); drawHist(); drawScatter(); });
+})();
+</script>
+</body>
+</html>

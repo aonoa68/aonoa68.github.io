@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>確率とベイズ — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="大型の種は大きな群れを作るのか、その逆か。霊長類207種の体重と群れの大きさで、条件付き確率の向きとベイズの定理を確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .figure canvas#scatter { height:320px; }
+        .keys { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:10px; font-size:0.84em; color:var(--muted); }
+        .keys span { display:inline-flex; align-items:center; gap:6px; }
+        .keys i { display:inline-block; width:10px; height:10px; border-radius:2px; }
+        .sliders { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 24px; margin-top:14px; }
+        .sliders label { font-size:0.84em; color:var(--muted); display:block; }
+        .sliders output { font-weight:600; color:var(--navy2); font-variant-numeric:tabular-nums; }
+        .lab canvas#units { height:290px; }
+        table.data.two th, table.data.two td { text-align:center; }
+        table.data.two th:first-child, table.data.two td:first-child { text-align:left; }
+        table.data.two td.both { color:var(--mean); font-weight:700; }
+        table.data.two td.tot, table.data.two th.tot { color:var(--muted); }
+        .calc { font-variant-numeric:tabular-nums; }
+        @media (max-width:640px) { .sliders { grid-template-columns:minmax(0,1fr); } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">確率とベイズ</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>07</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>大型の種は大きな群れを作るのか、その逆か</h1>
+        <p class="sub">確率とベイズ ── 条件付き確率の向きを取り違えない</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>「大型の種のうち大群を作る割合」と「大群を作る種のうち大型の割合」は、別の数である。この向きを入れ替える計算がベイズの定理で、入れ替えるときには、もともと大型の種がどれだけいるかが結果を大きく左右する。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>体の大きさと群れの大きさ、2つの問い</h2>
+        <p>霊長類のうち、体重と群れの大きさの両方が記録されている種は207種あります。ここでは、体重が1万グラム以上の種を「大型」、群れが平均20頭以上の種を「大群」と呼ぶことにします。</p>
+        <p>このデータに対して、似ているようで違う2つの問いを立てられます。</p>
+        <dl class="terms">
+            <dt>問い1</dt><dd>大型の種を1つ選んだとき、それが大群を作る種である確率は？</dd>
+            <dt>問い2</dt><dd>大群を作る種を1つ選んだとき、それが大型の種である確率は？</dd>
+        </dl>
+        <p style="margin-top:18px">どちらも「大型」と「大群」の両方に当てはまる種を数える点は同じです。違うのは、<b>何を分母にするか</b>です。問い1は大型の種の中での割合、問い2は大群を作る種の中での割合を聞いています。</p>
+    </section>
+
+    <section>
+        <h2>207種を4つに分ける</h2>
+        <p>横軸に体重、縦軸に群れの大きさをとり、207種を1点ずつ置きました。点線がそれぞれのしきい値です。どちらの軸も、10倍ごとに同じ間隔になる対数目盛りにしています。</p>
+        <div class="figure">
+            <canvas id="scatter" role="img" aria-label="霊長類207種の体重と群れの大きさの散布図。しきい値の点線で4つの区画に分かれ、両方に当てはまる種は右上に10種、大群のみは左上に34種、大型のみは右下に12種、どちらでもない種は左下に151種。"></canvas>
+            <div class="keys">
+                <span><i style="background:var(--mean)"></i>大型かつ大群</span>
+                <span><i style="background:var(--pop)"></i>大型のみ</span>
+                <span><i style="background:var(--accent2)"></i>大群のみ</span>
+                <span><i style="background:var(--faint)"></i>どちらでもない</span>
+            </div>
+            <p class="figcap">群れの大きさは、種ごとに記録された平均的な群れの頭数です。データ：PanTHERIA（Jones et al. 2009）。</p>
+        </div>
+        <p>両方に当てはまる右上の10種は、チンパンジーとボノボの2種と、ヒヒ属やマカク属などのオナガザル科8種です。右下には、群れの小さいゴリラやオランウータンが入っています。</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">分母を切り替えて数える</div>
+            <div>
+                <span class="seg-cap">どの種の中で数えるか</span>
+                <div class="seg" role="radiogroup" aria-label="どの種の中で数えるか">
+                    <input type="radio" name="cond" id="condBig" value="big" checked><label for="condBig">大型の種の中で</label>
+                    <input type="radio" name="cond" id="condGrp" value="grp"><label for="condGrp">大群の種の中で</label>
+                </div>
+            </div>
+        </div>
+        <div class="sliders">
+            <div>
+                <label for="mT">「大型」とする体重：<output id="mTv">10,000 g</output> 以上</label>
+                <div class="range-row"><input type="range" id="mT" min="0" max="8" step="1" value="5" aria-describedby="mTv"></div>
+            </div>
+            <div>
+                <label for="gT">「大群」とする群れの大きさ：<output id="gTv">20 頭</output> 以上</label>
+                <div class="range-row"><input type="range" id="gT" min="0" max="7" step="1" value="5" aria-describedby="gTv"></div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="units" role="img" aria-label="207種を1マスずつ並べた図。選んだ条件に当てはまる種を濃く、それ以外を薄く表示する。"></canvas>
+                <div class="table-wrap">
+                    <table class="data two" id="tbl" aria-live="polite"></table>
+                </div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>P(大型)</dt><dd id="rA">—</dd>
+                    <dt>P(大群)</dt><dd id="rB">—</dd>
+                    <dt>P(大群｜大型)</dt><dd id="rBA">—</dd>
+                    <dt>P(大型｜大群)</dt><dd id="rAB">—</dd>
+                </dl>
+                <div class="readout" style="display:block">
+                    <div style="font-size:0.84em;color:var(--muted);margin-bottom:4px">ベイズの定理で P(大型｜大群) を計算</div>
+                    <div class="calc" id="rBayes">—</div>
+                </div>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">1マスが1種です。濃いマスが分母、そのうち橙のマスが分子にあたります。</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>しくみ：条件付き確率とベイズの定理</h2>
+        <p>ここでの<b>確率</b>は、207種から1種をでたらめに選んだときに、ある条件に当てはまる種が選ばれる割合のことです。大型は22種なので、P(大型) ＝ 22 ÷ 207 ≒ 0.106 です。</p>
+        <p><b>条件付き確率</b> P(B｜A) は、「Aに当てはまる種だけを分母にしたときの、Bの割合」です。縦棒の右側が分母になる集団を表します。</p>
+        <div class="formula-block"><span class="formula">P(大群｜大型) ＝ 両方に当てはまる種数 ÷ 大型の種数 ＝ 10 ÷ 22 ≒ 0.45</span></div>
+        <p>逆向きの P(大型｜大群) は 10 ÷ 44 ≒ 0.23 で、半分ほどしかありません。分子は同じ10種でも、分母が22種から44種に変わったからです。</p>
+        <p>この2つをつなぐのが<b>ベイズの定理</b>です。片方の向きの確率と、それぞれの全体での割合がわかれば、もう片方の向きを計算できます。</p>
+        <div class="formula-block"><span class="formula">P(大型｜大群) ＝ P(大群｜大型) × P(大型) ÷ P(大群)</span></div>
+        <p>数を入れると 0.4545 × 0.1063 ÷ 0.2126 ≒ 0.227 となり、数えて出した 10 ÷ 44 と一致します。式の中の P(大型) を<b>事前確率</b>、計算で得る P(大型｜大群) を<b>事後確率</b>と呼びます。「大群を作る」という情報を得る前と後の、大型である確率という意味です。</p>
+
+        <h3 style="margin-top:28px">事前確率が効く</h3>
+        <p>「大型」の基準だけを変え、「大群」は20頭以上のままにすると、2つの向きの確率は次のように動きます。</p>
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>「大型」の基準</th><th>P(大型)</th><th>P(大群｜大型)</th><th>P(大型｜大群)</th></tr></thead>
+                <tbody>
+                    <tr><td>2,000 g 以上</td><td>0.585</td><td>0.322</td><td>0.886</td></tr>
+                    <tr><td>5,000 g 以上</td><td>0.420</td><td>0.333</td><td>0.659</td></tr>
+                    <tr><td>10,000 g 以上</td><td>0.106</td><td>0.455</td><td>0.227</td></tr>
+                    <tr><td>20,000 g 以上</td><td>0.019</td><td>0.500</td><td>0.045</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top:14px">P(大群｜大型) は0.3から0.5の間にとどまっているのに、P(大型｜大群) は0.886から0.045まで大きく変わります。変化の大部分を生んでいるのは、大型の種がもともとどれだけいるか、つまり事前確率です。</p>
+        <p>なお、もし体の大きさと群れの大きさが無関係なら、大型の種の中でも大群の割合は全体と同じ P(大群) ≒ 0.21 になるはずです。これを<b>独立</b>といいます。1万グラム基準では P(大群｜大型) ≒ 0.45 なので、このデータでは2つは独立ではありません。</p>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「P(大群｜大型) と P(大型｜大群) は、だいたい同じ数になる」</h3>
+                <p>一般には同じになりません。このデータでは0.45と0.23で、2倍の差があります。両者が等しくなるのは、大型の種と大群の種の数がたまたま同じときだけです。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「大型の種の半数近くが大群なのだから、大群の種を見ればたぶん大型だ」</h3>
+                <p>大型の種は207種中22種しかいません。大群を作る44種のうち、大型でない種が34種を占めています。もとの割合を無視して向きを入れ替えると、判断を大きく誤ります。これを<b>基準率の無視</b>といいます。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「条件付き確率が高いなら、一方が他方の原因だ」</h3>
+                <p>P(大群｜大型) が全体の割合より高いことは、2つが一緒に現れやすいことを示すだけです。体が大きいから群れが大きくなるのか、その逆なのか、別の要因が両方に関わっているのかは、この表からは判断できません。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「0.45 は、大型の個体の45%が大群で暮らしているという意味だ」</h3>
+                <p>ここで数えているのは個体ではなく種です。0.45は、大型の22種のうち10種が大群を作る種だという意味です。個体の数で数え直せば、別の値になりえます。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/02_conditional/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第2回</b><span>条件付き確率を「情報を得て確率を更新すること」として導入し、独立の定義と、独立と排反の違いを扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第3回</b><span>ベイズの定理の事前確率・尤度・事後確率と、基準率の誤謬、今日の事後が明日の事前になる逐次更新を扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第12回</b><span>確率を「信念の度合い」とみるベイズの考え方と頻度論との違いを、事前情報を無視すると直感が外れる例で扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <a class="pg" href="../testing/"><small>← 06</small>仮説検定とp値</a>
+        <a class="pg next" href="../regression/"><small>08 →</small>回帰とモデル</a>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 霊長類376種のうち、成体の体重と群れの大きさ（集団サイズ）の両方が記録されている207種を使用。和名と科の対応は授業「統計学Ⅰ」の教材による。<br>
+    どの種に記録があるかには偏りがありうるため、ここでの割合は「記録のある207種の中での割合」です。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const D = G.select(["体重g", "集団サイズ"]).map(d => ({ mass: d.v[0], grp: d.v[1], row: d.row }));
+    const N = D.length;
+    const MT = [1000, 2000, 3000, 5000, 7000, 10000, 15000, 20000, 30000];
+    const GT = [2, 3, 5, 10, 15, 20, 30, 40];
+    let mi = 5, gi = 5, cond = "big";
+
+    const catOf = (d, mt, gt) => d.mass >= mt ? (d.grp >= gt ? "both" : "big") : (d.grp >= gt ? "grp" : "none");
+    const COLOR = { both: "--mean", big: "--pop", grp: "--accent2", none: "--faint" };
+    function tally(mt, gt) {
+        const c = { both: 0, big: 0, grp: 0, none: 0 };
+        D.forEach(d => c[catOf(d, mt, gt)]++);
+        return { ...c, A: c.both + c.big, B: c.both + c.grp };
+    }
+    const p = v => isFinite(v) ? v.toFixed(3) : "—";
+
+    // ③ 散布図（しきい値は 1万g・20頭で固定）
+    function drawScatter() {
+        const cv = document.getElementById("scatter");
+        const { ctx, w, h } = G.setup(cv);
+        const ax = G.axes(ctx, w, h, { L: 48, R: 16, T: 30, B: 34, xmin: 1.3, xmax: 5.2, ymin: -0.45, ymax: 2.15,
+            xticks: [2, 3, 4, 5], yticks: [0, 1, 2], xgrid: true,
+            xfmt: k => G.pow10Label(k), yfmt: k => G.pow10Label(k),
+            ylabel: "群れの大きさ（頭）", xlabel: "体重（g）" });
+        const xT = Math.log10(10000), yT = Math.log10(20);
+        ctx.strokeStyle = G.css("--navy2"); ctx.setLineDash([5, 4]); ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(ax.x(xT), ax.T); ctx.lineTo(ax.x(xT), ax.T + ax.ph); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ax.L, ax.y(yT)); ctx.lineTo(ax.L + ax.pw, ax.y(yT)); ctx.stroke();
+        ctx.setLineDash([]); ctx.lineWidth = 1;
+        const order = ["none", "grp", "big", "both"];
+        order.forEach(cat => {
+            ctx.fillStyle = G.css(COLOR[cat]); ctx.globalAlpha = cat === "none" ? 0.45 : 0.9;
+            D.forEach(d => { if (catOf(d, 10000, 20) !== cat) return; ctx.beginPath(); ctx.arc(ax.x(Math.log10(d.mass)), ax.y(Math.log10(d.grp)), 3.2, 0, Math.PI * 2); ctx.fill(); });
+        });
+        ctx.globalAlpha = 1;
+        const t = tally(10000, 20);
+        const label = (txt, x, y, align, base, col) => {
+            ctx.font = '600 12.5px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+            ctx.textAlign = align; ctx.textBaseline = base; ctx.lineJoin = "round";
+            ctx.strokeStyle = "rgba(255,255,255,0.92)"; ctx.lineWidth = 4; ctx.strokeText(txt, x, y);
+            ctx.fillStyle = col; ctx.fillText(txt, x, y); ctx.lineWidth = 1;
+        };
+        const R = ax.L + ax.pw - 8, Lx = ax.L + 8, Tp = ax.T + 6, Bt = ax.T + ax.ph - 6;
+        label(`大型かつ大群 ${t.both}種`, R, Tp, "right", "top", G.css("--mean"));
+        label(`大群のみ ${t.grp}種`, Lx, Tp, "left", "top", G.css("--accent2"));
+        label(`大型のみ ${t.big}種`, R, Bt, "right", "bottom", G.css("--pop"));
+        label(`どちらでもない ${t.none}種`, Lx, Bt, "left", "bottom", G.css("--muted"));
+    }
+
+    // ④ 207マスの図
+    function drawUnits() {
+        const mt = MT[mi], gt = GT[gi], t = tally(mt, gt);
+        const cv = document.getElementById("units");
+        const { ctx, w, h } = G.setup(cv);
+        const cats = cond === "big" ? ["both", "big", "grp", "none"] : ["both", "grp", "big", "none"];
+        const inCond = cat => cat === "both" || cat === cond;
+        const den = cond === "big" ? t.A : t.B;
+        const condName = cond === "big" ? "大型" : "大群", otherName = cond === "big" ? "大群" : "大型";
+        ctx.textBaseline = "middle"; ctx.textAlign = "left";
+        ctx.font = '600 13.5px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif'; ctx.fillStyle = G.css("--navy2");
+        const head = den ? `${condName}の ${den} 種のうち、${otherName}は ${t.both} 種` : `${condName}に当てはまる種がありません`;
+        ctx.fillText(head, 2, 13);
+        if (den) { ctx.textAlign = "right"; ctx.fillStyle = G.css("--mean"); ctx.fillText(`${t.both} ÷ ${den} ＝ ${(t.both / den).toFixed(2)}`, w - 2, 13); }
+        const cols = 23, rows = 9, top = 34;
+        const cell = Math.min((w - 2) / cols, (h - top - 2) / rows), gap = Math.max(1.5, cell * 0.16), s = cell - gap;
+        const x0 = (w - cell * cols + gap) / 2;
+        let k = 0;
+        cats.forEach(cat => {
+            const n = t[cat];
+            ctx.fillStyle = G.css(COLOR[cat]);
+            ctx.globalAlpha = inCond(cat) ? (cat === "both" ? 1 : 0.85) : 0.16;
+            for (let i = 0; i < n; i++, k++) {
+                const c = k % cols, r = Math.floor(k / cols);
+                ctx.fillRect(x0 + c * cell, top + r * cell, s, s);
+            }
+        });
+        ctx.globalAlpha = 1;
+    }
+
+    function update() {
+        const mt = MT[mi], gt = GT[gi], t = tally(mt, gt);
+        document.getElementById("mTv").textContent = G.fmt(mt) + " g";
+        document.getElementById("gTv").textContent = gt + " 頭";
+        const PA = t.A / N, PB = t.B / N, PBA = t.A ? t.both / t.A : NaN, PAB = t.B ? t.both / t.B : NaN;
+        document.getElementById("rA").textContent = `${p(PA)}（${t.A}/${N}）`;
+        document.getElementById("rB").textContent = `${p(PB)}（${t.B}/${N}）`;
+        document.getElementById("rBA").textContent = t.A ? `${p(PBA)}（${t.both}/${t.A}）` : "—";
+        document.getElementById("rAB").textContent = t.B ? `${p(PAB)}（${t.both}/${t.B}）` : "—";
+        document.getElementById("rBayes").textContent = (t.A && t.B)
+            ? `${PBA.toFixed(4)} × ${PA.toFixed(4)} ÷ ${PB.toFixed(4)} ＝ ${(PBA * PA / PB).toFixed(3)}`
+            : "しきい値を動かしてください";
+        document.getElementById("tbl").innerHTML =
+            `<thead><tr><th></th><th>大群（${gt}頭以上）</th><th>大群でない</th><th class="tot">計</th></tr></thead>
+             <tbody>
+               <tr><td>大型（${G.fmt(mt)}g以上）</td><td class="both">${t.both}</td><td>${t.big}</td><td class="tot">${t.A}</td></tr>
+               <tr><td>大型でない</td><td>${t.grp}</td><td>${t.none}</td><td class="tot">${N - t.A}</td></tr>
+               <tr><td class="tot">計</td><td class="tot">${t.B}</td><td class="tot">${N - t.B}</td><td class="tot">${N}</td></tr>
+             </tbody>`;
+        const hint = document.getElementById("hint");
+        if (!t.A || !t.B) hint.innerHTML = "どちらかの条件に当てはまる種がなくなりました。しきい値を戻してください。";
+        else {
+            const ratio = PBA / PAB;
+            const more = PBA > PAB ? "P(大群｜大型)" : "P(大型｜大群)";
+            hint.innerHTML = `同じ <b>${t.both}種</b> を数えているのに、分母が大型の${t.A}種なら <b>${PBA.toFixed(2)}</b>、大群の${t.B}種なら <b>${PAB.toFixed(2)}</b> です。`
+                + (Math.abs(Math.log(ratio)) > Math.log(1.25) ? ` いまは ${more} のほうが ${Math.max(ratio, 1 / ratio).toFixed(1)} 倍大きくなっています。` + (mi === 5 && gi === 5 ? "「大型」の基準を2,000gまで下げると、2つの大小が入れ替わります。" : "") : " いまは2つの値が近くなっています。大型の種と大群の種の数が近いからです。");
+        }
+        drawUnits();
+    }
+
+    document.getElementById("mT").addEventListener("input", e => { mi = +e.target.value; update(); });
+    document.getElementById("gT").addEventListener("input", e => { gi = +e.target.value; update(); });
+    document.querySelectorAll('input[name="cond"]').forEach(r => r.addEventListener("change", e => { cond = e.target.value; update(); }));
+
+    G.onRedraw(() => { drawScatter(); update(); });
+})();
+</script>
+</body>
+</html>

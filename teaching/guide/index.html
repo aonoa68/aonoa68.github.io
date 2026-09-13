@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統計の考え方ガイド — 小野原彩香 | Teaching</title>
+    <meta name="description" content="霊長類の生態データだけを使って、統計学の8つの考え方を順に確かめる解説ページ。各ページで、実際のデータを動かしながら読めます。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/guide.css">
+    <style>
+        .page-header h1 { font-size:2.6em; }
+        .path { list-style:none; margin-top:28px; position:relative; }
+        .path::before { content:''; position:absolute; left:27px; top:24px; bottom:24px; width:2px; background:linear-gradient(var(--gold), color-mix(in srgb,var(--gold) 25%,white)); }
+        .stop { position:relative; display:grid; grid-template-columns:56px minmax(0,1fr); gap:0 18px; margin-bottom:12px; }
+        .stop .no { width:56px; height:56px; border-radius:50%; background:var(--white); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.35em; color:var(--navy2); position:relative; z-index:1; }
+        .stop a.card { display:block; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:16px 20px; text-decoration:none; color:var(--text); transition:box-shadow .2s, transform .2s; }
+        .stop a.card:hover { box-shadow:0 8px 22px -12px rgba(26,37,53,.35); transform:translateX(3px); }
+        .stop .topic { font-size:0.76em; letter-spacing:0.12em; font-weight:700; color:var(--gold-deep); }
+        .stop h2 { font-size:1.3em; margin:2px 0 4px; }
+        .stop p { font-size:0.9em; color:var(--muted); line-height:1.75; }
+        .part { font-size:0.76em; letter-spacing:0.14em; font-weight:700; color:var(--muted); margin:26px 0 10px 74px; }
+        .part:first-child { margin-top:0; }
+        .data-note { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:18px; }
+        .data-note div { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; }
+        .data-note b { display:block; font-family:var(--serif); font-weight:400; font-size:1.7em; color:var(--navy2); line-height:1.2; font-variant-numeric:tabular-nums; }
+        .data-note span { font-size:0.86em; color:var(--muted); }
+        .also { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+        .also a { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:22px; border:1.5px solid var(--navy2); color:var(--navy2); text-decoration:none; font-size:0.9em; font-weight:600; }
+        .also a:hover { background:var(--navy2); color:#fff; }
+        @media (max-width:640px) {
+            .page-header h1 { font-size:2em; }
+            .data-note { grid-template-columns:minmax(0,1fr); }
+            .path::before { left:21px; }
+            .stop { grid-template-columns:44px minmax(0,1fr); gap:0 12px; }
+            .stop .no { width:44px; height:44px; font-size:1.1em; }
+            .part { margin-left:56px; }
+        }
+        @media (prefers-reduced-motion:reduce) { .stop a.card { transition:none; } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">統計の考え方ガイド</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow">霊長類の生態データで読む</p>
+        <h1>統計の考え方ガイド</h1>
+        <p class="sub">データを要約するところから、関係を式にするところまで。8つの考え方を、同じデータを動かしながら順に確かめます。</p>
+    </div>
+</header>
+
+<main class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">このガイドについて</div>
+            <p>統計学を学んだことがない人が、1ページずつ読めば考え方の筋道をたどれるように作りました。どのページも、同じ霊長類のデータだけを使います。</p>
+        </div>
+        <div class="data-note">
+            <div><b>376</b><span>霊長類の種数。1種を1行とするデータ</span></div>
+            <div><b>20</b><span>変数。体重、群れの大きさ、寿命、行動圏の広さ、分布域の気温など</span></div>
+            <div><b>8</b><span>考え方。各ページに、データを動かして確かめる体験があります</span></div>
+        </div>
+        <p style="margin-top:16px" class="muted">データは PanTHERIA（Jones et al. 2009, <i>Ecology</i> 90: 2648）の霊長類の部分で、授業「統計学Ⅰ・Ⅱ」でも使っています。変数ごとに記録のない種があるので、ページによって使う種数が違います。</p>
+    </section>
+
+    <section>
+        <ol class="path">
+            <li class="part">データを見る</li>
+            <li class="stop"><span class="no">01</span><a class="card" href="describe/"><span class="topic">データを要約する</span><h2>平均は「ふつうの種」を表しているか</h2><p>平均・中央値・ばらつき。ゆがんだデータを、どの数字で要約するか。</p></a></li>
+            <li class="stop"><span class="no">02</span><a class="card" href="visualize/"><span class="topic">グラフで見る</span><h2>軸ひとつで、データは別の姿になる</h2><p>ヒストグラム・散布図・対数軸。桁の違うデータの見方。</p></a></li>
+            <li class="stop"><span class="no">03</span><a class="card" href="correlation/"><span class="topic">相関と因果</span><h2>長生きの種ほど、広く動き回るのか</h2><p>相関係数と、関係の裏にいる第三の変数。</p></a></li>
+            <li class="part">一部から全体を推し量る</li>
+            <li class="stop"><span class="no">04</span><a class="card" href="sampling/"><span class="topic">標本から全体を知る</span><h2>ひと匙で、鍋の味がわかる理由</h2><p>標本と中心極限定理。数の多さは偏りを直さない。</p></a></li>
+            <li class="stop"><span class="no">05</span><a class="card" href="interval/"><span class="topic">推定と信頼区間</span><h2>「95%」は、何が95%なのか</h2><p>一部から、幅をもって全体を言い当てる。</p></a></li>
+            <li class="stop"><span class="no">06</span><a class="card" href="testing/"><span class="topic">仮説検定とp値</span><h2>差があるのに「有意ではない」とき</h2><p>偶然でも起こりうるかを測る。p値と差の大きさ。</p></a></li>
+            <li class="part">関係を確率と式で表す</li>
+            <li class="stop"><span class="no">07</span><a class="card" href="bayes/"><span class="topic">確率とベイズ</span><h2>大型の種は大きな群れを作るのか、その逆か</h2><p>条件付き確率の向きと、ベイズの定理。</p></a></li>
+            <li class="stop"><span class="no">08</span><a class="card" href="regression/"><span class="topic">回帰とモデル</span><h2>体重が10倍になると、行動圏は何倍になるか</h2><p>回帰直線、傾きの読み方、残差。</p></a></li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>授業とのつながり</h2>
+        <p>各ページの終わりに、同じ考え方を扱う授業の回へのリンクがあります。どの授業のどの回で何を扱うかは、科目の重なり一覧にまとめています。</p>
+        <div class="also">
+            <a href="../map/"><i class="fas fa-table-cells"></i> 科目の重なり一覧</a>
+            <a href="../"><i class="fas fa-chalkboard-user"></i> 担当授業と授業サイト</a>
+        </div>
+    </section>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../">← 授業一覧へ戻る</a></p>
+</footer>
+
+</body>
+</html>

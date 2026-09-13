@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データを要約する — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="平均・中央値・ばらつき・幾何平均は、それぞれ何を表しているのか。霊長類265種の体重と群れの大きさで、要約のしかたによって見え方が変わることを確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .lab-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px 18px; }
+        .lab-controls .toggle { padding:8px 12px; }
+        .readout dt.sw::before { content:''; display:inline-block; width:12px; height:3px; margin-right:6px; vertical-align:middle; background:var(--sw); }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">データを要約する</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>01</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>平均は「ふつうの種」を表しているか</h1>
+        <p class="sub">データを要約する ── 平均・中央値・ばらつき</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>たくさんの値を1つの数にまとめる方法は1つではない。平均・中央値・幾何平均はそれぞれ別のものを表していて、どれを使うかはデータの形と、何を知りたいかで決まる。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>霊長類の「典型的な体重」は何グラムか</h2>
+        <p>霊長類265種の体重を1つの数で言うとしたら、何グラムと答えるべきでしょうか。素直に平均を取ると 5,881 g です。ところが、体重を軽い順に並べてちょうど真ん中にくる種は 3,006 g で、平均のおよそ半分しかありません。</p>
+        <p>どちらかの計算が間違っているわけではありません。2つの数は、同じデータの別の側面を表しています。このページでは、代表値とばらつきの指標がそれぞれ何を表しているのかを、体重・群れの大きさ・行動圏の広さで確かめます。</p>
+        <dl class="terms">
+            <dt>代表値</dt><dd>データ全体を1つの数で代表させた値。平均・中央値・最頻値など。</dd>
+            <dt>平均（算術平均）</dt><dd>すべての値を足して、個数で割った値。</dd>
+            <dt>中央値</dt><dd>値を小さい順に並べたとき、ちょうど真ん中にくる値。</dd>
+            <dt>ばらつき</dt><dd>値が代表値のまわりにどれだけ散らばっているか。標準偏差・四分位範囲など。</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>265種を1本の軸に並べる</h2>
+        <p>下の図は、265種の体重を1つずつ点で打ったものです。体重は31 gから149,325 gまで4,800倍ほど開いているので、横軸は目盛りが10倍ずつ進む対数軸にしています。</p>
+        <div class="figure">
+            <canvas id="stripChart" role="img" aria-label="霊長類265種の体重を対数軸に点で並べた図。幾何平均・中央値・平均の3本の線がこの順に右へ並ぶ。"></canvas>
+            <div class="stat-row">
+                <div><span>平均</span><b class="num" id="sMean">—</b></div>
+                <div><span>中央値</span><b class="num" id="sMedian">—</b></div>
+                <div><span>幾何平均</span><b class="num" id="sGeo">—</b></div>
+                <div><span>平均より軽い種</span><b class="num" id="sBelow">—</b></div>
+            </div>
+            <p class="figcap">点の上下の位置に意味はありません（重なりを避けるためにずらしています）。濃い点はヒト科の7種です。</p>
+        </div>
+        <p>平均の線は、点が密集しているところよりはっきり右にあります。265種のうち65 %、つまり3種に2種ほどが平均より軽い種です。平均を押し上げているのは右端の少数の大型種で、ヒト科の7種は種数では3 %にも満たないのに、265種の体重を合計した値の32 %を占めています。</p>
+        <p>中央値は、値の大きさではなく順位だけで決まります。この265種では、オマキザル科の <i>Cebus capucinus</i> の 3,006 g が中央値そのものです。</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">要約のしかたを変えてみる</div>
+            <div class="lab-controls">
+                <div>
+                    <span class="seg-cap">変数</span>
+                    <div class="seg" role="radiogroup" aria-label="変数">
+                        <input type="radio" name="var" id="vMass" value="体重g" checked><label for="vMass">体重</label>
+                        <input type="radio" name="var" id="vGroup" value="集団サイズ"><label for="vGroup">群れの大きさ</label>
+                        <input type="radio" name="var" id="vRange" value="行動圏km2"><label for="vRange">行動圏の広さ</label>
+                    </div>
+                </div>
+                <div>
+                    <span class="seg-cap">横軸</span>
+                    <div class="seg" role="radiogroup" aria-label="横軸">
+                        <input type="radio" name="scale" id="sLin" value="lin" checked><label for="sLin">そのまま</label>
+                        <input type="radio" name="scale" id="sLog" value="log"><label for="sLog">対数</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="histChart" role="img" aria-label="選んだ変数のヒストグラムと、平均・中央値・幾何平均の線"></canvas>
+                <p class="figcap">帯は四分位範囲（下から25 %〜75 %の種が入る範囲）です。</p>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>種の数</dt><dd id="rN">—</dd>
+                    <dt class="sw" style="--sw:var(--mean)">平均</dt><dd id="rMean">—</dd>
+                    <dt class="sw" style="--sw:var(--navy2)">中央値</dt><dd id="rMedian">—</dd>
+                    <dt class="sw" style="--sw:var(--accent2)">幾何平均</dt><dd id="rGeo">—</dd>
+                    <dt>標準偏差</dt><dd id="rSD">—</dd>
+                    <dt>四分位範囲</dt><dd id="rIQR">—</dd>
+                    <dt>平均より小さい種</dt><dd id="rBelow">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="exclude">
+                    <label for="exclude">ヒト科の7種を除く<small>ゴリラ・チンパンジー・オランウータンなど。平均と中央値のどちらがどれだけ動くかを比べる。</small></label>
+                </div>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>ばらつきの指標と、幾何平均</h2>
+        <p>代表値だけでは、値がどれだけ散らばっているかがわかりません。よく使われるのが<b>標準偏差</b>で、各値が平均からどれだけ離れているかを二乗して平均し、平方根を取って元の単位に戻したものです。</p>
+        <div class="formula-block"><span class="formula">標準偏差 ＝ √{ (各値 − 平均)² の平均 }</span></div>
+        <p>標準偏差は平均を基準にしているので、平均と同じく大きな値に強く引っぱられます。体重の標準偏差は 13,110 g で、平均の2倍を超えます。そこで、ゆがんだデータでは<b>四分位範囲</b>もよく使われます。値を小さい順に並べて下から25 %の位置（第1四分位）と75 %の位置（第3四分位）の差で、真ん中の半分の種が入る幅です。</p>
+        <p>もう1つの選択肢が<b>幾何平均</b>です。値の対数を取ってから平均し、元の単位に戻します。「何倍ちがうか」で散らばるデータでは、対数にすると分布がほぼ左右対称になり、その中心が幾何平均になります。</p>
+        <div class="formula-block"><span class="formula">幾何平均 ＝ 10 の（log₁₀ 値 の平均）乗</span></div>
+        <p>体重の分布のゆがみを表す歪度（わいど。0なら左右対称、正なら右に裾を引く）は、そのままでは 7.60 ですが、対数にすると −0.40 まで下がります。3つの変数の要約を並べると次のとおりです。</p>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>変数（種の数）</th><th>平均</th><th>中央値</th><th>幾何平均</th><th>標準偏差</th><th>四分位範囲</th></tr></thead>
+            <tbody>
+                <tr><td>体重（265種）</td><td>5,881 g</td><td>3,006 g</td><td>2,120 g</td><td>13,110 g</td><td>749〜7,078 g</td></tr>
+                <tr><td>群れの大きさ（216種）</td><td>12.3 頭</td><td>6.9 頭</td><td>6.3 頭</td><td>14.6 頭</td><td>3.0〜16.1 頭</td></tr>
+                <tr><td>行動圏の広さ（157種）</td><td>1.70 km²</td><td>0.19 km²</td><td>0.20 km²</td><td>4.91 km²</td><td>0.05〜0.88 km²</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p style="margin-top:14px">3つとも平均が中央値より大きく、右に裾を引いた分布です。行動圏では、平均より狭い種が85 %にのぼります。</p>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「平均は、よくある種の値だ」</h3>
+                <p>右に裾を引くデータでは、平均は多くの種より大きな値になります。霊長類の体重では65 %の種が平均より軽く、群れの大きさでは69 %の種が平均より小さな群れです。「平均的な種」は、データの中で典型的な種とは限りません。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「平均 ± 標準偏差の範囲に、大半の値が入る」</h3>
+                <p>この目安は、左右対称な山形の分布を前提にしています。体重で平均から標準偏差を引くと −7,229 g となり、ありえない値になります。群れの大きさでも −2.3 頭です。標準偏差を読む前に、分布の形を確かめる必要があります。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「極端な値は外れ値なので、除いてから要約すればよい」</h3>
+                <p>ヒト科の7種を除くと、体重の平均は 5,881 g から 4,127 g に3割下がりますが、中央値は 3,006 g から 2,797 g と7 %しか動きません。ただしゴリラの体重は測り間違いではなく、実在する種の値です。除くかどうかは統計の都合ではなく、何について知りたいかで決まります。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「ゆがんだデータなら、いつも中央値を使えばよい」</h3>
+                <p>中央値は、右端の種がどれほど重くなっても動きません。それは強みですが、合計や総量が関わる問いでは弱みにもなります。265種の体重の合計の32 %をヒト科7種が占めているという事実は、中央値からは見えません。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/02_representative_values/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第2回</b><span>平均・中央値・最頻値の性質の違いと、外れ値が平均をどれだけ動かすかを、同じ霊長類の体重で確かめる。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/03_variability/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第3回</b><span>分散と標準偏差が何を測っているかと、正規分布を仮定してよいかを自分で確かめる方法を扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week04/" target="_blank" rel="noopener noreferrer"><b>情報活用 第4回</b><span>自分の調査票から平均・ばらつき・分布を出せるかを確かめ、設問を直す。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week06/" target="_blank" rel="noopener noreferrer"><b>情報活用 第6回</b><span>集めたデータをCSVで読み込み、欠測値と外れ値を扱いながら基本統計量を出す。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#767c84" href="https://aonoa68.github.io/joho-nyumon/week06/" target="_blank" rel="noopener noreferrer"><b>情報入門 第6回</b><span>Excelの数式で、合計・平均・最大値・最小値を求める。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <div class="pg empty"></div>
+        <a class="pg next" href="../visualize/"><small>02 →</small>グラフで見る</a>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 霊長類376種のうち、成体の体重が記録されている265種、群れの大きさが記録されている216種、行動圏の広さが記録されている157種を使用。<br>
+    標準偏差は、それぞれの種の集まりを全体として扱い、個数 n で割って計算しています。四分位は、並べた値の間を直線で補って求めています。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const FORMAT = {
+        "体重g": v => G.g(v),
+        "集団サイズ": v => G.fmt(v, 1) + " 頭",
+        "行動圏km2": v => G.fmt(v, v < 1 ? 2 : 2) + " km²"
+    };
+
+    function summarize(vals) {
+        const pos = vals.filter(v => v > 0);
+        return {
+            n: vals.length,
+            mean: G.mean(vals),
+            median: G.median(vals),
+            geo: 10 ** G.mean(pos.map(v => Math.log10(v))),
+            sd: G.sd(vals, false),
+            q1: G.quantile(vals, 0.25),
+            q3: G.quantile(vals, 0.75),
+            below: vals.filter(v => v < G.mean(vals)).length / vals.length
+        };
+    }
+
+    /* ---- 本文の図：体重を対数軸に点で並べる ---- */
+    const massRows = G.select(["体重g"], ["体重g"]);
+    const massVals = massRows.map(d => 10 ** d.v[0]);
+    const massSum = summarize(massVals);
+    document.getElementById("sMean").textContent = G.g(massSum.mean);
+    document.getElementById("sMedian").textContent = G.g(massSum.median);
+    document.getElementById("sGeo").textContent = G.g(massSum.geo);
+    document.getElementById("sBelow").textContent = Math.round(massSum.below * 100) + " %";
+    const jitter = (() => { const r = G.rng(7); return massRows.map(() => r()); })();
+
+    function drawStrip() {
+        const canvas = document.getElementById("stripChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const xmin = 1, xmax = 5.4;
+        const ax = G.axes(ctx, w, h, { L: 18, R: 18, T: 34, B: 34, xmin, xmax, ymin: 0, ymax: 1,
+            xticks: G.logTicks(xmin, xmax), xfmt: k => G.pow10Label(k) + (k === 5 ? " g" : ""), xgrid: true, yticks: [] });
+        massRows.forEach((d, i) => {
+            const hom = G.family(d.row) === "ヒト科";
+            ctx.fillStyle = hom ? G.css("--mean") : "rgba(61,111,168,0.45)";
+            ctx.beginPath(); ctx.arc(ax.x(d.v[0]), ax.y(0.08 + jitter[i] * 0.84), hom ? 3.6 : 3, 0, Math.PI * 2); ctx.fill();
+        });
+        [[massSum.geo, G.css("--accent2"), "幾何平均"], [massSum.median, G.css("--navy2"), "中央値"], [massSum.mean, G.css("--mean"), "平均"]].forEach(([v, col]) => {
+            ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ax.x(Math.log10(v)), ax.T); ctx.lineTo(ax.x(Math.log10(v)), ax.T + ax.ph); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "平均 " + G.g(massSum.mean) },
+            { color: G.css("--navy2"), label: "中央値 " + G.g(massSum.median) },
+            { color: G.css("--accent2"), label: "幾何平均 " + G.g(massSum.geo) }
+        ], 12);
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText("体重（対数軸）", 18, 12);
+    }
+
+    /* ---- 体験パネル ---- */
+    let key = "体重g", logScale = false, exclude = false;
+
+    function currentVals() {
+        return G.select([key]).filter(d => !exclude || G.family(d.row) !== "ヒト科").map(d => d.v[0]);
+    }
+
+    function drawHist(vals, s) {
+        const canvas = document.getElementById("histChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const tx = logScale ? (v => Math.log10(v)) : (v => v);
+        const xs = vals.filter(v => !logScale || v > 0).map(tx);
+        let xmin, xmax;
+        if (logScale) { xmin = Math.floor(Math.min(...xs) * 2) / 2; xmax = Math.ceil(Math.max(...xs) * 2) / 2; }
+        else { xmin = 0; xmax = Math.max(...xs) * 1.02; }
+        const nb = 30, bw = (xmax - xmin) / nb;
+        const counts = new Array(nb).fill(0);
+        xs.forEach(v => { const i = Math.min(nb - 1, Math.max(0, Math.floor((v - xmin) / bw))); counts[i]++; });
+        const cmax = Math.max(...counts);
+        const yt = G.ticks(0, cmax, 4);
+        const ymax = Math.max(yt[yt.length - 1], cmax);
+        const xticks = logScale ? G.logTicks(xmin, xmax) : G.ticks(xmin, xmax, 5);
+        const unit = { "体重g": " g", "集団サイズ": " 頭", "行動圏km2": " km²" }[key];
+        const lastTick = xticks[xticks.length - 1];
+        const xfmt = logScale
+            ? (k => G.pow10Label(k) + (k === lastTick ? unit : ""))
+            : (v => (key === "体重g" ? G.man(v) : G.fmt(v, key === "行動圏km2" && v % 1 ? 1 : 0)) + (v === lastTick ? unit : ""));
+        const ax = G.axes(ctx, w, h, { L: 40, R: 16, T: 34, B: 34, xmin, xmax, ymin: 0, ymax, xticks, yticks: yt, xfmt, yfmt: v => G.fmt(v), ylabel: logScale ? "種の数（横軸は対数）" : "種の数" });
+        // 四分位範囲の帯
+        const qa = ax.x(tx(Math.max(s.q1, logScale ? 1e-9 : s.q1))), qb = ax.x(tx(s.q3));
+        ctx.fillStyle = "rgba(201,168,76,0.16)"; ctx.fillRect(qa, ax.T, qb - qa, ax.ph);
+        // 棒
+        ctx.fillStyle = G.css("--pop");
+        counts.forEach((c, i) => { if (c) { const x0 = ax.x(xmin + i * bw); ctx.fillRect(x0 + 0.5, ax.y(c), Math.max(1, ax.pw / nb - 1), ax.T + ax.ph - ax.y(c)); } });
+        // 線
+        [[s.geo, G.css("--accent2")], [s.median, G.css("--navy2")], [s.mean, G.css("--mean")]].forEach(([v, col]) => {
+            const px = ax.x(tx(v)); ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(px, ax.T); ctx.lineTo(px, ax.T + ax.ph); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "平均" },
+            { color: G.css("--navy2"), label: "中央値" },
+            { color: G.css("--accent2"), label: "幾何平均" }
+        ], 12);
+    }
+
+    const BASE = {};
+    ["体重g", "集団サイズ", "行動圏km2"].forEach(k => { BASE[k] = summarize(G.select([k]).map(d => d.v[0])); });
+
+    function render() {
+        const vals = currentVals();
+        const s = summarize(vals);
+        const f = FORMAT[key];
+        document.getElementById("rN").textContent = s.n + " 種";
+        document.getElementById("rMean").textContent = f(s.mean);
+        document.getElementById("rMedian").textContent = f(s.median);
+        document.getElementById("rGeo").textContent = f(s.geo);
+        document.getElementById("rSD").textContent = f(s.sd);
+        document.getElementById("rIQR").textContent = (key === "体重g" ? G.fmt(Math.round(s.q1)) : G.fmt(s.q1, key === "行動圏km2" ? 2 : 1)) + "〜" + f(s.q3);
+        document.getElementById("rBelow").textContent = Math.round(s.below * 100) + " %";
+        drawHist(vals, s);
+        const b = BASE[key];
+        const pct = (a, c) => Math.round((a - c) / c * 100);
+        const hint = document.getElementById("hint");
+        if (exclude) {
+            hint.innerHTML = `ヒト科を除くと、平均は <b>${pct(s.mean, b.mean)} %</b>、中央値は <b>${pct(s.median, b.median)} %</b>、標準偏差は <b>${pct(s.sd, b.sd)} %</b> 変わりました。平均と標準偏差は少数の極端な値に強く左右され、中央値はほとんど動きません。`;
+        } else if (logScale) {
+            hint.innerHTML = "対数軸にすると、右に長く伸びていた裾が縮み、山がほぼ左右対称になります。その山の中心に近いのは、平均ではなく幾何平均と中央値です。";
+        } else if (key === "体重g") {
+            hint.innerHTML = "そのままの軸では、ほとんどの種が左端の数本の棒に収まり、平均の線は山の外側に出ています。「対数」に切り替えたり、「ヒト科の7種を除く」を試したりしてください。";
+        } else if (key === "集団サイズ") {
+            hint.innerHTML = "群れの大きさも右に裾を引いています。単独で暮らす種（1頭）が多い一方で、数十頭の群れを作る種が平均を引き上げています。";
+        } else {
+            hint.innerHTML = "行動圏の広さは3つの中でもっとも偏っていて、平均より狭い種が8割を超えます。四分位範囲の帯が、左端に細く寄っていることにも注目してください。";
+        }
+    }
+
+    document.querySelectorAll('input[name="var"]').forEach(r => r.addEventListener("change", e => { key = e.target.value; render(); }));
+    document.querySelectorAll('input[name="scale"]').forEach(r => r.addEventListener("change", e => { logScale = e.target.value === "log"; render(); }));
+    document.getElementById("exclude").addEventListener("change", e => { exclude = e.target.checked; render(); });
+
+    G.onRedraw(() => { drawStrip(); render(); });
+})();
+</script>
+</body>
+</html>

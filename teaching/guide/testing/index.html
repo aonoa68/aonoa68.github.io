@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仮説検定とp値 — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="1.6倍の差があっても「有意ではない」のはなぜか。霊長類の科ごとの体重を並べ替え検定で比べ、p値が何を測っているかを自分の手で確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .figure canvas#pairsChart { height: 330px; }
+        .lab canvas#dotChart { height: 150px; }
+        .lab canvas#nullChart { height: 260px; margin-top: 10px; }
+        .cmp { width: 100%; }
+        .cmp td b { font-weight: 600; }
+        .p-note { font-size: 0.82em; color: var(--muted); margin-top: 2px; }
+        .readout dt { white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">仮説検定とp値</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>06</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>差があるのに「有意ではない」とき</h1>
+        <p class="sub">仮説検定とp値 ── 偶然でも起こりうるかを測る</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>「本当は差がない」と仮定したとき、いま見えている差がどれくらい起こりやすいかを数えるのが仮説検定。その割合がp値で、差の大きさそのものではない。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>科が違えば、体重は違うと言えるか</h2>
+        <p>霊長類の体重は、科によって傾向が違うように見えます。しかし、ある科が別の科より重く見えても、それが科の違いによるものか、たまたまその科に重い種が多く含まれていただけなのかは、見ただけでは区別できません。</p>
+        <p>ここでは体重が記録されている種のうち、3組の科を比べます。体重は同じ科の中でも数倍の開きがあるので、対数をとって平均し、差を「何倍重いか」で表します。この平均を<b>幾何平均</b>といいます。</p>
+        <div class="figure">
+            <canvas id="pairsChart" role="img" aria-label="3組の科について、各種の体重を対数の横軸に点で並べた図。縦の線は各科の幾何平均。"></canvas>
+            <div class="table-wrap">
+            <table class="data cmp">
+                <thead><tr><th>比べた科</th><th>種数</th><th>幾何平均</th><th>重い側は</th><th>p値</th></tr></thead>
+                <tbody>
+                    <tr><td>キツネザル科 と インドリ科</td><td>15 と 8</td><td>2,140 g と 3,398 g</td><td><b>1.59 倍</b></td><td>約 0.08</td></tr>
+                    <tr><td>ガラゴ科 と ロリス科</td><td>13 と 8</td><td>286 g と 443 g</td><td><b>1.55 倍</b></td><td>約 0.25</td></tr>
+                    <tr><td>オマキザル科 と サキ科</td><td>39 と 22</td><td>590 g と 1,493 g</td><td><b>2.53 倍</b></td><td>0.0001 未満</td></tr>
+                </tbody>
+            </table>
+            </div>
+            <p class="figcap">点は1種。縦の線は科ごとの幾何平均です。p値は、科のラベルを2万回でたらめに入れ替える並べ替え検定（両側）で求めました。</p>
+        </div>
+        <p>1組目と2組目の差は、どちらも約1.6倍です。それなのにp値は3倍ほど違い、どちらも慣習的な基準の0.05を下回りません。3組目だけが、はっきり「偶然とは言いにくい」結果になりました。この違いがどこから来るのかを、次の体験で確かめます。</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">科のラベルを入れ替えてみる</div>
+            <div>
+                <span class="seg-cap">比べる科</span>
+                <div class="seg" role="radiogroup" aria-label="比べる科の組">
+                    <input type="radio" name="pair" id="pair0" value="0" checked><label for="pair0">キツネザル科 と インドリ科</label>
+                    <input type="radio" name="pair" id="pair1" value="1"><label for="pair1">ガラゴ科 と ロリス科</label>
+                    <input type="radio" name="pair" id="pair2" value="2"><label for="pair2">オマキザル科 と サキ科</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="dotChart" role="img" aria-label="選んだ2科の各種の体重。入れ替えた直後はラベルが入れ替わった状態を示す。"></canvas>
+                <canvas id="nullChart" role="img" aria-label="ラベルを入れ替えたときに生じた差のヒストグラム。観察された差を縦線で示す。"></canvas>
+                <p class="p-note" id="nullCap"></p>
+                <div class="btns">
+                    <button class="btn" id="shuffle1" type="button">1回入れ替える</button>
+                    <button class="btn" id="shuffle1000" type="button">1,000回くり返す</button>
+                    <button class="btn ghost" id="reset" type="button">やり直す</button>
+                </div>
+                <div class="last" id="last" aria-live="polite"></div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>観察された差</dt><dd id="rObs">—</dd>
+                    <dt>入れ替えた回数</dt><dd id="rK">—</dd>
+                    <dt>観察以上の差</dt><dd id="rHit">—</dd>
+                    <dt>p値（その割合）</dt><dd id="rP">—</dd>
+                </dl>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">入れ替えでは、2科の種をひとまとめにしてから、元と同じ種数ずつでたらめに振り分け直します。「科と体重は無関係」という仮定を、そのまま手で再現する操作です。</p>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">下の図の赤い棒が、観察された差と同じか、それより極端な差です。重い側がどちらでも数える両側の検定です。</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>しくみ：帰無仮説とp値</h2>
+        <p>検定では、まず<b>帰無仮説</b>を立てます。ここでは「科の違いは体重と無関係で、観察された差はどの種がどちらの科に入ったかの偶然で生じた」という仮説です。</p>
+        <p>帰無仮説が正しいなら、科のラベルを入れ替えても差の出方は変わらないはずです。そこで入れ替えを何度もくり返し、偶然だけで生じる差の分布を作ります。その分布の中で、実際に観察された差がどれほど端にあるかを数えた割合が<b>p値</b>です。</p>
+        <div class="formula-block"><span class="formula">p値 ＝ 観察された差以上に極端な差が出た回数 ÷ 入れ替えた回数</span></div>
+        <p>p値が小さいほど、「偶然だけでこの差が出る」という説明は苦しくなります。慣習的には0.05を下回ると「統計的に有意」と呼びますが、この基準は約束事で、0.05を境に自然の側で何かが切り替わるわけではありません。</p>
+        <p>p値は、差の大きさと、データのばらつきや数の両方で決まります。キツネザル科とインドリ科では、インドリ科8種の体重が829 gから8,565 gまで大きく散らばっています。種数が少なく、ばらつきが大きいと、入れ替えだけでも大きな差がしばしば生じます。そのため、1.59倍という差があっても、偶然とはっきり区別できません。</p>
+        <dl class="terms">
+            <dt>帰無仮説</dt><dd>「差はない」「関係はない」とする仮説。検定はこれを仮定して計算する。</dd>
+            <dt>並べ替え検定</dt><dd>グループのラベルをでたらめに入れ替えて、偶然だけで生じる差の分布を作る検定。</dd>
+            <dt>p値</dt><dd>帰無仮説が正しいとき、観察された差以上に極端な差が出る割合。</dd>
+            <dt>有意水準</dt><dd>「有意」と呼ぶかどうかの基準。慣習的に0.05が使われる。</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「p値は、帰無仮説が正しい確率だ」</h3>
+                <p>違います。p値は帰無仮説が正しいと<b>仮定した上で</b>、観察された差以上が出る割合です。キツネザル科とインドリ科のp≈0.08は、「科と体重が無関係である確率が8%」という意味ではありません。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「有意でなければ、差はない」</h3>
+                <p>有意でないのは「偶然と区別できなかった」ということです。インドリ科はキツネザル科より幾何平均で1.59倍重いのに、8種と15種の比較ではp≈0.08にとどまりました。差がないことを示したわけではありません。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「p値が小さいほど、差が大きい」</h3>
+                <p>ガラゴ科とロリス科の差は1.55倍、キツネザル科とインドリ科は1.59倍で、ほぼ同じです。それでもp値は約0.25と約0.08で、3倍ほど違います。p値を見るときは、何倍の差かという効果の大きさを必ず一緒に見ます。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「たくさんの組を比べて、有意になった組を報告すればよい」</h3>
+                <p>2種以上の記録がある14科のすべての組を比べると、91回の検定になります。仮にどの科にも差がなくても、有意水準0.05で検定すれば、平均して4〜5組は偶然「有意」になります。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/08_ttest/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第8回</b><span>帰無仮説と背理法の考え方からt検定を実行し、「p値は効果の大きさではない」ことを確かめる。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/09_anova/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第9回</b><span>3つの科の体重を比べる例で、t検定を繰り返すと偽陽性が増えることと、分散分析での一括判定を扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/08_multiple/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第8回</b><span>検定を重ねると偶然の「有意」が積み上がることを示し、有意になるまで試す分析の危うさと補正の方法を学ぶ。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/09_effectsize/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第9回</b><span>標本を大きくすれば無意味な差でも有意になることを示し、効果量とp値を分けて報告する作法を身につける。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/10.html" target="_blank" rel="noopener noreferrer"><b>行動計量学 第10回</b><span>2群の平均値を比べるt検定をRで実行し、効果量（Cohenのd）とあわせて解釈する。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/13.html" target="_blank" rel="noopener noreferrer"><b>行動計量学 第13回</b><span>3群以上をt検定の繰り返しではなく一元配置分散分析で比べる理由と、Rでの実行方法を学ぶ。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <a class="pg" href="../interval/"><small>← 05</small>推定と信頼区間</a>
+        <a class="pg next" href="../bayes/"><small>07 →</small>確率とベイズ</a>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 変数は成体の体重（g）。体重の記録がある265種のうち、比べた6科の105種（キツネザル科15・インドリ科8・ガラゴ科13・ロリス科8・オマキザル科39・サキ科22）を使用。科の和名は授業「統計学Ⅰ」の教材による。<br>
+    表のp値は並べ替え2万回で求めた値です。体験パネルのp値は入れ替えごとに乱数が変わるため、表の値と少しずれます。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const PAIRS = [["キツネザル科", "インドリ科"], ["ガラゴ科", "ロリス科"], ["オマキザル科", "サキ科"]];
+    const all = G.select(["体重g"], ["体重g"]).map(d => ({ fam: G.family(d.row), sp: G.species(d.row), lg: d.v[0] }));
+    const groupOf = f => all.filter(d => d.fam === f);
+    const ratioText = d => G.fmt(10 ** Math.abs(d), 2) + " 倍";
+
+    /* ---------- ③ 3組の図（静的） ---------- */
+    function drawPairs() {
+        const { ctx, w, h } = G.setup(document.getElementById("pairsChart"));
+        const fams = PAIRS.flat();
+        const pts = fams.map(groupOf);
+        const L = 150, R = 18, T = 30, B = 34, pw = w - L - R, ph = h - T - B;
+        const xmin = 1.7, xmax = 4.05; // 50 g 〜 約1.1万 g
+        const x = v => L + (v - xmin) / (xmax - xmin) * pw;
+        const rowH = ph / fams.length;
+        // 目盛り（1・2・5 × 10^k）
+        ctx.strokeStyle = G.css("--line"); ctx.fillStyle = G.css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (let k = 1; k <= 4; k++) [1, 2, 5].forEach(m => { const v = Math.log10(m * 10 ** k); if (v < xmin || v > xmax) return; ctx.beginPath(); ctx.moveTo(x(v), T); ctx.lineTo(x(v), T + ph); ctx.stroke(); ctx.fillText(G.fmt(m * 10 ** k), x(v), T + ph + 8); });
+        ctx.textAlign = "left"; ctx.fillText("体重（g・対数目盛り）", L, 6);
+        const cols = [G.css("--pop"), G.css("--mean")];
+        fams.forEach((f, i) => {
+            const cy = T + rowH * (i + 0.5);
+            if (i % 2 === 0 && i > 0) { ctx.strokeStyle = G.css("--faint"); ctx.beginPath(); ctx.moveTo(8, T + rowH * i); ctx.lineTo(L + pw, T + rowH * i); ctx.stroke(); }
+            const col = cols[i % 2];
+            ctx.fillStyle = G.css("--text"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+            ctx.fillText(`${f}（${pts[i].length}）`, L - 12, cy);
+            ctx.fillStyle = col; ctx.globalAlpha = 0.7;
+            pts[i].forEach((d, j) => { ctx.beginPath(); ctx.arc(x(d.lg), cy + ((j * 7) % 11 - 5) * rowH / 26, 3.6, 0, Math.PI * 2); ctx.fill(); });
+            ctx.globalAlpha = 1;
+            const gm = G.mean(pts[i].map(d => d.lg));
+            ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x(gm), cy - rowH * 0.38); ctx.lineTo(x(gm), cy + rowH * 0.38); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, [{ color: G.css("--navy2"), label: "縦線＝幾何平均", kind: "line" }], 6);
+    }
+
+    /* ---------- ④ 体験 ---------- */
+    let pairIdx = 0, A = [], B = [], obs = 0, diffs = [], lastAssign = null, busy = false;
+    function loadPair(i) {
+        pairIdx = i; A = groupOf(PAIRS[i][0]); B = groupOf(PAIRS[i][1]);
+        obs = G.mean(B.map(d => d.lg)) - G.mean(A.map(d => d.lg));
+        diffs = []; lastAssign = null;
+    }
+    let rnd = Math.random;
+    function shuffleOnce() {
+        const pool = G.shuffle([...A, ...B], rnd);
+        const a = pool.slice(0, A.length), b = pool.slice(A.length);
+        const d = G.mean(b.map(x => x.lg)) - G.mean(a.map(x => x.lg));
+        diffs.push(d); lastAssign = { a, b, d };
+    }
+    const isHit = d => Math.abs(d) >= Math.abs(obs) - 1e-12;
+
+    function nullRange() {
+        const pooled = [...A, ...B].map(d => d.lg);
+        const se = G.sd(pooled) * Math.sqrt(1 / A.length + 1 / B.length);
+        const m = Math.max(Math.abs(obs) * 1.35, se * 3.6);
+        return [-m, m];
+    }
+    const RATIO_TICKS = [0.25, 1 / 3, 0.5, 2 / 3, 1, 1.5, 2, 3, 4];
+    const ratioLabel = r => Math.abs(r - 1) < 1e-9 ? "1倍" : G.fmt(r, Math.abs(r * 10 - Math.round(r * 10)) < 1e-9 ? (r % 1 ? 1 : 0) : 2) + "倍";
+
+    function drawDots() {
+        const { ctx, w, h } = G.setup(document.getElementById("dotChart"));
+        const showA = lastAssign ? lastAssign.a : A, showB = lastAssign ? lastAssign.b : B;
+        const lgAll = [...A, ...B].map(d => d.lg);
+        const xmin = Math.min(...lgAll) - 0.12, xmax = Math.max(...lgAll) + 0.12;
+        const L = 150, R = 18, T = 24, Bm = 28, pw = w - L - R, ph = h - T - Bm;
+        const x = v => L + (v - xmin) / (xmax - xmin) * pw;
+        ctx.strokeStyle = G.css("--line"); ctx.fillStyle = G.css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (let k = 1; k <= 5; k++) [1, 2, 5].forEach(m => { const v = Math.log10(m * 10 ** k); if (v < xmin || v > xmax) return; ctx.beginPath(); ctx.moveTo(x(v), T); ctx.lineTo(x(v), T + ph); ctx.stroke(); ctx.fillText(G.fmt(m * 10 ** k) + (k >= 3 && m === 1 ? " g" : ""), x(v), T + ph + 7); });
+        const rows = [[PAIRS[pairIdx][0], showA, G.css("--pop")], [PAIRS[pairIdx][1], showB, G.css("--mean")]];
+        rows.forEach(([name, pts, col], i) => {
+            const cy = T + ph * (i === 0 ? 0.27 : 0.73);
+            ctx.fillStyle = G.css("--text"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+            ctx.fillText(lastAssign ? `${name}役（${pts.length}）` : `${name}（${pts.length}）`, L - 10, cy);
+            pts.forEach((d, j) => {
+                const orig = A.includes(d) ? G.css("--pop") : G.css("--mean");
+                ctx.fillStyle = orig; ctx.globalAlpha = 0.8;
+                ctx.beginPath(); ctx.arc(x(d.lg), cy + ((j * 5) % 7 - 3) * 3, 4, 0, Math.PI * 2); ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            const gm = G.mean(pts.map(d => d.lg));
+            ctx.strokeStyle = G.css("--navy2"); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x(gm), cy - 16); ctx.lineTo(x(gm), cy + 16); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, lastAssign
+            ? [{ color: G.css("--mean"), label: PAIRS[pairIdx][1] + "の種", kind: "dot" }, { color: G.css("--pop"), label: PAIRS[pairIdx][0] + "の種", kind: "dot" }]
+            : [{ color: G.css("--navy2"), label: "縦線＝幾何平均", kind: "line" }], 8);
+    }
+
+    function drawNull() {
+        const { ctx, w, h } = G.setup(document.getElementById("nullChart"));
+        const [lo, hi] = nullRange(), nb = 41, bw = (hi - lo) / nb;
+        const counts = new Array(nb).fill(0), hits = new Array(nb).fill(0);
+        diffs.forEach(d => { let i = Math.floor((d - lo) / bw); i = Math.max(0, Math.min(nb - 1, i)); counts[i]++; if (isHit(d)) hits[i]++; });
+        const ymax = Math.max(5, Math.ceil(Math.max(...counts) * 1.12 / 5) * 5);
+        const ticks = RATIO_TICKS.map(r => Math.log10(r)).filter(v => v >= lo && v <= hi);
+        const ax = G.axes(ctx, w, h, { L: 44, R: 14, T: 30, B: 34, xmin: lo, xmax: hi, ymin: 0, ymax, yticks: G.ticks(0, ymax, 4), xticks: ticks, xfmt: v => ratioLabel(10 ** v), ylabel: "回数", xlabel: "" });
+        counts.forEach((c, i) => {
+            if (!c) return;
+            const x0 = ax.x(lo + i * bw) + 0.5, bwpx = Math.max(1, ax.pw / nb - 1);
+            ctx.fillStyle = G.css("--pop-soft"); ctx.fillRect(x0, ax.y(c), bwpx, ax.y(0) - ax.y(c));
+            if (hits[i]) { ctx.fillStyle = G.css("--biased"); ctx.fillRect(x0, ax.y(hits[i]), bwpx, ax.y(0) - ax.y(hits[i])); }
+        });
+        // 観察された差（両側なので ± の2本）
+        [obs, -obs].forEach((v, k) => {
+            ctx.strokeStyle = G.css("--mean"); ctx.lineWidth = 2; ctx.setLineDash(k ? [4, 4] : []);
+            ctx.beginPath(); ctx.moveTo(ax.x(v), ax.T); ctx.lineTo(ax.x(v), ax.T + ax.ph); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "観察された差（点線は逆向き）", kind: "line" },
+            { color: G.css("--biased"), label: "観察以上に極端", kind: "box" }
+        ], 10);
+        document.getElementById("nullCap").textContent = `横軸は、入れ替え後の「${PAIRS[pairIdx][1]}役 ÷ ${PAIRS[pairIdx][0]}役」の幾何平均の比。1倍が差なし。`;
+        if (!diffs.length) { ctx.fillStyle = G.css("--muted"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("「1回入れ替える」を押すと、偶然で生じた差がここに積み上がります", ax.L + ax.pw / 2, ax.T + ax.ph / 2); }
+    }
+
+    function readout() {
+        const k = diffs.length, hit = diffs.filter(isHit).length;
+        const heavy = obs >= 0 ? PAIRS[pairIdx][1] : PAIRS[pairIdx][0];
+        document.getElementById("rObs").textContent = ratioText(obs); document.getElementById("rObs").title = `${heavy}が重い`;
+        document.getElementById("rK").textContent = G.fmt(k) + " 回";
+        document.getElementById("rHit").textContent = k ? G.fmt(hit) + " 回" : "—";
+        const p = k ? hit / k : null;
+        document.getElementById("rP").textContent = p === null ? "—" : (hit === 0 ? `${G.fmt(1 / k, k >= 1000 ? 3 : 2)} 未満` : G.fmt(p, 3));
+        const last = document.getElementById("last");
+        last.innerHTML = lastAssign ? `直前の入れ替えで生じた差：<b class="num">${ratioText(lastAssign.d)}</b>（観察された差 ${ratioText(obs)} ${isHit(lastAssign.d) ? "以上" : "未満"}）` : "";
+        const hint = document.getElementById("hint");
+        if (k < 200) { hint.innerHTML = "「1,000回くり返す」を押すと、科と体重が無関係なときに偶然どれくらいの差が出るかが見えます。"; return; }
+        if (pairIdx === 0) hint.innerHTML = `入れ替えただけでも、${G.fmt(k)}回のうち${G.fmt(hit)}回で観察以上の差が出ました。インドリ科は8種しかなく、体重の散らばりも大きいため、1.59倍の差が偶然でも珍しくありません。「差がない」のではなく、<b>この種数では偶然と区別できない</b>ということです。`;
+        else if (pairIdx === 1) hint.innerHTML = `差は1組目とほぼ同じ1.55倍ですが、観察以上の差が出た割合はずっと大きくなりました。ガラゴ科には66 gから1,577 gまでの種が含まれ、入れ替えで生じる差の幅が広いためです。<b>p値は差の大きさだけでは決まりません。</b>`;
+        else hint.innerHTML = hit === 0 ? `${G.fmt(k)}回入れ替えて、観察された2.53倍以上の差は一度も出ませんでした。種数が多く差も大きいので、偶然だけでこの差が出るという説明は成り立ちにくくなります。` : `観察以上の差が出たのは${G.fmt(k)}回中${G.fmt(hit)}回だけでした。種数が多く差も大きいので、偶然だけでこの差が出るという説明は成り立ちにくくなります。`;
+    }
+
+    function render() { drawDots(); drawNull(); readout(); }
+    function setBtns(d) { ["shuffle1", "shuffle1000", "reset"].forEach(id => document.getElementById(id).disabled = d); }
+    function run(times) {
+        if (busy) return;
+        if (G.reduceMotion || times <= 1) { for (let i = 0; i < times; i++) shuffleOnce(); render(); return; }
+        busy = true; setBtns(true);
+        const per = Math.ceil(times / 30); let done = 0;
+        (function frame() { const k = Math.min(per, times - done); for (let i = 0; i < k; i++) shuffleOnce(); done += k; render(); if (done < times) requestAnimationFrame(frame); else { busy = false; setBtns(false); } })();
+    }
+    document.getElementById("shuffle1").addEventListener("click", () => { rnd = Math.random; run(1); });
+    document.getElementById("shuffle1000").addEventListener("click", () => { rnd = Math.random; run(1000); });
+    document.getElementById("reset").addEventListener("click", () => { diffs = []; lastAssign = null; render(); });
+    document.querySelectorAll('input[name="pair"]').forEach(r => r.addEventListener("change", e => { loadPair(+e.target.value); render(); }));
+
+    // 読み込み時：キツネザル科 と インドリ科 で1,000回入れ替えた状態（再現できる乱数）
+    loadPair(0); rnd = G.rng(20260913);
+    for (let i = 0; i < 1000; i++) shuffleOnce();
+    lastAssign = null; rnd = Math.random;
+    G.onRedraw(() => { drawPairs(); render(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相関と因果 — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="長生きの霊長類ほど行動圏が広いのはなぜか。相関係数の意味と、第三の変数（交絡）による見せかけの関係を、霊長類の生態データで確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .hypos { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:18px; }
+        .hypo { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; }
+        .hypo .path { font-family:var(--serif); font-size:1.08em; color:var(--navy2); line-height:1.5; }
+        .hypo p { font-size:0.86em; color:var(--muted); margin-top:6px; line-height:1.7; }
+        .hypo.third { border-color:color-mix(in srgb,var(--mean) 40%,white); }
+        .hypo.third .path { color:var(--mean); }
+        .figure canvas.pair2 { height:280px; }
+        @media (max-width:820px) { .hypos { grid-template-columns:minmax(0,1fr); } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">相関と因果</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>03</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>長生きの種ほど、広く動き回るのか</h1>
+        <p class="sub">相関と因果 ── 第三の変数を疑う</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>2つの量がそろって増える（相関がある）ことは、一方がもう一方を引き起こしている証拠にはならない。両方を動かしている第三の変数が隠れていることがある。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>寿命と行動圏には、はっきりした相関がある</h2>
+        <p>霊長類の種ごとに、記録されている最長寿命と行動圏の広さ（群れや個体がふだん使う範囲）を並べると、長生きの種ほど行動圏が広いという傾向がはっきり出ます。体重・寿命・行動圏の3つが記録されている100種で、相関係数は <b class="num">0.65</b> です。</p>
+        <p>この関係を見たとき、考えられる説明は1つではありません。</p>
+        <div class="hypos">
+            <div class="hypo"><div class="path">寿命 → 行動圏</div><p>長く生きる種は、長い時間をかけて広い範囲を覚え、使うようになる。</p></div>
+            <div class="hypo"><div class="path">行動圏 → 寿命</div><p>広い範囲を使える種は、食物を安定して得られ、長く生きられる。</p></div>
+            <div class="hypo third"><div class="path">寿命 ← 体重 → 行動圏</div><p>体の大きい種ほど長生きで、体が大きいほど広い範囲を使う。寿命と行動圏の間には直接のつながりがない。</p></div>
+        </div>
+        <p style="margin-top:18px">3つ目のように、2つの量の両方に影響して見せかけの相関を作る変数を<b>交絡変数</b>（第三の変数）と呼びます。相関係数だけでは、この3つの説明を区別できません。</p>
+    </section>
+
+    <section>
+        <h2>体重は、寿命とも行動圏とも強く結びついている</h2>
+        <p>まず第三の変数の候補である体重を確かめます。同じ100種で、体重は寿命とも行動圏とも相関係数 <b class="num">0.74</b> で結びついています。寿命と行動圏どうしの 0.65 より強い関係です。</p>
+        <div class="figure">
+            <canvas id="massChart" class="pair2" role="img" aria-label="左は体重と最長寿命、右は体重と行動圏の広さの散布図。どちらも右上がりの強い関係。"></canvas>
+            <p class="figcap">どちらの軸も対数目盛りです。体重は48グラムから約11万グラムまで、行動圏は数千倍の幅があるため、ふつうの目盛りでは大型の数種だけが図を占めてしまいます。以下の相関係数は、すべて対数（log10）をとった値で計算しています。</p>
+        </div>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">体重の影響を取り除いてみる</div>
+            <div>
+                <span class="seg-cap">見る組み合わせ</span>
+                <div class="seg" role="radiogroup" aria-label="見る組み合わせ">
+                    <input type="radio" name="pair" id="pLifeRange" value="lifeRange" checked><label for="pLifeRange">寿命 × 行動圏</label>
+                    <input type="radio" name="pair" id="pGestLife" value="gestLife"><label for="pGestLife">妊娠期間 × 寿命</label>
+                    <input type="radio" name="pair" id="pLifeGroup" value="lifeGroup"><label for="pLifeGroup">寿命 × 群れの大きさ</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="scatter" role="img" aria-label="選んだ組み合わせの散布図。点の色は体重を表す。"></canvas>
+            </div>
+            <div class="side">
+                <div class="toggle">
+                    <input type="checkbox" id="adjust">
+                    <label for="adjust">体重の影響を取り除く<small>両方の軸を「体重から予想される値の何倍か」に置きかえます。体重が同じくらいの種どうしを比べるのと同じ考え方です。</small></label>
+                </div>
+                <dl class="readout" aria-live="polite">
+                    <dt>種の数</dt><dd id="rN">—</dd>
+                    <dt>体重と横軸の相関</dt><dd id="rMx">—</dd>
+                    <dt>体重と縦軸の相関</dt><dd id="rMy">—</dd>
+                    <dt>そのままの相関</dt><dd id="rR">—</dd>
+                    <dt>体重を除いた相関</dt><dd id="rP">—</dd>
+                </dl>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">点の色は体重です。薄い青が軽い種、濃い紺が重い種です。破線は、点のならびに最もよく当てはまる直線です。</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>しくみ：相関係数と偏相関</h2>
+        <p><b>相関係数</b> r は、2つの量の直線的な関係の強さを −1 から 1 の数で表したものです。1 に近いほど右上がりの直線に、−1 に近いほど右下がりの直線に点が並び、0 に近いと直線的な関係は見えません。各種の値が平均からどちら向きにずれているかを掛け合わせて平均し、全体の散らばりで割ったものです。</p>
+        <div class="formula-block"><span class="formula">r = Σ(x − x̄)(y − ȳ) ÷ √{ Σ(x − x̄)² · Σ(y − ȳ)² }</span></div>
+        <p>第三の変数 z の影響を取り除いた相関を<b>偏相関</b>と呼びます。x と y をそれぞれ z から直線で予想し、予想からのずれ（残差）どうしの相関をとったものです。体験パネルで「体重の影響を取り除く」を選んだときに描いているのが、この残差どうしの散布図です。3つの相関係数から、次の式でも同じ値が求まります。</p>
+        <div class="formula-block"><span class="formula">r<sub>xy·z</sub> = ( r<sub>xy</sub> − r<sub>xz</sub> r<sub>yz</sub> ) ÷ √{ (1 − r<sub>xz</sub>²)(1 − r<sub>yz</sub>²) }</span></div>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>組み合わせ（z＝体重）</th><th>種の数</th><th>r<sub>xz</sub></th><th>r<sub>yz</sub></th><th>そのままの r</th><th>体重を除いた r</th></tr></thead>
+            <tbody>
+                <tr><td>寿命 × 行動圏</td><td>100</td><td>0.74</td><td>0.74</td><td>0.65</td><td><b>0.23</b></td></tr>
+                <tr><td>妊娠期間 × 寿命</td><td>106</td><td>0.70</td><td>0.75</td><td>0.56</td><td><b>0.07</b></td></tr>
+                <tr><td>寿命 × 群れの大きさ</td><td>116</td><td>0.72</td><td>0.61</td><td>0.48</td><td><b>0.07</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p style="margin-top:16px">3つとも、体重を除くと相関は大きく下がります。r の2乗は「一方の変動のうち、もう一方と直線で連動している割合」の目安で、寿命と行動圏では 0.42 から 0.05 に減ります。見えていた関係の大部分は、体重を通じたものだったと読めます。寿命と行動圏には 0.23 の弱い関係が残っていて、これを体重以外の何が生んでいるのかは、このデータだけではわかりません。</p>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「相関が強いほど、因果も強い」</h3>
+                <p>相関係数が表すのは、点がどれだけ直線に近く並ぶかだけです。寿命と行動圏の 0.65 は十分に強い相関ですが、体重をそろえると 0.23 まで下がりました。強い相関は、強い交絡からも生まれます。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「体重を除いて相関が消えたから、体重が原因だと証明できた」</h3>
+                <p>偏相関で取り除けるのは、測って式に入れた変数の影響だけです。体重そのものも、近縁な種どうしが似やすいことなど、ほかの要因と絡み合っています。偏相関が示すのは「体重をそろえると関係がほとんど見えない」ということで、原因の特定までは届きません。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「相関が 0 に近ければ、2つは無関係だ」</h3>
+                <p>相関係数は直線的な関係しかとらえません。山なりの関係や、一部の範囲だけで強い関係は、r が小さく出ることがあります。このページで対数をとってから計算しているのも、何桁にもわたる量ではそのままの目盛りだと直線的な関係が見えにくいためです。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「変数を取り除いた相関のほうが、いつも正しい」</h3>
+                <p>何を取り除くかは、因果の筋道についての仮定で決まります。x と y の両方から影響を受けて決まる変数を取り除くと、もともと無関係だった2つの間に見せかけの相関が生まれることがあります。取り除く前に、その変数がどこに位置するのかを考える必要があります。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第5回</b><span>散布図と相関係数を学び、霊長類データの「乳離れが遅い種ほど行動圏が広い」という相関に、対抗仮説を立てて検証する。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第10回</b><span>因果を「した場合としなかった場合」の比較としてとらえ、ランダム化比較試験がなぜ交絡を断てるのかを扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第11回</b><span>見せかけの相関を偏相関による統制で見破り、シンプソンのパラドックスと、統制してはいけない変数（コライダー）を扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/08.html" target="_blank" rel="noopener noreferrer"><b>行動計量学 第8回</b><span>R で相関係数を計算して検定し、散布図と組み合わせて2変数の関係を説明する。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#767c84" href="https://aonoa68.github.io/joho-nyumon/week12/" target="_blank" rel="noopener noreferrer"><b>情報入門 第12回</b><span>データを層に分けて散布図を描き、全体では見えない関係が層別に見ると現れることを確かめる。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <a class="pg" href="../visualize/"><small>← 02</small>グラフで見る</a>
+        <a class="pg next" href="../sampling/"><small>04 →</small>標本から全体を知る</a>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 霊長類376種のうち、体重・最長寿命・行動圏の広さがそろう100種、体重・妊娠期間・最長寿命がそろう106種、体重・最長寿命・群れの大きさがそろう116種を使用。相関係数はすべて各変数の常用対数（log10）で計算。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const MASS = "体重g";
+    const PAIRS = {
+        lifeRange: { x: "最長寿命月", y: "行動圏km2" },
+        gestLife:  { x: "妊娠期間日", y: "最長寿命月" },
+        lifeGroup: { x: "最長寿命月", y: "集団サイズ" }
+    };
+    const f2 = v => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
+
+    function build(key) {
+        const p = PAIRS[key];
+        const d = G.select([p.x, p.y, MASS], [p.x, p.y, MASS]);
+        const X = d.map(o => o.v[0]), Y = d.map(o => o.v[1]), M = d.map(o => o.v[2]);
+        const rxy = G.corr(X, Y), rxm = G.corr(X, M), rym = G.corr(Y, M);
+        const partial = (rxy - rxm * rym) / Math.sqrt((1 - rxm ** 2) * (1 - rym ** 2));
+        const lx = G.linreg(M, X), ly = G.linreg(M, Y);
+        const RX = X.map((v, i) => v - (lx.intercept + lx.slope * M[i]));
+        const RY = Y.map((v, i) => v - (ly.intercept + ly.slope * M[i]));
+        return { p, d, X, Y, M, RX, RY, rxy, rxm, rym, partial };
+    }
+
+    // 対数軸の目盛り（1・2・5 × 10^k）
+    function logTicks(min, max) {
+        let out = [];
+        for (let k = Math.floor(min); k <= Math.ceil(max); k++) [1, 2, 5].forEach(m => { const lv = Math.log10(m * 10 ** k); if (lv >= min && lv <= max) out.push(lv); });
+        if (out.length > 7) out = out.filter(lv => Math.abs(lv - Math.round(lv)) < 1e-9);
+        if (out.length < 2) out = [min, max].map(v => +v.toFixed(2));
+        return out;
+    }
+    const valLabel = lv => { const v = 10 ** lv; return v >= 10000 ? G.man(v) : v >= 1 ? G.fmt(v, v < 10 && v % 1 ? 1 : 0) : String(+v.toPrecision(2)); };
+    // 残差軸：予想の何倍か
+    function ratioTicks(min, max) {
+        const c = [0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].map(Math.log10).filter(lv => lv >= min && lv <= max);
+        return c.length > 7 ? c.filter((_, i) => i % 2 === 0) : c;
+    }
+    const ratioLabel = lv => "×" + String(+(10 ** lv).toPrecision(2));
+    const pad = (a) => { const lo = Math.min(...a), hi = Math.max(...a), s = (hi - lo) * 0.06 || 0.1; return [lo - s, hi + s]; };
+
+    // 体重の色：薄い青 → 濃い紺
+    const C0 = [169, 199, 228], C1 = [26, 37, 53];
+    function massColor(t) { const c = C0.map((a, i) => Math.round(a + (C1[i] - a) * t)); return `rgb(${c[0]},${c[1]},${c[2]})`; }
+
+    function drawPoints(ctx, sc, X, Y, M, mmin, mmax) {
+        const order = X.map((_, i) => i).sort((a, b) => M[a] - M[b]);
+        order.forEach(i => {
+            ctx.beginPath(); ctx.arc(sc.x(X[i]), sc.y(Y[i]), 4, 0, Math.PI * 2);
+            ctx.fillStyle = massColor((M[i] - mmin) / (mmax - mmin)); ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.lineWidth = 0.8; ctx.stroke(); ctx.lineWidth = 1;
+        });
+    }
+    function drawLine(ctx, sc, X, Y, xr) {
+        const r = G.linreg(X, Y);
+        ctx.save(); ctx.beginPath(); ctx.rect(sc.L, sc.T, sc.pw, sc.ph); ctx.clip();
+        ctx.strokeStyle = G.css("--mean"); ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(sc.x(xr[0]), sc.y(r.intercept + r.slope * xr[0])); ctx.lineTo(sc.x(xr[1]), sc.y(r.intercept + r.slope * xr[1])); ctx.stroke();
+        ctx.restore();
+    }
+
+    // ---- 静的な図：体重との関係 ----
+    function drawMass() {
+        const canvas = document.getElementById("massChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const b = build("lifeRange");
+        const mr = pad(b.M), mmin = Math.min(...b.M), mmax = Math.max(...b.M);
+        const narrow = w < 560;
+        const panels = [
+            { Y: b.X, key: b.p.x, r: b.rxm },
+            { Y: b.Y, key: b.p.y, r: b.rym }
+        ];
+        const pwid = narrow ? w : w / 2, ph = narrow ? h / 2 : h;
+        panels.forEach((pn, k) => {
+            ctx.save();
+            ctx.translate(narrow ? 0 : pwid * k, narrow ? ph * k : 0);
+            const yr = pad(pn.Y);
+            const sc = G.axes(ctx, pwid - (narrow ? 0 : 8), ph, {
+                L: 50, R: 12, T: 30, B: 48, xmin: mr[0], xmax: mr[1], ymin: yr[0], ymax: yr[1],
+                xticks: logTicks(mr[0], mr[1]).filter((_, i, a) => a.length <= 5 || i % 2 === 0), yticks: logTicks(yr[0], yr[1]), xfmt: valLabel, yfmt: valLabel
+            });
+            drawPoints(ctx, sc, b.M, pn.Y, b.M, mmin, mmax);
+            drawLine(ctx, sc, b.M, pn.Y, mr);
+            ctx.fillStyle = G.css("--navy2"); ctx.textAlign = "left"; ctx.textBaseline = "top";
+            ctx.font = '600 13px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+            ctx.fillText(`体重 × ${G.label(pn.key)}`, 4, 4);
+            const tw = ctx.measureText(`体重 × ${G.label(pn.key)}`).width;
+            ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+            ctx.fillStyle = G.css("--mean"); ctx.fillText(`r = ${f2(pn.r)}`, 14 + tw, 5);
+            ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right";
+            ctx.fillText(`横：体重（g）　縦：${G.label(pn.key)}（${G.unit(pn.key)}）`, sc.L + sc.pw, sc.T + sc.ph + 30);
+            ctx.restore();
+        });
+    }
+
+    // ---- 体験パネル ----
+    let pairKey = "lifeRange", adjust = false;
+    function drawScatter() {
+        const b = build(pairKey);
+        const canvas = document.getElementById("scatter");
+        const { ctx, w, h } = G.setup(canvas);
+        const X = adjust ? b.RX : b.X, Y = adjust ? b.RY : b.Y;
+        const xr = pad(X), yr = pad(Y);
+        const sc = G.axes(ctx, w, h, {
+            L: 56, R: 14, T: 34, B: 52, xmin: xr[0], xmax: xr[1], ymin: yr[0], ymax: yr[1],
+            xticks: adjust ? ratioTicks(xr[0], xr[1]) : logTicks(xr[0], xr[1]),
+            yticks: adjust ? ratioTicks(yr[0], yr[1]) : logTicks(yr[0], yr[1]),
+            xfmt: adjust ? ratioLabel : valLabel, yfmt: adjust ? ratioLabel : valLabel, xgrid: true
+        });
+        if (adjust) { // 予想どおり（×1）の線
+            ctx.strokeStyle = G.css("--faint"); ctx.setLineDash([2, 3]);
+            if (0 > xr[0] && 0 < xr[1]) { ctx.beginPath(); ctx.moveTo(sc.x(0), sc.T); ctx.lineTo(sc.x(0), sc.T + sc.ph); ctx.stroke(); }
+            if (0 > yr[0] && 0 < yr[1]) { ctx.beginPath(); ctx.moveTo(sc.L, sc.y(0)); ctx.lineTo(sc.L + sc.pw, sc.y(0)); ctx.stroke(); }
+            ctx.setLineDash([]);
+        }
+        const mmin = Math.min(...b.M), mmax = Math.max(...b.M);
+        drawPoints(ctx, sc, X, Y, b.M, mmin, mmax);
+        drawLine(ctx, sc, X, Y, xr);
+        // 軸見出し
+        ctx.fillStyle = G.css("--muted"); ctx.textAlign = "left"; ctx.textBaseline = "top";
+        const yl = adjust ? `縦：${G.label(b.p.y)}（体重からの予想の何倍か）` : `縦：${G.label(b.p.y)}（${G.unit(b.p.y)}）`;
+        ctx.fillText(yl, 4, 6);
+        ctx.textAlign = "right";
+        const xl = adjust ? `横：${G.label(b.p.x)}（体重からの予想の何倍か）` : `横：${G.label(b.p.x)}（${G.unit(b.p.x)}）`;
+        ctx.fillText(xl, sc.L + sc.pw, sc.T + sc.ph + 32);
+        // 右上：r と体重の色の凡例
+        const rNow = adjust ? b.partial : b.rxy;
+        ctx.textAlign = "right"; ctx.fillStyle = G.css("--mean");
+        ctx.font = '600 14px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        ctx.fillText(`r = ${f2(rNow)}`, w - 14, 4);
+        ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        const gx = w - 14 - 190, gy = 24;
+        if (ctx.measureText(yl).width + 4 < gx - 60) {
+            const grad = ctx.createLinearGradient(gx + 40, 0, gx + 150, 0);
+            grad.addColorStop(0, massColor(0)); grad.addColorStop(1, massColor(1));
+            ctx.fillStyle = grad; ctx.fillRect(gx + 40, gy - 2, 110, 6);
+            ctx.fillStyle = G.css("--faint"); ctx.textBaseline = "middle";
+            ctx.textAlign = "right"; ctx.fillText("軽い", gx + 36, gy + 1);
+            ctx.textAlign = "left"; ctx.fillText("重い", gx + 154, gy + 1);
+        }
+
+        document.getElementById("rN").textContent = b.d.length + " 種";
+        document.getElementById("rMx").textContent = f2(b.rxm);
+        document.getElementById("rMy").textContent = f2(b.rym);
+        document.getElementById("rR").textContent = f2(b.rxy);
+        const rp = document.getElementById("rP"); rp.textContent = f2(b.partial);
+        rp.classList.toggle("off", adjust);
+
+        const lx = G.label(b.p.x), ly = G.label(b.p.y);
+        let msg;
+        if (!adjust) {
+            msg = `${lx}が長い種ほど${ly}${b.p.y === "行動圏km2" ? "が広い" : b.p.y === "集団サイズ" ? "が大きい" : "が長い"}傾向があります（r = ${f2(b.rxy)}）。点の色に注目してください。右上には濃い紺、つまり体の重い種が集まり、左下には薄い青の軽い種が集まっています。「体重の影響を取り除く」を選ぶと、この色の偏りを消した比較になります。`;
+        } else if (b.partial > 0.15) {
+            msg = `体重をそろえると、相関は ${f2(b.rxy)} から <b>${f2(b.partial)}</b> に下がりました。色の偏りは消え、濃い点も薄い点も全体に混ざっています。弱い関係は残りますが、見えていた関係の大部分は体重を通じたものだったと読めます。`;
+        } else {
+            msg = `体重をそろえると、相関は ${f2(b.rxy)} から <b>${f2(b.partial)}</b> になり、ほとんど見えなくなりました。体重が同じくらいの種どうしで比べると、${lx}と${ly}の間にはっきりした直線的な関係はありません。`;
+        }
+        document.getElementById("hint").innerHTML = msg;
+    }
+
+    document.querySelectorAll('input[name="pair"]').forEach(el => el.addEventListener("change", e => { pairKey = e.target.value; drawScatter(); }));
+    document.getElementById("adjust").addEventListener("change", e => { adjust = e.target.checked; drawScatter(); });
+    G.onRedraw(() => { drawMass(); drawScatter(); });
+})();
+</script>
+</body>
+</html>

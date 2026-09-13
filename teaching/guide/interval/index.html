@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推定と信頼区間 — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="95%信頼区間の「95%」は何の割合なのか。霊長類265種の体重データで、区間を何百本も作って当たり率を確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .lab canvas#labChart { height: 460px; }
+        .figure canvas#exChart { height: 230px; }
+        .cover-table td.low { color: var(--biased); font-weight: 600; }
+        .cover-table td.ok { color: var(--accent2); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">推定と信頼区間</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>05</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>「95%」は、何が95%なのか</h1>
+        <p class="sub">推定と信頼区間 ── 一部から、幅をもって言い当てる</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>95%信頼区間の「95%」は、区間を作る手続きをくり返したときの当たり率である。手元の1本の区間に母平均が入っているかどうかは、わからない。しかもその当たり率は、データの形によっては95%を守れない。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>標本から、母平均を「幅で」言う</h2>
+        <p>前のページと同じく、体重が記録されている霊長類265種を母集団とします。母平均は5,881グラムです。実際の調査では母集団のすべては見られず、手に入るのは選んだ一部の種、つまり標本だけです。</p>
+        <p>標本平均をそのまま「母平均はこの値だ」と言うのが<b>点推定</b>です。けれども標本平均は、選び直すたびに変わります。そこで「母平均はおそらくこの範囲にある」と、幅をもって言うのが<b>区間推定</b>です。その範囲を<b>信頼区間</b>と呼びます。</p>
+        <dl class="terms">
+            <dt>点推定</dt><dd>母集団の値を、標本から計算した1つの値で言うこと。</dd>
+            <dt>区間推定</dt><dd>母集団の値を、下端と上端をもつ範囲で言うこと。</dd>
+            <dt>信頼区間</dt><dd>区間推定で作る範囲。95%信頼区間は、その作り方の当たり率が95%になるように設計したもの。</dd>
+            <dt>被覆率</dt><dd>区間を作る手続きを何度もくり返したとき、区間が母平均を含んだ割合。</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>1本の区間を作ってみる</h2>
+        <p>265種から15種を選んだ標本の例です。この15種の平均は6,621グラム、95%信頼区間は1,052〜12,190グラムになりました。この区間は、母平均の5,881グラムを含んでいます。</p>
+        <div class="figure">
+            <canvas id="exChart" role="img" aria-label="15種の体重の点と、そこから作った95%信頼区間。区間は1,052グラムから12,190グラムで、母平均5,881グラムを含む。"></canvas>
+            <div class="stat-row">
+                <div><span>標本平均（点推定）</span><b class="num">6,621 g</b></div>
+                <div><span>95%信頼区間（区間推定）</span><b class="num">1,052〜12,190 g</b></div>
+                <div><span>母平均</span><b class="num">5,881 g</b></div>
+            </div>
+            <p class="figcap">上の点が選んだ15種の体重、下の横線が95%信頼区間です。右端の点はスマトラオランウータン（<i>Pongo abelii</i>、39,696グラム）で、この1種が標本平均を大きく引き上げています。</p>
+        </div>
+        <p>では、この区間が母平均を含んでいる確率は95%でしょうか。答えは「いいえ」です。母平均は5,881グラムという決まった値で、区間も計算し終えれば決まった範囲です。決まった値が決まった範囲に入っているかどうかは、入っているか入っていないかのどちらかです。確率が意味をもつのは、標本を選び直して区間を作り直す、手続きのほうです。</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">区間を何百本も作ってみる</div>
+            <div>
+                <span class="seg-cap">1回に選ぶ種の数 n</span>
+                <div class="seg" role="radiogroup" aria-label="1回に選ぶ種の数">
+                    <input type="radio" name="n" id="n5" value="5"><label for="n5">5種</label>
+                    <input type="radio" name="n" id="n15" value="15" checked><label for="n15">15種</label>
+                    <input type="radio" name="n" id="n40" value="40"><label for="n40">40種</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="labChart" role="img" aria-label="直近100本の95%信頼区間。母平均を含まない区間は色を変えて表示する。"></canvas>
+                <div class="btns">
+                    <button class="btn" id="make100" type="button">区間を100本作る</button>
+                    <button class="btn" id="make1000" type="button">1,000本作る</button>
+                    <button class="btn ghost" id="reset" type="button">やり直す</button>
+                </div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>作った区間</dt><dd id="rTotal">—</dd>
+                    <dt>母平均を含んだ区間</dt><dd id="rHit">—</dd>
+                    <dt>含んだ割合（被覆率）</dt><dd id="rRate">—</dd>
+                    <dt>区間の幅（中央値）</dt><dd id="rWidth">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="logScale">
+                    <label for="logScale">対数スケールで作る<small>体重の対数で区間を作り、グラムに戻す。このとき比べる真の値は、母集団の幾何平均 2,120 g。</small></label>
+                </div>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">図には直近の100本を、新しいものほど下に描きます。種は戻してから次を選ぶ方式（復元抽出）で選びます。乱数を使うので、割合は押すたびに少し変わります。</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>しくみ：区間の作り方と、95%を守れない理由</h2>
+        <p>このページの区間は、次の式で作っています。</p>
+        <div class="formula-block"><span class="formula">標本平均 ± t × 標本標準偏差 ÷ √n</span></div>
+        <p><b>標本標準偏差</b>は、標本の中の値のばらつきです。それを √n で割ったものが標準誤差で、標本平均がどれくらい揺れるかの見積もりになります。<b>t</b> は、標本から標準偏差を見積もっている分の不確かさを上乗せする係数で、n が小さいほど大きくなります（n=5で2.78、n=15で2.14、n=40で2.02、n=100で1.98）。</p>
+        <p>この式は、標本平均の分布が釣鐘形に近いことを前提にしています。体重のように強く右にゆがんだ母集団では、この前提が小さな n で崩れます。265種のうち2万グラム以上の種は7種しかなく、多くの標本にはそれが1種も入りません。すると標本平均も標本標準偏差も小さく出て、区間全体が母平均より下にずれます。n=15の標本平均が母平均を下回る割合は、シミュレーションで66.8%でした。</p>
+        <p>母集団から区間を1万本ずつ作り、実際の被覆率を測った結果が次の表です。</p>
+        <div class="table-wrap">
+        <table class="data cover-table">
+            <thead><tr><th>選ぶ種の数 n</th><th>t</th><th>生の体重で作る</th><th>対数で作る</th></tr></thead>
+            <tbody>
+                <tr><td>5 種</td><td>2.78</td><td class="low">83.6 %</td><td class="ok">92.2 %</td></tr>
+                <tr><td>15 種</td><td>2.14</td><td class="low">73.4 %</td><td class="ok">94.6 %</td></tr>
+                <tr><td>40 種</td><td>2.02</td><td class="low">74.6 %</td><td class="ok">94.6 %</td></tr>
+                <tr><td>100 種</td><td>1.98</td><td class="low">82.5 %</td><td class="ok">94.7 %</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="figcap">265種から復元抽出で n 種を選び、95%信頼区間を作る操作を各1万回くり返した結果（乱数シード固定）。生の体重では母平均5,881 g を、対数では母集団の幾何平均2,120 g を含んだ割合。</p>
+        <p style="margin-top:14px">生の体重では、名前が「95%」でも実際の当たり率は7〜8割台にとどまります。外れた区間は、ほぼすべてが母平均より下の側で外れていました。体重を対数にすると分布がほぼ左右対称になり、n=15の時点で94.6%と、ほぼ設計どおりに戻ります。ただし対数で作った区間を戻したものは、算術平均ではなく<b>幾何平均</b>の区間です。何を推定したいのかによって、どちらで作るかを選ぶ必要があります。</p>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「この区間に母平均が入っている確率は95%だ」</h3>
+                <p>母平均は決まった値で、計算し終えた区間も決まった範囲です。入っているか、いないかのどちらかしかありません。95%は、同じ手続きで区間を作り直し続けたときに、そのうち何割が母平均を含むかという、手続きの性質です。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「95%信頼区間と書いてあれば、当たり率は95%だ」</h3>
+                <p>95%になるのは、式の前提が満たされているときだけです。上の表のとおり、強くゆがんだ体重の生の値では、15種で73.4%、100種でも82.5%でした。区間の名前ではなく、データの形と作り方を確かめる必要があります。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「狭い区間ほど、正確に当てている」</h3>
+                <p>狭さは精密さであって、正しさではありません。生の体重・n=15で1万本作ったとき、母平均を外した区間の幅の中央値は3,558 g で、当てた区間の6,000 g より狭くなりました。外した区間の標本には、2万グラム以上の7種が1種も入っていませんでした。大型種を取り逃がした標本ほど、ばらつきを小さく見積もり、狭く自信のある区間を作ります。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「n を増やせば、当たり率はすぐ95%に近づく」</h3>
+                <p>n を増やすと区間は狭くなりますが、当たり率の回復は母集団の形しだいです。生の体重では、n=40でも74.6%、n=100でも82.5%でした。対数にすれば、n=15で94.6%に届きます。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第7回</b><span>点推定と区間推定の違いと、100本の信頼区間のシミュレーションで「95%」が手続きの当たり率であることを確かめ、信頼度と幅のトレードオフを扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅱ 第7回</b><span>t分布による信頼区間の作り方と、標本が互いに独立でないと「95%信頼区間」の被覆率が大きく下がることをシミュレーションで示す。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <a class="pg" href="../sampling/"><small>← 04</small>標本から全体を知る</a>
+        <a class="pg next" href="../testing/"><small>06 →</small>仮説検定とp値</a>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 変数「体重」を使用し、霊長類376種のうち体重が記録されている265種を母集団とした。<br>
+    表の被覆率と誤解の節の数値は、この265種から復元抽出で標本を選ぶシミュレーション（各1万回・乱数シード固定）で求めた。t の値は自由度 n−1 の t 分布の97.5%点。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const RAW = G.select(["体重g"], ["体重g"]).map(d => 10 ** d.v[0]);
+    const LOG = RAW.map(v => Math.log10(v));
+    const MU = G.mean(RAW), LMU = G.mean(LOG), GM = 10 ** LMU;
+
+    // ---- 1本の例（15種・固定） ----
+    const EXAMPLE = [["Microcebus murinus","コビトキツネザル科",69.0],["Cercopithecus nictitans","オナガザル科",5256.9],["Pongo abelii","ヒト科",39696.1],["Ateles paniscus","クモザル科",8697.2],["Callicebus hoffmannsi","サキ科",1067.6],["Callithrix flaviceps","オマキザル科",373.0],["Papio hamadryas","オナガザル科",14007.1],["Cacajao calvus","サキ科",3421.0],["Trachypithecus obscurus","オナガザル科",7247.9],["Galago matschiei","ガラゴ科",211.6],["Ateles belzebuth","クモザル科",6692.4],["Callimico goeldii","オマキザル科",558.0],["Rhinopithecus avunculus","オナガザル科",9086.2],["Prolemur simus","キツネザル科",2030.4],["Callicebus donacophilus","サキ科",897.7]];
+    function drawExample() {
+        const { ctx, w, h } = G.setup(document.getElementById("exChart"));
+        const vals = EXAMPLE.map(d => d[2]);
+        const xb = G.mean(vals), half = G.t975(vals.length - 1) * G.sd(vals) / Math.sqrt(vals.length);
+        const ax = G.axes(ctx, w, h, { L: 20, R: 20, T: 34, B: 32, xmin: 0, xmax: 42000, ymin: 0, ymax: 1,
+            xticks: [0, 10000, 20000, 30000, 40000], xfmt: v => v ? G.man(v) + " g" : "0", xgrid: true });
+        const yDots = ax.T + ax.ph * 0.36, yBar = ax.T + ax.ph * 0.8;
+        // 母平均
+        ctx.strokeStyle = G.css("--mean"); ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(ax.x(MU), ax.T); ctx.lineTo(ax.x(MU), ax.T + ax.ph); ctx.stroke(); ctx.setLineDash([]);
+        // 点
+        ctx.fillStyle = G.css("--pop");
+        vals.forEach((v, i) => { ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(ax.x(v), yDots + ((i % 3) - 1) * 9, 5, 0, Math.PI * 2); ctx.fill(); });
+        ctx.globalAlpha = 1;
+        // 区間
+        ctx.strokeStyle = G.css("--navy2"); ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(ax.x(xb - half), yBar); ctx.lineTo(ax.x(xb + half), yBar); ctx.stroke();
+        [xb - half, xb + half].forEach(v => { ctx.beginPath(); ctx.moveTo(ax.x(v), yBar - 7); ctx.lineTo(ax.x(v), yBar + 7); ctx.stroke(); });
+        ctx.fillStyle = G.css("--navy2"); ctx.beginPath(); ctx.arc(ax.x(xb), yBar, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        ctx.fillStyle = G.css("--muted"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+        ctx.fillText("選んだ15種の体重", ax.L, yDots - 14);
+        ctx.fillText("95%信頼区間", ax.L, yBar - 10);
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "母平均 " + G.g(MU), kind: "line" },
+            { color: G.css("--navy2"), label: "標本平均 " + G.g(xb), kind: "dot" }
+        ]);
+    }
+
+    // ---- 体験 ----
+    let n = 15, logScale = false, intervals = [];
+    const SHOW = 100;
+    function truth() { return logScale ? LMU : MU; }
+    function makeOne() {
+        const data = logScale ? LOG : RAW;
+        const s = new Array(n);
+        for (let i = 0; i < n; i++) s[i] = data[Math.floor(Math.random() * data.length)];
+        const xb = G.mean(s), half = G.t975(n - 1) * G.sd(s) / Math.sqrt(n);
+        const lo = xb - half, hi = xb + half, t = truth();
+        return { lo, hi, xb, hit: lo <= t && t <= hi };
+    }
+    function make(k) { for (let i = 0; i < k; i++) intervals.push(makeOne()); render(); }
+
+    function drawLab() {
+        const { ctx, w, h } = G.setup(document.getElementById("labChart"));
+        const range = logScale ? { xmin: 1.5, xmax: 5.3, xticks: [2, 3, 4, 5], xfmt: k => G.pow10Label(k) + " g" }
+                               : { xmin: -10000, xmax: 30000, xticks: [-10000, 0, 10000, 20000, 30000], xfmt: v => v ? G.man(v) + " g" : "0" };
+        const ax = G.axes(ctx, w, h, Object.assign({ L: 16, R: 16, T: 34, B: 32, ymin: 0, ymax: 1, xgrid: true, ylabel: "" }, range));
+        const shown = intervals.slice(-SHOW);
+        const rowH = ax.ph / SHOW;
+        const clamp = v => Math.max(range.xmin, Math.min(range.xmax, v));
+        const t = truth();
+        shown.forEach((iv, i) => {
+            const y = ax.T + rowH * (i + 0.5);
+            ctx.strokeStyle = iv.hit ? G.css("--pop") : G.css("--biased");
+            ctx.lineWidth = iv.hit ? 1.6 : 2.4;
+            const a = ax.x(clamp(iv.lo)), b = ax.x(clamp(iv.hi));
+            ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(b, y); ctx.stroke();
+            ctx.fillStyle = ctx.strokeStyle;
+            if (iv.lo < range.xmin) { ctx.beginPath(); ctx.moveTo(a - 1, y); ctx.lineTo(a + 5, y - 3); ctx.lineTo(a + 5, y + 3); ctx.fill(); }
+            if (iv.hi > range.xmax) { ctx.beginPath(); ctx.moveTo(b + 1, y); ctx.lineTo(b - 5, y - 3); ctx.lineTo(b - 5, y + 3); ctx.fill(); }
+        });
+        ctx.lineWidth = 2; ctx.strokeStyle = G.css("--mean"); ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(ax.x(t), ax.T - 2); ctx.lineTo(ax.x(t), ax.T + ax.ph); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: logScale ? "幾何平均 " + G.g(GM) : "母平均 " + G.g(MU), kind: "line" },
+            { color: G.css("--biased"), label: "含まない", kind: "line" },
+            { color: G.css("--pop"), label: "含む", kind: "line" }
+        ]);
+        if (!shown.length) { ctx.fillStyle = G.css("--muted"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("「区間を100本作る」を押すと、ここに区間が並びます", ax.L + ax.pw / 2, ax.T + ax.ph / 2); }
+    }
+
+    function readout() {
+        const total = intervals.length, hit = intervals.filter(iv => iv.hit).length;
+        document.getElementById("rTotal").textContent = G.fmt(total) + " 本";
+        document.getElementById("rHit").textContent = total ? G.fmt(hit) + " 本" : "—";
+        const rateEl = document.getElementById("rRate");
+        rateEl.textContent = total ? G.fmt(hit / total * 100, 1) + " %" : "—";
+        rateEl.classList.toggle("off", total >= 100 && hit / total < 0.9);
+        const widths = intervals.map(iv => iv.hi - iv.lo);
+        document.getElementById("rWidth").textContent = !total ? "—" : logScale
+            ? "上端は下端の " + G.fmt(10 ** G.median(widths), 1) + " 倍"
+            : G.g(G.median(widths));
+        const hint = document.getElementById("hint");
+        if (!total) { hint.textContent = "「区間を100本作る」を押してください。"; return; }
+        const rate = hit / total * 100;
+        const below = intervals.filter(iv => !iv.hit && iv.hi < truth()).length;
+        if (logScale) {
+            hint.innerHTML = `対数で作ると、${G.fmt(total)}本のうち <b>${G.fmt(rate, 1)}%</b> が幾何平均を含みました。分布がほぼ左右対称になるので、区間は設計どおりの当たり率に近づきます。`;
+        } else if (total < 300) {
+            hint.innerHTML = `いまの当たり率は <b>${G.fmt(rate, 1)}%</b> です。100本では偶然の揺れも大きいので、「1,000本作る」でさらに増やして、95%に近づくかどうかを見てください。`;
+        } else {
+            hint.innerHTML = `${G.fmt(total)}本のうち母平均を含んだのは <b>${G.fmt(rate, 1)}%</b>。外れた ${G.fmt(total - hit)} 本のうち <b>${G.fmt(below)} 本</b>は、区間全体が母平均より下にありました。大型種を取り逃がした標本が、低く狭い区間を作っています。「対数スケールで作る」と比べてみてください。`;
+        }
+    }
+    function render() { drawLab(); readout(); }
+
+    document.getElementById("make100").addEventListener("click", () => make(100));
+    document.getElementById("make1000").addEventListener("click", () => make(1000));
+    document.getElementById("reset").addEventListener("click", () => { intervals = []; render(); });
+    document.querySelectorAll('input[name="n"]').forEach(r => r.addEventListener("change", e => { n = +e.target.value; intervals = []; make(100); }));
+    document.getElementById("logScale").addEventListener("change", e => { logScale = e.target.checked; intervals = []; make(100); });
+
+    // 読み込み時：n=15 で100本作った状態
+    for (let i = 0; i < 100; i++) intervals.push(makeOne());
+    G.onRedraw(() => { drawExample(); render(); });
+})();
+</script>
+</body>
+</html>

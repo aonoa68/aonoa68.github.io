@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回帰とモデル — 統計の考え方ガイド | 小野原彩香</title>
+    <meta name="description" content="体重が10倍になると、行動圏は何倍になるか。霊長類の生態データで、回帰直線・最小二乗法・決定係数・残差を自分の手で確かめる解説ページ。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/guide.css">
+    <style>
+        .lab canvas#regChart { height:380px; }
+        .ctrl { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .range-row label { min-width:9.5em; color:var(--muted); }
+        .range-row output { min-width:7.5em; text-align:right; font-variant-numeric:tabular-nums; font-weight:600; color:var(--navy2); }
+        .fam-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:0.88em; color:var(--muted); }
+        .readout dt.sep, .readout dd.sep { border-top:1px solid var(--line); padding-top:6px; margin-top:2px; }
+        .sp { font-style:italic; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">統計の考え方</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">回帰とモデル</span>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>08</b><a href="../">統計の考え方ガイド</a></p>
+        <h1>体重が10倍になると、行動圏は何倍になるか</h1>
+        <p class="sub">回帰とモデル ── 関係を式にして、外れ方を読む</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">一言でいうと</div>
+            <p>散らばった点に、ずれの二乗の合計がいちばん小さくなる直線を引く。その傾きが関係の強さを数で表し、線から外れた点が、式では説明できない部分を教えてくれる。</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>体の大きさと、使う土地の広さ</h2>
+        <p>霊長類には体重48グラムの種から11万グラムを超える種までいます。体が大きい種ほど、ふだん動き回る範囲である<b>行動圏</b>も広い傾向があります。ここまでは散布図を見ればわかります。</p>
+        <p>回帰が答えるのは、その先の問いです。体重が10倍になったとき、行動圏は10倍になるのか、それより少ないのか。そして、その「傾向」から外れる種はどれで、どのくらい外れているのか。</p>
+        <div class="figure">
+            <canvas id="rawChart" role="img" aria-label="体重と行動圏の広さの散布図（ふつうの目盛り）。ほとんどの点が左下の隅に重なっている。"></canvas>
+            <div class="stat-row">
+                <div><span>両方の記録がある種</span><b class="num" id="rawN">—</b></div>
+                <div><span>体重の範囲</span><b class="num" id="rawX">—</b></div>
+                <div><span>行動圏の範囲</span><b class="num" id="rawY">—</b></div>
+            </div>
+            <p class="figcap">ふつうの目盛りで描くと、ほとんどの種が左下の隅に重なり、関係の形が読めません。体重は2,000倍以上、行動圏は1万倍以上の開きがあるためです。下の体験では、両方の軸を<b>対数目盛り</b>（1目盛りごとに10倍になる目盛り）にしています。</p>
+        </div>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">自分で線を引いてみる</div>
+            <div>
+                <span class="seg-cap">縦軸にする変数</span>
+                <div class="seg" role="radiogroup" aria-label="縦軸にする変数">
+                    <input type="radio" name="yv" id="yv0" value="行動圏km2" checked><label for="yv0">行動圏</label>
+                    <input type="radio" name="yv" id="yv1" value="新生児体重g"><label for="yv1">新生児の体重</label>
+                    <input type="radio" name="yv" id="yv2" value="最長寿命月"><label for="yv2">最長寿命</label>
+                    <input type="radio" name="yv" id="yv3" value="個体群密度"><label for="yv3">個体群密度</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="regChart" role="img" aria-label="体重と選んだ変数の両対数散布図。自分で引いた線と最小二乗の線を重ねて表示する。"></canvas>
+                <div class="ctrl">
+                    <div class="range-row"><label for="slope">あなたの線の傾き</label><input type="range" id="slope" min="-1.5" max="1.5" step="0.01" value="0"><output id="slopeOut" for="slope">—</output></div>
+                    <div class="range-row"><label for="height">線の高さ（体重1kgでの値）</label><input type="range" id="height" min="-3" max="3" step="0.01" value="0"><output id="heightOut" for="height">—</output></div>
+                </div>
+                <div class="btns">
+                    <button class="btn" id="fit" type="button">あなたの線を最小二乗の線に合わせる</button>
+                    <button class="btn ghost" id="flat" type="button">水平な線に戻す</button>
+                    <button class="btn ghost" id="showOls" type="button" aria-pressed="true">最小二乗の線を隠す</button>
+                </div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>種の数</dt><dd id="rN">—</dd>
+                    <dt>最小二乗の傾き</dt><dd id="rSlope">—</dd>
+                    <dt>体重が10倍で</dt><dd id="rTimes">—</dd>
+                    <dt>決定係数 R²</dt><dd id="rR2">—</dd>
+                    <dt class="sep">残差の二乗和：あなた</dt><dd class="sep" id="rSseU">—</dd>
+                    <dt>残差の二乗和：最小二乗</dt><dd id="rSseO">—</dd>
+                    <dt>残差の二乗和：水平な線</dt><dd id="rSst">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="resid" checked>
+                    <label for="resid">残差を縦線で表示する<small>あなたの線から、各点までの縦のずれ。この長さの二乗を合計したものが「残差の二乗和」です。</small></label>
+                </div>
+                <div class="fam-row">
+                    <label for="fam">科を強調する</label>
+                    <select class="select" id="fam">
+                        <option value="">しない</option>
+                        <option>オマキザル科</option>
+                        <option>インドリ科</option>
+                        <option>オナガザル科</option>
+                        <option>キツネザル科</option>
+                        <option>テナガザル科</option>
+                        <option>ガラゴ科</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="hint" id="hint" aria-live="polite"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>しくみ：最小二乗法と、両対数の傾き</h2>
+        <p>点と直線の縦のずれを<b>残差</b>といいます。残差は正にも負にもなるので、二乗してから合計します。この<b>残差の二乗和</b>がいちばん小さくなる直線を選ぶ方法が<b>最小二乗法</b>で、そうして引いた線が<b>回帰直線</b>です。上の体験でスライダーをどう動かしても、最小二乗の線より残差の二乗和を小さくすることはできません。</p>
+        <div class="formula-block"><span class="formula">log₁₀（行動圏）＝ −3.883 ＋ 0.933 × log₁₀（体重）</span></div>
+        <p>両方の軸を対数にしているので、傾き0.933は足し算ではなく<b>かけ算の関係</b>として読みます。体重が <i>k</i> 倍になると、行動圏の予測値は <i>k</i> の0.933乗倍になります。傾きがちょうど1なら「体重10倍で行動圏も10倍」ですが、0.933はそれより少し小さい値です。</p>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>体重が</th><th>行動圏の予測値は</th></tr></thead>
+            <tbody><tr><td>2倍</td><td>1.9倍</td></tr><tr><td>10倍</td><td>8.6倍</td></tr><tr><td>100倍</td><td>73.6倍</td></tr></tbody>
+        </table>
+        </div>
+        <p style="margin-top:18px"><b>決定係数 R²</b> は、縦軸のばらつきのうち、直線で説明できた割合です。体験の「水平な線」は体重を使わずに全種の平均で予測した線で、その残差の二乗和が縦軸のばらつき全体にあたります。最小二乗の線がそれをどれだけ減らしたかが R² です。</p>
+        <div class="formula-block"><span class="formula">R² ＝ 1 − 最小二乗の線の残差の二乗和 ÷ 水平な線の残差の二乗和</span></div>
+        <p>同じ体重を横軸にしても、縦軸の変数によって傾きも R² もまったく違います。</p>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>縦軸の変数</th><th>種の数</th><th>傾き</th><th>体重が10倍で</th><th>R²</th></tr></thead>
+            <tbody>
+                <tr><td>行動圏の広さ</td><td>153</td><td>0.933</td><td>8.6倍</td><td>0.46</td></tr>
+                <tr><td>新生児の体重</td><td>117</td><td>0.828</td><td>6.7倍</td><td>0.92</td></tr>
+                <tr><td>最長寿命</td><td>125</td><td>0.199</td><td>1.6倍</td><td>0.53</td></tr>
+                <tr><td>個体群密度</td><td>170</td><td>−0.418</td><td>0.38倍</td><td>0.20</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <h3 style="margin-top:32px">線から外れた点を読む</h3>
+        <p>行動圏でいちばん上に外れているのはパタスモンキー（<span class="sp">Erythrocebus patas</span>）です。体重7,966グラムに対して行動圏は28.24平方キロメートルあり、直線の予測の約49倍です。一つひとつの外れは、測り方の違いかもしれませんし、その種の暮らし方の特徴かもしれません。どちらなのかは、データの数字だけでは決められません。</p>
+        <p>外れ方が<b>グループごとにそろっている</b>ときは注意が必要です。行動圏の直線に対して、オマキザル科25種の点は平均すると予測の約3倍の側に、インドリ科6種の点は約0.18倍の側に寄っています。「科を強調する」で確かめられます。1本の直線は全種をまとめた平均的な傾向で、どの科にも同じように当てはまるとは限りません。</p>
+
+        <h3 style="margin-top:32px">変数を増やせば、よいモデルになるか</h3>
+        <p>体重のほかに群れの大きさや気温などを式に加えると、R² は必ず上がるか、少なくとも下がりません。けれども、手元のデータにだけ合わせすぎた式は、新しい種の予測をかえって外します。当てはまりのよさと式の単純さの釣り合いをとる考え方が<b>モデル選択</b>で、統計学Ⅰの第11回で AIC という指標を使って扱っています。</p>
+    </section>
+
+    <section>
+        <h2>よくある誤解</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「R² が低いなら、関係はない」</h3>
+                <p>個体群密度の R² は0.20しかありませんが、傾きは−0.418で、体重10倍の種ほど密度は約0.38倍という方向ははっきりしています。R² が低いのは、体重以外に密度を左右する要因が多く、点が線のまわりに大きく散らばっているということです。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「傾きは、体重を変えたときの効果だ」</h3>
+                <p>回帰の傾きは、体重の違う種を並べたときに行動圏がどう違うかという<b>関連</b>です。ある種の体重を増やせば行動圏が広がる、という因果は示していません。体重と行動圏の両方に関わる別の要因があっても、同じ傾きは出てきます（<a href="../correlation/">03 相関と因果</a>）。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「よく合う直線なら、データの範囲の外にも使える」</h3>
+                <p>行動圏の直線は、体重48グラムから約11万グラムまでの種から求めたものです。その範囲の中なら、体重1キログラムで約0.083平方キロメートル、10キログラムで約0.71平方キロメートルと予測できます。範囲の外（<b>外挿</b>）で関係がまっすぐ続く保証は、このデータのどこにもありません。</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>「最小二乗の線は、どの種にも公平に当てはまっている」</h3>
+                <p>最小二乗の線は、全体の残差の二乗和を小さくするだけです。種の数が多い科に引っぱられ、少ない科がそろって線からずれることがあります。オマキザル科とインドリ科の例のように、残差を科ごとに見て初めてわかる偏りがあります。</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>授業では、この回で扱っています</h2>
+        <p class="muted">授業サイトは誰でも見られます。もう少し踏み込みたい人は、各回のページへどうぞ。</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第10回</b><span>同じ霊長類データで体重から行動圏を予測する単回帰と重回帰を行い、R²・係数・外挿の罠を扱う。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第11回</b><span>変数を増やすと当てはまりは上がり続けるのに予測は悪くなる過学習と、AIC によるモデル選択。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer"><b>統計学Ⅰ 第13回</b><span>体重・妊娠期間・離乳日齢・寿命・産子数を、少数の軸にまとめる主成分分析。</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="前後の概念">
+        <a class="pg" href="../bayes/"><small>← 07</small>確率とベイズ</a>
+        <div class="pg next empty"></div>
+    </div>
+
+    <p class="source">データ：Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. 霊長類376種のうち、体重と各変数の両方が記録されている種を使用（行動圏の広さ153種、新生児の体重117種、最長寿命125種、個体群密度170種）。すべて常用対数をとってから最小二乗法で直線を求めています。</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../../">← 授業一覧へ戻る</a></p>
+</footer>
+
+<script src="../assets/primates.js"></script>
+<script src="../assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const X = "体重g";
+    const SHORT = { "行動圏km2": "行動圏", "新生児体重g": "新生児の体重", "最長寿命月": "最長寿命", "個体群密度": "個体群密度" };
+
+    // 値の表示（対数目盛りの目盛り・読み取り用）
+    const val = v => v >= 10000 ? G.man(Math.round(v)) : v >= 10 ? G.fmt(Math.round(v)) : v >= 1 ? (Math.abs(v - Math.round(v)) < 0.05 ? G.fmt(Math.round(v)) : G.fmt(v, 1)) : String(+v.toPrecision(2));
+    const niceLogTicks = (min, max) => {
+        const t = G.logTicks(min, max); if (t.length >= 3) return t;
+        const out = []; for (let k = Math.floor(min); k <= Math.ceil(max); k++) for (const m of [1, 2, 5]) { const v = k + Math.log10(m); if (v >= min - 1e-9 && v <= max + 1e-9) out.push(v); }
+        return out;
+    };
+
+    /* ---- 本文の図：ふつうの目盛り ---- */
+    const rawSel = G.select([X, "行動圏km2"]);
+    const rx = rawSel.map(d => d.v[0]), ry = rawSel.map(d => d.v[1]);
+    document.getElementById("rawN").textContent = rawSel.length + " 種";
+    document.getElementById("rawX").textContent = G.g(Math.min(...rx)) + " 〜 " + G.man(Math.round(Math.max(...rx))) + " g";
+    document.getElementById("rawY").textContent = val(Math.min(...ry)) + " 〜 " + val(Math.max(...ry)) + " km²";
+    function drawRaw() {
+        const cv = document.getElementById("rawChart"); const { ctx, w, h } = G.setup(cv);
+        const xmax = Math.ceil(Math.max(...rx) / 20000) * 20000, ymax = Math.ceil(Math.max(...ry) / 5) * 5;
+        const ax = G.axes(ctx, w, h, { L: 40, R: 14, T: 26, B: 48, xmin: 0, xmax, ymin: 0, ymax, xticks: G.ticks(0, xmax, 6), yticks: G.ticks(0, ymax, 5), xfmt: v => G.man(v), ylabel: "行動圏の広さ（km²）" });
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText("体重（g）", ax.L + ax.pw, ax.T + ax.ph + 26);
+        ctx.fillStyle = G.css("--pop"); ctx.globalAlpha = 0.55;
+        rawSel.forEach(d => { ctx.beginPath(); ctx.arc(ax.x(d.v[0]), ax.y(d.v[1]), 3.2, 0, Math.PI * 2); ctx.fill(); });
+        ctx.globalAlpha = 1;
+    }
+
+    /* ---- 体験 ---- */
+    let yKey = "行動圏km2", D = null, userSlope = 0, userH = 0, showOls = true, showResid = true, fam = "";
+    const X0 = 3; // 線の高さは体重1kg（log10 = 3）での値として持つ
+
+    function prepare() {
+        const sel = G.select([X, yKey], [X, yKey]);
+        const xs = sel.map(d => d.v[0]), ys = sel.map(d => d.v[1]);
+        const fit = G.linreg(xs, ys), my = G.mean(ys);
+        const sse = (b, a) => G.sum(xs.map((x, i) => (ys[i] - (a + b * x)) ** 2));
+        const sst = G.sum(ys.map(y => (y - my) ** 2)), sseO = sse(fit.slope, fit.intercept);
+        const ymin = Math.min(...ys), ymax = Math.max(...ys), pad = (ymax - ymin) * 0.12;
+        D = { sel, xs, ys, fit, my, sse, sst, sseO, r2: 1 - sseO / sst,
+              xmin: 1.5, xmax: 5.25, ymin: ymin - pad, ymax: ymax + pad, unit: G.unit(yKey), label: G.label(yKey) };
+        const hs = document.getElementById("height");
+        hs.min = (ymin - 1).toFixed(2); hs.max = (ymax + 1).toFixed(2);
+    }
+    const userA = () => userH - userSlope * X0; // 切片（log10 体重 = 0 での値）
+
+    function setFlat() { userSlope = 0; userH = D.my; syncSliders(); }
+    function setFit() { userSlope = D.fit.slope; userH = D.fit.intercept + D.fit.slope * X0; syncSliders(); }
+    function syncSliders() {
+        document.getElementById("slope").value = userSlope.toFixed(2);
+        document.getElementById("height").value = userH.toFixed(2);
+    }
+
+    function drawReg() {
+        const cv = document.getElementById("regChart"); const { ctx, w, h } = G.setup(cv);
+        const ax = G.axes(ctx, w, h, { L: 48, R: 14, T: 42, B: 48, xmin: D.xmin, xmax: D.xmax, ymin: D.ymin, ymax: D.ymax,
+            xticks: G.logTicks(D.xmin, D.xmax), yticks: niceLogTicks(D.ymin, D.ymax), xgrid: true,
+            xfmt: k => val(10 ** k), yfmt: k => val(10 ** k), ylabel: `${D.label}（${D.unit}・対数目盛り）` });
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "top";
+        ctx.fillText("体重（g・対数目盛り）", ax.L + ax.pw, ax.T + ax.ph + 26);
+
+        ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.pw, ax.ph); ctx.clip();
+        const a = userA();
+        if (showResid) {
+            ctx.strokeStyle = G.css("--biased"); ctx.globalAlpha = 0.35;
+            D.sel.forEach(d => { ctx.beginPath(); ctx.moveTo(ax.x(d.v[0]), ax.y(d.v[1])); ctx.lineTo(ax.x(d.v[0]), ax.y(a + userSlope * d.v[0])); ctx.stroke(); });
+            ctx.globalAlpha = 1;
+        }
+        D.sel.forEach(d => {
+            const hit = fam && G.family(d.row) === fam;
+            ctx.fillStyle = hit ? G.css("--mean") : G.css("--pop");
+            ctx.globalAlpha = fam ? (hit ? 0.95 : 0.25) : 0.6;
+            ctx.beginPath(); ctx.arc(ax.x(d.v[0]), ax.y(d.v[1]), hit ? 4.6 : 3.4, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        const line = (b, a0, color, width, dash) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(ax.x(D.xmin), ax.y(a0 + b * D.xmin)); ctx.lineTo(ax.x(D.xmax), ax.y(a0 + b * D.xmax)); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1; };
+        if (showOls) line(D.fit.slope, D.fit.intercept, G.css("--navy2"), 2.2, []);
+        line(userSlope, a, G.css("--gold-deep"), 2.6, [7, 5]);
+        ctx.restore();
+
+        const items = [{ color: G.css("--gold-deep"), label: "あなたの線", kind: "line" }];
+        if (showOls) items.push({ color: G.css("--navy2"), label: "最小二乗の線", kind: "line" });
+        if (fam) items.push({ color: G.css("--mean"), label: fam, kind: "dot" });
+        G.legend(ctx, w, items, 26);
+    }
+
+    function readout() {
+        const $ = id => document.getElementById(id);
+        const sseU = D.sse(userSlope, userA());
+        $("slopeOut").textContent = userSlope.toFixed(2);
+        $("heightOut").textContent = val(10 ** userH) + " " + D.unit;
+        $("rN").textContent = D.sel.length + " 種";
+        $("rSlope").textContent = D.fit.slope.toFixed(3);
+        $("rTimes").textContent = val(10 ** D.fit.slope) + " 倍";
+        $("rR2").textContent = D.r2.toFixed(2);
+        $("rSseU").textContent = sseU.toFixed(2);
+        $("rSseO").textContent = D.sseO.toFixed(2);
+        $("rSst").textContent = D.sst.toFixed(2);
+        $("showOls").textContent = showOls ? "最小二乗の線を隠す" : "最小二乗の線を重ねる";
+        $("showOls").setAttribute("aria-pressed", String(showOls));
+
+        const ratio = sseU / D.sseO;
+        let msg;
+        if (ratio < 1.002) msg = `あなたの線は最小二乗の線とほぼ重なっています。傾き ${D.fit.slope.toFixed(3)} は「体重が10倍になると${SHORT[yKey]}は約 ${val(10 ** D.fit.slope)} 倍」と読みます。`;
+        else if (Math.abs(userSlope) < 0.005 && Math.abs(userH - D.my) < 0.01) msg = `いまの金色の線は、体重を使わずに全種の平均で予測した<b>水平な線</b>です。最小二乗の線は残差の二乗和を ${D.sst.toFixed(2)} から ${D.sseO.toFixed(2)} に減らしました。減った割合 ${(D.r2 * 100).toFixed(0)}% が R² です。スライダーで線を動かしてみてください。`;
+        else msg = `あなたの線の残差の二乗和は、最小二乗の線の <b>${ratio.toFixed(2)} 倍</b>です。傾きと高さをどう動かしても、${D.sseO.toFixed(2)} より小さくはなりません。`;
+        if (fam) {
+            const res = D.sel.map((d, i) => ({ d, e: D.ys[i] - (D.fit.intercept + D.fit.slope * D.xs[i]) })).filter(o => G.family(o.d.row) === fam);
+            if (res.length) {
+                const m = G.mean(res.map(o => o.e));
+                msg += `<br>${fam}（この変数では ${res.length} 種）の点は、最小二乗の線の予測に対して平均で <b>約 ${val(10 ** m)} 倍</b>の側にあります。`;
+            } else msg += `<br>${fam}は、この変数の記録がある種がいません。`;
+        }
+        $("hint").innerHTML = msg;
+    }
+
+    function render() { drawReg(); readout(); }
+
+    document.querySelectorAll('input[name="yv"]').forEach(r => r.addEventListener("change", e => { yKey = e.target.value; prepare(); setFlat(); render(); }));
+    document.getElementById("slope").addEventListener("input", e => { userSlope = +e.target.value; render(); });
+    document.getElementById("height").addEventListener("input", e => { userH = +e.target.value; render(); });
+    document.getElementById("fit").addEventListener("click", () => { setFit(); render(); });
+    document.getElementById("flat").addEventListener("click", () => { setFlat(); render(); });
+    document.getElementById("showOls").addEventListener("click", () => { showOls = !showOls; render(); });
+    document.getElementById("resid").addEventListener("change", e => { showResid = e.target.checked; render(); });
+    document.getElementById("fam").addEventListener("change", e => { fam = e.target.value; render(); });
+
+    // 読み込み時：行動圏・水平な線（体重を使わない予測）と最小二乗の線を並べた状態
+    prepare(); setFlat();
+    G.onRedraw(() => { drawRaw(); render(); });
+})();
+</script>
+</body>
+</html>
