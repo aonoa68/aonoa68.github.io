@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teaching — 小野原彩香 | 担当授業と授業サイト</title>
+    <meta name="description" content="小野原彩香の担当授業一覧。北星学園大学（統計学Ⅰ・Ⅱ、社会調査入門、情報活用、情報入門）と北海道大学（行動計量学）の授業資料サイトへの入口。">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* 科目色（後期5科目 内容重複マップと共通） */
+            --c-s1: #3d6fa8;
+            --c-s2: #22456d;
+            --c-sc: #96702f;
+            --c-jk: #3f7352;
+            --c-kd: #8a464f;
+            --c-past: #767c84;
+            --c-tool: #a07f2c;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV（projects/ と共通） */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER（projects/ と共通） */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 620px; line-height: 1.85; }
+
+        /* 時間割バー：後期の週の並び */
+        .week-bar { background: var(--white); border-bottom: 1px solid var(--line); padding: 14px 0; }
+        .week-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; }
+        .week-label { font-size: 0.72em; font-weight: 700; letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; }
+        .week-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+        .slot {
+            display: inline-flex; align-items: baseline; gap: 8px;
+            padding: 5px 12px 5px 10px; border-radius: 8px;
+            border: 1px solid var(--line); border-left: 3px solid var(--c);
+            text-decoration: none; color: var(--text); font-size: 0.84em;
+            transition: background 0.2s;
+        }
+        .slot:hover { background: #f1f4f7; }
+        .slot b { font-weight: 600; color: var(--muted); font-size: 0.9em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .slot span { color: var(--c); font-weight: 600; }
+
+        /* MAIN */
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        .group-label {
+            display: flex; align-items: center; gap: 12px;
+            margin: 40px 0 16px;
+            font-size: 0.78em; font-weight: 700; letter-spacing: 0.12em; color: var(--muted);
+        }
+        .group-label::after { content:''; flex:1; height:1px; background: rgba(0,0,0,0.1); }
+        .group-label:first-child { margin-top: 8px; }
+        .group-label small { font-weight: 500; letter-spacing: 0.04em; }
+
+        /* COURSE ROW */
+        .course {
+            background: var(--white);
+            border: 1px solid rgba(0,0,0,0.07);
+            border-left: 4px solid var(--c);
+            border-radius: var(--radius);
+            padding: 22px 24px;
+            margin-bottom: 12px;
+            display: grid;
+            grid-template-columns: minmax(0,210px) minmax(0,1fr) minmax(0,220px);
+            gap: 8px 28px;
+            align-items: start;
+            scroll-margin-top: 72px;
+            transition: box-shadow 0.22s ease, transform 0.22s ease;
+        }
+        .course:hover { transform: translateX(4px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .course:target { box-shadow: 0 0 0 2px var(--c); }
+
+        .course-id { display: flex; flex-direction: column; gap: 4px; }
+        .course-code { font-size: 0.72em; letter-spacing: 0.08em; color: var(--muted); font-variant-numeric: tabular-nums; }
+        .course-title { font-family: 'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight: 400; font-size: 1.32em; line-height: 1.35; color: var(--c); }
+        .course-title small { display: block; font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", sans-serif; font-size: 0.56em; color: var(--muted); margin-top: 3px; }
+
+        .course-body p { font-size: 0.92em; color: var(--text); line-height: 1.85; }
+        .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .tool {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 2px 10px; border-radius: 10px;
+            font-size: 0.74em; font-weight: 600; white-space: nowrap;
+            color: var(--c); background: color-mix(in srgb, var(--c) 9%, white);
+            border: 1px solid color-mix(in srgb, var(--c) 28%, white);
+        }
+
+        .course-side { display: flex; flex-direction: column; gap: 12px; }
+        .when { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 0.82em; }
+        .when dt { color: var(--muted); white-space: nowrap; }
+        .when dd { color: var(--text); font-variant-numeric: tabular-nums; }
+        .open-site {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 8px 14px; border-radius: 20px;
+            background: var(--c); color: #fff; text-decoration: none;
+            font-size: 0.84em; font-weight: 600;
+            transition: filter 0.2s;
+        }
+        .open-site:hover { filter: brightness(1.12); }
+        .open-site i { font-size: 0.85em; }
+        .course.is-past .open-site { background: transparent; color: var(--c); border: 1.5px solid var(--c); }
+
+        /* TOOLS（教材ツールは小さめの3列） */
+        .tool-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+        .tool-card {
+            background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-top: 3px solid var(--c-tool);
+            border-radius: var(--radius); padding: 16px 18px;
+            display: flex; flex-direction: column; gap: 6px;
+            text-decoration: none; color: var(--text);
+            transition: box-shadow 0.22s ease;
+        }
+        .tool-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .tool-card h3 { font-size: 0.98em; font-weight: 600; color: var(--navy2); display: flex; align-items: center; gap: 8px; }
+        .tool-card h3 i { color: var(--c-tool); }
+        .tool-card p { font-size: 0.84em; color: var(--muted); line-height: 1.7; }
+        .tool-card .go { margin-top: auto; font-size: 0.78em; font-weight: 600; color: var(--c-tool); }
+
+        .note { margin-top: 36px; font-size: 0.86em; color: var(--muted); line-height: 1.85; }
+        .note a { color: var(--navy2); }
+
+        /* FOOTER（projects/ と共通） */
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        @media (max-width: 860px) {
+            .course { grid-template-columns: minmax(0,1fr); gap: 10px; }
+            .course-side { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+            .tool-grid { grid-template-columns: minmax(0,1fr); }
+        }
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner, .week-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .course, .tool-card, .slot, .open-site { transition: none; }
+            .course:hover { transform: none; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Teaching</span>
+        <div class="nav-right">
+            <a href="../#about">About</a>
+            <a href="../#research">Research</a>
+            <a href="../publications/">Publications</a>
+            <a href="../projects/">Projects</a>
+            <a href="../#contact">Contact</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <h1>Teaching <span>&amp; Course Sites</span></h1>
+        <p class="lead">担当している授業と、その授業資料サイトの一覧です。<br>
+        各サイトは履修者向けで、授業の各回ページにスライド・ノートブック・課題をまとめています。</p>
+    </div>
+</header>
+
+<div class="week-bar">
+    <div class="week-inner">
+        <span class="week-label">2026 後期の時間割</span>
+        <div class="week-slots">
+            <a class="slot" href="#toukei-1" style="--c:var(--c-s1)"><b>火Ⅱ</b><span>統計学Ⅰ（B）</span></a>
+            <a class="slot" href="#toukei-2" style="--c:var(--c-s2)"><b>火Ⅲ</b><span>統計学Ⅱ</span></a>
+            <a class="slot" href="#shakaichosa" style="--c:var(--c-sc)"><b>火Ⅴ</b><span>社会調査入門</span></a>
+            <a class="slot" href="#joho-katsuyo" style="--c:var(--c-jk)"><b>木Ⅲ・金Ⅲ</b><span>情報活用</span></a>
+            <a class="slot" href="#kodo-keiryo" style="--c:var(--c-kd)"><b>金1講</b><span>行動計量学（北大）</span></a>
+        </div>
+    </div>
+</div>
+
+<main class="main-content">
+
+    <div class="group-label">2026年度 後期 <small>── 北星学園大学</small></div>
+
+    <article class="course" id="toukei-1" style="--c:var(--c-s1)">
+        <div class="course-id">
+            <span class="course-code">科目コード 8146</span>
+            <h2 class="course-title">統計学Ⅰ（B）</h2>
+        </div>
+        <div class="course-body">
+            <p>直感や経験に頼る思考は、データの前で系統的に間違えます。認知バイアスを取り除き、データにもとづいて現象を記述し推論するための「共通言語」としての統計学を、手計算ではなく Python で動かして確かめながら学びます。</p>
+            <div class="tools"><span class="tool"><i class="fab fa-python"></i> Python（Google Colab）</span><span class="tool">記述統計・推定・検定・回帰</span></div>
+        </div>
+        <div class="course-side">
+            <dl class="when"><dt>曜日</dt><dd>火曜Ⅱ講 10:35〜12:15</dd><dt>期間</dt><dd>9/29〜1/19・全14回</dd></dl>
+            <a class="open-site" href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer">授業サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </article>
+
+    <article class="course" id="toukei-2" style="--c:var(--c-s2)">
+        <div class="course-id">
+            <span class="course-code">科目コード 8148</span>
+            <h2 class="course-title">統計学Ⅱ</h2>
+        </div>
+        <div class="course-body">
+            <p>条件付き確率・ベイズの定理・確率分布で、統計的推測の土台を固めます。そのうえで、「空気を読む」ことが試行の独立性を壊し、集団の判断を劣化させる仕組みを、情報カスケードとコンドルセの陪審定理を使ってシミュレーションで確かめます。</p>
+            <div class="tools"><span class="tool"><i class="fab fa-python"></i> Python（Google Colab）</span><span class="tool">確率・ベイズ・独立性</span></div>
+        </div>
+        <div class="course-side">
+            <dl class="when"><dt>曜日</dt><dd>火曜Ⅲ講 13:00〜14:40</dd><dt>期間</dt><dd>9/29〜1/19・全14回</dd></dl>
+            <a class="open-site" href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer">授業サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </article>
+
+    <article class="course" id="shakaichosa" style="--c:var(--c-sc)">
+        <div class="course-id">
+            <span class="course-code">科目コード 2051</span>
+            <h2 class="course-title">社会調査入門</h2>
+        </div>
+        <div class="course-body">
+            <p>社会のできごとをデータで確かめるための方法を、量的調査と質的調査の両面から学びます。調査の歴史・倫理・公的統計の使い方から始め、アンケート・インタビュー・観察・エスノグラフィへと進みます。</p>
+            <div class="tools"><span class="tool"><i class="fas fa-chalkboard"></i> 講義（毎回スライド配布）</span><span class="tool">量的調査・質的調査</span></div>
+        </div>
+        <div class="course-side">
+            <dl class="when"><dt>曜日</dt><dd>火曜Ⅴ講 16:40〜18:20</dd><dt>期間</dt><dd>9/29〜1/19・全14回</dd></dl>
+            <a class="open-site" href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer">授業サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </article>
+
+    <article class="course" id="joho-katsuyo" style="--c:var(--c-jk)">
+        <div class="course-id">
+            <span class="course-code">科目コード 8756・8487</span>
+            <h2 class="course-title">情報活用<small>グC（木曜）・社B（金曜）の2クラス</small></h2>
+        </div>
+        <div class="course-body">
+            <p>半年かけて一つの調査をやり切るプロジェクト型の授業です。テーマを決め、質問を作り、回答を集め、集計し、読み解き、Webページとして公開して報告書にまとめます。生成AIへの聞き方と、返ってきた答えを確かめる力も扱います。</p>
+            <div class="tools"><span class="tool"><i class="fas fa-list-check"></i> Google Forms</span><span class="tool"><i class="fab fa-python"></i> Python</span><span class="tool"><i class="fab fa-html5"></i> HTML</span></div>
+        </div>
+        <div class="course-side">
+            <dl class="when"><dt>曜日</dt><dd>木曜Ⅲ講・金曜Ⅲ講<br>13:00〜14:40</dd><dt>期間</dt><dd>9/24〜1/8・全14回</dd></dl>
+            <a class="open-site" href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer">授業サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </article>
+
+    <div class="group-label">令和8年度 第2学期 <small>── 北海道大学（非常勤講師）</small></div>
+
+    <article class="course" id="kodo-keiryo" style="--c:var(--c-kd)">
+        <div class="course-id">
+            <span class="course-code">全学教育科目</span>
+            <h2 class="course-title">行動計量学<small>行動科学分析法入門</small></h2>
+        </div>
+        <div class="course-body">
+            <p>行動科学におけるデータ分析の基本を、統計解析環境 R（RStudio）で学びます。データの読み込み・整形・可視化から、t検定・分散分析・カイ二乗検定の実行と出力の解釈まで。プログラミングを初めて学ぶ人を想定しています。</p>
+            <div class="tools"><span class="tool"><i class="fab fa-r-project"></i> R（RStudio）</span><span class="tool">習熟度確認テスト 3回</span></div>
+        </div>
+        <div class="course-side">
+            <dl class="when"><dt>曜日</dt><dd>金曜1講 8:45〜10:15</dd><dt>期間</dt><dd>10/2〜1/22・全15回</dd></dl>
+            <a class="open-site" href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer">授業サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </article>
+
+    <div class="group-label">2026年度 前期 <small>── 北星学園大学・終了</small></div>
+
+    <article class="course is-past" id="joho-nyumon" style="--c:var(--c-past)">
+        <div class="course-id">
+            <span class="course-code">全1年生対象の基礎科目</span>
+            <h2 class="course-title">情報入門</h2>
+        </div>
+        <div class="course-body">
+            <p>ゴールは Word や Excel の操作を覚えることではなく、何をしたいかを考える力と、情報を正しく読み扱う力です。各回の資料に加えて、NotebookLM によるスライド・動画・クイズの復習教材を公開しています。</p>
+            <div class="tools"><span class="tool">Word・Excel</span><span class="tool">NotebookLM 復習教材</span></div>
+        </div>
+        <div class="course-side">
+            <dl class="when"><dt>曜日</dt><dd>月曜Ⅴ講・木曜Ⅱ講</dd><dt>期間</dt><dd>2026年度前期・全14回</dd></dl>
+            <a class="open-site" href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer">資料サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </article>
+
+    <div class="group-label">教材ツール <small>── 情報入門で使用・誰でも使えます</small></div>
+
+    <div class="tool-grid">
+        <a class="tool-card" href="https://aonoa68.github.io/excel-drill/" target="_blank" rel="noopener noreferrer">
+            <h3><i class="fas fa-table-cells"></i> Excel 適応ドリル</h3>
+            <p>情報入門の Excel の回に合わせた練習問題。ブラウザだけで解けます。</p>
+            <span class="go">開く <i class="fas fa-arrow-up-right-from-square"></i></span>
+        </a>
+        <a class="tool-card" href="https://aonoa68.github.io/typing-japan-map/" target="_blank" rel="noopener noreferrer">
+            <h3><i class="fas fa-map-location-dot"></i> 日本地図タイピング</h3>
+            <p>地図上で光った都道府県の名前を打つ、タイピングの練習です。</p>
+            <span class="go">開く <i class="fas fa-arrow-up-right-from-square"></i></span>
+        </a>
+        <a class="tool-card" href="https://aonoa68.github.io/typing-ol-series/" target="_blank" rel="noopener noreferrer">
+            <h3><i class="fas fa-keyboard"></i> 寸劇タイピング道場</h3>
+            <p>「タイピングできないOL」の寸劇を読み進めながら打つ教材。全8話。</p>
+            <span class="go">開く <i class="fas fa-arrow-up-right-from-square"></i></span>
+        </a>
+    </div>
+
+    <p class="note">履修者の方は、Moodle や ELMS よりも先に各授業サイトを開いてください。課題の提出先へのリンクも授業サイトの各回ページにあります。<br>
+    これまでの担当授業の一覧は <a href="https://researchmap.jp/aonohr/teaching_experience" target="_blank" rel="noopener noreferrer">researchmap</a> に掲載しています。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>授業に関する問い合わせは、各授業の案内に従ってください。<br>
+    最終更新：2026-09-13 &nbsp;|&nbsp; <a href="../">← トップページへ戻る</a></p>
+</footer>
+
+</body>
+</html>
