@@ -5,18 +5,24 @@
     const idx = Object.fromEntries(P.cols.map((c, i) => [c, i]));
     const G = {};
     G.reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // ページの言語（<html lang="en"> なら英語表示）
+    G.lang = (document.documentElement.lang || "ja").slice(0, 2) === "en" ? "en" : "ja";
+    const EN_LABELS = { "体重g": "Body mass", "頭胴長mm": "Head-body length", "新生児体重g": "Neonate body mass", "集団サイズ": "Group size", "妊娠期間日": "Gestation length", "離乳日齢": "Age at weaning", "初産日齢": "Age at first birth", "出産間隔日": "Interbirth interval", "一腹産子数": "Litter size", "最長寿命月": "Maximum longevity", "行動圏km2": "Home range size", "個体群密度": "Population density", "分布域km2": "Geographic range area", "栄養段階": "Trophic level", "生息環境幅": "Habitat breadth", "平均気温C": "Mean temperature of range", "月降水量mm": "Monthly precipitation of range" };
+    const EN_UNITS = { "頭": "individuals", "日": "days", "か月": "months", "頭/km²": "per km²", "℃": "°C" };
+    const EN_FAMILY = { "オナガザル科": "Cercopithecidae", "オマキザル科": "Cebidae", "サキ科": "Pitheciidae", "クモザル科": "Atelidae", "キツネザル科": "Lemuridae", "コビトキツネザル科": "Cheirogaleidae", "ガラゴ科": "Galagidae", "テナガザル科": "Hylobatidae", "ヨザル科": "Aotidae", "ロリス科": "Lorisidae", "インドリ科": "Indriidae", "ヒト科": "Hominidae", "イタチキツネザル科": "Lepilemuridae", "メガネザル科": "Tarsiidae", "アイアイ科": "Daubentoniidae" };
     G.css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
     /* ---- データ ---- */
     G.rows = P.rows;
-    G.label = key => P.labels[key] || key;
-    G.unit = key => P.units[key] || "";
+    G.label = key => G.lang === "en" ? (EN_LABELS[key] || key) : (P.labels[key] || key);
+    G.unit = key => { const u = P.units[key] || ""; return G.lang === "en" ? (EN_UNITS[u] ?? u) : u; };
     G.get = (row, key) => row[idx[key]];
     // key の値が揃う行を {v:[値...], row} で返す。log=true のキーは正の値だけ残して log10 を取る
     G.select = (keys, logKeys = []) => P.rows.filter(r => keys.every(k => {
         const v = r[idx[k]]; return v !== null && v !== undefined && (!logKeys.includes(k) || v > 0);
     })).map(r => ({ row: r, v: keys.map(k => logKeys.includes(k) ? Math.log10(r[idx[k]]) : r[idx[k]]) }));
-    G.family = row => row[idx["科"]];
+    G.family = row => row[idx["科"]];                       // データ上の値（和名）。比較や絞り込みにはこちらを使う
+    G.familyLabel = name => G.lang === "en" ? (EN_FAMILY[name] || name) : name;  // 表示用
     G.species = row => row[idx["学名"]];
 
     /* ---- 統計 ---- */
@@ -36,9 +42,10 @@
     G.t975 = df => { if (df >= 1 && df <= 30 && Number.isInteger(df)) return T975[df - 1]; const z = 1.959964; const g1 = (z ** 3 + z) / 4, g2 = (5 * z ** 5 + 16 * z ** 3 + 3 * z) / 96, g3 = (3 * z ** 7 + 19 * z ** 5 + 17 * z ** 3 - 15 * z) / 384; return z + g1 / df + g2 / df ** 2 + g3 / df ** 3; };
 
     /* ---- 表示 ---- */
-    G.fmt = (v, d = 0) => Number(v).toLocaleString("ja-JP", { minimumFractionDigits: d, maximumFractionDigits: d });
+    G.fmt = (v, d = 0) => Number(v).toLocaleString(G.lang === "en" ? "en-US" : "ja-JP", { minimumFractionDigits: d, maximumFractionDigits: d });
     G.g = v => G.fmt(Math.round(v)) + " g";
-    G.man = v => Math.abs(v) >= 10000 ? G.fmt(v / 10000, v % 10000 ? 1 : 0) + "万" : G.fmt(v);
+    // 大きな数の短い表記。日本語は「1.5万」、英語は「15k」
+    G.man = v => G.lang === "en" ? (Math.abs(v) >= 1000 ? G.fmt(v / 1000, v % 1000 ? 1 : 0) + "k" : G.fmt(v)) : (Math.abs(v) >= 10000 ? G.fmt(v / 10000, v % 10000 ? 1 : 0) + "万" : G.fmt(v));
     // 10^k の値を読みやすく（log軸の目盛り用）
     G.pow10Label = k => { const v = 10 ** k; return v >= 10000 ? G.man(v) : v >= 1 ? G.fmt(v) : String(+v.toPrecision(1)); };
 
