@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Map — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Which topics appear in which sessions across Ayaka Onohara's six courses: Statistics I and II, Social Research, Applied Information Literacy, Behaviormetrics, and Introduction to Information.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* 科目色（後期5科目 内容重複マップと共通） */
+            --c-s1: #3d6fa8;
+            --c-s2: #22456d;
+            --c-sc: #96702f;
+            --c-jk: #3f7352;
+            --c-kd: #8a464f;
+            --c-past: #767c84;
+            --c-tool: #a07f2c;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV（projects/ と共通） */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER（projects/ と共通） */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 620px; line-height: 1.85; }
+
+        
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+        .legend { display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; font-size:0.84em; color:var(--muted); margin-bottom:14px; }
+        .legend .n { pointer-events:none; }
+
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid rgba(0,0,0,0.07); border-radius:var(--radius); }
+        table { border-collapse:collapse; width:100%; min-width:860px; font-size:0.88em; }
+        caption { text-align:left; padding:0 0 10px; font-size:0.84em; color:var(--muted); caption-side:top; }
+        thead th { background:#f1f4f7; font-weight:600; font-size:0.84em; text-align:center; padding:12px 8px; border-bottom:1px solid rgba(0,0,0,0.1); line-height:1.4; vertical-align:bottom; }
+        thead th:first-child { text-align:left; padding-left:18px; }
+        th.ch { color:var(--c); }
+        th.ch small { display:block; font-weight:500; font-size:0.86em; color:var(--muted); margin-top:2px; }
+        th.ch a { color:inherit; text-decoration:none; }
+        th.ch a:hover { text-decoration:underline; }
+        tbody th { text-align:left; font-weight:500; padding:11px 12px 11px 18px; border-bottom:1px solid rgba(0,0,0,0.06); position:sticky; left:0; background:var(--white); z-index:1; min-width:190px; }
+        tbody td { text-align:center; padding:9px 6px; border-bottom:1px solid rgba(0,0,0,0.06); border-left:1px solid rgba(0,0,0,0.05); }
+        tbody tr:hover th, tbody tr:hover td { background:#f7f9fb; }
+        tr.grp th { position:static; background:#e9eef3; font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--muted); padding:12px 18px 7px; }
+        .n { display:inline-block; min-width:2.2em; font-variant-numeric:tabular-nums; font-size:0.86em; font-weight:600; padding:2px 6px; margin:2px 1px; border-radius:6px; text-decoration:none;
+             color:var(--c); background:color-mix(in srgb, var(--c) 10%, white); border:1px solid color-mix(in srgb, var(--c) 26%, white); }
+        a.n:hover { background:var(--c); color:#fff; }
+        span.n { opacity:0.75; }
+        .dash { color:#b8c2cc; }
+
+        h2.sec { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.5em; color:var(--navy2); margin:52px 0 6px; }
+        .sec-lead { font-size:0.9em; color:var(--muted); margin-bottom:18px; max-width:62ch; }
+        .links { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+        .link-card { background:var(--white); border:1px solid rgba(0,0,0,0.07); border-radius:var(--radius); padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+        .link-card h3 { font-size:1em; font-weight:600; color:var(--navy2); line-height:1.5; }
+        .link-card p { font-size:0.88em; line-height:1.85; color:var(--text); }
+        .path { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:0.82em; }
+        .step { display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px; border-radius:8px; text-decoration:none; color:var(--c); border:1px solid color-mix(in srgb, var(--c) 30%, white); background:color-mix(in srgb, var(--c) 7%, white); font-weight:600; }
+        .step small { color:var(--muted); font-weight:500; font-variant-numeric:tabular-nums; }
+        a.step:hover { background:var(--c); color:#fff; }
+        a.step:hover small { color:rgba(255,255,255,0.85); }
+        .then { color:var(--muted); font-size:0.9em; }
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        a:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:4px; }
+        @media (max-width: 760px) { .links { grid-template-columns:minmax(0,1fr); } }
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            tbody th { min-width:150px; }
+        }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Course Map</span>
+        <div class="nav-right">
+            <a href="../../#about">About</a>
+            <a href="../../#research">Research</a>
+            <a href="../../publications/">Publications</a>
+            <a href="../../projects/">Projects</a>
+            <a href="../../#contact">Contact</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/map/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <h1>Course <span>Map</span></h1>
+        <p class="lead">Which topics appear in which sessions across the six courses I teach.<br>
+        The same ideas return in different courses, from different angles and with different tools.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <div class="legend"><span>Numbers are the sessions that cover each topic. Select one to open that session&rsquo;s page in a new tab.</span>
+        <span>A faded number such as <span class="n" style="--c:var(--c-past)">08</span> has no separate session page.</span></div>
+    <div class="scroller" role="region" aria-label="Topics by course" tabindex="0">
+        <table>
+            <thead><tr><th scope="col">Topic</th><th scope="col" class="ch" style="--c:var(--c-s1)"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer">Statistics I (B)</a><small>Tue 2</small></th><th scope="col" class="ch" style="--c:var(--c-s2)"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer">Statistics II</a><small>Tue 3</small></th><th scope="col" class="ch" style="--c:var(--c-sc)"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer">Social Research</a><small>Tue 5</small></th><th scope="col" class="ch" style="--c:var(--c-jk)"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer">Applied Info. Literacy</a><small>Thu 3 / Fri 3</small></th><th scope="col" class="ch" style="--c:var(--c-kd)"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer">Behaviormetrics</a><small>Hokkaido U. · Fri 1</small></th><th scope="col" class="ch" style="--c:var(--c-past)"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer">Intro. to Information</a><small>Spring · completed</small></th></tr></thead>
+            <tbody>
+            <tr class="grp"><th colspan="7">TOPICS SHARED ACROSS COURSES</th></tr>
+            <tr><th scope="row">Setting up the computing environment</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/04_python_intro/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 4">04</a></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/01_guidance/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 1">01</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week04/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 4">04</a></td><td><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/02.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 2">02</a></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Descriptive statistics, averages, spread</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/02_representative_values/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 2">02</a><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/03_variability/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 3">03</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week04/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 4">04</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week06/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 6">06</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-past)" href="https://aonoa68.github.io/joho-nyumon/week06/" target="_blank" rel="noopener noreferrer" aria-label="Intro. to Information, session 6">06</a></td></tr>
+            <tr><th scope="row">Tidying data and cross-tabulation</th><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week06/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 6">06</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week07/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 7">07</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week08/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 8">08</a></td><td><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/05.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 5">05</a><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/06.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 6">06</a></td><td><a class="n" style="--c:var(--c-past)" href="https://aonoa68.github.io/joho-nyumon/week09/" target="_blank" rel="noopener noreferrer" aria-label="Intro. to Information, session 9">09</a></td></tr>
+            <tr><th scope="row">Visualisation and reading graphs</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 5">05</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week09/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 9">09</a></td><td><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/03.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 3">03</a><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/04.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 4">04</a></td><td><a class="n" style="--c:var(--c-past)" href="https://aonoa68.github.io/joho-nyumon/week10/" target="_blank" rel="noopener noreferrer" aria-label="Intro. to Information, session 10">10</a></td></tr>
+            <tr><th scope="row">Samples, sampling, central limit theorem</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/06_sampling_clt/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 6">06</a></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/06_clt/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 6">06</a></td><td><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week10/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 10">10</a></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week05/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 5">05</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Correlation, causation, spurious correlation</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 5">05</a></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 10">10</a><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 11">11</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/08.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 8">08</a></td><td><a class="n" style="--c:var(--c-past)" href="https://aonoa68.github.io/joho-nyumon/week12/" target="_blank" rel="noopener noreferrer" aria-label="Intro. to Information, session 12">12</a></td></tr>
+            <tr><th scope="row">Estimation and confidence intervals</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 7">07</a></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 7">07</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Hypothesis testing</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/08_ttest/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 8">08</a><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/09_anova/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 9">09</a></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/08_multiple/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 8">08</a><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/09_effectsize/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 9">09</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/09.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 9">09</a><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/10.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 10">10</a><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/11.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 11">11</a><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/13.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 13">13</a><a class="n" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/14.html" target="_blank" rel="noopener noreferrer" aria-label="Behaviormetrics, session 14">14</a></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Survey planning and research ethics</th><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week03/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 3">03</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week04/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 4">04</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week11/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 11">11</a></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week01/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 1">01</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week02/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 2">02</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week03/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 3">03</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr class="grp"><th colspan="7">TOPICS UNIQUE TO ONE COURSE</th></tr>
+            <tr><th scope="row">Probability distributions, Bayes' theorem</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 12">12</a></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/02_conditional/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 2">02</a><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 3">03</a><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/04_discrete/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 4">04</a><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/05_normal/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 5">05</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Regression, model selection, multivariate</th><td><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 10">10</a><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 11">11</a><a class="n" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer" aria-label="Statistics I (B), session 13">13</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Independence and group decisions</th><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/12_cascade/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 12">12</a><a class="n" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/13_condorcet/" target="_blank" rel="noopener noreferrer" aria-label="Statistics II, session 13">13</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">History of social research, secondary data</th><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week02/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 2">02</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week05/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 5">05</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week06/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 6">06</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week07/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 7">07</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week08/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 8">08</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Qualitative research (interviews, observation, ethnography)</th><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week09/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 9">09</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week12/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 12">12</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week13/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 13">13</a><a class="n" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week14/" target="_blank" rel="noopener noreferrer" aria-label="Social Research, session 14">14</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td></tr>
+            <tr><th scope="row">Publishing, presenting, and reporting results</th><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="dash" aria-hidden="true">—</span></td><td><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week10/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 10">10</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week11/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 11">11</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week12/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 12">12</a><a class="n" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week13/" target="_blank" rel="noopener noreferrer" aria-label="Applied Info. Literacy, session 13">13</a></td><td><span class="dash" aria-hidden="true">—</span></td><td><span class="n" style="--c:var(--c-past)" title="Intro. to Information, session 8">08</span><a class="n" style="--c:var(--c-past)" href="https://aonoa68.github.io/joho-nyumon/week13/" target="_blank" rel="noopener noreferrer" aria-label="Intro. to Information, session 13">13</a></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="sec">Connections across courses</h2>
+    <p class="sec-lead">Students taking more than one course get more out of a session by recalling the related session that comes before it. Dates are for autumn 2026.</p>
+    <div class="links">
+        <div class="link-card">
+            <h3>Sampling and the CLT come in Statistics I about a month earlier</h3>
+            <div class="path"><a class="step" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/06_sampling_clt/" target="_blank" rel="noopener noreferrer">Statistics I (B) S6 <small>Nov 10</small></a><span class="then">▸</span><a class="step" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week10/" target="_blank" rel="noopener noreferrer">Social Research S10 <small>Dec 8</small></a></div>
+            <p>After seeing the central limit theorem through simulation in Statistics I, students meet the same idea in Social Research as the answer to why a sample can tell us about a whole population. Statistics II session 6, on the same day, looks at when that assumption breaks down.</p>
+        </div>
+        <div class="link-card">
+            <h3>Survey design and research ethics come first in Applied Information Literacy</h3>
+            <div class="path"><a class="step" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week02/" target="_blank" rel="noopener noreferrer">Applied Info. Literacy S2 <small>Oct 1–2</small></a><span class="then">▸</span><a class="step" style="--c:var(--c-jk)" href="https://aonoa68.github.io/joho-katsuyo/week03/" target="_blank" rel="noopener noreferrer">Applied Info. Literacy S3 <small>Oct 8–9</small></a><span class="then">▸</span><a class="step" style="--c:var(--c-sc)" href="https://aonoa68.github.io/shakaichosa/week03/" target="_blank" rel="noopener noreferrer">Social Research S3 <small>Oct 13</small></a></div>
+            <p>In Applied Information Literacy, students plan their own survey and put research ethics and question writing into practice. Social Research session 3 then revisits that experience as methodology.</p>
+        </div>
+        <div class="link-card">
+            <h3>From correlation to causation, Statistics I to Statistics II</h3>
+            <div class="path"><a class="step" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer">Statistics I (B) S5 <small>Oct 27</small></a><span class="then">▸</span><a class="step" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer">Statistics II S10 <small>Dec 8</small></a><span class="then">▸</span><a class="step" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer">Statistics II S11 <small>Dec 15</small></a></div>
+            <p>Once students can read correlations in Statistics I, Statistics II examines when a correlation is not a causal relationship, focusing on confounding. Statistics II is designed as the continuation of Statistics I, and the two run back to back on Tuesdays.</p>
+        </div>
+        <div class="link-card">
+            <h3>The same tests, in Python and in R</h3>
+            <div class="path"><a class="step" style="--c:var(--c-s1)" href="https://aonoa68.github.io/toukei-1/08_ttest/" target="_blank" rel="noopener noreferrer">Statistics I (B) S8 <small>Nov 24</small></a><a class="step" style="--c:var(--c-s2)" href="https://aonoa68.github.io/toukei-2/08_multiple/" target="_blank" rel="noopener noreferrer">Statistics II S8 <small>Nov 24</small></a><span class="then">▸</span><a class="step" style="--c:var(--c-kd)" href="https://aonoa68.github.io/kodo-keiryo/materials/09.html" target="_blank" rel="noopener noreferrer">Behaviormetrics S9 <small>Hokkaido U.</small></a></div>
+            <p>Behaviormetrics at Hokkaido University runs the tests covered in Statistics I and II in R. The ideas are the same and the tools differ. All sites are public, so either one can be used to see how the other language does it.</p>
+        </div>
+    </div>
+
+    <p class="note">Applied Information Literacy runs as two sections with the same content. Introduction to Information ended in spring 2026, and its materials site remains available. Behaviormetrics is taught at Hokkaido University. All course sites are in Japanese.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../">&larr; Back to Teaching</a></p>
+</footer>
+
+</body>
+</html>
