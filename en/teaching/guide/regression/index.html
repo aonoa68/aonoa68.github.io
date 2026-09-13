@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regression — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="If body mass is ten times larger, how much larger is the home range? Work through regression lines, least squares, the coefficient of determination, and residuals with primate ecological data.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .lab canvas#regChart { height:380px; }
+        .ctrl { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .range-row label { min-width:10.5em; color:var(--muted); }
+        .range-row output { min-width:7.5em; text-align:right; font-variant-numeric:tabular-nums; font-weight:600; color:var(--navy2); }
+        .fam-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:0.88em; color:var(--muted); }
+        .readout dt.sep, .readout dd.sep { border-top:1px solid var(--line); padding-top:6px; margin-top:2px; }
+        .sp { font-style:italic; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Regression</span>
+        <div class="lang-switch"><a href="/teaching/guide/regression/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>08</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>If body mass is ten times larger, how much larger is the home range?</h1>
+        <p class="sub">Regression — turning a relationship into an equation, and reading the misfits</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>Through a cloud of points, draw the straight line that makes the total of the squared deviations as small as possible. Its slope puts a number on the relationship, and the points that stray from the line show what the equation cannot explain.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Body size, and the amount of land a species uses</h2>
+        <p>Primates range from species weighing 48 grams to species weighing more than 110,000 grams. Larger species also tend to have a larger <b>home range</b>, the area an animal normally moves around in. A scatter plot is enough to see this much.</p>
+        <p>Regression answers the next question. When body mass is ten times larger, is the home range ten times larger, or less than that? And which species depart from that trend, and by how much?</p>
+        <div class="figure">
+            <canvas id="rawChart" role="img" aria-label="Scatter plot of body mass and home range size on ordinary scales. Most points pile up in the lower-left corner."></canvas>
+            <div class="stat-row">
+                <div><span>Species with both records</span><b class="num" id="rawN">—</b></div>
+                <div><span>Range of body mass</span><b class="num" id="rawX">—</b></div>
+                <div><span>Range of home range size</span><b class="num" id="rawY">—</b></div>
+            </div>
+            <p class="figcap">On ordinary scales, most species overlap in the lower-left corner and the shape of the relationship cannot be read. Body mass spans more than a 2,000-fold range, and home range size more than a 10,000-fold range. The hands-on panel below therefore puts both axes on a <b>log scale</b>, where each tick mark is ten times the previous one.</p>
+        </div>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Draw the line yourself</div>
+            <div>
+                <span class="seg-cap">Variable on the vertical axis</span>
+                <div class="seg" role="radiogroup" aria-label="Variable on the vertical axis">
+                    <input type="radio" name="yv" id="yv0" value="行動圏km2" checked><label for="yv0">Home range</label>
+                    <input type="radio" name="yv" id="yv1" value="新生児体重g"><label for="yv1">Neonate body mass</label>
+                    <input type="radio" name="yv" id="yv2" value="最長寿命月"><label for="yv2">Maximum longevity</label>
+                    <input type="radio" name="yv" id="yv3" value="個体群密度"><label for="yv3">Population density</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="regChart" role="img" aria-label="Log-log scatter plot of body mass and the chosen variable, showing your own line together with the least-squares line."></canvas>
+                <div class="ctrl">
+                    <div class="range-row"><label for="slope">Slope of your line</label><input type="range" id="slope" min="-1.5" max="1.5" step="0.01" value="0"><output id="slopeOut" for="slope">—</output></div>
+                    <div class="range-row"><label for="height">Height of your line (value at 1 kg)</label><input type="range" id="height" min="-3" max="3" step="0.01" value="0"><output id="heightOut" for="height">—</output></div>
+                </div>
+                <div class="btns">
+                    <button class="btn" id="fit" type="button">Match your line to the least-squares line</button>
+                    <button class="btn ghost" id="flat" type="button">Reset to a flat line</button>
+                    <button class="btn ghost" id="showOls" type="button" aria-pressed="true">Hide the least-squares line</button>
+                </div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>Species</dt><dd id="rN">—</dd>
+                    <dt>Least-squares slope</dt><dd id="rSlope">—</dd>
+                    <dt>Body mass ×10 gives</dt><dd id="rTimes">—</dd>
+                    <dt>R²</dt><dd id="rR2">—</dd>
+                    <dt class="sep">RSS: your line</dt><dd class="sep" id="rSseU">—</dd>
+                    <dt>RSS: least squares</dt><dd id="rSseO">—</dd>
+                    <dt>RSS: flat line</dt><dd id="rSst">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="resid" checked>
+                    <label for="resid">Show residuals as vertical lines<small>The vertical distance from your line to each point. Adding up the squares of these lengths gives the residual sum of squares (RSS).</small></label>
+                </div>
+                <div class="fam-row">
+                    <label for="fam">Highlight a family</label>
+                    <select class="select" id="fam">
+                        <option value="">None</option>
+                        <option value="オマキザル科">Cebidae</option>
+                        <option value="インドリ科">Indriidae</option>
+                        <option value="オナガザル科">Cercopithecidae</option>
+                        <option value="キツネザル科">Lemuridae</option>
+                        <option value="テナガザル科">Hylobatidae</option>
+                        <option value="ガラゴ科">Galagidae</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="hint" id="hint" aria-live="polite"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>How it works: least squares, and the slope on log-log axes</h2>
+        <p>The vertical distance between a point and the line is called a <b>residual</b>. Residuals can be positive or negative, so they are squared before being added up. The method that chooses the line with the smallest <b>residual sum of squares</b> is called <b>least squares</b>, and the line it produces is the <b>regression line</b>. However you move the sliders in the panel above, you cannot get a smaller residual sum of squares than the least-squares line.</p>
+        <div class="formula-block"><span class="formula">log₁₀(home range) = −3.883 + 0.933 × log₁₀(body mass)</span></div>
+        <p>Because both axes are logarithmic, the slope of 0.933 is read as a <b>multiplicative relationship</b>, not an additive one. When body mass becomes <i>k</i> times larger, the predicted home range becomes <i>k</i> to the power 0.933 times larger. A slope of exactly 1 would mean “ten times the body mass, ten times the home range”; 0.933 is a little less than that.</p>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Body mass larger by</th><th>Predicted home range larger by</th></tr></thead>
+            <tbody><tr><td>2×</td><td>1.9×</td></tr><tr><td>10×</td><td>8.6×</td></tr><tr><td>100×</td><td>73.6×</td></tr></tbody>
+        </table>
+        </div>
+        <p style="margin-top:18px">The <b>coefficient of determination, R²</b>, is the share of the variation on the vertical axis that the line explains. The “flat line” in the panel predicts every species with the overall mean, without using body mass; its residual sum of squares is the total variation on the vertical axis. R² is how much of that the least-squares line removes.</p>
+        <div class="formula-block"><span class="formula">R² = 1 − RSS of the least-squares line ÷ RSS of the flat line</span></div>
+        <p>With the same body mass on the horizontal axis, both the slope and R² differ completely depending on the variable on the vertical axis.</p>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Variable on the vertical axis</th><th>Species</th><th>Slope</th><th>Body mass ×10 gives</th><th>R²</th></tr></thead>
+            <tbody>
+                <tr><td>Home range size</td><td>153</td><td>0.933</td><td>8.6×</td><td>0.46</td></tr>
+                <tr><td>Neonate body mass</td><td>117</td><td>0.828</td><td>6.7×</td><td>0.92</td></tr>
+                <tr><td>Maximum longevity</td><td>125</td><td>0.199</td><td>1.6×</td><td>0.53</td></tr>
+                <tr><td>Population density</td><td>170</td><td>−0.418</td><td>0.38×</td><td>0.20</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <h3 style="margin-top:32px">Reading the points off the line</h3>
+        <p>For home range, the species farthest above the line is the patas monkey (<span class="sp">Erythrocebus patas</span>). With a body mass of 7,966 grams it has a home range of 28.24 square kilometres, about 49 times the line’s prediction. Any single departure might reflect a difference in how the data were measured, or a feature of how that species lives. The numbers alone cannot tell which.</p>
+        <p>Take care when departures are <b>consistent within a group</b>. Against the home range line, the 25 species of Cebidae lie on average at about 3 times the prediction, and the 6 species of Indriidae at about 0.18 times. You can check this with “Highlight a family”. A single line summarizes the average trend across all species, and it does not necessarily fit every family equally well.</p>
+
+        <h3 style="margin-top:32px">Does adding variables make a better model?</h3>
+        <p>If group size, temperature, or other variables are added to the equation alongside body mass, R² always rises or at least does not fall. Yet an equation fitted too closely to the data at hand predicts new species worse. Balancing goodness of fit against the simplicity of the equation is called <b>model selection</b>; session 11 of Statistics I covers it using an index called AIC.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“If R² is low, there is no relationship”</h3>
+                <p>For population density R² is only 0.20, but the slope is −0.418, so the direction is clear: a species with ten times the body mass has about 0.38 times the density. A low R² means that many factors other than body mass affect density, and the points scatter widely around the line.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“The slope is the effect of changing body mass”</h3>
+                <p>A regression slope is an <b>association</b>: how home range differs when species of different body mass are lined up side by side. It does not show the causal claim that increasing a species’ body mass would enlarge its home range. The same slope would appear if some other factor influenced both body mass and home range (<a href="../correlation/">03 Correlation and causation</a>).</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“A line that fits well can be used beyond the range of the data”</h3>
+                <p>The home range line was estimated from species weighing from 48 grams to about 110,000 grams. Within that range it predicts about 0.083 square kilometres at a body mass of 1 kilogram and about 0.71 square kilometres at 10 kilograms. Nothing in these data guarantees that the relationship stays straight outside that range (<b>extrapolation</b>).</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“The least-squares line fits every species fairly”</h3>
+                <p>The least-squares line only makes the overall residual sum of squares small. It can be pulled toward families with many species, while families with few species all sit off the line together. As the Cebidae and Indriidae example shows, some biases only become visible when residuals are examined family by family.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 10</b><span>Simple and multiple regression predicting home range from body mass with the same primate data, covering R², coefficients, and the pitfalls of extrapolation.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 11</b><span>Overfitting, where adding variables keeps improving the fit but worsens prediction, and model selection with AIC.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 13</b><span>Principal component analysis, condensing body mass, gestation length, age at weaning, longevity, and litter size into a few axes.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../bayes/"><small>← 07</small>Probability and Bayes</a>
+        <div class="pg next empty"></div>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Of the 376 primate species, those with records for both body mass and each variable are used (home range size 153 species, neonate body mass 117, maximum longevity 125, population density 170). All lines are fitted by least squares after taking base-10 logarithms.</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const X = "体重g";
+    const SHORT = { "行動圏km2": "home range", "新生児体重g": "neonate body mass", "最長寿命月": "maximum longevity", "個体群密度": "population density" };
+
+    // Value labels (log-scale ticks and readouts)
+    const val = v => v >= 10000 ? G.man(Math.round(v)) : v >= 10 ? G.fmt(Math.round(v)) : v >= 1 ? (Math.abs(v - Math.round(v)) < 0.05 ? G.fmt(Math.round(v)) : G.fmt(v, 1)) : String(+v.toPrecision(2));
+    const niceLogTicks = (min, max) => {
+        const t = G.logTicks(min, max); if (t.length >= 3) return t;
+        const out = []; for (let k = Math.floor(min); k <= Math.ceil(max); k++) for (const m of [1, 2, 5]) { const v = k + Math.log10(m); if (v >= min - 1e-9 && v <= max + 1e-9) out.push(v); }
+        return out;
+    };
+
+    /* ---- Figure in the text: ordinary scales ---- */
+    const rawSel = G.select([X, "行動圏km2"]);
+    const rx = rawSel.map(d => d.v[0]), ry = rawSel.map(d => d.v[1]);
+    document.getElementById("rawN").textContent = rawSel.length + " species";
+    document.getElementById("rawX").textContent = G.g(Math.min(...rx)) + " – " + G.fmt(Math.round(Math.max(...rx))) + " g";
+    document.getElementById("rawY").textContent = val(Math.min(...ry)) + " – " + val(Math.max(...ry)) + " km²";
+    function drawRaw() {
+        const cv = document.getElementById("rawChart"); const { ctx, w, h } = G.setup(cv);
+        const xmax = Math.ceil(Math.max(...rx) / 20000) * 20000, ymax = Math.ceil(Math.max(...ry) / 5) * 5;
+        const ax = G.axes(ctx, w, h, { L: 40, R: 14, T: 26, B: 48, xmin: 0, xmax, ymin: 0, ymax, xticks: G.ticks(0, xmax, 6), yticks: G.ticks(0, ymax, 5), xfmt: v => G.man(v), ylabel: "Home range size (km²)" });
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "top"; ctx.fillText("Body mass (g)", ax.L + ax.pw, ax.T + ax.ph + 26);
+        ctx.fillStyle = G.css("--pop"); ctx.globalAlpha = 0.55;
+        rawSel.forEach(d => { ctx.beginPath(); ctx.arc(ax.x(d.v[0]), ax.y(d.v[1]), 3.2, 0, Math.PI * 2); ctx.fill(); });
+        ctx.globalAlpha = 1;
+    }
+
+    /* ---- Hands-on panel ---- */
+    let yKey = "行動圏km2", D = null, userSlope = 0, userH = 0, showOls = true, showResid = true, fam = "";
+    const X0 = 3; // the line's height is held as its value at 1 kg (log10 = 3)
+
+    function prepare() {
+        const sel = G.select([X, yKey], [X, yKey]);
+        const xs = sel.map(d => d.v[0]), ys = sel.map(d => d.v[1]);
+        const fit = G.linreg(xs, ys), my = G.mean(ys);
+        const sse = (b, a) => G.sum(xs.map((x, i) => (ys[i] - (a + b * x)) ** 2));
+        const sst = G.sum(ys.map(y => (y - my) ** 2)), sseO = sse(fit.slope, fit.intercept);
+        const ymin = Math.min(...ys), ymax = Math.max(...ys), pad = (ymax - ymin) * 0.12;
+        D = { sel, xs, ys, fit, my, sse, sst, sseO, r2: 1 - sseO / sst,
+              xmin: 1.5, xmax: 5.25, ymin: ymin - pad, ymax: ymax + pad, unit: G.unit(yKey), label: G.label(yKey) };
+        const hs = document.getElementById("height");
+        hs.min = (ymin - 1).toFixed(2); hs.max = (ymax + 1).toFixed(2);
+    }
+    const userA = () => userH - userSlope * X0; // intercept (value at log10 body mass = 0)
+
+    function setFlat() { userSlope = 0; userH = D.my; syncSliders(); }
+    function setFit() { userSlope = D.fit.slope; userH = D.fit.intercept + D.fit.slope * X0; syncSliders(); }
+    function syncSliders() {
+        document.getElementById("slope").value = userSlope.toFixed(2);
+        document.getElementById("height").value = userH.toFixed(2);
+    }
+
+    function drawReg() {
+        const cv = document.getElementById("regChart"); const { ctx, w, h } = G.setup(cv);
+        const ax = G.axes(ctx, w, h, { L: 48, R: 14, T: 42, B: 48, xmin: D.xmin, xmax: D.xmax, ymin: D.ymin, ymax: D.ymax,
+            xticks: G.logTicks(D.xmin, D.xmax), yticks: niceLogTicks(D.ymin, D.ymax), xgrid: true,
+            xfmt: k => val(10 ** k), yfmt: k => val(10 ** k), ylabel: `${D.label} (${D.unit}, log scale)` });
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "top";
+        ctx.fillText("Body mass (g, log scale)", ax.L + ax.pw, ax.T + ax.ph + 26);
+
+        ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.pw, ax.ph); ctx.clip();
+        const a = userA();
+        if (showResid) {
+            ctx.strokeStyle = G.css("--biased"); ctx.globalAlpha = 0.35;
+            D.sel.forEach(d => { ctx.beginPath(); ctx.moveTo(ax.x(d.v[0]), ax.y(d.v[1])); ctx.lineTo(ax.x(d.v[0]), ax.y(a + userSlope * d.v[0])); ctx.stroke(); });
+            ctx.globalAlpha = 1;
+        }
+        D.sel.forEach(d => {
+            const hit = fam && G.family(d.row) === fam;
+            ctx.fillStyle = hit ? G.css("--mean") : G.css("--pop");
+            ctx.globalAlpha = fam ? (hit ? 0.95 : 0.25) : 0.6;
+            ctx.beginPath(); ctx.arc(ax.x(d.v[0]), ax.y(d.v[1]), hit ? 4.6 : 3.4, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        const line = (b, a0, color, width, dash) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(ax.x(D.xmin), ax.y(a0 + b * D.xmin)); ctx.lineTo(ax.x(D.xmax), ax.y(a0 + b * D.xmax)); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1; };
+        if (showOls) line(D.fit.slope, D.fit.intercept, G.css("--navy2"), 2.2, []);
+        line(userSlope, a, G.css("--gold-deep"), 2.6, [7, 5]);
+        ctx.restore();
+
+        const items = [{ color: G.css("--gold-deep"), label: "Your line", kind: "line" }];
+        if (showOls) items.push({ color: G.css("--navy2"), label: "Least-squares line", kind: "line" });
+        if (fam) items.push({ color: G.css("--mean"), label: G.familyLabel(fam), kind: "dot" });
+        G.legend(ctx, w, items, 26);
+    }
+
+    function readout() {
+        const $ = id => document.getElementById(id);
+        const sseU = D.sse(userSlope, userA());
+        $("slopeOut").textContent = userSlope.toFixed(2);
+        $("heightOut").textContent = val(10 ** userH) + " " + D.unit;
+        $("rN").textContent = D.sel.length + " species";
+        $("rSlope").textContent = D.fit.slope.toFixed(3);
+        $("rTimes").textContent = val(10 ** D.fit.slope) + "×";
+        $("rR2").textContent = D.r2.toFixed(2);
+        $("rSseU").textContent = sseU.toFixed(2);
+        $("rSseO").textContent = D.sseO.toFixed(2);
+        $("rSst").textContent = D.sst.toFixed(2);
+        $("showOls").textContent = showOls ? "Hide the least-squares line" : "Show the least-squares line";
+        $("showOls").setAttribute("aria-pressed", String(showOls));
+
+        const ratio = sseU / D.sseO;
+        let msg;
+        if (ratio < 1.002) msg = `Your line almost coincides with the least-squares line. The slope of ${D.fit.slope.toFixed(3)} reads as “when body mass is ten times larger, ${SHORT[yKey]} is about ${val(10 ** D.fit.slope)} times larger”.`;
+        else if (Math.abs(userSlope) < 0.005 && Math.abs(userH - D.my) < 0.01) msg = `The gold line is now the <b>flat line</b>, which predicts every species with the overall mean without using body mass. The least-squares line reduced the residual sum of squares from ${D.sst.toFixed(2)} to ${D.sseO.toFixed(2)}. The share removed, ${(D.r2 * 100).toFixed(0)}%, is R². Try moving the line with the sliders.`;
+        else msg = `The residual sum of squares of your line is <b>${ratio.toFixed(2)} times</b> that of the least-squares line. However you set the slope and height, it cannot go below ${D.sseO.toFixed(2)}.`;
+        if (fam) {
+            const res = D.sel.map((d, i) => ({ d, e: D.ys[i] - (D.fit.intercept + D.fit.slope * D.xs[i]) })).filter(o => G.family(o.d.row) === fam);
+            const name = `<i>${G.familyLabel(fam)}</i>`;
+            if (res.length) {
+                const m = G.mean(res.map(o => o.e));
+                msg += `<br>The points for ${name} (${res.length} species for this variable) lie on average at <b>about ${val(10 ** m)} times</b> the least-squares prediction.`;
+            } else msg += `<br>No species in ${name} have a record for this variable.`;
+        }
+        $("hint").innerHTML = msg;
+    }
+
+    function render() { drawReg(); readout(); }
+
+    document.querySelectorAll('input[name="yv"]').forEach(r => r.addEventListener("change", e => { yKey = e.target.value; prepare(); setFlat(); render(); }));
+    document.getElementById("slope").addEventListener("input", e => { userSlope = +e.target.value; render(); });
+    document.getElementById("height").addEventListener("input", e => { userH = +e.target.value; render(); });
+    document.getElementById("fit").addEventListener("click", () => { setFit(); render(); });
+    document.getElementById("flat").addEventListener("click", () => { setFlat(); render(); });
+    document.getElementById("showOls").addEventListener("click", () => { showOls = !showOls; render(); });
+    document.getElementById("resid").addEventListener("change", e => { showResid = e.target.checked; render(); });
+    document.getElementById("fam").addEventListener("change", e => { fam = e.target.value; render(); });
+
+    // On load: home range, with the flat line (no body mass) and the least-squares line side by side
+    prepare(); setFlat();
+    G.onRedraw(() => { drawRaw(); render(); });
+})();
+</script>
+</body>
+</html>

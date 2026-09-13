@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sampling — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="Why does examining only part of something tell you about the whole? Samples and the central limit theorem, checked by hand with body mass data for 265 primate species.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        /* English course names are longer than the Japanese ones */
+        .cl { grid-template-columns: minmax(0, 240px) 1fr auto; }
+        .cl b { white-space: normal; line-height: 1.5; }
+        @media (max-width: 820px) { .cl { grid-template-columns: minmax(0, 1fr) auto; } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Sampling</span>
+        <div class="lang-switch"><a href="/teaching/guide/sampling/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>04</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>Why one spoonful tells you how the soup tastes</h1>
+        <p class="sub">Sampling — samples and the central limit theorem</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>The means of randomly chosen parts scatter around the mean of the whole in a predictable shape. That is why examining only a part tells you not just about the whole, but also how large your error is likely to be.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Ecological surveys are built on learning about the whole from a part</h2>
+        <p>Field ecologists rarely count every tree in a forest or capture every monkey in a region. Ecological field surveys are designed as methods for examining only part of a population and inferring the whole from it.</p>
+        <div class="examples">
+            <div class="ex"><h3>Quadrat sampling</h3><p>Place several frames of a fixed size, count only the plants inside them, and estimate the density across the whole area.</p></div>
+            <div class="ex"><h3>Mark–recapture</h3><p>Mark captured individuals and release them, then estimate the total population size from the proportion of marked individuals in a later capture.</p></div>
+            <div class="ex"><h3>Line transect sampling</h3><p>Walk along a set line, record each individual found and its distance from the line, and estimate population density.</p></div>
+        </div>
+        <p style="margin-top:18px">All of these methods share one condition: the surveyor must not choose where to place the frames or which line to walk for their own convenience. If you survey only places where animals are easy to find, no number of sites will reveal the whole. Let us see why this condition matters, using real data.</p>
+    </section>
+
+    <section>
+        <h2>First, look at the &ldquo;whole&rdquo;: body mass of 265 primate species</h2>
+        <p>Here the &ldquo;whole&rdquo; is the 265 primate species with a recorded body mass. The lightest is a mouse lemur at just 31 grams; the heaviest is the eastern gorilla at 149 kilograms.</p>
+        <div class="figure">
+            <canvas id="popChart" role="img" aria-label="Distribution of body mass for 265 primate species. Most species are below 10,000 grams, with a long tail to the right."></canvas>
+            <div class="stat-row">
+                <div><span>Population mean</span><b class="num" id="popMean">—</b></div>
+                <div><span>Median (the middle species)</span><b class="num" id="popMedian">—</b></div>
+                <div><span>Species lighter than the mean</span><b class="num" id="popBelow">—</b></div>
+            </div>
+            <p class="figcap">The horizontal axis is cut at 40,000 grams. Large species such as gorillas and orangutans lie beyond it. Data: PanTHERIA (Jones et al. 2009).</p>
+        </div>
+        <p>The shape is far from symmetric. Most species are small, and a handful of large species pull the mean upward. That is why the mean is roughly twice the median.</p>
+        <p>Can we pick just a few species from this &ldquo;skewed whole&rdquo; and still estimate its mean?</p>
+        <dl class="terms">
+            <dt>Population</dt><dd>The whole you actually want to know about. Here, the 265 species.</dd>
+            <dt>Sample</dt><dd>The part you actually examine. Here, the n species you pick.</dd>
+            <dt>Sample mean</dt><dd>The mean calculated from the sample alone. It changes every time you pick again.</dd>
+        </dl>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Draw samples yourself</div>
+            <div>
+                <span class="seg-cap">Species per draw, n</span>
+                <div class="seg" role="radiogroup" aria-label="Number of species per draw">
+                    <input type="radio" name="n" id="n5" value="5"><label for="n5">5 species</label>
+                    <input type="radio" name="n" id="n30" value="30" checked><label for="n30">30 species</label>
+                    <input type="radio" name="n" id="n100" value="100"><label for="n100">100 species</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="simChart" role="img" aria-label="Histogram of the distribution of sample means"></canvas>
+                <div class="btns">
+                    <button class="btn" id="draw1" type="button">Draw once</button>
+                    <button class="btn" id="draw100" type="button">Repeat 100 times</button>
+                    <button class="btn" id="draw1000" type="button">Repeat 1,000 times</button>
+                    <button class="btn ghost" id="reset" type="button">Start over</button>
+                </div>
+                <div class="last" id="last" aria-live="polite"></div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>Repetitions</dt><dd id="rK">—</dd>
+                    <dt>Mean of sample means</dt><dd id="rMean">—</dd>
+                    <dt>Gap from population mean</dt><dd id="rBias">—</dd>
+                    <dt>Spread of sample means</dt><dd id="rSD">—</dd>
+                    <dt>Theoretical spread</dt><dd id="rSE">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="biased">
+                    <label for="biased">Make larger species more likely to be picked<small>A simplified version of a survey in which easy-to-find things are more likely to be recorded.</small></label>
+                </div>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">The histogram&rsquo;s vertical axis is a count. The navy curve is the shape expected in theory when species are picked at random.</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>What is happening: the central limit theorem</h2>
+        <p>However skewed the whole may be, if you repeatedly collect the means of randomly chosen samples, their distribution approaches a bell shape centered on the mean of the whole. This is the <b>central limit theorem</b>.</p>
+        <p>The width of the bell, that is, the spread of the sample means, can be calculated in advance. It is called the <b>standard error</b>: the spread of the whole divided by the square root of the number you pick.</p>
+        <p style="text-align:center;margin:18px 0"><span class="formula">standard error = spread of the whole ÷ √n</span></p>
+        <table class="data">
+            <thead><tr><th>Species picked, n</th><th>Standard error (theoretical)</th><th>Relative to the mean</th></tr></thead>
+            <tbody id="seTable"></tbody>
+        </table>
+        <p style="margin-top:16px">Quadrupling n halves the spread. To double the precision, you need four times as much data. The more you add, the smaller the gain.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;Pick enough species and the sample itself becomes bell-shaped&rdquo;</h3>
+                <p>What approaches a bell shape is the distribution of many sample means. The contents of any single sample remain as skewed as the whole. Look at the &ldquo;last sample&rdquo; in the panel above: you should see a heavy species or two standing out among mostly light ones.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;With 30 observations, you can treat it as a normal distribution&rdquo;</h3>
+                <p>If the whole is reasonably symmetric, 30 is a good rule of thumb. When the data are as strongly skewed as these body masses, the distribution still has a long right tail at n=30. How many you need depends on how skewed the whole is.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;Collect enough data and bias disappears&rdquo;</h3>
+                <p>It does not. Switch the panel above to the biased selection, and the mean stays off target even after 1,000 repetitions or with n set to 100. What is more, the 265 species treated as the &ldquo;whole&rdquo; on this page are only those of the 376 primate species whose body mass has been measured. Well-studied species are more likely to have records, so strictly speaking the mean of the 265 species is &ldquo;the mean of well-studied primates.&rdquo; What was never measured does not show up in the numbers.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;If many people give the same answer, it must be more reliable&rdquo;</h3>
+                <p>If each person looks at the others&rsquo; answers and conforms, adding more people adds almost no information. Both the central limit theorem and the standard error formula assume that each observation is selected independently.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/06_sampling_clt/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 6</b><span>Using the same primate data, looks at the shape as n grows to 500, and shows that taking logarithms greatly reduces the number needed.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/06_clt/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 6</b><span>Shows by simulation that when answers in a sample resemble one another, the spread stops shrinking even with 3,000 respondents.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#96702f" href="https://aonoa68.github.io/shakaichosa/week10/" target="_blank" rel="noopener noreferrer"><b>Introduction to Social Research, session 10</b><span>Censuses and sample surveys. Covers four types of random sampling and real examples of selection bias.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week02-sampling/" target="_blank" rel="noopener noreferrer"><b>Applied Information Literacy, session 2</b><span>Can you say &ldquo;university students think…&rdquo; after asking 20 friends? Students apply the ideas of population and sample to designing their own surveys.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../correlation/"><small>← 03</small>Correlation and causation</a>
+        <a class="pg next" href="../interval/"><small>05 →</small>Confidence intervals</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Of 376 primate species, the 265 with a recorded adult body mass are used. Families are shown by their scientific names.<br>
+    Samples in the hands-on panel are drawn by returning each chosen species before choosing the next (sampling with replacement).</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const DATA = Guide.select(["体重g"]).map(d => [Guide.species(d.row), Guide.family(d.row), d.v[0]]); // [species, family (Japanese key), body mass g]
+    const M = DATA.map(d => d[2]);
+    const N = M.length;
+    const MU = M.reduce((a, b) => a + b, 0) / N;
+    const SIGMA = Math.sqrt(M.reduce((a, b) => a + (b - MU) ** 2, 0) / N);
+    const sorted = [...M].sort((a, b) => a - b);
+    const MEDIAN = N % 2 ? sorted[(N - 1) / 2] : (sorted[N / 2 - 1] + sorted[N / 2]) / 2;
+    const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const num = v => Math.round(v).toLocaleString("en-US");
+    const g = v => num(v) + " g";
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    document.getElementById("popMean").textContent = g(MU);
+    document.getElementById("popMedian").textContent = g(MEDIAN);
+    document.getElementById("popBelow").textContent = Math.round(M.filter(x => x < MU).length / N * 100) + " %";
+
+    // Standard error table
+    document.getElementById("seTable").innerHTML = [5, 30, 100, 500].map(n => {
+        const se = SIGMA / Math.sqrt(n);
+        return `<tr><td>${n} species</td><td>± ${g(se)}</td><td>${Math.round(se / MU * 100)} % of the mean (${g(MU)})</td></tr>`;
+    }).join("");
+
+    function setup(canvas) {
+        const dpr = window.devicePixelRatio || 1;
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, w, h);
+        ctx.font = '12px "DM Sans","Helvetica Neue",Arial,sans-serif';
+        return { ctx, w, h };
+    }
+    const man = v => v === 0 ? "0" : (v / 1000).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "k";
+
+    // Distribution of the whole
+    function drawPop() {
+        const { ctx, w, h } = setup(document.getElementById("popChart"));
+        const L = 38, R = 112, T = 30, B = 30;
+        const CUT = 40000, BW = 2000, nb = CUT / BW;
+        const counts = new Array(nb).fill(0); let over = 0;
+        DATA.forEach(d => { if (d[2] >= CUT) over++; else counts[Math.floor(d[2] / BW)]++; });
+        const ymax = Math.ceil(Math.max(...counts, over) / 20) * 20;
+        const pw = w - L - R, ph = h - T - B;
+        const x = v => L + v / CUT * pw, y = c => T + ph - c / ymax * ph;
+        ctx.strokeStyle = css("--line"); ctx.fillStyle = css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        for (let c = 0; c <= ymax; c += ymax / 4) { ctx.beginPath(); ctx.moveTo(L, y(c)); ctx.lineTo(L + pw, y(c)); ctx.stroke(); ctx.fillText(c, L - 6, y(c)); }
+        ctx.fillStyle = css("--pop");
+        counts.forEach((c, i) => { if (c) ctx.fillRect(x(i * BW) + 1, y(c), pw / nb - 2, T + ph - y(c)); });
+        // Over 40k g
+        const ox = L + pw + 22, ow = pw / nb * 1.6;
+        ctx.fillStyle = css("--mean"); ctx.fillRect(ox, y(over), ow, T + ph - y(over));
+        ctx.fillStyle = css("--text"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+        ctx.fillText(`>40k g: ${over} spp.`, ox - 4, y(over) - 18);
+        ctx.fillStyle = css("--muted"); ctx.fillText("e.g. gorillas", ox - 4, y(over) - 4);
+        ctx.strokeStyle = css("--faint"); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(L + pw + 11, T); ctx.lineTo(L + pw + 11, T + ph); ctx.stroke(); ctx.setLineDash([]);
+        // Axes
+        ctx.fillStyle = css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (let v = 0; v <= CUT; v += 10000) ctx.fillText(man(v) + (v === CUT ? " g" : ""), x(v), T + ph + 8);
+        ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Species", 4, 2);
+        // Mean and median lines, with a legend at top right
+        let lx = L + pw;
+        [[MU, css("--mean"), "Mean"], [MEDIAN, css("--navy2"), "Median"]].forEach(([v, col, lab]) => {
+            ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x(v), T); ctx.lineTo(x(v), T + ph); ctx.stroke();
+            const txt = `${lab} ${g(v)}`; ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillStyle = col;
+            ctx.fillText(txt, lx, 10); const tw = ctx.measureText(txt).width;
+            ctx.beginPath(); ctx.moveTo(lx - tw - 22, 10); ctx.lineTo(lx - tw - 6, 10); ctx.stroke(); ctx.lineWidth = 1;
+            lx -= tw + 40;
+        });
+    }
+
+    // ---- Hands-on panel ----
+    let n = 30, biased = false, means = [], lastSample = null, busy = false;
+    const W_UNI = M.map(() => 1), W_BIG = M.map(m => Math.sqrt(m));
+    function cumulative(ws) { const c = []; let s = 0; ws.forEach(v => { s += v; c.push(s); }); return c; }
+    const C_UNI = cumulative(W_UNI), C_BIG = cumulative(W_BIG);
+    function pick(C) { const r = Math.random() * C[C.length - 1]; let lo = 0, hi = C.length - 1; while (lo < hi) { const mid = (lo + hi) >> 1; if (C[mid] < r) lo = mid + 1; else hi = mid; } return lo; }
+    function drawSample() { const C = biased ? C_BIG : C_UNI; const idx = []; let s = 0; for (let i = 0; i < n; i++) { const k = pick(C); idx.push(k); s += M[k]; } return { idx, mean: s / n }; }
+    const SE = () => SIGMA / Math.sqrt(n);
+    const BIG_MU = W_BIG.reduce((a, w, i) => a + w * M[i], 0) / W_BIG.reduce((a, b) => a + b, 0);
+    function range() { const lo = Math.max(0, MU - 4 * SE()); const hi = Math.max(MU + 5 * SE(), (biased ? BIG_MU + 3.5 * SE() : 0)); return [lo, hi]; }
+
+    function drawSim() {
+        const { ctx, w, h } = setup(document.getElementById("simChart"));
+        const L = 38, R = 14, T = 30, B = 30, pw = w - L - R, ph = h - T - B;
+        const [lo, hi] = range(); const nb = 40, bw = (hi - lo) / nb;
+        const counts = new Array(nb).fill(0);
+        means.forEach(m => { const i = Math.floor((m - lo) / bw); if (i >= 0 && i < nb) counts[i]++; else if (i >= nb) counts[nb - 1]++; });
+        const pdfPeak = means.length * bw / (SE() * Math.sqrt(2 * Math.PI));
+        let ymax = Math.max(5, ...counts, biased ? 0 : pdfPeak * 1.05);
+        ymax = Math.ceil(ymax / 20) * 20;
+        const x = v => L + (v - lo) / (hi - lo) * pw, y = c => T + ph - c / ymax * ph;
+        ctx.strokeStyle = css("--line"); ctx.fillStyle = css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+        for (let i = 0; i <= 4; i++) { const c = ymax / 4 * i; ctx.beginPath(); ctx.moveTo(L, y(c)); ctx.lineTo(L + pw, y(c)); ctx.stroke(); ctx.fillText(Math.round(c), L - 6, y(c)); }
+        ctx.fillStyle = biased ? css("--biased") : css("--pop");
+        counts.forEach((c, i) => { if (c) ctx.fillRect(x(lo + i * bw) + 0.5, y(c), Math.max(1, pw / nb - 1), T + ph - y(c)); });
+        // Theoretical curve (random selection)
+        if (means.length >= 20) {
+            ctx.strokeStyle = css("--navy2"); ctx.lineWidth = 2; ctx.beginPath();
+            for (let i = 0; i <= 160; i++) { const v = lo + (hi - lo) * i / 160; const c = means.length * bw * Math.exp(-((v - MU) ** 2) / (2 * SE() ** 2)) / (SE() * Math.sqrt(2 * Math.PI)); const py = Math.max(T, y(c)); i ? ctx.lineTo(x(v), py) : ctx.moveTo(x(v), py); }
+            ctx.stroke(); ctx.lineWidth = 1;
+        }
+        // Population mean
+        ctx.strokeStyle = css("--mean"); ctx.setLineDash([5, 4]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x(MU), T - 4); ctx.lineTo(x(MU), T + ph); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+        ctx.fillStyle = css("--mean"); ctx.textAlign = x(MU) > L + pw * 0.6 ? "right" : "left"; ctx.textBaseline = "bottom";
+        ctx.fillText(`Population mean ${g(MU)}`, x(MU) + (ctx.textAlign === "left" ? 5 : -5), T - 6);
+        // Axes
+        ctx.fillStyle = css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "top";
+        const step = [500, 1000, 2000, 5000, 10000].find(s => (hi - lo) / s <= 6) || 20000;
+        for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ctx.fillText(v.toLocaleString("en-US"), x(v), T + ph + 8);
+        ctx.textAlign = "right"; ctx.fillText("x-axis: sample mean (g)", L + pw, 4);
+        ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText("Count", 4, 4);
+        if (!means.length) { ctx.fillStyle = css("--muted"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Press “Draw once” and sample means will pile up here", L + pw / 2, T + ph / 2); }
+    }
+
+    function stats() {
+        const k = means.length;
+        document.getElementById("rK").textContent = k.toLocaleString("en-US");
+        document.getElementById("rSE").textContent = "± " + g(SE());
+        if (!k) { ["rMean", "rBias", "rSD"].forEach(id => document.getElementById(id).textContent = "—"); return; }
+        const mm = means.reduce((a, b) => a + b, 0) / k;
+        const sd = k > 1 ? Math.sqrt(means.reduce((a, b) => a + (b - mm) ** 2, 0) / (k - 1)) : 0;
+        document.getElementById("rMean").textContent = g(mm);
+        const off = mm - MU; const el = document.getElementById("rBias");
+        el.textContent = (off >= 0 ? "+" : "−") + g(Math.abs(off)); el.classList.toggle("off", k >= 50 && Math.abs(off) > 2 * SE() / Math.sqrt(k) * 3 && Math.abs(off) > 0.1 * MU);
+        document.getElementById("rSD").textContent = k > 1 ? "± " + g(sd) : "—";
+        const hint = document.getElementById("hint");
+        if (biased && k >= 100) hint.innerHTML = `With biased selection, the sample means cluster <b>${g(off)}</b> above the population mean. More repetitions or a larger n will not remove this gap. <b>More data does not fix bias.</b>`;
+        else if (biased) hint.innerHTML = "Biased selection is on. Repeat a few hundred times and see where the sample means cluster.";
+        else if (k >= 300 && n === 5) hint.innerHTML = "At n=5, the distribution of sample means still has a long right tail. Switch to 30 or 100 species and compare how the shape and width change.";
+        else if (k >= 300 && n === 30) hint.innerHTML = "Although the species come from a skewed whole, the sample means form a peak around the population mean. The right tail is still a little long, though, and does not quite match the navy curve.";
+        else if (k >= 300 && n === 100) hint.innerHTML = "At n=100 the peak is much narrower and close to the navy curve. Its width almost matches the theoretical spread of ± " + g(SE()) + ".";
+        else hint.innerHTML = "Press “Repeat 1,000 times” to see what shape the sample means build up into.";
+    }
+    function showLast() {
+        const el = document.getElementById("last");
+        if (!lastSample) { el.textContent = ""; return; }
+        const items = lastSample.idx.map(i => DATA[i]).sort((a, b) => b[2] - a[2]);
+        const shown = items.slice(0, 14).map(d => `<span class="chip${d[2] >= MU * 2 ? " heavy" : ""}" title="${d[0]}">${Guide.familyLabel(d[1])} ${num(d[2])} g</span>`).join("");
+        el.innerHTML = `Mean of the last sample (${n} species, heaviest first): <b class="num">${g(lastSample.mean)}</b>` + `<div class="chips">${shown}${items.length > 14 ? `<span class="chip">+${items.length - 14} more</span>` : ""}</div>`;
+    }
+    function render() { drawSim(); stats(); showLast(); }
+    function run(times) {
+        if (busy) return;
+        if (reduce || times <= 1) { for (let i = 0; i < times; i++) { lastSample = drawSample(); means.push(lastSample.mean); } render(); return; }
+        busy = true; setBtns(true);
+        const per = Math.ceil(times / 30); let done = 0;
+        (function frame() { const k = Math.min(per, times - done); for (let i = 0; i < k; i++) { lastSample = drawSample(); means.push(lastSample.mean); } done += k; render(); if (done < times) requestAnimationFrame(frame); else { busy = false; setBtns(false); } })();
+    }
+    function setBtns(d) { ["draw1", "draw100", "draw1000", "reset"].forEach(id => document.getElementById(id).disabled = d); }
+    document.getElementById("draw1").addEventListener("click", () => run(1));
+    document.getElementById("draw100").addEventListener("click", () => run(100));
+    document.getElementById("draw1000").addEventListener("click", () => run(1000));
+    document.getElementById("reset").addEventListener("click", () => { means = []; lastSample = null; render(); });
+    document.querySelectorAll('input[name="n"]').forEach(r => r.addEventListener("change", e => { n = +e.target.value; means = []; lastSample = null; render(); }));
+    document.getElementById("biased").addEventListener("change", e => { biased = e.target.checked; means = []; lastSample = null; render(); });
+
+    // On load: start from 500 draws at n=30
+    for (let i = 0; i < 500; i++) { lastSample = drawSample(); means.push(lastSample.mean); }
+    function all() { drawPop(); render(); }
+    let t; window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(all, 120); });
+    (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(all);
+    all();
+})();
+</script>
+</body>
+</html>

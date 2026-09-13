@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summarizing Data — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="What do the mean, median, spread, and geometric mean each represent? Using the body mass and group size of primate species, this page shows how the choice of summary changes what you see.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .lab-controls { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px 18px; }
+        .lab-controls .toggle { padding:8px 12px; }
+        .cl { grid-template-columns:minmax(0,250px) 1fr auto; }
+        .cl b { white-space:normal; }
+        table.data td { white-space:nowrap; }
+        @media (max-width:820px) { .cl { grid-template-columns:minmax(0,1fr) auto; } }
+        .readout dt.sw::before { content:''; display:inline-block; width:12px; height:3px; margin-right:6px; vertical-align:middle; background:var(--sw); }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Summarizing data</span>
+        <div class="lang-switch"><a href="/teaching/guide/describe/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>01</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>Does the mean describe a typical species?</h1>
+        <p class="sub">Summarizing data — mean, median, and spread</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>There is more than one way to reduce many values to a single number. The mean, the median, and the geometric mean each represent something different, and which one to use depends on the shape of the data and on what you want to know.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>What is the “typical body mass” of a primate?</h2>
+        <p>If you had to describe the body mass of 265 primate species with a single number, how many grams would you give? The plain mean is 5,881 g. Yet the species that sits exactly in the middle when the masses are sorted from lightest to heaviest weighs 3,006 g, only about half the mean.</p>
+        <p>Neither calculation is wrong. The two numbers describe different aspects of the same data. This page examines what each measure of central tendency and each measure of spread represents, using body mass, group size, and home range size.</p>
+        <dl class="terms">
+            <dt>Measure of central tendency</dt><dd>A single value that stands for the whole dataset, such as the mean, median, or mode.</dd>
+            <dt>Mean (arithmetic mean)</dt><dd>The sum of all values divided by the number of values.</dd>
+            <dt>Median</dt><dd>The value exactly in the middle when the values are sorted in increasing order.</dd>
+            <dt>Spread</dt><dd>How widely the values are scattered around the central value, measured for example by the standard deviation or the interquartile range.</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>265 species on a single axis</h2>
+        <p>The figure below plots the body mass of each of the 265 species as one dot. Body mass ranges from 31 g to 149,325 g, a span of roughly 4,800-fold, so the horizontal axis is a log scale on which each tick is ten times the previous one.</p>
+        <div class="figure">
+            <canvas id="stripChart" role="img" aria-label="Body mass of 265 primate species plotted as dots on a log axis. Lines for the geometric mean, median, and mean appear in that order from left to right."></canvas>
+            <div class="stat-row">
+                <div><span>Mean</span><b class="num" id="sMean">—</b></div>
+                <div><span>Median</span><b class="num" id="sMedian">—</b></div>
+                <div><span>Geometric mean</span><b class="num" id="sGeo">—</b></div>
+                <div><span>Species lighter than the mean</span><b class="num" id="sBelow">—</b></div>
+            </div>
+            <p class="figcap">The vertical position of the dots has no meaning; they are spread out only to reduce overlap. The darker dots are the 7 species of Hominidae.</p>
+        </div>
+        <p>The mean line sits clearly to the right of where the dots are densest. Of the 265 species, 65 %, or roughly two in three, are lighter than the mean. What pushes the mean up is a small number of large species at the right end: the 7 species of Hominidae make up less than 3 % of the species, yet account for 32 % of the combined body mass of all 265.</p>
+        <p>The median depends only on rank, not on the size of the values. Among these 265 species, the median is exactly the 3,006 g of <i>Cebus capucinus</i>, a member of the family Cebidae.</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Try a different summary</div>
+            <div class="lab-controls">
+                <div>
+                    <span class="seg-cap">Variable</span>
+                    <div class="seg" role="radiogroup" aria-label="Variable">
+                        <input type="radio" name="var" id="vMass" value="体重g" checked><label for="vMass">Body mass</label>
+                        <input type="radio" name="var" id="vGroup" value="集団サイズ"><label for="vGroup">Group size</label>
+                        <input type="radio" name="var" id="vRange" value="行動圏km2"><label for="vRange">Home range</label>
+                    </div>
+                </div>
+                <div>
+                    <span class="seg-cap">Horizontal axis</span>
+                    <div class="seg" role="radiogroup" aria-label="Horizontal axis">
+                        <input type="radio" name="scale" id="sLin" value="lin" checked><label for="sLin">Linear</label>
+                        <input type="radio" name="scale" id="sLog" value="log"><label for="sLog">Log</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="histChart" role="img" aria-label="Histogram of the selected variable with lines for the mean, median, and geometric mean"></canvas>
+                <p class="figcap">The shaded band is the interquartile range, which contains the species from the 25th to the 75th percentile.</p>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>Species</dt><dd id="rN">—</dd>
+                    <dt class="sw" style="--sw:var(--mean)">Mean</dt><dd id="rMean">—</dd>
+                    <dt class="sw" style="--sw:var(--navy2)">Median</dt><dd id="rMedian">—</dd>
+                    <dt class="sw" style="--sw:var(--accent2)">Geometric mean</dt><dd id="rGeo">—</dd>
+                    <dt>Standard deviation</dt><dd id="rSD">—</dd>
+                    <dt>Interquartile range</dt><dd id="rIQR">—</dd>
+                    <dt>Below the mean</dt><dd id="rBelow">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="exclude">
+                    <label for="exclude">Exclude the 7 species of Hominidae<small>Gorillas, chimpanzees, orangutans, and others. Compare how much the mean and the median each move.</small></label>
+                </div>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>Measures of spread, and the geometric mean</h2>
+        <p>A central value alone does not tell you how scattered the values are. The most common measure is the <b>standard deviation</b>: square how far each value is from the mean, average those squares, and take the square root to return to the original units.</p>
+        <div class="formula-block"><span class="formula">Standard deviation = √{ mean of (each value − mean)² }</span></div>
+        <p>Because the standard deviation is anchored to the mean, it is pulled strongly by large values, just as the mean is. The standard deviation of body mass is 13,110 g, more than twice the mean. For skewed data, the <b>interquartile range</b> is therefore also widely used. It is the distance between the value 25 % of the way up the sorted list (the first quartile) and the value 75 % of the way up (the third quartile), and it is the width that contains the middle half of the species.</p>
+        <p>Another option is the <b>geometric mean</b>. Take the logarithm of each value, average those, and convert back to the original units. For data that vary by multiples, taking logarithms makes the distribution nearly symmetric, and the center of that distribution is the geometric mean.</p>
+        <div class="formula-block"><span class="formula">Geometric mean = 10 raised to the (mean of log₁₀ values)</span></div>
+        <p>The skewness of the body mass distribution, a measure of asymmetry that is 0 for a symmetric distribution and positive for one with a long right tail, is 7.60 on the original scale but falls to −0.40 after taking logarithms. The summaries for the three variables are as follows.</p>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Variable (species)</th><th>Mean</th><th>Median</th><th>Geometric mean</th><th>Standard deviation</th><th>Interquartile range</th></tr></thead>
+            <tbody>
+                <tr><td>Body mass (265)</td><td>5,881 g</td><td>3,006 g</td><td>2,120 g</td><td>13,110 g</td><td>749–7,078 g</td></tr>
+                <tr><td>Group size (216)</td><td>12.3</td><td>6.9</td><td>6.3</td><td>14.6</td><td>3.0–16.1</td></tr>
+                <tr><td>Home range size (157)</td><td>1.70 km²</td><td>0.19 km²</td><td>0.20 km²</td><td>4.91 km²</td><td>0.05–0.88 km²</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="figcap">Group size is given in individuals.</p>
+        <p style="margin-top:14px">In all three, the mean is larger than the median, indicating a distribution with a long right tail. For home range, 85 % of species have a range smaller than the mean.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“The mean is the value of a common species.”</h3>
+                <p>In data with a long right tail, the mean is larger than most species’ values. For primate body mass, 65 % of species are lighter than the mean, and for group size, 69 % of species live in groups smaller than the mean. The “average species” is not necessarily a typical species in the data.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Most values fall within the mean ± one standard deviation.”</h3>
+                <p>This rule of thumb assumes a symmetric, bell-shaped distribution. For body mass, the mean minus one standard deviation is −7,229 g, an impossible value. For group size it is −2.3 individuals. Check the shape of the distribution before interpreting the standard deviation.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Extreme values are outliers, so remove them before summarizing.”</h3>
+                <p>Excluding the 7 species of Hominidae lowers the mean body mass from 5,881 g to 4,127 g, a drop of about 30 %, while the median moves only 7 %, from 3,006 g to 2,797 g. But the body mass of a gorilla is not a measurement error; it is the value of a real species. Whether to exclude such values is decided not by statistical convenience but by what you want to know about.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“For skewed data, always use the median.”</h3>
+                <p>The median does not move no matter how heavy the species at the right end become. That is a strength, but it becomes a weakness for questions about totals or aggregate quantities. The fact that the 7 species of Hominidae account for 32 % of the combined body mass of the 265 species cannot be seen from the median.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/02_representative_values/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 2</b><span>Examines how the mean, median, and mode differ, and how much outliers move the mean, using the same primate body mass data.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/03_variability/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 3</b><span>Covers what the variance and standard deviation measure, and how to check for yourself whether a normal distribution can be assumed.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week04/" target="_blank" rel="noopener noreferrer"><b>Applied Information Literacy, session 4</b><span>Students check whether their own questionnaire will yield means, spreads, and distributions, and revise their questions.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week06/" target="_blank" rel="noopener noreferrer"><b>Applied Information Literacy, session 6</b><span>Students load their collected data from CSV and compute basic statistics while handling missing values and outliers.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#767c84" href="https://aonoa68.github.io/joho-nyumon/week06/" target="_blank" rel="noopener noreferrer"><b>Introduction to Information, session 6</b><span>Students compute totals, means, maximums, and minimums with Excel formulas.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <div class="pg empty"></div>
+        <a class="pg next" href="../visualize/"><small>02 →</small>Graphs</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Of 376 primate species, this page uses the 265 with a recorded adult body mass, the 216 with a recorded group size, and the 157 with a recorded home range size.<br>
+    The standard deviation treats each set of species as a whole and divides by the count n. Quartiles are obtained by linear interpolation between sorted values.</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const FORMAT = {
+        "体重g": v => G.g(v),
+        "集団サイズ": v => G.fmt(v, 1),
+        "行動圏km2": v => G.fmt(v, 2) + " km²"
+    };
+
+    function summarize(vals) {
+        const pos = vals.filter(v => v > 0);
+        return {
+            n: vals.length,
+            mean: G.mean(vals),
+            median: G.median(vals),
+            geo: 10 ** G.mean(pos.map(v => Math.log10(v))),
+            sd: G.sd(vals, false),
+            q1: G.quantile(vals, 0.25),
+            q3: G.quantile(vals, 0.75),
+            below: vals.filter(v => v < G.mean(vals)).length / vals.length
+        };
+    }
+
+    /* ---- Figure in the text: body mass as dots on a log axis ---- */
+    const massRows = G.select(["体重g"], ["体重g"]);
+    const massVals = massRows.map(d => 10 ** d.v[0]);
+    const massSum = summarize(massVals);
+    document.getElementById("sMean").textContent = G.g(massSum.mean);
+    document.getElementById("sMedian").textContent = G.g(massSum.median);
+    document.getElementById("sGeo").textContent = G.g(massSum.geo);
+    document.getElementById("sBelow").textContent = Math.round(massSum.below * 100) + " %";
+    const jitter = (() => { const r = G.rng(7); return massRows.map(() => r()); })();
+
+    function drawStrip() {
+        const canvas = document.getElementById("stripChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const xmin = 1, xmax = 5.4;
+        const ax = G.axes(ctx, w, h, { L: 18, R: 18, T: 34, B: 34, xmin, xmax, ymin: 0, ymax: 1,
+            xticks: G.logTicks(xmin, xmax), xfmt: k => G.pow10Label(k) + (k === 5 ? " g" : ""), xgrid: true, yticks: [] });
+        massRows.forEach((d, i) => {
+            const hom = G.family(d.row) === "ヒト科";
+            ctx.fillStyle = hom ? G.css("--mean") : "rgba(61,111,168,0.45)";
+            ctx.beginPath(); ctx.arc(ax.x(d.v[0]), ax.y(0.08 + jitter[i] * 0.84), hom ? 3.6 : 3, 0, Math.PI * 2); ctx.fill();
+        });
+        [[massSum.geo, G.css("--accent2")], [massSum.median, G.css("--navy2")], [massSum.mean, G.css("--mean")]].forEach(([v, col]) => {
+            ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ax.x(Math.log10(v)), ax.T); ctx.lineTo(ax.x(Math.log10(v)), ax.T + ax.ph); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "Mean " + G.g(massSum.mean) },
+            { color: G.css("--navy2"), label: "Median " + G.g(massSum.median) },
+            { color: G.css("--accent2"), label: "Geometric mean " + G.g(massSum.geo) }
+        ], 12);
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText("Body mass (log axis)", 18, 12);
+    }
+
+    /* ---- Hands-on panel ---- */
+    let key = "体重g", logScale = false, exclude = false;
+
+    function currentVals() {
+        return G.select([key]).filter(d => !exclude || G.family(d.row) !== "ヒト科").map(d => d.v[0]);
+    }
+
+    function drawHist(vals, s) {
+        const canvas = document.getElementById("histChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const tx = logScale ? (v => Math.log10(v)) : (v => v);
+        const xs = vals.filter(v => !logScale || v > 0).map(tx);
+        let xmin, xmax;
+        if (logScale) { xmin = Math.floor(Math.min(...xs) * 2) / 2; xmax = Math.ceil(Math.max(...xs) * 2) / 2; }
+        else { xmin = 0; xmax = Math.max(...xs) * 1.02; }
+        const nb = 30, bw = (xmax - xmin) / nb;
+        const counts = new Array(nb).fill(0);
+        xs.forEach(v => { const i = Math.min(nb - 1, Math.max(0, Math.floor((v - xmin) / bw))); counts[i]++; });
+        const cmax = Math.max(...counts);
+        const yt = G.ticks(0, cmax, 4);
+        const ymax = Math.max(yt[yt.length - 1], cmax);
+        const xticks = logScale ? G.logTicks(xmin, xmax) : G.ticks(xmin, xmax, 5);
+        const unit = { "体重g": " g", "集団サイズ": "", "行動圏km2": " km²" }[key];
+        const lastTick = xticks[xticks.length - 1];
+        const xfmt = logScale
+            ? (k => G.pow10Label(k) + (k === lastTick ? unit : ""))
+            : (v => (key === "体重g" ? G.man(v) : G.fmt(v, key === "行動圏km2" && v % 1 ? 1 : 0)) + (v === lastTick ? unit : ""));
+        const xlab = { "体重g": "", "集団サイズ": "Group size (individuals)", "行動圏km2": "" }[key];
+        const ax = G.axes(ctx, w, h, { L: 40, R: 16, T: 34, B: 34, xmin, xmax, ymin: 0, ymax, xticks, yticks: yt, xfmt, yfmt: v => G.fmt(v), ylabel: logScale ? "Species (log horizontal axis)" : "Species" });
+        // Interquartile range band
+        const qa = ax.x(tx(Math.max(s.q1, logScale ? 1e-9 : s.q1))), qb = ax.x(tx(s.q3));
+        ctx.fillStyle = "rgba(201,168,76,0.16)"; ctx.fillRect(qa, ax.T, qb - qa, ax.ph);
+        // Bars
+        ctx.fillStyle = G.css("--pop");
+        counts.forEach((c, i) => { if (c) { const x0 = ax.x(xmin + i * bw); ctx.fillRect(x0 + 0.5, ax.y(c), Math.max(1, ax.pw / nb - 1), ax.T + ax.ph - ax.y(c)); } });
+        // Lines
+        [[s.geo, G.css("--accent2")], [s.median, G.css("--navy2")], [s.mean, G.css("--mean")]].forEach(([v, col]) => {
+            const px = ax.x(tx(v)); ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(px, ax.T); ctx.lineTo(px, ax.T + ax.ph); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "Mean" },
+            { color: G.css("--navy2"), label: "Median" },
+            { color: G.css("--accent2"), label: "Geometric mean" }
+        ], 12);
+        if (xlab) { ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(xlab, ax.L + ax.pw, ax.T - 4); }
+    }
+
+    const BASE = {};
+    ["体重g", "集団サイズ", "行動圏km2"].forEach(k => { BASE[k] = summarize(G.select([k]).map(d => d.v[0])); });
+
+    function render() {
+        const vals = currentVals();
+        const s = summarize(vals);
+        const f = FORMAT[key];
+        document.getElementById("rN").textContent = s.n;
+        document.getElementById("rMean").textContent = f(s.mean);
+        document.getElementById("rMedian").textContent = f(s.median);
+        document.getElementById("rGeo").textContent = f(s.geo);
+        document.getElementById("rSD").textContent = f(s.sd);
+        document.getElementById("rIQR").textContent = (key === "体重g" ? G.fmt(Math.round(s.q1)) : G.fmt(s.q1, key === "行動圏km2" ? 2 : 1)) + "–" + f(s.q3);
+        document.getElementById("rBelow").textContent = Math.round(s.below * 100) + " %";
+        drawHist(vals, s);
+        const b = BASE[key];
+        const pct = (a, c) => Math.round((a - c) / c * 100);
+        const hint = document.getElementById("hint");
+        if (exclude) {
+            hint.innerHTML = `Excluding Hominidae changed the mean by <b>${pct(s.mean, b.mean)} %</b>, the median by <b>${pct(s.median, b.median)} %</b>, and the standard deviation by <b>${pct(s.sd, b.sd)} %</b>. The mean and standard deviation are strongly influenced by a few extreme values, while the median barely moves.`;
+        } else if (logScale) {
+            hint.innerHTML = "On a log axis, the long right tail shrinks and the peak becomes nearly symmetric. The center of that peak lies close to the geometric mean and the median, not the mean.";
+        } else if (key === "体重g") {
+            hint.innerHTML = "On the linear axis, almost all species fall into the few leftmost bars, and the mean line lies outside the peak. Try switching to “Log” or ticking “Exclude the 7 species of Hominidae”.";
+        } else if (key === "集団サイズ") {
+            hint.innerHTML = "Group size also has a long right tail. Many species live alone (a group size of 1), while species that form groups of several dozen pull the mean up. Group size is in individuals.";
+        } else {
+            hint.innerHTML = "Home range size is the most skewed of the three: more than 80 % of species have a range smaller than the mean. Notice also how narrow the interquartile band is, squeezed against the left edge.";
+        }
+    }
+
+    document.querySelectorAll('input[name="var"]').forEach(r => r.addEventListener("change", e => { key = e.target.value; render(); }));
+    document.querySelectorAll('input[name="scale"]').forEach(r => r.addEventListener("change", e => { logScale = e.target.value === "log"; render(); }));
+    document.getElementById("exclude").addEventListener("change", e => { exclude = e.target.checked; render(); });
+
+    G.onRedraw(() => { drawStrip(); render(); });
+})();
+</script>
+</body>
+</html>

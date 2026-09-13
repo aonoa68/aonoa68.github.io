@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypothesis Tests and p-values — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="Why can a 1.6-fold difference be “not significant”? Compare the body mass of primate families with a permutation test and see for yourself what a p-value measures.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .figure canvas#pairsChart { height: 330px; }
+        .lab canvas#dotChart { height: 150px; }
+        .lab canvas#nullChart { height: 260px; margin-top: 10px; }
+        .cmp { width: 100%; }
+        .cmp td b { font-weight: 600; }
+        .p-note { font-size: 0.82em; color: var(--muted); margin-top: 2px; }
+        .readout dt { white-space: nowrap; }
+        .cl b { white-space: normal; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Hypothesis tests</span>
+        <div class="lang-switch"><a href="/teaching/guide/testing/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>06</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>When a real difference is “not significant”</h1>
+        <p class="sub">Hypothesis tests — measuring whether chance could produce a result</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>A hypothesis test assumes that there is really no difference and counts how often a difference like the one you see would arise. That proportion is the p-value, and it is not the size of the difference.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Do different families really differ in body mass?</h2>
+        <p>Primate body mass seems to follow different patterns in different families. But when one family looks heavier than another, you cannot tell just by looking whether that reflects a real difference between families or whether the family simply happened to include more heavy species.</p>
+        <p>Here we compare three pairs of families among the species with a recorded body mass. Body mass varies several-fold even within a family, so we average the logarithms and express the difference as “how many times heavier.” This average is called the <b>geometric mean</b>.</p>
+        <div class="figure">
+            <canvas id="pairsChart" role="img" aria-label="For three pairs of families, the body mass of each species plotted as a dot on a logarithmic horizontal axis. Vertical lines mark each family's geometric mean."></canvas>
+            <div class="table-wrap">
+            <table class="data cmp">
+                <thead><tr><th>Families compared</th><th>Species</th><th>Geometric mean</th><th>Heavier by</th><th>p-value</th></tr></thead>
+                <tbody>
+                    <tr><td><i>Lemuridae</i> and <i>Indriidae</i></td><td>15 and 8</td><td>2,140 g and 3,398 g</td><td><b>1.59×</b></td><td>about 0.08</td></tr>
+                    <tr><td><i>Galagidae</i> and <i>Lorisidae</i></td><td>13 and 8</td><td>286 g and 443 g</td><td><b>1.55×</b></td><td>about 0.25</td></tr>
+                    <tr><td><i>Cebidae</i> and <i>Pitheciidae</i></td><td>39 and 22</td><td>590 g and 1,493 g</td><td><b>2.53×</b></td><td>below 0.0001</td></tr>
+                </tbody>
+            </table>
+            </div>
+            <p class="figcap">Each dot is one species. Vertical lines mark each family's geometric mean. The p-values come from a two-sided permutation test that shuffled the family labels at random 20,000 times.</p>
+        </div>
+        <p>The first and second pairs both differ by about 1.6 times. Yet their p-values differ roughly threefold, and neither falls below the conventional threshold of 0.05. Only the third pair gives a result that is clearly hard to attribute to chance. The hands-on panel below shows where this difference comes from.</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Shuffle the family labels</div>
+            <div>
+                <span class="seg-cap">Families to compare</span>
+                <div class="seg" role="radiogroup" aria-label="Pair of families to compare">
+                    <input type="radio" name="pair" id="pair0" value="0" checked><label for="pair0">Lemuridae vs Indriidae</label>
+                    <input type="radio" name="pair" id="pair1" value="1"><label for="pair1">Galagidae vs Lorisidae</label>
+                    <input type="radio" name="pair" id="pair2" value="2"><label for="pair2">Cebidae vs Pitheciidae</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="dotChart" role="img" aria-label="Body mass of each species in the two selected families. Right after a shuffle, it shows the shuffled labels."></canvas>
+                <canvas id="nullChart" role="img" aria-label="Histogram of the differences produced by shuffling the labels, with the observed difference marked by a vertical line."></canvas>
+                <p class="p-note" id="nullCap"></p>
+                <div class="btns">
+                    <button class="btn" id="shuffle1" type="button">Shuffle once</button>
+                    <button class="btn" id="shuffle1000" type="button">Repeat 1,000 times</button>
+                    <button class="btn ghost" id="reset" type="button">Start over</button>
+                </div>
+                <div class="last" id="last" aria-live="polite"></div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>Observed difference</dt><dd id="rObs">—</dd>
+                    <dt>Shuffles</dt><dd id="rK">—</dd>
+                    <dt>At least as large</dt><dd id="rHit">—</dd>
+                    <dt>p-value (that share)</dt><dd id="rP">—</dd>
+                </dl>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">A shuffle pools the species of both families and then reassigns them at random, keeping the original number of species in each. It reproduces by hand the assumption that family and body mass are unrelated.</p>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">In the chart below, red bars are differences as large as or more extreme than the observed one. This is a two-sided test, so it counts differences in either direction.</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>How it works: the null hypothesis and the p-value</h2>
+        <p>A test begins with a <b>null hypothesis</b>. Here it is: “family has nothing to do with body mass, and the observed difference arose by chance from which species happened to fall in which family.”</p>
+        <p>If the null hypothesis is true, shuffling the family labels should not change how differences turn up. So we shuffle many times and build the distribution of differences produced by chance alone. The proportion of that distribution lying at least as far out as the observed difference is the <b>p-value</b>.</p>
+        <div class="formula-block"><span class="formula">p-value = number of shuffles giving a difference at least as extreme as observed ÷ number of shuffles</span></div>
+        <p>The smaller the p-value, the harder it is to explain the difference by chance alone. By convention a p-value below 0.05 is called “statistically significant,” but this threshold is an agreement among researchers. Nothing in nature switches at 0.05.</p>
+        <p>The p-value depends both on the size of the difference and on the spread and number of the data. In <i>Lemuridae</i> and <i>Indriidae</i>, the eight <i>Indriidae</i> species range widely, from 829 g to 8,565 g. With few species and a large spread, shuffling alone often produces large differences. That is why a 1.59-fold difference still cannot be clearly distinguished from chance.</p>
+        <dl class="terms">
+            <dt>Null hypothesis</dt><dd>The hypothesis that there is “no difference” or “no relationship.” The test does its calculation assuming it is true.</dd>
+            <dt>Permutation test</dt><dd>A test that shuffles group labels at random to build the distribution of differences produced by chance alone.</dd>
+            <dt>p-value</dt><dd>The proportion of differences at least as extreme as the observed one, if the null hypothesis is true.</dd>
+            <dt>Significance level</dt><dd>The threshold for calling a result “significant.” By convention, 0.05.</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“The p-value is the probability that the null hypothesis is true”</h3>
+                <p>It is not. The p-value is the proportion of differences at least as large as the observed one, <b>assuming</b> the null hypothesis is true. For <i>Lemuridae</i> and <i>Indriidae</i>, p ≈ 0.08 does not mean “there is an 8% chance that family and body mass are unrelated.”</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“If it is not significant, there is no difference”</h3>
+                <p>Not significant means “could not be distinguished from chance.” <i>Indriidae</i> are 1.59 times heavier than <i>Lemuridae</i> in geometric mean, yet a comparison of 8 and 15 species stopped at p ≈ 0.08. That does not show there is no difference.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“The smaller the p-value, the larger the difference”</h3>
+                <p><i>Galagidae</i> and <i>Lorisidae</i> differ by 1.55 times, and <i>Lemuridae</i> and <i>Indriidae</i> by 1.59 times, almost the same. Yet their p-values are about 0.25 and about 0.08, roughly three times apart. Whenever you look at a p-value, look at the effect size, the fold difference, alongside it.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Compare many pairs and report the ones that come out significant”</h3>
+                <p>Comparing every pair among the 14 families with records for at least two species means 91 tests. Even if no family differed at all, testing at a significance level of 0.05 would, on average, make 4 to 5 pairs “significant” by chance.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/08_ttest/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 8</b><span>Runs a t-test starting from the logic of the null hypothesis and proof by contradiction, and confirms that the p-value is not the size of the effect.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/09_anova/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 9</b><span>Using the body mass of three families, shows that repeated t-tests inflate false positives and covers testing them together with analysis of variance.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/08_multiple/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 8</b><span>Shows that chance “significant” results pile up as tests accumulate, and covers the dangers of testing until something is significant and methods for correction.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/09_effectsize/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 9</b><span>Shows that with a large enough sample even a meaningless difference becomes significant, and builds the habit of reporting effect sizes separately from p-values.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/10.html" target="_blank" rel="noopener noreferrer"><b>Behaviormetrics (Hokkaido U.), session 10</b><span>Runs a t-test comparing the means of two groups in R and interprets it together with an effect size (Cohen's d).</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/13.html" target="_blank" rel="noopener noreferrer"><b>Behaviormetrics (Hokkaido U.), session 13</b><span>Covers why three or more groups are compared with one-way analysis of variance rather than repeated t-tests, and how to run it in R.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../interval/"><small>← 05</small>Confidence intervals</a>
+        <a class="pg next" href="../bayes/"><small>07 →</small>Probability and Bayes</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Variable: adult body mass (g). Of the 265 species with a recorded body mass, the 105 species in the six families compared were used (<i>Lemuridae</i> 15, <i>Indriidae</i> 8, <i>Galagidae</i> 13, <i>Lorisidae</i> 8, <i>Cebidae</i> 39, <i>Pitheciidae</i> 22). Family assignments follow the teaching materials for the course Statistics I.<br>
+    The p-values in the table come from 20,000 permutations. The p-value in the hands-on panel uses fresh random numbers for each shuffle, so it differs slightly from the table.</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    // データ上の科名（和名）で絞り込み、表示だけ学名にする
+    const PAIRS = [["キツネザル科", "インドリ科"], ["ガラゴ科", "ロリス科"], ["オマキザル科", "サキ科"]];
+    const FL = f => G.familyLabel(f);
+    const all = G.select(["体重g"], ["体重g"]).map(d => ({ fam: G.family(d.row), sp: G.species(d.row), lg: d.v[0] }));
+    const groupOf = f => all.filter(d => d.fam === f);
+    const ratioText = d => G.fmt(10 ** Math.abs(d), 2) + "×";
+
+    /* ---------- figure: three pairs (static) ---------- */
+    function drawPairs() {
+        const { ctx, w, h } = G.setup(document.getElementById("pairsChart"));
+        const fams = PAIRS.flat();
+        const pts = fams.map(groupOf);
+        const L = 150, R = 18, T = 30, B = 34, pw = w - L - R, ph = h - T - B;
+        const xmin = 1.7, xmax = 4.05; // 50 g to about 11,000 g
+        const x = v => L + (v - xmin) / (xmax - xmin) * pw;
+        const rowH = ph / fams.length;
+        ctx.strokeStyle = G.css("--line"); ctx.fillStyle = G.css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (let k = 1; k <= 4; k++) [1, 2, 5].forEach(m => { const v = Math.log10(m * 10 ** k); if (v < xmin || v > xmax) return; ctx.beginPath(); ctx.moveTo(x(v), T); ctx.lineTo(x(v), T + ph); ctx.stroke(); ctx.fillText(G.fmt(m * 10 ** k), x(v), T + ph + 8); });
+        ctx.textAlign = "left"; ctx.fillText("Body mass (g, log scale)", L, 6);
+        const cols = [G.css("--pop"), G.css("--mean")];
+        fams.forEach((f, i) => {
+            const cy = T + rowH * (i + 0.5);
+            if (i % 2 === 0 && i > 0) { ctx.strokeStyle = G.css("--faint"); ctx.beginPath(); ctx.moveTo(8, T + rowH * i); ctx.lineTo(L + pw, T + rowH * i); ctx.stroke(); }
+            const col = cols[i % 2];
+            ctx.fillStyle = G.css("--text"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+            ctx.fillText(`${FL(f)} (${pts[i].length})`, L - 12, cy);
+            ctx.fillStyle = col; ctx.globalAlpha = 0.7;
+            pts[i].forEach((d, j) => { ctx.beginPath(); ctx.arc(x(d.lg), cy + ((j * 7) % 11 - 5) * rowH / 26, 3.6, 0, Math.PI * 2); ctx.fill(); });
+            ctx.globalAlpha = 1;
+            const gm = G.mean(pts[i].map(d => d.lg));
+            ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x(gm), cy - rowH * 0.38); ctx.lineTo(x(gm), cy + rowH * 0.38); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, [{ color: G.css("--navy2"), label: "Vertical line = geometric mean", kind: "line" }], 6);
+    }
+
+    /* ---------- hands-on panel ---------- */
+    let pairIdx = 0, A = [], B = [], obs = 0, diffs = [], lastAssign = null, busy = false;
+    function loadPair(i) {
+        pairIdx = i; A = groupOf(PAIRS[i][0]); B = groupOf(PAIRS[i][1]);
+        obs = G.mean(B.map(d => d.lg)) - G.mean(A.map(d => d.lg));
+        diffs = []; lastAssign = null;
+    }
+    let rnd = Math.random;
+    function shuffleOnce() {
+        const pool = G.shuffle([...A, ...B], rnd);
+        const a = pool.slice(0, A.length), b = pool.slice(A.length);
+        const d = G.mean(b.map(x => x.lg)) - G.mean(a.map(x => x.lg));
+        diffs.push(d); lastAssign = { a, b, d };
+    }
+    const isHit = d => Math.abs(d) >= Math.abs(obs) - 1e-12;
+
+    function nullRange() {
+        const pooled = [...A, ...B].map(d => d.lg);
+        const se = G.sd(pooled) * Math.sqrt(1 / A.length + 1 / B.length);
+        const m = Math.max(Math.abs(obs) * 1.35, se * 3.6);
+        return [-m, m];
+    }
+    const RATIO_TICKS = [0.25, 1 / 3, 0.5, 2 / 3, 1, 1.5, 2, 3, 4];
+    const ratioLabel = r => Math.abs(r - 1) < 1e-9 ? "1×" : G.fmt(r, Math.abs(r * 10 - Math.round(r * 10)) < 1e-9 ? (r % 1 ? 1 : 0) : 2) + "×";
+
+    function drawDots() {
+        const { ctx, w, h } = G.setup(document.getElementById("dotChart"));
+        const showA = lastAssign ? lastAssign.a : A, showB = lastAssign ? lastAssign.b : B;
+        const lgAll = [...A, ...B].map(d => d.lg);
+        const xmin = Math.min(...lgAll) - 0.12, xmax = Math.max(...lgAll) + 0.12;
+        const L = 150, R = 18, T = 24, Bm = 28, pw = w - L - R, ph = h - T - Bm;
+        const x = v => L + (v - xmin) / (xmax - xmin) * pw;
+        ctx.strokeStyle = G.css("--line"); ctx.fillStyle = G.css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "top";
+        for (let k = 1; k <= 5; k++) [1, 2, 5].forEach(m => { const v = Math.log10(m * 10 ** k); if (v < xmin || v > xmax) return; ctx.beginPath(); ctx.moveTo(x(v), T); ctx.lineTo(x(v), T + ph); ctx.stroke(); ctx.fillText(G.fmt(m * 10 ** k) + (k >= 3 && m === 1 ? " g" : ""), x(v), T + ph + 7); });
+        const rows = [[PAIRS[pairIdx][0], showA, G.css("--pop")], [PAIRS[pairIdx][1], showB, G.css("--mean")]];
+        rows.forEach(([name, pts, col], i) => {
+            const cy = T + ph * (i === 0 ? 0.27 : 0.73);
+            ctx.fillStyle = G.css("--text"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+            ctx.fillText(lastAssign ? `as ${FL(name)} (${pts.length})` : `${FL(name)} (${pts.length})`, L - 10, cy);
+            pts.forEach((d, j) => {
+                const orig = A.includes(d) ? G.css("--pop") : G.css("--mean");
+                ctx.fillStyle = orig; ctx.globalAlpha = 0.8;
+                ctx.beginPath(); ctx.arc(x(d.lg), cy + ((j * 5) % 7 - 3) * 3, 4, 0, Math.PI * 2); ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            const gm = G.mean(pts.map(d => d.lg));
+            ctx.strokeStyle = G.css("--navy2"); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x(gm), cy - 16); ctx.lineTo(x(gm), cy + 16); ctx.stroke(); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, lastAssign
+            ? [{ color: G.css("--mean"), label: "Species from " + FL(PAIRS[pairIdx][1]), kind: "dot" }, { color: G.css("--pop"), label: "Species from " + FL(PAIRS[pairIdx][0]), kind: "dot" }]
+            : [{ color: G.css("--navy2"), label: "Vertical line = geometric mean", kind: "line" }], 8);
+    }
+
+    function drawNull() {
+        const { ctx, w, h } = G.setup(document.getElementById("nullChart"));
+        const [lo, hi] = nullRange(), nb = 41, bw = (hi - lo) / nb;
+        const counts = new Array(nb).fill(0), hits = new Array(nb).fill(0);
+        diffs.forEach(d => { let i = Math.floor((d - lo) / bw); i = Math.max(0, Math.min(nb - 1, i)); counts[i]++; if (isHit(d)) hits[i]++; });
+        const ymax = Math.max(5, Math.ceil(Math.max(...counts) * 1.12 / 5) * 5);
+        const ticks = RATIO_TICKS.map(r => Math.log10(r)).filter(v => v >= lo && v <= hi);
+        const ax = G.axes(ctx, w, h, { L: 44, R: 14, T: 30, B: 34, xmin: lo, xmax: hi, ymin: 0, ymax, yticks: G.ticks(0, ymax, 4), xticks: ticks, xfmt: v => ratioLabel(10 ** v), ylabel: "Count", xlabel: "" });
+        counts.forEach((c, i) => {
+            if (!c) return;
+            const x0 = ax.x(lo + i * bw) + 0.5, bwpx = Math.max(1, ax.pw / nb - 1);
+            ctx.fillStyle = G.css("--pop-soft"); ctx.fillRect(x0, ax.y(c), bwpx, ax.y(0) - ax.y(c));
+            if (hits[i]) { ctx.fillStyle = G.css("--biased"); ctx.fillRect(x0, ax.y(hits[i]), bwpx, ax.y(0) - ax.y(hits[i])); }
+        });
+        // observed difference (two-sided, so two lines at ±)
+        [obs, -obs].forEach((v, k) => {
+            ctx.strokeStyle = G.css("--mean"); ctx.lineWidth = 2; ctx.setLineDash(k ? [4, 4] : []);
+            ctx.beginPath(); ctx.moveTo(ax.x(v), ax.T); ctx.lineTo(ax.x(v), ax.T + ax.ph); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+        });
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "Observed difference (dotted: reversed)", kind: "line" },
+            { color: G.css("--biased"), label: "At least as extreme", kind: "box" }
+        ], 10);
+        document.getElementById("nullCap").textContent = `The horizontal axis is the ratio of geometric means after a shuffle, “as ${FL(PAIRS[pairIdx][1])} ÷ as ${FL(PAIRS[pairIdx][0])}.” 1× means no difference.`;
+        if (!diffs.length) { ctx.fillStyle = G.css("--muted"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Press “Shuffle once” and the differences produced by chance will pile up here", ax.L + ax.pw / 2, ax.T + ax.ph / 2); }
+    }
+
+    function readout() {
+        const k = diffs.length, hit = diffs.filter(isHit).length;
+        const heavy = obs >= 0 ? PAIRS[pairIdx][1] : PAIRS[pairIdx][0];
+        document.getElementById("rObs").textContent = ratioText(obs); document.getElementById("rObs").title = `${FL(heavy)} is heavier`;
+        document.getElementById("rK").textContent = G.fmt(k);
+        document.getElementById("rHit").textContent = k ? G.fmt(hit) : "—";
+        const p = k ? hit / k : null;
+        document.getElementById("rP").textContent = p === null ? "—" : (hit === 0 ? `below ${G.fmt(1 / k, k >= 1000 ? 3 : 2)}` : G.fmt(p, 3));
+        const last = document.getElementById("last");
+        last.innerHTML = lastAssign ? `Difference from the last shuffle: <b class="num">${ratioText(lastAssign.d)}</b> (${isHit(lastAssign.d) ? "at least" : "less than"} the observed ${ratioText(obs)})` : "";
+        const hint = document.getElementById("hint");
+        if (k < 200) { hint.innerHTML = "Press “Repeat 1,000 times” to see how large a difference chance alone produces when family and body mass are unrelated."; return; }
+        if (pairIdx === 0) hint.innerHTML = `Shuffling alone produced a difference at least as large as the observed one in ${G.fmt(hit)} of ${G.fmt(k)} shuffles. <i>Indriidae</i> has only 8 species, and their body masses are widely spread, so a 1.59-fold difference is not unusual even by chance. This does not mean “there is no difference.” It means that <b>with this many species, the difference cannot be distinguished from chance</b>.`;
+        else if (pairIdx === 1) hint.innerHTML = `The difference, 1.55 times, is almost the same as in the first pair, but the share of shuffles giving a difference at least as large is much bigger. <i>Galagidae</i> includes species from 66 g to 1,577 g, so the differences produced by shuffling span a wide range. <b>The p-value is not determined by the size of the difference alone.</b>`;
+        else hint.innerHTML = hit === 0 ? `In ${G.fmt(k)} shuffles, not once did a difference as large as the observed 2.53 times appear. With many species and a large difference, it becomes hard to explain this difference by chance alone.` : `A difference at least as large as the observed one appeared in only ${G.fmt(hit)} of ${G.fmt(k)} shuffles. With many species and a large difference, it becomes hard to explain this difference by chance alone.`;
+    }
+
+    function render() { drawDots(); drawNull(); readout(); }
+    function setBtns(d) { ["shuffle1", "shuffle1000", "reset"].forEach(id => document.getElementById(id).disabled = d); }
+    function run(times) {
+        if (busy) return;
+        if (G.reduceMotion || times <= 1) { for (let i = 0; i < times; i++) shuffleOnce(); render(); return; }
+        busy = true; setBtns(true);
+        const per = Math.ceil(times / 30); let done = 0;
+        (function frame() { const k = Math.min(per, times - done); for (let i = 0; i < k; i++) shuffleOnce(); done += k; render(); if (done < times) requestAnimationFrame(frame); else { busy = false; setBtns(false); } })();
+    }
+    document.getElementById("shuffle1").addEventListener("click", () => { rnd = Math.random; run(1); });
+    document.getElementById("shuffle1000").addEventListener("click", () => { rnd = Math.random; run(1000); });
+    document.getElementById("reset").addEventListener("click", () => { diffs = []; lastAssign = null; render(); });
+    document.querySelectorAll('input[name="pair"]').forEach(r => r.addEventListener("change", e => { loadPair(+e.target.value); render(); }));
+
+    // On load: Lemuridae vs Indriidae shuffled 1,000 times (reproducible random numbers)
+    loadPair(0); rnd = G.rng(20260913);
+    for (let i = 0; i < 1000; i++) shuffleOnce();
+    lastAssign = null; rnd = Math.random;
+    G.onRedraw(() => { drawPairs(); render(); });
+})();
+</script>
+</body>
+</html>

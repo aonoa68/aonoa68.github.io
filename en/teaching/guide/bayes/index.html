@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability and Bayes — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="Do large species form large groups, or the other way round? Using body mass and group size for 207 primate species, this page examines the direction of conditional probability and Bayes' theorem.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .figure canvas#scatter { height:320px; }
+        .keys { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:10px; font-size:0.84em; color:var(--muted); }
+        .keys span { display:inline-flex; align-items:center; gap:6px; }
+        .keys i { display:inline-block; width:10px; height:10px; border-radius:2px; }
+        .sliders { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 24px; margin-top:14px; }
+        .sliders label { font-size:0.84em; color:var(--muted); display:block; }
+        .sliders output { font-weight:600; color:var(--navy2); font-variant-numeric:tabular-nums; }
+        .lab canvas#units { height:290px; }
+        table.data.two th, table.data.two td { text-align:center; }
+        table.data.two th:first-child, table.data.two td:first-child { text-align:left; }
+        table.data.two td.both { color:var(--mean); font-weight:700; }
+        table.data.two td.tot, table.data.two th.tot { color:var(--muted); }
+        .calc { font-variant-numeric:tabular-nums; }
+        .readout dt { white-space:nowrap; }@media (max-width:640px) { .sliders { grid-template-columns:minmax(0,1fr); } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Probability and Bayes</span>
+        <div class="lang-switch"><a href="/teaching/guide/bayes/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>07</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>Do large species form large groups, or the other way round?</h1>
+        <p class="sub">Probability and Bayes — keep conditional probabilities the right way round</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>&ldquo;The share of large species that form large groups&rdquo; and &ldquo;the share of large-group species that are large&rdquo; are two different numbers. Bayes&rsquo; theorem is the calculation that switches between these directions, and when you switch, how many large species there are to begin with strongly shapes the result.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Body size and group size: two questions</h2>
+        <p>Among primates, 207 species have records for both body mass and group size. Here, species with a body mass of 10,000 g or more are called &ldquo;large,&rdquo; and species whose groups average 20 or more individuals are called &ldquo;large-group&rdquo; species.</p>
+        <p>For these data we can ask two questions that look alike but are different.</p>
+        <dl class="terms">
+            <dt>Question 1</dt><dd>If you pick a large species, what is the probability that it forms large groups?</dd>
+            <dt>Question 2</dt><dd>If you pick a large-group species, what is the probability that it is large?</dd>
+        </dl>
+        <p style="margin-top:18px">Both questions count the species that are both large and large-group. What differs is <b>what goes in the denominator</b>. Question 1 asks about the share among large species; Question 2 asks about the share among large-group species.</p>
+    </section>
+
+    <section>
+        <h2>Splitting 207 species into four groups</h2>
+        <p>Body mass is on the horizontal axis and group size on the vertical axis, with one point for each of the 207 species. The dotted lines mark the two thresholds. Both axes use a log scale, so each tenfold increase takes the same distance.</p>
+        <div class="figure">
+            <canvas id="scatter" role="img" aria-label="Scatter plot of body mass and group size for 207 primate species. Dotted threshold lines divide it into four quadrants: 10 species that are both large and large-group at upper right, 34 large-group-only species at upper left, 12 large-only species at lower right, and 151 species that are neither at lower left."></canvas>
+            <div class="keys">
+                <span><i style="background:var(--mean)"></i>Large and large-group</span>
+                <span><i style="background:var(--pop)"></i>Large only</span>
+                <span><i style="background:var(--accent2)"></i>Large-group only</span>
+                <span><i style="background:var(--faint)"></i>Neither</span>
+            </div>
+            <p class="figcap">Group size is the average group size recorded for each species. Data: PanTHERIA (Jones et al. 2009).</p>
+        </div>
+        <p>The 10 species in the upper right that meet both conditions are two species, the chimpanzee and the bonobo, plus eight Cercopithecidae species such as baboons (<i>Papio</i>) and macaques (<i>Macaca</i>). The lower right includes the gorilla and the orangutan, which live in small groups.</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Switch the denominator and count</div>
+            <div>
+                <span class="seg-cap">Which species to count within</span>
+                <div class="seg" role="radiogroup" aria-label="Which species to count within">
+                    <input type="radio" name="cond" id="condBig" value="big" checked><label for="condBig">Among large species</label>
+                    <input type="radio" name="cond" id="condGrp" value="grp"><label for="condGrp">Among large-group species</label>
+                </div>
+            </div>
+        </div>
+        <div class="sliders">
+            <div>
+                <label for="mT">&ldquo;Large&rdquo; means body mass of <output id="mTv">10,000 g</output> or more</label>
+                <div class="range-row"><input type="range" id="mT" min="0" max="8" step="1" value="5" aria-describedby="mTv"></div>
+            </div>
+            <div>
+                <label for="gT">&ldquo;Large group&rdquo; means groups of <output id="gTv">20</output> or more</label>
+                <div class="range-row"><input type="range" id="gT" min="0" max="7" step="1" value="5" aria-describedby="gTv"></div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="units" role="img" aria-label="The 207 species shown as one square each. Species that meet the chosen condition are shown dark, the rest light."></canvas>
+                <div class="table-wrap">
+                    <table class="data two" id="tbl" aria-live="polite"></table>
+                </div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>P(large)</dt><dd id="rA">—</dd>
+                    <dt>P(large group)</dt><dd id="rB">—</dd>
+                    <dt>P(large group | large)</dt><dd id="rBA">—</dd>
+                    <dt>P(large | large group)</dt><dd id="rAB">—</dd>
+                </dl>
+                <div class="readout" style="display:block">
+                    <div style="font-size:0.84em;color:var(--muted);margin-bottom:4px">P(large | large group) by Bayes&rsquo; theorem</div>
+                    <div class="calc" id="rBayes">—</div>
+                </div>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">Each square is one species. Dark squares are the denominator, and the orange squares among them are the numerator.</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>How it works: conditional probability and Bayes&rsquo; theorem</h2>
+        <p>Here, a <b>probability</b> is the share of species meeting a condition when you pick one of the 207 species at random. There are 22 large species, so P(large) = 22 ÷ 207 ≈ 0.106.</p>
+        <p>A <b>conditional probability</b> P(B | A) is &ldquo;the share of B when only the species meeting A are used as the denominator.&rdquo; What sits to the right of the vertical bar is the group that forms the denominator.</p>
+        <div class="formula-block"><span class="formula">P(large group | large) = species meeting both ÷ large species = 10 ÷ 22 ≈ 0.45</span></div>
+        <p>The reverse, P(large | large group), is 10 ÷ 44 ≈ 0.23, only about half as large. The numerator is the same 10 species, but the denominator has changed from 22 species to 44.</p>
+        <p><b>Bayes&rsquo; theorem</b> links the two. If you know the probability in one direction and the overall share of each condition, you can calculate the other direction.</p>
+        <div class="formula-block"><span class="formula">P(large | large group) = P(large group | large) × P(large) ÷ P(large group)</span></div>
+        <p>Plugging in the numbers gives 0.4545 × 0.1063 ÷ 0.2126 ≈ 0.227, which matches the 10 ÷ 44 obtained by counting. In this formula, P(large) is called the <b>prior probability</b> and the resulting P(large | large group) the <b>posterior probability</b>: the probability of being large before and after learning that the species forms large groups.</p>
+
+        <h3 style="margin-top:28px">The prior probability matters</h3>
+        <p>If we change only the threshold for &ldquo;large&rdquo; and keep &ldquo;large group&rdquo; at 20 or more, the probabilities in the two directions move as follows.</p>
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>Threshold for &ldquo;large&rdquo;</th><th>P(large)</th><th>P(large group | large)</th><th>P(large | large group)</th></tr></thead>
+                <tbody>
+                    <tr><td>2,000 g or more</td><td>0.585</td><td>0.322</td><td>0.886</td></tr>
+                    <tr><td>5,000 g or more</td><td>0.420</td><td>0.333</td><td>0.659</td></tr>
+                    <tr><td>10,000 g or more</td><td>0.106</td><td>0.455</td><td>0.227</td></tr>
+                    <tr><td>20,000 g or more</td><td>0.019</td><td>0.500</td><td>0.045</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p style="margin-top:14px">P(large group | large) stays between 0.3 and 0.5, while P(large | large group) swings from 0.886 down to 0.045. Most of that change comes from how many large species there are to begin with, that is, from the prior probability.</p>
+        <p>If body size and group size were unrelated, the share of large-group species among large species would equal the overall share, P(large group) ≈ 0.21. This is called <b>independence</b>. With the 10,000 g threshold, P(large group | large) ≈ 0.45, so in these data the two are not independent.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;P(large group | large) and P(large | large group) come out about the same.&rdquo;</h3>
+                <p>In general they do not. In these data they are 0.45 and 0.23, a twofold difference. The two are equal only when the number of large species happens to equal the number of large-group species.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;Nearly half of large species form large groups, so a large-group species is probably large.&rdquo;</h3>
+                <p>Only 22 of the 207 species are large. Of the 44 large-group species, 34 are not large. Switching the direction while ignoring the original shares leads to badly wrong judgments. This is called <b>base-rate neglect</b>.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;A high conditional probability means one causes the other.&rdquo;</h3>
+                <p>That P(large group | large) is higher than the overall share only shows that the two tend to occur together. Whether large bodies lead to large groups, the reverse, or some other factor affects both cannot be decided from this table.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;0.45 means that 45% of large individuals live in large groups.&rdquo;</h3>
+                <p>What is counted here is species, not individuals. 0.45 means that 10 of the 22 large species form large groups. Counting individuals instead could give a different value.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/02_conditional/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 2</b><span>Introduces conditional probability as updating a probability after gaining information, and covers the definition of independence and how it differs from mutual exclusivity.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 3</b><span>Covers the prior, likelihood, and posterior in Bayes&rsquo; theorem, the base-rate fallacy, and sequential updating in which today&rsquo;s posterior becomes tomorrow&rsquo;s prior.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 12</b><span>Covers the Bayesian view of probability as a degree of belief and how it differs from frequentism, using examples where ignoring prior information makes intuition go wrong.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../testing/"><small>← 06</small>Hypothesis tests</a>
+        <a class="pg next" href="../regression/"><small>08 →</small>Regression</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Of 376 primate species, the 207 with records for both adult body mass and group size were used. Family names follow the course materials for Statistics I.<br>
+    Which species have records may be biased, so the shares here are &ldquo;shares among the 207 species with records.&rdquo;</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const D = G.select(["体重g", "集団サイズ"]).map(d => ({ mass: d.v[0], grp: d.v[1], row: d.row }));
+    const N = D.length;
+    const MT = [1000, 2000, 3000, 5000, 7000, 10000, 15000, 20000, 30000];
+    const GT = [2, 3, 5, 10, 15, 20, 30, 40];
+    let mi = 5, gi = 5, cond = "big";
+
+    const catOf = (d, mt, gt) => d.mass >= mt ? (d.grp >= gt ? "both" : "big") : (d.grp >= gt ? "grp" : "none");
+    const COLOR = { both: "--mean", big: "--pop", grp: "--accent2", none: "--faint" };
+    function tally(mt, gt) {
+        const c = { both: 0, big: 0, grp: 0, none: 0 };
+        D.forEach(d => c[catOf(d, mt, gt)]++);
+        return { ...c, A: c.both + c.big, B: c.both + c.grp };
+    }
+    const p = v => isFinite(v) ? v.toFixed(3) : "—";
+
+    // Scatter plot (thresholds fixed at 10,000 g and 20)
+    function drawScatter() {
+        const cv = document.getElementById("scatter");
+        const { ctx, w, h } = G.setup(cv);
+        const ax = G.axes(ctx, w, h, { L: 48, R: 16, T: 30, B: 34, xmin: 1.3, xmax: 5.2, ymin: -0.45, ymax: 2.15,
+            xticks: [2, 3, 4, 5], yticks: [0, 1, 2], xgrid: true,
+            xfmt: k => G.pow10Label(k), yfmt: k => G.pow10Label(k),
+            ylabel: "Group size (individuals)", xlabel: "Body mass (g)" });
+        const xT = Math.log10(10000), yT = Math.log10(20);
+        ctx.strokeStyle = G.css("--navy2"); ctx.setLineDash([5, 4]); ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(ax.x(xT), ax.T); ctx.lineTo(ax.x(xT), ax.T + ax.ph); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ax.L, ax.y(yT)); ctx.lineTo(ax.L + ax.pw, ax.y(yT)); ctx.stroke();
+        ctx.setLineDash([]); ctx.lineWidth = 1;
+        const order = ["none", "grp", "big", "both"];
+        order.forEach(cat => {
+            ctx.fillStyle = G.css(COLOR[cat]); ctx.globalAlpha = cat === "none" ? 0.45 : 0.9;
+            D.forEach(d => { if (catOf(d, 10000, 20) !== cat) return; ctx.beginPath(); ctx.arc(ax.x(Math.log10(d.mass)), ax.y(Math.log10(d.grp)), 3.2, 0, Math.PI * 2); ctx.fill(); });
+        });
+        ctx.globalAlpha = 1;
+        const t = tally(10000, 20);
+        const label = (txt, x, y, align, base, col) => {
+            ctx.font = '600 12.5px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+            ctx.textAlign = align; ctx.textBaseline = base; ctx.lineJoin = "round";
+            ctx.strokeStyle = "rgba(255,255,255,0.92)"; ctx.lineWidth = 4; ctx.strokeText(txt, x, y);
+            ctx.fillStyle = col; ctx.fillText(txt, x, y); ctx.lineWidth = 1;
+        };
+        const R = ax.L + ax.pw - 8, Lx = ax.L + 8, Tp = ax.T + 6, Bt = ax.T + ax.ph - 6;
+        label(`Large and large-group: ${t.both} species`, R, Tp, "right", "top", G.css("--mean"));
+        label(`Large-group only: ${t.grp} species`, Lx, Tp, "left", "top", G.css("--accent2"));
+        label(`Large only: ${t.big} species`, R, Bt, "right", "bottom", G.css("--pop"));
+        label(`Neither: ${t.none} species`, Lx, Bt, "left", "bottom", G.css("--muted"));
+    }
+
+    // One square per species
+    function drawUnits() {
+        const mt = MT[mi], gt = GT[gi], t = tally(mt, gt);
+        const cv = document.getElementById("units");
+        const { ctx, w, h } = G.setup(cv);
+        const cats = cond === "big" ? ["both", "big", "grp", "none"] : ["both", "grp", "big", "none"];
+        const inCond = cat => cat === "both" || cat === cond;
+        const den = cond === "big" ? t.A : t.B;
+        ctx.textBaseline = "middle"; ctx.textAlign = "left";
+        ctx.font = '600 13.5px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif'; ctx.fillStyle = G.css("--navy2");
+        const head = den
+            ? (cond === "big" ? `Of the ${den} large species, ${t.both} form large groups` : `Of the ${den} large-group species, ${t.both} are large`)
+            : (cond === "big" ? "No species are large at this threshold" : "No species form large groups at this threshold");
+        ctx.fillText(head, 2, 13);
+        if (den) { ctx.textAlign = "right"; ctx.fillStyle = G.css("--mean"); ctx.fillText(`${t.both} ÷ ${den} = ${(t.both / den).toFixed(2)}`, w - 2, 13); }
+        const cols = 23, rows = 9, top = 34;
+        const cell = Math.min((w - 2) / cols, (h - top - 2) / rows), gap = Math.max(1.5, cell * 0.16), s = cell - gap;
+        const x0 = (w - cell * cols + gap) / 2;
+        let k = 0;
+        cats.forEach(cat => {
+            const n = t[cat];
+            ctx.fillStyle = G.css(COLOR[cat]);
+            ctx.globalAlpha = inCond(cat) ? (cat === "both" ? 1 : 0.85) : 0.16;
+            for (let i = 0; i < n; i++, k++) {
+                const c = k % cols, r = Math.floor(k / cols);
+                ctx.fillRect(x0 + c * cell, top + r * cell, s, s);
+            }
+        });
+        ctx.globalAlpha = 1;
+    }
+
+    function update() {
+        const mt = MT[mi], gt = GT[gi], t = tally(mt, gt);
+        document.getElementById("mTv").textContent = G.fmt(mt) + " g";
+        document.getElementById("gTv").textContent = String(gt);
+        const PA = t.A / N, PB = t.B / N, PBA = t.A ? t.both / t.A : NaN, PAB = t.B ? t.both / t.B : NaN;
+        document.getElementById("rA").textContent = `${p(PA)} (${t.A}/${N})`;
+        document.getElementById("rB").textContent = `${p(PB)} (${t.B}/${N})`;
+        document.getElementById("rBA").textContent = t.A ? `${p(PBA)} (${t.both}/${t.A})` : "—";
+        document.getElementById("rAB").textContent = t.B ? `${p(PAB)} (${t.both}/${t.B})` : "—";
+        document.getElementById("rBayes").textContent = (t.A && t.B)
+            ? `${PBA.toFixed(4)} × ${PA.toFixed(4)} ÷ ${PB.toFixed(4)} = ${(PBA * PA / PB).toFixed(3)}`
+            : "Move the thresholds";
+        document.getElementById("tbl").innerHTML =
+            `<thead><tr><th></th><th>Large group (${gt}+)</th><th>Not large group</th><th class="tot">Total</th></tr></thead>
+             <tbody>
+               <tr><td>Large (${G.fmt(mt)} g+)</td><td class="both">${t.both}</td><td>${t.big}</td><td class="tot">${t.A}</td></tr>
+               <tr><td>Not large</td><td>${t.grp}</td><td>${t.none}</td><td class="tot">${N - t.A}</td></tr>
+               <tr><td class="tot">Total</td><td class="tot">${t.B}</td><td class="tot">${N - t.B}</td><td class="tot">${N}</td></tr>
+             </tbody>`;
+        const hint = document.getElementById("hint");
+        if (!t.A || !t.B) hint.innerHTML = "No species meet one of the conditions. Move the thresholds back.";
+        else {
+            const ratio = PBA / PAB;
+            const more = PBA > PAB ? "P(large group | large)" : "P(large | large group)";
+            hint.innerHTML = `The same <b>${t.both} species</b> are counted, yet the share is <b>${PBA.toFixed(2)}</b> when the denominator is the ${t.A} large species and <b>${PAB.toFixed(2)}</b> when it is the ${t.B} large-group species.`
+                + (Math.abs(Math.log(ratio)) > Math.log(1.25) ? ` Right now ${more} is ${Math.max(ratio, 1 / ratio).toFixed(1)} times larger.` + (mi === 5 && gi === 5 ? " Lower the threshold for &ldquo;large&rdquo; to 2,000 g and the two swap places." : "") : " Right now the two values are close, because the numbers of large species and large-group species are close.");
+        }
+        drawUnits();
+    }
+
+    document.getElementById("mT").addEventListener("input", e => { mi = +e.target.value; update(); });
+    document.getElementById("gT").addEventListener("input", e => { gi = +e.target.value; update(); });
+    document.querySelectorAll('input[name="cond"]').forEach(r => r.addEventListener("change", e => { cond = e.target.value; update(); }));
+
+    G.onRedraw(() => { drawScatter(); update(); });
+})();
+</script>
+</body>
+</html>

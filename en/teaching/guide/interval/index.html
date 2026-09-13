@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confidence Intervals — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="What is the 95% in a 95% confidence interval a proportion of? Build hundreds of intervals from body mass data for 265 primate species and check how often they hit.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .lab canvas#labChart { height: 460px; }
+        .figure canvas#exChart { height: 230px; }
+        .cover-table td.low { color: var(--biased); font-weight: 600; }
+        .cover-table td.ok { color: var(--accent2); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Confidence intervals</span>
+        <div class="lang-switch"><a href="/teaching/guide/interval/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>05</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>What exactly is 95% about a 95% interval?</h1>
+        <p class="sub">Confidence intervals — estimating the whole from a part, with a range</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>The &ldquo;95%&rdquo; in a 95% confidence interval is the hit rate of the procedure when it is repeated. Whether the one interval in front of you contains the population mean is unknown. And depending on the shape of the data, that hit rate may fall short of 95%.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Stating the population mean as a range</h2>
+        <p>As on the previous page, the population is the 265 primate species with recorded body mass. The population mean is 5,881 grams. In a real study the whole population cannot be observed; all you have is the species you selected, that is, a sample.</p>
+        <p>Stating the sample mean itself as &ldquo;the population mean is this value&rdquo; is <b>point estimation</b>. But the sample mean changes every time you select again. Saying instead &ldquo;the population mean is probably within this range&rdquo; is <b>interval estimation</b>, and the range is called a <b>confidence interval</b>.</p>
+        <dl class="terms">
+            <dt>Point estimation</dt><dd>Stating a population value as a single number calculated from a sample.</dd>
+            <dt>Interval estimation</dt><dd>Stating a population value as a range with a lower and an upper end.</dd>
+            <dt>Confidence interval</dt><dd>The range produced by interval estimation. A 95% confidence interval is built so that the method hits 95% of the time.</dd>
+            <dt>Coverage</dt><dd>The proportion of intervals that contain the population mean when the procedure is repeated many times.</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>Building a single interval</h2>
+        <p>Here is a sample of 15 species selected from the 265. The mean of these 15 species is 6,621 grams, and the 95% confidence interval is 1,052 to 12,190 grams. This interval contains the population mean of 5,881 grams.</p>
+        <div class="figure">
+            <canvas id="exChart" role="img" aria-label="Body masses of 15 species as dots, and the 95% confidence interval built from them. The interval runs from 1,052 to 12,190 grams and contains the population mean of 5,881 grams."></canvas>
+            <div class="stat-row">
+                <div><span>Sample mean (point estimate)</span><b class="num">6,621 g</b></div>
+                <div><span>95% confidence interval (interval estimate)</span><b class="num">1,052–12,190 g</b></div>
+                <div><span>Population mean</span><b class="num">5,881 g</b></div>
+            </div>
+            <p class="figcap">The dots above are the body masses of the 15 selected species; the horizontal line below is the 95% confidence interval. The rightmost dot is the Sumatran orangutan (<i>Pongo abelii</i>, 39,696 grams), and this one species pulls the sample mean up considerably.</p>
+        </div>
+        <p>So is the probability that this interval contains the population mean 95%? The answer is no. The population mean is a fixed value, 5,881 grams, and once calculated the interval is a fixed range too. A fixed value either lies within a fixed range or it does not. Probability applies to the procedure: selecting a new sample and building the interval again.</p>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Build hundreds of intervals</div>
+            <div>
+                <span class="seg-cap">Species selected each time, n</span>
+                <div class="seg" role="radiogroup" aria-label="Number of species selected each time">
+                    <input type="radio" name="n" id="n5" value="5"><label for="n5">5</label>
+                    <input type="radio" name="n" id="n15" value="15" checked><label for="n15">15</label>
+                    <input type="radio" name="n" id="n40" value="40"><label for="n40">40</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="labChart" role="img" aria-label="The most recent 100 95% confidence intervals. Intervals that miss the population mean are shown in a different colour."></canvas>
+                <div class="btns">
+                    <button class="btn" id="make100" type="button">Build 100 intervals</button>
+                    <button class="btn" id="make1000" type="button">Build 1,000</button>
+                    <button class="btn ghost" id="reset" type="button">Start over</button>
+                </div>
+            </div>
+            <div class="side">
+                <dl class="readout" aria-live="polite">
+                    <dt>Intervals built</dt><dd id="rTotal">—</dd>
+                    <dt>Contained the mean</dt><dd id="rHit">—</dd>
+                    <dt>Proportion (coverage)</dt><dd id="rRate">—</dd>
+                    <dt>Interval width (median)</dt><dd id="rWidth">—</dd>
+                </dl>
+                <div class="toggle">
+                    <input type="checkbox" id="logScale">
+                    <label for="logScale">Build on the log scale<small>Build the interval from log body mass and convert back to grams. The true value to compare with is then the population geometric mean, 2,120 g.</small></label>
+                </div>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">The chart shows the most recent 100 intervals, newest at the bottom. Species are selected with replacement: each one is put back before the next is chosen. Because random numbers are used, the proportion changes slightly with every click.</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>How it works: building the interval, and why 95% is not kept</h2>
+        <p>The intervals on this page are built with the following formula.</p>
+        <div class="formula-block"><span class="formula">sample mean ± t × sample standard deviation ÷ √n</span></div>
+        <p>The <b>sample standard deviation</b> is the spread of the values within the sample. Dividing it by √n gives the standard error, an estimate of how much the sample mean fluctuates. <b>t</b> is a multiplier that adds the extra uncertainty from estimating the standard deviation from the sample; the smaller n is, the larger it gets (2.78 for n=5, 2.14 for n=15, 2.02 for n=40, 1.98 for n=100).</p>
+        <p>The formula assumes that the distribution of the sample mean is close to bell-shaped. With a strongly right-skewed population such as body mass, this assumption breaks down at small n. Only 7 of the 265 species weigh 20,000 grams or more, and most samples contain none of them. Both the sample mean and the sample standard deviation then come out small, and the whole interval shifts below the population mean. In the simulation, the sample mean fell below the population mean in 67.5% of samples at n=15.</p>
+        <p>The table below shows the actual coverage, measured by building 10,000 intervals for each n.</p>
+        <div class="table-wrap">
+        <table class="data cover-table">
+            <thead><tr><th>Species selected, n</th><th>t</th><th>Raw body mass</th><th>Log body mass</th></tr></thead>
+            <tbody>
+                <tr><td>5 species</td><td>2.78</td><td class="low">83.9 %</td><td class="ok">92.6 %</td></tr>
+                <tr><td>15 species</td><td>2.14</td><td class="low">73.4 %</td><td class="ok">94.7 %</td></tr>
+                <tr><td>40 species</td><td>2.02</td><td class="low">74.3 %</td><td class="ok">94.6 %</td></tr>
+                <tr><td>100 species</td><td>1.98</td><td class="low">82.6 %</td><td class="ok">95.3 %</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="figcap">Results of selecting n species from the 265 with replacement and building a 95% confidence interval, repeated 10,000 times each (fixed random seed). For raw body mass, the proportion containing the population mean of 5,881 g; for log body mass, the proportion containing the population geometric mean of 2,120 g.</p>
+        <p style="margin-top:14px">For raw body mass, the actual hit rate stays in the 70s and low 80s of percent, even though the interval is called &ldquo;95%&rdquo;. Nearly all of the intervals that missed did so on the low side of the population mean. Taking the log of body mass makes the distribution nearly symmetric, and coverage returns almost to its design value, 94.7% already at n=15. Note, however, that an interval built on the log scale and converted back is an interval for the <b>geometric mean</b>, not the arithmetic mean. Which to build depends on what you want to estimate.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;There is a 95% probability that the population mean lies in this interval&rdquo;</h3>
+                <p>The population mean is a fixed value, and a calculated interval is a fixed range. The mean is either in it or not. The 95% is a property of the procedure: the proportion of intervals that contain the population mean when you keep rebuilding them the same way.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;If it says 95% confidence interval, the hit rate is 95%&rdquo;</h3>
+                <p>It is 95% only when the assumptions of the formula hold. As the table shows, for the strongly skewed raw body mass values it was 73.4% with 15 species and still only 82.6% with 100 species. Check the shape of the data and how the interval was built, not the name of the interval.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;The narrower the interval, the more accurate the hit&rdquo;</h3>
+                <p>Narrowness is precision, not correctness. With raw body mass and n=15, over 10,000 intervals the median width of those that missed the population mean was 3,539 g, narrower than the 5,929 g of those that hit. None of the samples behind the missed intervals included any of the 7 species weighing 20,000 grams or more. Samples that miss the large species underestimate the spread and produce narrow, overconfident intervals.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>&ldquo;Increase n, and the hit rate quickly approaches 95%&rdquo;</h3>
+                <p>Increasing n makes intervals narrower, but how far the hit rate recovers depends on the shape of the population. For raw body mass it was 74.3% even at n=40 and 82.6% at n=100. On the log scale it reaches 94.7% at n=15.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 7</b><span>The difference between point and interval estimation; a simulation of 100 confidence intervals confirms that &ldquo;95%&rdquo; is the hit rate of the procedure, and the trade-off between confidence level and width is discussed.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 7</b><span>How to build confidence intervals with the t distribution, and a simulation showing that coverage of a &ldquo;95% confidence interval&rdquo; drops sharply when observations are not independent.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../sampling/"><small>← 04</small>Sampling</a>
+        <a class="pg next" href="../testing/"><small>06 →</small>Hypothesis tests</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. The variable &ldquo;body mass&rdquo; was used, and the 265 of 376 primate species with recorded body mass were taken as the population.<br>
+    Coverage in the table and the figures in the misconceptions section come from a simulation that draws samples from these 265 species with replacement (10,000 repetitions each, fixed random seed). t is the 97.5% point of the t distribution with n−1 degrees of freedom.</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const RAW = G.select(["体重g"], ["体重g"]).map(d => 10 ** d.v[0]);
+    const LOG = RAW.map(v => Math.log10(v));
+    const MU = G.mean(RAW), LMU = G.mean(LOG), GM = 10 ** LMU;
+
+    // ---- One example (15 species, fixed) ----
+    const EXAMPLE = [["Microcebus murinus","コビトキツネザル科",69.0],["Cercopithecus nictitans","オナガザル科",5256.9],["Pongo abelii","ヒト科",39696.1],["Ateles paniscus","クモザル科",8697.2],["Callicebus hoffmannsi","サキ科",1067.6],["Callithrix flaviceps","オマキザル科",373.0],["Papio hamadryas","オナガザル科",14007.1],["Cacajao calvus","サキ科",3421.0],["Trachypithecus obscurus","オナガザル科",7247.9],["Galago matschiei","ガラゴ科",211.6],["Ateles belzebuth","クモザル科",6692.4],["Callimico goeldii","オマキザル科",558.0],["Rhinopithecus avunculus","オナガザル科",9086.2],["Prolemur simus","キツネザル科",2030.4],["Callicebus donacophilus","サキ科",897.7]];
+    function drawExample() {
+        const { ctx, w, h } = G.setup(document.getElementById("exChart"));
+        const vals = EXAMPLE.map(d => d[2]);
+        const xb = G.mean(vals), half = G.t975(vals.length - 1) * G.sd(vals) / Math.sqrt(vals.length);
+        const ax = G.axes(ctx, w, h, { L: 20, R: 20, T: 34, B: 32, xmin: 0, xmax: 42000, ymin: 0, ymax: 1,
+            xticks: [0, 10000, 20000, 30000, 40000], xfmt: v => v ? G.man(v) + " g" : "0", xgrid: true });
+        const yDots = ax.T + ax.ph * 0.36, yBar = ax.T + ax.ph * 0.8;
+        // population mean
+        ctx.strokeStyle = G.css("--mean"); ctx.lineWidth = 2; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(ax.x(MU), ax.T); ctx.lineTo(ax.x(MU), ax.T + ax.ph); ctx.stroke(); ctx.setLineDash([]);
+        // dots
+        ctx.fillStyle = G.css("--pop");
+        vals.forEach((v, i) => { ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.arc(ax.x(v), yDots + ((i % 3) - 1) * 9, 5, 0, Math.PI * 2); ctx.fill(); });
+        ctx.globalAlpha = 1;
+        // interval
+        ctx.strokeStyle = G.css("--navy2"); ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(ax.x(xb - half), yBar); ctx.lineTo(ax.x(xb + half), yBar); ctx.stroke();
+        [xb - half, xb + half].forEach(v => { ctx.beginPath(); ctx.moveTo(ax.x(v), yBar - 7); ctx.lineTo(ax.x(v), yBar + 7); ctx.stroke(); });
+        ctx.fillStyle = G.css("--navy2"); ctx.beginPath(); ctx.arc(ax.x(xb), yBar, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        ctx.fillStyle = G.css("--muted"); ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+        ctx.fillText("15 selected species", ax.L, yDots - 16);
+        ctx.fillText("95% confidence interval", ax.L, yBar - 10);
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: "Population mean " + G.g(MU), kind: "line" },
+            { color: G.css("--navy2"), label: "Sample mean " + G.g(xb), kind: "dot" }
+        ]);
+    }
+
+    // ---- Hands-on panel ----
+    let n = 15, logScale = false, intervals = [];
+    const SHOW = 100;
+    function truth() { return logScale ? LMU : MU; }
+    function makeOne() {
+        const data = logScale ? LOG : RAW;
+        const s = new Array(n);
+        for (let i = 0; i < n; i++) s[i] = data[Math.floor(Math.random() * data.length)];
+        const xb = G.mean(s), half = G.t975(n - 1) * G.sd(s) / Math.sqrt(n);
+        const lo = xb - half, hi = xb + half, t = truth();
+        return { lo, hi, xb, hit: lo <= t && t <= hi };
+    }
+    function make(k) { for (let i = 0; i < k; i++) intervals.push(makeOne()); render(); }
+
+    function drawLab() {
+        const { ctx, w, h } = G.setup(document.getElementById("labChart"));
+        const range = logScale ? { xmin: 1.5, xmax: 5.3, xticks: [2, 3, 4, 5], xfmt: k => G.pow10Label(k) + " g" }
+                               : { xmin: -10000, xmax: 30000, xticks: [-10000, 0, 10000, 20000, 30000], xfmt: v => v ? G.man(v) + " g" : "0" };
+        const ax = G.axes(ctx, w, h, Object.assign({ L: 16, R: 16, T: 34, B: 32, ymin: 0, ymax: 1, xgrid: true, ylabel: "" }, range));
+        const shown = intervals.slice(-SHOW);
+        const rowH = ax.ph / SHOW;
+        const clamp = v => Math.max(range.xmin, Math.min(range.xmax, v));
+        const t = truth();
+        shown.forEach((iv, i) => {
+            const y = ax.T + rowH * (i + 0.5);
+            ctx.strokeStyle = iv.hit ? G.css("--pop") : G.css("--biased");
+            ctx.lineWidth = iv.hit ? 1.6 : 2.4;
+            const a = ax.x(clamp(iv.lo)), b = ax.x(clamp(iv.hi));
+            ctx.beginPath(); ctx.moveTo(a, y); ctx.lineTo(b, y); ctx.stroke();
+            ctx.fillStyle = ctx.strokeStyle;
+            if (iv.lo < range.xmin) { ctx.beginPath(); ctx.moveTo(a - 1, y); ctx.lineTo(a + 5, y - 3); ctx.lineTo(a + 5, y + 3); ctx.fill(); }
+            if (iv.hi > range.xmax) { ctx.beginPath(); ctx.moveTo(b + 1, y); ctx.lineTo(b - 5, y - 3); ctx.lineTo(b - 5, y + 3); ctx.fill(); }
+        });
+        ctx.lineWidth = 2; ctx.strokeStyle = G.css("--mean"); ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(ax.x(t), ax.T - 2); ctx.lineTo(ax.x(t), ax.T + ax.ph); ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+        G.legend(ctx, w, [
+            { color: G.css("--mean"), label: logScale ? "Geometric mean " + G.g(GM) : "Population mean " + G.g(MU), kind: "line" },
+            { color: G.css("--biased"), label: "Misses", kind: "line" },
+            { color: G.css("--pop"), label: "Contains", kind: "line" }
+        ]);
+        if (!shown.length) { ctx.fillStyle = G.css("--muted"); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Click “Build 100 intervals” to line up intervals here", ax.L + ax.pw / 2, ax.T + ax.ph / 2); }
+    }
+
+    function readout() {
+        const total = intervals.length, hit = intervals.filter(iv => iv.hit).length;
+        document.getElementById("rTotal").textContent = G.fmt(total);
+        document.getElementById("rHit").textContent = total ? G.fmt(hit) : "—";
+        const rateEl = document.getElementById("rRate");
+        rateEl.textContent = total ? G.fmt(hit / total * 100, 1) + " %" : "—";
+        rateEl.classList.toggle("off", total >= 100 && hit / total < 0.9);
+        const widths = intervals.map(iv => iv.hi - iv.lo);
+        document.getElementById("rWidth").textContent = !total ? "—" : logScale
+            ? "upper = " + G.fmt(10 ** G.median(widths), 1) + " × lower"
+            : G.g(G.median(widths));
+        const hint = document.getElementById("hint");
+        if (!total) { hint.textContent = "Click “Build 100 intervals”."; return; }
+        const rate = hit / total * 100;
+        const below = intervals.filter(iv => !iv.hit && iv.hi < truth()).length;
+        if (logScale) {
+            hint.innerHTML = `On the log scale, <b>${G.fmt(rate, 1)}%</b> of ${G.fmt(total)} intervals contained the geometric mean. Because the distribution becomes nearly symmetric, the intervals come close to their designed hit rate.`;
+        } else if (total < 300) {
+            hint.innerHTML = `The current hit rate is <b>${G.fmt(rate, 1)}%</b>. With 100 intervals, chance variation is still large, so click &ldquo;Build 1,000&rdquo; to add more and see whether it approaches 95%.`;
+        } else {
+            hint.innerHTML = `Of ${G.fmt(total)} intervals, <b>${G.fmt(rate, 1)}%</b> contained the population mean. Of the ${G.fmt(total - hit)} that missed, <b>${G.fmt(below)}</b> lay entirely below the population mean. Samples that missed the large species produce low, narrow intervals. Compare with &ldquo;Build on the log scale&rdquo;.`;
+        }
+    }
+    function render() { drawLab(); readout(); }
+
+    document.getElementById("make100").addEventListener("click", () => make(100));
+    document.getElementById("make1000").addEventListener("click", () => make(1000));
+    document.getElementById("reset").addEventListener("click", () => { intervals = []; render(); });
+    document.querySelectorAll('input[name="n"]').forEach(r => r.addEventListener("change", e => { n = +e.target.value; intervals = []; make(100); }));
+    document.getElementById("logScale").addEventListener("change", e => { logScale = e.target.checked; intervals = []; make(100); });
+
+    // On load: 100 intervals built with n=15
+    for (let i = 0; i < 100; i++) intervals.push(makeOne());
+    G.onRedraw(() => { drawExample(); render(); });
+})();
+</script>
+</body>
+</html>

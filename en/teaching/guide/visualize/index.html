@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphs — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="How the same data look different depending on histogram bin width and log scales. A hands-on explainer using primate body mass and home range size.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .fig-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+        .fig-pair h3 { font-size:0.9em; color:var(--muted); font-weight:600; margin-bottom:6px; }
+        .fig-pair canvas { height:230px; }
+        .lab + .lab { margin-top:28px; }
+        .between { margin-top:28px; }
+        .ctrl { display:flex; flex-direction:column; gap:10px; }
+        .ctrl .range-row b { min-width:9.5em; text-align:right; font-variant-numeric:tabular-nums; color:var(--navy2); }
+        .toggle.plain { border-color:color-mix(in srgb,var(--navy2) 35%,white); }
+        .toggle.plain input { accent-color:var(--navy2); }
+        .hover-note { margin-top:10px; font-size:0.86em; color:var(--muted); min-height:1.8em; }
+        .hover-note i { font-style:italic; color:var(--text); }
+        .readout dd { white-space:normal; }
+        .cl { grid-template-columns:minmax(0,250px) minmax(0,1fr) auto; }
+        .cl b { white-space:normal; line-height:1.5; }
+        @media (max-width:820px) { .cl { grid-template-columns:minmax(0,1fr) auto; } }
+        @media (max-width:720px) { .fig-pair { grid-template-columns:minmax(0,1fr); } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Graphs</span>
+        <div class="lang-switch"><a href="/teaching/guide/visualize/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>02</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>Change one axis, and the data look different</h1>
+        <p class="sub">Graphs — histograms, scatter plots, and log scales</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>A graph is not a direct copy of the data. Once you choose how to divide the values and how to mark the axis, you have decided what will be visible and what will be hidden. Quantities that span several orders of magnitude are mostly invisible unless you view them on a log scale.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Primate body mass spans several orders of magnitude</h2>
+        <p>Among the 265 primate species with a recorded body mass, the lightest weighs 31 grams and the heaviest, the eastern gorilla, weighs 149,325 grams. That is a difference of about 4,800-fold. Home range size (the area a group or individual normally moves around in) also varies about 14,000-fold among the species with records.</p>
+        <p>When you graph quantities like these, two choices directly shape what you see. How wide are the intervals the values are divided into? And does the axis mark equal steps as equal “differences” or as equal “ratios”?</p>
+        <dl class="terms">
+            <dt>Histogram</dt><dd>A chart that divides values into intervals of equal width and shows the number of species in each interval as the height of a bar. Used to see the shape of a distribution.</dd>
+            <dt>Bin, bin width</dt><dd>An interval, and the width of that interval. Also called a class and class width.</dd>
+            <dt>Log scale</dt><dd>An axis on which each tick mark means the value is ten times larger. Equal distances represent equal “ratios.”</dd>
+            <dt>Scatter plot</dt><dd>A chart that puts two quantities on the horizontal and vertical axes and plots each species as one point. Used to see the relationship between two quantities.</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>The same 265 species, drawn on two different scales</h2>
+        <div class="figure">
+            <div class="fig-pair">
+                <div>
+                    <h3>Linear scale (bin width 5,000 g)</h3>
+                    <canvas id="figRaw" role="img" aria-label="Histogram of body mass. On the linear scale, 158 species fall in the 0 to 5,000 gram bin, with a long tail to the right."></canvas>
+                </div>
+                <div>
+                    <h3>Log scale (bin width 0.25 decade)</h3>
+                    <canvas id="figLog" role="img" aria-label="Histogram of body mass. On the log scale, the species form a single peak, highest in the bin from about 5,600 to 10,000 grams."></canvas>
+                </div>
+            </div>
+            <div class="stat-row">
+                <div><span>Lightest species</span><b class="num">31 g</b></div>
+                <div><span>Heaviest species</span><b class="num">149,325 g</b></div>
+                <div><span>Species under 10,000 g</span><b class="num">234 species (88%)</b></div>
+            </div>
+            <p class="figcap">In the left chart, the first bar (0–5,000 g) holds 158 species, and the rest is just a thin tail stretching to the right. In the right chart, the same 265 species gather into a single peak, and the fullest bin runs from about 5,600 to 10,000 g (66 species).</p>
+        </div>
+        <p style="margin-top:18px">Both charts use exactly the same values. The only difference is how the horizontal axis is marked. The left chart conveys the fact that “most species are small, and a very few are huge.” The right chart conveys the fact that “viewed in terms of ratios, species body masses form one coherent distribution.”</p>
+    </section>
+
+</div>
+
+<div class="lab" id="labHist">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Change the bin width and the scale</div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="histChart" role="img" aria-label="Histogram of body mass. The bin width and scale can be changed."></canvas>
+            </div>
+            <div class="side">
+                <div class="ctrl">
+                    <div class="toggle plain">
+                        <input type="checkbox" id="logA">
+                        <label for="logA">Use a log scale on the horizontal axis<small>Switch to an axis where each tick mark means ten times larger.</small></label>
+                    </div>
+                    <div>
+                        <span class="seg-cap">Bin width</span>
+                        <div class="range-row">
+                            <input type="range" id="binA" min="0" max="4" step="1" value="2" aria-label="Bin width">
+                            <b id="binAval">—</b>
+                        </div>
+                    </div>
+                </div>
+                <dl class="readout" aria-live="polite">
+                    <dt>Number of bins</dt><dd id="rA1">—</dd>
+                    <dt>Fullest bin</dt><dd id="rA2">—</dd>
+                    <dt>Species in that bin</dt><dd id="rA3">—</dd>
+                </dl>
+            </div>
+        </div>
+        <div class="hint" id="hintA"></div>
+    </div>
+</div>
+
+<div class="article between">
+    <p>A histogram shows the distribution of one quantity. To see the relationship between two quantities, we use a scatter plot. Here, the 153 species with records of both body mass and home range size are plotted, one point per species.</p>
+</div>
+
+<div class="lab" id="labScatter">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Put the scatter plot on log–log axes</div>
+            <div>
+                <label class="seg-cap" for="famB">Highlight a family</label>
+                <select class="select" id="famB">
+                    <option value="">No highlight</option>
+                </select>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="scatterChart" role="img" aria-label="Scatter plot of body mass and home range size. 153 species."></canvas>
+                <div class="hover-note" id="hoverB" aria-live="polite">Hover over a point to see the species’ scientific name and values.</div>
+            </div>
+            <div class="side">
+                <div class="toggle plain">
+                    <input type="checkbox" id="logB">
+                    <label for="logB">Use log–log axes<small>Put both the horizontal and vertical axes on a log scale.</small></label>
+                </div>
+                <dl class="readout" aria-live="polite">
+                    <dt>Points</dt><dd id="rB1">—</dd>
+                    <dt>Highlighted family</dt><dd id="rB2">—</dd>
+                    <dt>In the bottom-left box</dt><dd id="rB3">—</dd>
+                </dl>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">The “bottom-left 10% × 10% box” is the small rectangle covering the lowest tenth of the displayed range on each axis.</p>
+            </div>
+        </div>
+        <div class="hint" id="hintB"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>How it works: logarithms turn “differences” into “ratios”</h2>
+        <p>On a log scale, what is spaced evenly is not the value itself but its common logarithm. The common logarithm of a number is the power to which 10 must be raised to give that number.</p>
+        <div class="formula-block"><span class="formula">log value = log<sub>10</sub>(body mass) &emsp; e.g. 31 g → 1.49, 149,325 g → 5.17</span></div>
+        <p>The range from 31 grams to 149,325 grams becomes 1.49 to 5.17 on the log scale, a span of only about 3.7. The distance from 100 grams to 1,000 grams is the same length as the distance from 10,000 grams to 100,000 grams. In other words, distance along a log axis represents “how many times larger.”</p>
+        <p>Compare the <b>skewness</b>, which measures how lopsided a distribution is (0 means symmetric, and larger positive values mean a longer tail to the right). Body mass itself has a skewness of 7.60, while the logarithm of body mass has −0.40. Taking logarithms makes the distribution almost symmetric.</p>
+        <p>The same thing happens in scatter plots. With the raw values, a few large species or species with very large home ranges set the range of the axes, and the remaining points are squeezed into a corner. On log–log axes, the points line up in a band from the lower left to the upper right. Even the correlation coefficient, which measures the strength of the relationship between two quantities (covered in <a href="../correlation/">03 Correlation and causation</a>), changes with the choice of scale: 0.35 with the raw values and 0.68 between the logarithms.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Bin width is a matter of taste and does not affect how you read the shape of a distribution.”</h3>
+                <p>It does. With bins 1,000 g wide, the first bar holds 95 species. With bins 20,000 g wide, there are only 8 bins, and the first bar holds 258 of the 265 species. You can hardly read any shape at all. Conversely, if the bins are too narrow, the bars become sparse and chance bumps stand out.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Taking logarithms is a way of manipulating the data to mislead.”</h3>
+                <p>Taking logarithms changes neither the order of the species nor how many times heavier one species is than another. What changes is whether equal distances on the axis represent equal “differences” or equal “ratios.” For a quantity like body mass, where ratios are what matter, a log axis shows the facts as they are. The chart must always state clearly that the axis is logarithmic, however.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“If the points in a scatter plot look clumped together, the relationship must be weak.”</h3>
+                <p>When body mass and home range size are drawn on linear scales, 136 of the 153 species (89%) fall inside the bottom-left 10% × 10% box. This is not because the relationship is weak. It is because a few extreme species set the range of the axes. Draw the same 153 species on log–log axes, and a clear upward trend appears.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Extreme values such as gorillas just get in the way, so they should be left out of the chart.”</h3>
+                <p>Gorillas and humans are not measurement errors. They are the values of real species. Leaving them out changes the very fact you are describing, the distribution of primate body mass. A log scale is what you use when you want to see the overall shape while keeping the extreme values.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 5</b><span>Covers scatter plots and the correlation coefficient, and reads quantities that span several orders of magnitude, such as body mass and home range, on a log scale.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#3f7352" href="https://aonoa68.github.io/joho-katsuyo/week09/" target="_blank" rel="noopener noreferrer"><b>Applied Information Literacy, session 9</b><span>Starting from the question “choosing a graph is choosing what you claim,” students look at examples of bad and good graphs and draw graphs of their own data.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/03.html" target="_blank" rel="noopener noreferrer"><b>Behaviormetrics (Hokkaido U.), session 3</b><span>Makes scatter plots, histograms, and bar charts with ggplot2 in R, and adjusts the bin width of a histogram.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/04.html" target="_blank" rel="noopener noreferrer"><b>Behaviormetrics (Hokkaido U.), session 4</b><span>Adjusts themes, colors, axes, and legends in ggplot2, and arranges and saves multiple graphs.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#767c84" href="https://aonoa68.github.io/joho-nyumon/week10/" target="_blank" rel="noopener noreferrer"><b>Introduction to Information, session 10</b><span>Examines the difference between bar charts and histograms, and graphs to avoid, such as charts without axis labels and 3D charts.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../describe/"><small>← 01</small>Summarizing data</a>
+        <a class="pg next" href="../correlation/"><small>03 →</small>Correlation and causation</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Of 376 primate species, the histograms use the 265 species with a recorded adult body mass, and the scatter plot uses the 153 species with records of both body mass and home range size.</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">← Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const MASS = G.select(["体重g"]).map(d => d.v[0]).filter(v => v > 0);
+    const LOGM = MASS.map(v => Math.log10(v));
+    const PTS = G.select(["体重g", "行動圏km2"]).filter(d => d.v[0] > 0 && d.v[1] > 0)
+        .map(d => ({ x: d.v[0], y: d.v[1], lx: Math.log10(d.v[0]), ly: Math.log10(d.v[1]), sp: G.species(d.row), fam: G.family(d.row) }));
+    const gram = v => v === 0 ? "0" : G.man(v);
+    const logLabel = k => G.pow10Label(k);
+
+    /* ---------- histogram ---------- */
+    function histogram(canvas, values, o) {
+        const { ctx, w, h } = G.setup(canvas);
+        const nb = Math.round((o.xmax - o.xmin) / o.bw);
+        const counts = new Array(nb).fill(0);
+        values.forEach(v => { let i = Math.floor((v - o.xmin) / o.bw + 1e-9); if (i >= nb) i = nb - 1; if (i >= 0) counts[i]++; });
+        const top = Math.max(...counts);
+        const step = G.niceStep(top, 4), ymax = Math.max(step, Math.ceil(top / step) * step);
+        const yticks = []; for (let v = 0; v <= ymax + 1e-9; v += step) yticks.push(v);
+        const a = G.axes(ctx, w, h, { L: 40, R: 26, T: 30, B: 32, xmin: o.xmin, xmax: o.xmax, ymin: 0, ymax, xticks: o.xticks, yticks, xfmt: o.xfmt, ylabel: "Species", xlabel: o.xlabel });
+        ctx.fillStyle = o.color || G.css("--pop");
+        const bwpx = a.x(o.xmin + o.bw) - a.x(o.xmin);
+        counts.forEach((c, i) => { if (c) ctx.fillRect(a.x(o.xmin + i * o.bw) + (bwpx > 3 ? 0.5 : 0), a.y(c), Math.max(1, bwpx - (bwpx > 3 ? 1 : 0)), a.y(0) - a.y(c)); });
+        let mi = 0; counts.forEach((c, i) => { if (c > counts[mi]) mi = i; });
+        return { counts, nb, mode: mi, modeCount: counts[mi] };
+    }
+    const RAW_TICKS = [0, 50000, 100000, 150000];
+    const rawFmt = v => v === 150000 ? gram(v) + " g" : gram(v);
+
+    function drawFigures() {
+        histogram(document.getElementById("figRaw"), MASS, { xmin: 0, xmax: 150000, bw: 5000, xticks: RAW_TICKS, xfmt: rawFmt, xlabel: "Body mass" });
+        histogram(document.getElementById("figLog"), LOGM, { xmin: 1.25, xmax: 5.25, bw: 0.25, xticks: G.logTicks(1.25, 5.25), xfmt: k => logLabel(k) + (k === 5 ? " g" : ""), xlabel: "Body mass (log scale)" });
+    }
+
+    const RAW_W = [1000, 2000, 5000, 10000, 20000];
+    const LOG_W = [0.05, 0.1, 0.25, 0.5, 1];
+    const logA = document.getElementById("logA"), binA = document.getElementById("binA");
+    function drawHist() {
+        const isLog = logA.checked, wIdx = +binA.value;
+        let r, rangeText;
+        if (!isLog) {
+            const bw = RAW_W[wIdx], xmax = Math.ceil(Math.max(...MASS) / bw) * bw;
+            document.getElementById("binAval").textContent = G.fmt(bw) + " g";
+            r = histogram(document.getElementById("histChart"), MASS, { xmin: 0, xmax: Math.max(xmax, 150000), bw, xticks: RAW_TICKS, xfmt: rawFmt, xlabel: "Horizontal axis: body mass (linear scale)" });
+            rangeText = `${G.fmt(r.mode * bw)}–${G.fmt((r.mode + 1) * bw)} g`;
+        } else {
+            const bw = LOG_W[wIdx];
+            const xmin = Math.floor(Math.min(...LOGM) / bw + 1e-9) * bw;
+            let xmax = Math.ceil(Math.max(...LOGM) / bw - 1e-9) * bw; if (xmax <= Math.max(...LOGM)) xmax += bw;
+            document.getElementById("binAval").textContent = `${bw} decade${bw === 1 ? "" : "s"} (×${G.fmt(10 ** bw, 2)})`;
+            r = histogram(document.getElementById("histChart"), LOGM, { xmin, xmax, bw, xticks: G.logTicks(xmin, xmax), xfmt: k => logLabel(k) + " g", xlabel: "Horizontal axis: body mass (log scale)" });
+            const lo = 10 ** (xmin + r.mode * bw), hi = 10 ** (xmin + (r.mode + 1) * bw);
+            const sig = v => v >= 100 ? G.fmt(Math.round(v)) : G.fmt(v, 1);
+            rangeText = `${sig(lo)}–${sig(hi)} g`;
+        }
+        document.getElementById("rA1").textContent = String(r.nb);
+        document.getElementById("rA2").textContent = rangeText;
+        document.getElementById("rA3").textContent = r.modeCount + " species";
+        const hint = document.getElementById("hintA");
+        if (!isLog && wIdx >= 3) hint.innerHTML = `With wider bins, the first bar holds <b>${r.modeCount}</b> of the 265 species. You can hardly read the shape of the distribution.`;
+        else if (!isLog) hint.innerHTML = `<b>${r.modeCount} species</b> crowd into the leftmost bar, and the rest is just a thin tail to the right. Turn on “Use a log scale” to see the same 265 species on a scale of ratios.`;
+        else if (wIdx === 4) hint.innerHTML = `Dividing by whole decades leaves only <b>${r.nb} bins</b>, and the detail of the peak disappears. Narrow the bins to see the top and tails of the peak.`;
+        else if (wIdx === 0) hint.innerHTML = `With bins as narrow as 0.05 decade, each bin holds few species, and chance bumps stand out. Compare which width makes the shape easiest to read.`;
+        else hint.innerHTML = `On the log scale, the 265 species gather into a single peak. The fullest bin is <b>${rangeText}</b>.`;
+    }
+
+    /* ---------- scatter plot ---------- */
+    const famB = document.getElementById("famB"), logB = document.getElementById("logB");
+    const famCount = {}; PTS.forEach(p => famCount[p.fam] = (famCount[p.fam] || 0) + 1);
+    ["オナガザル科", "オマキザル科", "クモザル科", "キツネザル科", "テナガザル科", "ヒト科"].forEach(f => {
+        const o = document.createElement("option"); o.value = f; o.textContent = `${G.familyLabel(f)} (${famCount[f]} species)`; famB.appendChild(o);
+    });
+    let hovered = -1, screen = [];
+    function scatterRanges(isLog) {
+        if (!isLog) return { xmin: 0, xmax: 120000, ymin: 0, ymax: 30, xticks: [0, 30000, 60000, 90000, 120000], yticks: [0, 10, 20, 30], xfmt: v => gram(v), yfmt: v => G.fmt(v) };
+        const lx = PTS.map(p => p.lx), ly = PTS.map(p => p.ly);
+        const xmin = Math.floor(Math.min(...lx)), xmax = Math.ceil(Math.max(...lx)), ymin = Math.floor(Math.min(...ly)), ymax = Math.ceil(Math.max(...ly));
+        return { xmin, xmax, ymin, ymax, xticks: G.logTicks(xmin, xmax), yticks: G.logTicks(ymin, ymax), xfmt: logLabel, yfmt: logLabel };
+    }
+    function drawScatter() {
+        const isLog = logB.checked, fam = famB.value;
+        const canvas = document.getElementById("scatterChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const rg = scatterRanges(isLog);
+        const a = G.axes(ctx, w, h, { L: 46, R: 24, T: 30, B: 50, ...rg, xgrid: true, ylabel: "Home range size (km²)" });
+        ctx.fillStyle = G.css("--faint"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        ctx.fillText(isLog ? "Body mass (g, log scale)" : "Body mass (g)", a.L + a.pw / 2, h - 4);
+        const px = p => a.x(isLog ? p.lx : p.x), py = p => a.y(isLog ? p.ly : p.y);
+        screen = PTS.map(p => [px(p), py(p)]);
+        const base = G.css("--pop"), hi = G.css("--mean"), faint = G.css("--faint");
+        const order = PTS.map((p, i) => i).sort((i, j) => (PTS[i].fam === fam) - (PTS[j].fam === fam));
+        order.forEach(i => {
+            const p = PTS[i], on = fam && p.fam === fam;
+            ctx.globalAlpha = fam ? (on ? 0.95 : 0.35) : 0.7;
+            ctx.fillStyle = fam ? (on ? hi : faint) : base;
+            ctx.beginPath(); ctx.arc(screen[i][0], screen[i][1], on ? 4 : 3.2, 0, Math.PI * 2); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        if (hovered >= 0) { ctx.strokeStyle = G.css("--navy2"); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(screen[hovered][0], screen[hovered][1], 7, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1; }
+        if (fam) G.legend(ctx, w, [{ color: faint, label: "Other", kind: "dot" }, { color: hi, label: G.familyLabel(fam), kind: "dot" }], 12);
+        // bottom-left 10% x 10% box
+        const cx = rg.xmin + 0.1 * (rg.xmax - rg.xmin), cy = rg.ymin + 0.1 * (rg.ymax - rg.ymin);
+        ctx.strokeStyle = G.css("--gold-deep"); ctx.setLineDash([4, 3]); ctx.strokeRect(a.x(rg.xmin), a.y(cy), a.x(cx) - a.x(rg.xmin), a.y(rg.ymin) - a.y(cy)); ctx.setLineDash([]);
+        const k = PTS.filter(p => (isLog ? p.lx : p.x) < cx && (isLog ? p.ly : p.y) < cy).length;
+        document.getElementById("rB1").textContent = PTS.length + " species";
+        document.getElementById("rB2").textContent = fam ? `${G.familyLabel(fam)}, ${famCount[fam]} species` : "None";
+        document.getElementById("rB3").textContent = `${k} species (${Math.round(k / PTS.length * 100)}%)`;
+        const hint = document.getElementById("hintB");
+        let msg = isLog
+            ? `On log–log axes, the points line up in a band from the lower left to the upper right. ${k ? `Only <b>${k} species</b> fall inside the dotted box.` : "No points fall inside the dotted box."}`
+            : `On linear scales, <b>${k}</b> of the 153 species fall inside the small dotted box in the lower left, and you cannot see how they are arranged. Turn on “Use log–log axes.”`;
+        if (fam) msg += ` Also look at where the ${famCount[fam]} highlighted species of ${G.familyLabel(fam)} sit within the whole.`;
+        hint.innerHTML = msg;
+    }
+    document.getElementById("scatterChart").addEventListener("mousemove", e => {
+        const rect = e.currentTarget.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+        let best = -1, bd = 100;
+        screen.forEach((s, i) => { const d = (s[0] - mx) ** 2 + (s[1] - my) ** 2; if (d < bd) { bd = d; best = i; } });
+        if (best !== hovered) {
+            hovered = best; drawScatter();
+            const note = document.getElementById("hoverB");
+            if (best >= 0) { const p = PTS[best]; note.innerHTML = `<i>${p.sp}</i> (${G.familyLabel(p.fam)}) &emsp; body mass ${G.fmt(Math.round(p.x))} g / home range ${p.y < 0.1 ? G.fmt(p.y, 4) : G.fmt(p.y, 2)} km²`; }
+            else note.textContent = "Hover over a point to see the species’ scientific name and values.";
+        }
+    });
+    document.getElementById("scatterChart").addEventListener("mouseleave", () => { if (hovered >= 0) { hovered = -1; drawScatter(); } });
+
+    logA.addEventListener("change", drawHist);
+    binA.addEventListener("input", drawHist);
+    logB.addEventListener("change", () => { hovered = -1; drawScatter(); });
+    famB.addEventListener("change", drawScatter);
+    G.onRedraw(() => { drawFigures(); drawHist(); drawScatter(); });
+})();
+</script>
+</body>
+</html>

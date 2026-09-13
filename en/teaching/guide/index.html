@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Guide to Statistical Thinking — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Eight core ideas of statistics, explained step by step with primate ecological data. Every page lets you work with the real data as you read.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../teaching/guide/assets/guide.css">
+    <style>
+        .page-header h1 { font-size:2.6em; }
+        .path { list-style:none; margin-top:28px; position:relative; }
+        .path::before { content:''; position:absolute; left:27px; top:24px; bottom:24px; width:2px; background:linear-gradient(var(--gold), color-mix(in srgb,var(--gold) 25%,white)); }
+        .stop { position:relative; display:grid; grid-template-columns:56px minmax(0,1fr); gap:0 18px; margin-bottom:12px; }
+        .stop .no { width:56px; height:56px; border-radius:50%; background:var(--white); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:1.35em; color:var(--navy2); position:relative; z-index:1; }
+        .stop a.card { display:block; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:16px 20px; text-decoration:none; color:var(--text); transition:box-shadow .2s, transform .2s; }
+        .stop a.card:hover { box-shadow:0 8px 22px -12px rgba(26,37,53,.35); transform:translateX(3px); }
+        .stop .topic { font-size:0.76em; letter-spacing:0.12em; font-weight:700; color:var(--gold-deep); }
+        .stop h2 { font-size:1.3em; margin:2px 0 4px; }
+        .stop p { font-size:0.9em; color:var(--muted); line-height:1.75; }
+        .part { font-size:0.76em; letter-spacing:0.14em; font-weight:700; color:var(--muted); margin:26px 0 10px 74px; }
+        .part:first-child { margin-top:0; }
+        .data-note { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:18px; }
+        .data-note div { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; }
+        .data-note b { display:block; font-family:var(--serif); font-weight:400; font-size:1.7em; color:var(--navy2); line-height:1.2; font-variant-numeric:tabular-nums; }
+        .data-note span { font-size:0.86em; color:var(--muted); }
+        .also { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+        .also a { display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:22px; border:1.5px solid var(--navy2); color:var(--navy2); text-decoration:none; font-size:0.9em; font-weight:600; }
+        .also a:hover { background:var(--navy2); color:#fff; }
+        @media (max-width:640px) {
+            .page-header h1 { font-size:2em; }
+            .data-note { grid-template-columns:minmax(0,1fr); }
+            .path::before { left:21px; }
+            .stop { grid-template-columns:44px minmax(0,1fr); gap:0 12px; }
+            .stop .no { width:44px; height:44px; font-size:1.1em; }
+            .part { margin-left:56px; }
+        }
+        @media (prefers-reduced-motion:reduce) { .stop a.card { transition:none; } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">A Guide to Statistical Thinking</span>
+        <div class="lang-switch">
+            <a href="/teaching/guide/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow">READ WITH PRIMATE ECOLOGICAL DATA</p>
+        <h1>A Guide to Statistical Thinking</h1>
+        <p class="sub">From summarizing data to expressing relationships as equations. Eight ideas, checked one at a time by working with the same data.</p>
+    </div>
+</header>
+
+<main class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">ABOUT THIS GUIDE</div>
+            <p>Written for readers who have never studied statistics, so that reading one page at a time traces the line of reasoning. Every page uses the same primate dataset and nothing else.</p>
+        </div>
+        <div class="data-note">
+            <div><b>376</b><span>primate species, one row per species</span></div>
+            <div><b>20</b><span>variables, including body mass, group size, longevity, home range size, and the temperature of the geographic range</span></div>
+            <div><b>8</b><span>ideas, each with a hands-on panel that works with the data</span></div>
+        </div>
+        <p style="margin-top:16px" class="muted">The data are the primate portion of PanTHERIA (Jones et al. 2009, <i>Ecology</i> 90: 2648), also used in the courses Statistics I and II. Some species lack records for some variables, so the number of species differs from page to page.</p>
+    </section>
+
+    <section>
+        <ol class="path">
+            <li class="part">LOOKING AT DATA</li>
+            <li class="stop"><span class="no">01</span><a class="card" href="describe/"><span class="topic">SUMMARIZING DATA</span><h2>Does the mean describe a typical species?</h2><p>Mean, median, and spread. Which number should summarize skewed data.</p></a></li>
+            <li class="stop"><span class="no">02</span><a class="card" href="visualize/"><span class="topic">GRAPHS</span><h2>Change one axis, and the data look different</h2><p>Histograms, scatter plots, and log scales for data spanning orders of magnitude.</p></a></li>
+            <li class="stop"><span class="no">03</span><a class="card" href="correlation/"><span class="topic">CORRELATION AND CAUSATION</span><h2>Do longer-lived species range more widely?</h2><p>The correlation coefficient, and the third variable behind a relationship.</p></a></li>
+            <li class="part">INFERRING THE WHOLE FROM A PART</li>
+            <li class="stop"><span class="no">04</span><a class="card" href="sampling/"><span class="topic">SAMPLING</span><h2>Why one spoonful tells you how the soup tastes</h2><p>Samples and the central limit theorem. More data does not fix a biased sample.</p></a></li>
+            <li class="stop"><span class="no">05</span><a class="card" href="interval/"><span class="topic">CONFIDENCE INTERVALS</span><h2>What exactly is 95% about a 95% interval?</h2><p>Estimating the whole from a part, with a range rather than a single number.</p></a></li>
+            <li class="stop"><span class="no">06</span><a class="card" href="testing/"><span class="topic">HYPOTHESIS TESTS</span><h2>When a real difference is &ldquo;not significant&rdquo;</h2><p>Measuring whether chance could produce a result. p-values and effect size.</p></a></li>
+            <li class="part">PROBABILITY AND EQUATIONS</li>
+            <li class="stop"><span class="no">07</span><a class="card" href="bayes/"><span class="topic">PROBABILITY AND BAYES</span><h2>Do large species form large groups, or the other way round?</h2><p>The direction of conditional probability, and Bayes&rsquo; theorem.</p></a></li>
+            <li class="stop"><span class="no">08</span><a class="card" href="regression/"><span class="topic">REGRESSION</span><h2>If body mass is ten times larger, how much larger is the home range?</h2><p>Regression lines, reading the slope, and residuals.</p></a></li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>Links to the courses</h2>
+        <p>Each page ends with links to the course sessions that cover the same idea. The course map shows which session of which course covers what. The course sites are in Japanese.</p>
+        <div class="also">
+            <a href="../map/"><i class="fas fa-table-cells"></i> Course map</a>
+            <a href="../"><i class="fas fa-chalkboard-user"></i> Courses and course sites</a>
+        </div>
+    </section>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../">&larr; Back to Teaching</a></p>
+</footer>
+
+</body>
+</html>

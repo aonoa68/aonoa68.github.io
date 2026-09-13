@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correlation and Causation — A Guide to Statistical Thinking | Ayaka Onohara</title>
+    <meta name="description" content="Why do longer-lived primates have larger home ranges? The meaning of the correlation coefficient, and spurious relationships created by a third variable (confounding), checked with primate ecological data.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../../teaching/guide/assets/guide.css">
+    <style>
+        .hypos { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:18px; }
+        .hypo { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; }
+        .hypo .path { font-family:var(--serif); font-size:1.08em; color:var(--navy2); line-height:1.5; }
+        .hypo p { font-size:0.86em; color:var(--muted); margin-top:6px; line-height:1.7; }
+        .hypo.third { border-color:color-mix(in srgb,var(--mean) 40%,white); }
+        .hypo.third .path { color:var(--mean); }
+        .figure canvas.pair2 { height:280px; }
+        .seg label { white-space:nowrap; }
+        .cl { grid-template-columns:230px minmax(0,1fr) auto; }
+        .cl b { white-space:normal; line-height:1.5; }
+        @media (max-width:820px) { .cl { grid-template-columns:minmax(0,1fr) auto; } }
+        @media (max-width:820px) { .hypos { grid-template-columns:minmax(0,1fr); } }
+    </style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="crumb">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="crumb">Statistical thinking</a>
+        <span class="nav-sep">/</span>
+        <span class="crumb now">Correlation and causation</span>
+        <div class="lang-switch"><a href="/teaching/guide/correlation/" class="lang-btn">JA</a><span class="lang-btn active">EN</span></div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <p class="eyebrow"><b>03</b><a href="../">A Guide to Statistical Thinking</a></p>
+        <h1>Do longer-lived species range more widely?</h1>
+        <p class="sub">Correlation and causation — suspect the third variable</p>
+    </div>
+</header>
+
+<main>
+<div class="article">
+
+    <section>
+        <div class="oneline">
+            <div class="label">IN ONE SENTENCE</div>
+            <p>When two quantities rise together (when they are correlated), that is not evidence that one causes the other. A third variable that drives both may be hiding behind the relationship.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Longevity and home range are clearly correlated</h2>
+        <p>Line up primate species by their recorded maximum longevity and the size of their home range (the area a group or individual normally uses), and a clear tendency appears: longer-lived species have larger home ranges. Across the 100 species with records for all three of body mass, longevity, and home range, the correlation coefficient is <b class="num">0.65</b>.</p>
+        <p>Faced with this relationship, more than one explanation is possible.</p>
+        <div class="hypos">
+            <div class="hypo"><div class="path">Longevity → home range</div><p>Species that live longer may, over a long lifetime, learn and come to use a wider area.</p></div>
+            <div class="hypo"><div class="path">Home range → longevity</div><p>Species that can use a wider area may secure food more reliably and so live longer.</p></div>
+            <div class="hypo third"><div class="path">Longevity ← body mass → home range</div><p>Larger-bodied species may live longer, and larger bodies may use wider areas. There would then be no direct link between longevity and home range.</p></div>
+        </div>
+        <p style="margin-top:18px">A variable like the one in the third explanation, which influences both quantities and creates a spurious correlation between them, is called a <b>confounding variable</b> (a third variable). The correlation coefficient alone cannot tell these three explanations apart.</p>
+    </section>
+
+    <section>
+        <h2>Body mass is strongly tied to both longevity and home range</h2>
+        <p>First, check body mass, the candidate third variable. In the same 100 species, body mass is correlated with both longevity and home range at <b class="num">0.74</b>. That is a stronger relationship than the 0.65 between longevity and home range themselves.</p>
+        <div class="figure">
+            <canvas id="massChart" class="pair2" role="img" aria-label="Left: scatter plot of body mass and maximum longevity. Right: scatter plot of body mass and home range size. Both show a strong upward relationship."></canvas>
+            <p class="figcap">Both axes use log scales. Body mass ranges from 48 grams to about 110,000 grams, and home range spans several thousandfold, so on ordinary scales a few large species would take over the whole figure. All correlation coefficients below are calculated on the logarithms (log10) of the values.</p>
+        </div>
+    </section>
+
+</div>
+
+<div class="lab" id="lab">
+    <div class="lab-inner">
+        <div class="lab-top">
+            <div class="lab-title">Remove the effect of body mass</div>
+            <div>
+                <span class="seg-cap">Pair to view</span>
+                <div class="seg" role="radiogroup" aria-label="Pair to view">
+                    <input type="radio" name="pair" id="pLifeRange" value="lifeRange" checked><label for="pLifeRange">Longevity × home range</label>
+                    <input type="radio" name="pair" id="pGestLife" value="gestLife"><label for="pGestLife">Gestation × longevity</label>
+                    <input type="radio" name="pair" id="pLifeGroup" value="lifeGroup"><label for="pLifeGroup">Longevity × group size</label>
+                </div>
+            </div>
+        </div>
+        <div class="lab-grid">
+            <div>
+                <canvas id="scatter" role="img" aria-label="Scatter plot of the selected pair. Point color shows body mass."></canvas>
+            </div>
+            <div class="side">
+                <div class="toggle">
+                    <input type="checkbox" id="adjust">
+                    <label for="adjust">Remove the effect of body mass<small>Replaces both axes with “how many times the value expected from body mass.” This is the same idea as comparing species of about the same body mass.</small></label>
+                </div>
+                <dl class="readout" aria-live="polite">
+                    <dt>Species</dt><dd id="rN">—</dd>
+                    <dt>Body mass vs. x</dt><dd id="rMx">—</dd>
+                    <dt>Body mass vs. y</dt><dd id="rMy">—</dd>
+                    <dt>Raw r</dt><dd id="rR">—</dd>
+                    <dt>r without body mass</dt><dd id="rP">—</dd>
+                </dl>
+                <p class="muted" style="font-size:0.84em;line-height:1.7">Point color shows body mass: light blue for lighter species, dark navy for heavier species. The dashed line is the straight line that best fits the points.</p>
+            </div>
+        </div>
+        <div class="hint" id="hint"></div>
+    </div>
+</div>
+
+<div class="article">
+
+    <section>
+        <h2>How it works: the correlation coefficient and partial correlation</h2>
+        <p>The <b>correlation coefficient</b> r expresses the strength of the straight-line relationship between two quantities as a number from −1 to 1. The closer it is to 1, the more closely the points follow an upward straight line; the closer to −1, a downward straight line; near 0, no straight-line relationship is visible. It multiplies together the directions in which each species’ values deviate from their means, averages the result, and divides by the overall spread.</p>
+        <div class="formula-block"><span class="formula">r = Σ(x − x̄)(y − ȳ) ÷ √{ Σ(x − x̄)² · Σ(y − ȳ)² }</span></div>
+        <p>A correlation with the effect of a third variable z removed is called a <b>partial correlation</b>. Predict x and y each from z with a straight line, then take the correlation between the deviations from those predictions (the residuals). When you choose “Remove the effect of body mass” in the panel above, the scatter plot of these residuals is what you see. The same value can also be obtained from the three correlation coefficients with the following formula.</p>
+        <div class="formula-block"><span class="formula">r<sub>xy·z</sub> = ( r<sub>xy</sub> − r<sub>xz</sub> r<sub>yz</sub> ) ÷ √{ (1 − r<sub>xz</sub>²)(1 − r<sub>yz</sub>²) }</span></div>
+        <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Pair (z = body mass)</th><th>Species</th><th>r<sub>xz</sub></th><th>r<sub>yz</sub></th><th>Raw r</th><th>r without body mass</th></tr></thead>
+            <tbody>
+                <tr><td>Longevity × home range</td><td>100</td><td>0.74</td><td>0.74</td><td>0.65</td><td><b>0.23</b></td></tr>
+                <tr><td>Gestation × longevity</td><td>106</td><td>0.70</td><td>0.75</td><td>0.56</td><td><b>0.07</b></td></tr>
+                <tr><td>Longevity × group size</td><td>116</td><td>0.72</td><td>0.61</td><td>0.48</td><td><b>0.07</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p style="margin-top:16px">In all three pairs, the correlation drops sharply once body mass is removed. The square of r is a rough measure of “the share of the variation in one quantity that moves in a straight line with the other”; for longevity and home range it falls from 0.42 to 0.05. Most of the apparent relationship can be read as running through body mass. A weak relationship of 0.23 remains between longevity and home range, and what other than body mass produces it cannot be determined from these data alone.</p>
+    </section>
+
+    <section>
+        <h2>Common misconceptions</h2>
+        <div class="myths">
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“The stronger the correlation, the stronger the causal effect”</h3>
+                <p>A correlation coefficient only expresses how closely the points line up along a straight line. The 0.65 between longevity and home range is a reasonably strong correlation, yet it fell to 0.23 once body mass was held equal. A strong correlation can also arise from strong confounding.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“Removing body mass made the correlation vanish, so body mass is proven to be the cause”</h3>
+                <p>A partial correlation can only remove the effects of variables that were measured and put into the formula. Body mass itself is entangled with other factors, such as closely related species tending to resemble each other. What the partial correlation shows is that “with body mass held equal, the relationship is barely visible”; it does not go as far as identifying the cause.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“A correlation near 0 means the two are unrelated”</h3>
+                <p>The correlation coefficient only captures straight-line relationships. A hump-shaped relationship, or one that is strong only over part of the range, can produce a small r. This page takes logarithms before calculating for the same reason: for quantities spanning many orders of magnitude, a straight-line relationship is hard to see on the raw scale.</p></div>
+            <div class="myth"><span class="x"><i class="fas fa-xmark"></i></span>
+                <h3>“A correlation with variables removed is always the right one”</h3>
+                <p>What to remove depends on assumptions about the causal pathways. Removing a variable that is itself influenced by both x and y can create a spurious correlation between two quantities that were originally unrelated. Before removing a variable, you need to think about where it sits in the causal structure.</p></div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Covered in the courses</h2>
+        <p class="muted">The course sites are in Japanese and open to anyone. To go further, visit the page for each session.</p>
+        <div class="course-links">
+            <a class="cl" style="--c:#3d6fa8" href="https://aonoa68.github.io/toukei-1/05_correlation/" target="_blank" rel="noopener noreferrer"><b>Statistics I, session 5</b><span>Introduces scatter plots and the correlation coefficient, then tests the primate-data correlation “species that wean later have larger home ranges” by proposing rival hypotheses.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 10</b><span>Treats causation as a comparison between “what happens if we do it” and “what happens if we don’t,” and explains why randomized controlled trials can break confounding.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#22456d" href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer"><b>Statistics II, session 11</b><span>Uncovers spurious correlations by controlling with partial correlation, and covers Simpson’s paradox and variables that must not be controlled for (colliders).</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#8a464f" href="https://aonoa68.github.io/kodo-keiryo/materials/08.html" target="_blank" rel="noopener noreferrer"><b>Behaviormetrics (Hokkaido U.), session 8</b><span>Computes and tests correlation coefficients in R, and describes the relationship between two variables together with scatter plots.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+            <a class="cl" style="--c:#767c84" href="https://aonoa68.github.io/joho-nyumon/week12/" target="_blank" rel="noopener noreferrer"><b>Introduction to Information, session 12</b><span>Splits data into strata and draws scatter plots, confirming that a relationship invisible in the whole appears when the strata are viewed separately.</span><i class="fas fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </section>
+
+    <div class="pager" aria-label="Previous and next ideas">
+        <a class="pg" href="../visualize/"><small>← 02</small>Graphs</a>
+        <a class="pg next" href="../sampling/"><small>04 →</small>Sampling</a>
+    </div>
+
+    <p class="source">Data: Jones, K. E. et al. (2009) PanTHERIA: a species-level database of life history, ecology, and geography of extant and recently extinct mammals. <i>Ecology</i> 90: 2648. Of 376 primate species, uses the 100 species with body mass, maximum longevity, and home range size; the 106 species with body mass, gestation length, and maximum longevity; and the 116 species with body mass, maximum longevity, and group size. All correlation coefficients are calculated on the common logarithms (log10) of each variable.</p>
+
+</div>
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-13 &nbsp;|&nbsp; <a href="../../">&larr; Back to Teaching</a></p>
+</footer>
+
+<script src="../../../../teaching/guide/assets/primates.js"></script>
+<script src="../../../../teaching/guide/assets/guide.js"></script>
+<script>
+(function () {
+    "use strict";
+    const G = window.Guide;
+    const MASS = "体重g";
+    const PAIRS = {
+        lifeRange: { x: "最長寿命月", y: "行動圏km2" },
+        gestLife:  { x: "妊娠期間日", y: "最長寿命月" },
+        lifeGroup: { x: "最長寿命月", y: "集団サイズ" }
+    };
+    // 英語の文中で使う短い呼び名（文頭以外）
+    const SHORT = { "最長寿命月": "maximum longevity", "行動圏km2": "home range size", "妊娠期間日": "gestation length", "集団サイズ": "group size" };
+    const f2 = v => (v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
+
+    function build(key) {
+        const p = PAIRS[key];
+        const d = G.select([p.x, p.y, MASS], [p.x, p.y, MASS]);
+        const X = d.map(o => o.v[0]), Y = d.map(o => o.v[1]), M = d.map(o => o.v[2]);
+        const rxy = G.corr(X, Y), rxm = G.corr(X, M), rym = G.corr(Y, M);
+        const partial = (rxy - rxm * rym) / Math.sqrt((1 - rxm ** 2) * (1 - rym ** 2));
+        const lx = G.linreg(M, X), ly = G.linreg(M, Y);
+        const RX = X.map((v, i) => v - (lx.intercept + lx.slope * M[i]));
+        const RY = Y.map((v, i) => v - (ly.intercept + ly.slope * M[i]));
+        return { p, d, X, Y, M, RX, RY, rxy, rxm, rym, partial };
+    }
+
+    // log-scale ticks (1, 2, 5 × 10^k)
+    function logTicks(min, max) {
+        let out = [];
+        for (let k = Math.floor(min); k <= Math.ceil(max); k++) [1, 2, 5].forEach(m => { const lv = Math.log10(m * 10 ** k); if (lv >= min && lv <= max) out.push(lv); });
+        if (out.length > 7) out = out.filter(lv => Math.abs(lv - Math.round(lv)) < 1e-9);
+        if (out.length < 2) out = [min, max].map(v => +v.toFixed(2));
+        return out;
+    }
+    const valLabel = lv => { const v = 10 ** lv; return v >= 10000 ? G.man(v) : v >= 1 ? G.fmt(v, v < 10 && v % 1 ? 1 : 0) : String(+v.toPrecision(2)); };
+    // residual axes: times the expected value
+    function ratioTicks(min, max) {
+        const c = [0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].map(Math.log10).filter(lv => lv >= min && lv <= max);
+        return c.length > 7 ? c.filter((_, i) => i % 2 === 0) : c;
+    }
+    const ratioLabel = lv => "×" + String(+(10 ** lv).toPrecision(2));
+    const pad = (a) => { const lo = Math.min(...a), hi = Math.max(...a), s = (hi - lo) * 0.06 || 0.1; return [lo - s, hi + s]; };
+
+    // body mass color: light blue → dark navy
+    const C0 = [169, 199, 228], C1 = [26, 37, 53];
+    function massColor(t) { const c = C0.map((a, i) => Math.round(a + (C1[i] - a) * t)); return `rgb(${c[0]},${c[1]},${c[2]})`; }
+
+    function drawPoints(ctx, sc, X, Y, M, mmin, mmax) {
+        const order = X.map((_, i) => i).sort((a, b) => M[a] - M[b]);
+        order.forEach(i => {
+            ctx.beginPath(); ctx.arc(sc.x(X[i]), sc.y(Y[i]), 4, 0, Math.PI * 2);
+            ctx.fillStyle = massColor((M[i] - mmin) / (mmax - mmin)); ctx.fill();
+            ctx.strokeStyle = "rgba(255,255,255,0.9)"; ctx.lineWidth = 0.8; ctx.stroke(); ctx.lineWidth = 1;
+        });
+    }
+    function drawLine(ctx, sc, X, Y, xr) {
+        const r = G.linreg(X, Y);
+        ctx.save(); ctx.beginPath(); ctx.rect(sc.L, sc.T, sc.pw, sc.ph); ctx.clip();
+        ctx.strokeStyle = G.css("--mean"); ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(sc.x(xr[0]), sc.y(r.intercept + r.slope * xr[0])); ctx.lineTo(sc.x(xr[1]), sc.y(r.intercept + r.slope * xr[1])); ctx.stroke();
+        ctx.restore();
+    }
+
+    // ---- static figure: relationship with body mass ----
+    function drawMass() {
+        const canvas = document.getElementById("massChart");
+        const { ctx, w, h } = G.setup(canvas);
+        const b = build("lifeRange");
+        const mr = pad(b.M), mmin = Math.min(...b.M), mmax = Math.max(...b.M);
+        const narrow = w < 560;
+        const panels = [
+            { Y: b.X, key: b.p.x, r: b.rxm },
+            { Y: b.Y, key: b.p.y, r: b.rym }
+        ];
+        const pwid = narrow ? w : w / 2, ph = narrow ? h / 2 : h;
+        panels.forEach((pn, k) => {
+            ctx.save();
+            ctx.translate(narrow ? 0 : pwid * k, narrow ? ph * k : 0);
+            const yr = pad(pn.Y);
+            const sc = G.axes(ctx, pwid - (narrow ? 0 : 8), ph, {
+                L: 50, R: 12, T: 30, B: 48, xmin: mr[0], xmax: mr[1], ymin: yr[0], ymax: yr[1],
+                xticks: logTicks(mr[0], mr[1]).filter((_, i, a) => a.length <= 5 || i % 2 === 0), yticks: logTicks(yr[0], yr[1]), xfmt: valLabel, yfmt: valLabel
+            });
+            drawPoints(ctx, sc, b.M, pn.Y, b.M, mmin, mmax);
+            drawLine(ctx, sc, b.M, pn.Y, mr);
+            const title = `Body mass × ${SHORT[pn.key]}`;
+            ctx.fillStyle = G.css("--navy2"); ctx.textAlign = "left"; ctx.textBaseline = "top";
+            ctx.font = '600 13px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+            ctx.fillText(title, 4, 4);
+            const tw = ctx.measureText(title).width;
+            ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+            ctx.fillStyle = G.css("--mean"); ctx.fillText(`r = ${f2(pn.r)}`, 14 + tw, 5);
+            ctx.fillStyle = G.css("--faint"); ctx.textAlign = "right";
+            ctx.fillText(`x: body mass (g)   y: ${SHORT[pn.key]} (${G.unit(pn.key)})`, sc.L + sc.pw, sc.T + sc.ph + 30);
+            ctx.restore();
+        });
+    }
+
+    // ---- hands-on panel ----
+    let pairKey = "lifeRange", adjust = false;
+    function drawScatter() {
+        const b = build(pairKey);
+        const canvas = document.getElementById("scatter");
+        const { ctx, w, h } = G.setup(canvas);
+        const X = adjust ? b.RX : b.X, Y = adjust ? b.RY : b.Y;
+        const xr = pad(X), yr = pad(Y);
+        const sc = G.axes(ctx, w, h, {
+            L: 56, R: 14, T: 34, B: 52, xmin: xr[0], xmax: xr[1], ymin: yr[0], ymax: yr[1],
+            xticks: adjust ? ratioTicks(xr[0], xr[1]) : logTicks(xr[0], xr[1]),
+            yticks: adjust ? ratioTicks(yr[0], yr[1]) : logTicks(yr[0], yr[1]),
+            xfmt: adjust ? ratioLabel : valLabel, yfmt: adjust ? ratioLabel : valLabel, xgrid: true
+        });
+        if (adjust) { // line where the value equals the expectation (×1)
+            ctx.strokeStyle = G.css("--faint"); ctx.setLineDash([2, 3]);
+            if (0 > xr[0] && 0 < xr[1]) { ctx.beginPath(); ctx.moveTo(sc.x(0), sc.T); ctx.lineTo(sc.x(0), sc.T + sc.ph); ctx.stroke(); }
+            if (0 > yr[0] && 0 < yr[1]) { ctx.beginPath(); ctx.moveTo(sc.L, sc.y(0)); ctx.lineTo(sc.L + sc.pw, sc.y(0)); ctx.stroke(); }
+            ctx.setLineDash([]);
+        }
+        const mmin = Math.min(...b.M), mmax = Math.max(...b.M);
+        drawPoints(ctx, sc, X, Y, b.M, mmin, mmax);
+        drawLine(ctx, sc, X, Y, xr);
+        // axis titles
+        ctx.fillStyle = G.css("--muted"); ctx.textAlign = "left"; ctx.textBaseline = "top";
+        const yl = adjust ? `y: ${SHORT[b.p.y]} (× expected from body mass)` : `y: ${SHORT[b.p.y]} (${G.unit(b.p.y)})`;
+        ctx.fillText(yl, 4, 6);
+        ctx.textAlign = "right";
+        const xl = adjust ? `x: ${SHORT[b.p.x]} (× expected from body mass)` : `x: ${SHORT[b.p.x]} (${G.unit(b.p.x)})`;
+        ctx.fillText(xl, sc.L + sc.pw, sc.T + sc.ph + 32);
+        // top right: r and body-mass color key
+        const rNow = adjust ? b.partial : b.rxy;
+        ctx.textAlign = "right"; ctx.fillStyle = G.css("--mean");
+        ctx.font = '600 14px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        ctx.fillText(`r = ${f2(rNow)}`, w - 14, 4);
+        ctx.font = '12px "DM Sans","Hiragino Kaku Gothic ProN",sans-serif';
+        const gx = w - 14 - 190, gy = 24;
+        if (ctx.measureText(yl).width + 4 < gx - 60) {
+            const grad = ctx.createLinearGradient(gx + 40, 0, gx + 150, 0);
+            grad.addColorStop(0, massColor(0)); grad.addColorStop(1, massColor(1));
+            ctx.fillStyle = grad; ctx.fillRect(gx + 40, gy - 2, 110, 6);
+            ctx.fillStyle = G.css("--faint"); ctx.textBaseline = "middle";
+            ctx.textAlign = "right"; ctx.fillText("lighter", gx + 36, gy + 1);
+            ctx.textAlign = "left"; ctx.fillText("heavier", gx + 154, gy + 1);
+        }
+
+        document.getElementById("rN").textContent = b.d.length + " species";
+        document.getElementById("rMx").textContent = f2(b.rxm);
+        document.getElementById("rMy").textContent = f2(b.rym);
+        document.getElementById("rR").textContent = f2(b.rxy);
+        const rp = document.getElementById("rP"); rp.textContent = f2(b.partial);
+        rp.classList.toggle("off", adjust);
+
+        const lx = SHORT[b.p.x], ly = SHORT[b.p.y];
+        const tendency = {
+            lifeRange: "Species with greater maximum longevity tend to have larger home ranges",
+            gestLife: "Species with longer gestation tend to have greater maximum longevity",
+            lifeGroup: "Species with greater maximum longevity tend to live in larger groups"
+        }[pairKey];
+        let msg;
+        if (!adjust) {
+            msg = `${tendency} (r = ${f2(b.rxy)}). Look at the point colors. Dark navy points, the heavier species, gather in the upper right, and light blue points, the lighter species, gather in the lower left. Choose “Remove the effect of body mass” to compare with this color pattern taken out.`;
+        } else if (b.partial > 0.15) {
+            msg = `With body mass held equal, the correlation fell from ${f2(b.rxy)} to <b>${f2(b.partial)}</b>. The color pattern has disappeared, and dark and light points are mixed throughout. A weak relationship remains, but most of the apparent relationship can be read as running through body mass.`;
+        } else {
+            msg = `With body mass held equal, the correlation went from ${f2(b.rxy)} to <b>${f2(b.partial)}</b> and is barely visible. Comparing species of about the same body mass, there is no clear straight-line relationship between ${lx} and ${ly}.`;
+        }
+        document.getElementById("hint").innerHTML = msg;
+    }
+
+    document.querySelectorAll('input[name="pair"]').forEach(el => el.addEventListener("change", e => { pairKey = e.target.value; drawScatter(); }));
+    document.getElementById("adjust").addEventListener("change", e => { adjust = e.target.checked; drawScatter(); });
+    G.onRedraw(() => { drawMass(); drawScatter(); });
+})();
+</script>
+</body>
+</html>
