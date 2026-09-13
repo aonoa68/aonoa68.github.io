@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aonoa68.github.io/sitemap.xml
