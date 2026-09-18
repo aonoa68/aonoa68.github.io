@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7つの世界観を式で読む — 小野原彩香 | Teaching</title>
+    <title>7つの観点を式で読む — 小野原彩香 | Teaching</title>
     <meta name="description" content="統計・機械学習の7つの世界観（幾何・頻度論・ベイズ・学習理論・情報理論・ゲーム・因果）を、それぞれ中心となる数式で説明したページ。">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -203,8 +203,8 @@
 
 <header class="page-header">
     <div class="page-header-inner">
-        <h1>Seven <span>Worldviews</span></h1>
-        <p class="lead">7つの世界観を、それぞれ<b>中心となる1本の式</b>から説明します。<br>
+        <h1>Seven <span>Perspectives</span></h1>
+        <p class="lead">7つの観点を、それぞれ<b>中心となる1本の式</b>から説明します。観点が分かれるのは、問いに加えて、データに置く仮定・良さの評価基準・計算上の制約が違うためです。互いに排他ではありません。<br>
         記号の読み方と、そこから出てくる代表的な手法の式を並べました。数式に慣れていなくても、何を小さく（大きく）しようとしているのかだけは読み取れるように書いています。</p>
     </div>
 </header>
@@ -227,8 +227,8 @@
 <p class="where" style="--w:#3d6fa8">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第10回</a>、<a href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第13回</a></p>
     </section>
     <section class="wblock" style="--w:#8a464f">
-        <h2><span class="no">2</span>頻度論（最尤）</h2>
-        <p class="q">このデータがいちばん起きやすくなるパラメータを選ぶ。母集団は固定、データがrandomと考える。</p>
+        <h2><span class="no">2</span>頻度論（標本変動・推定・検定）</h2>
+        <p class="q">母集団のパラメータは固定された値で、ランダムなのは標本のほうだと考える。標本を取り直したときのばらつきで、推定量や検定の質を測る。パラメータを選ぶ原理としてよく使われるのが最尤法だが、尤度はベイズでも使う。</p>
         <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">微I</span><span class="mtag" style="--m:#8a464f">微II</span><span class="mtag" style="--m:#3d6fa8">線I</span></div>
         <div class="eq" style="--w:#8a464f">
             <div class="lbl">何を最大にするか</div>
@@ -237,7 +237,7 @@
         </div>
 <div class="sub"><h3>最大化の条件は微分＝0</h3><div class="eq" style="--w:#8a464f">\[\frac{\partial \ell(\theta)}{\partial \theta} = 0\]<p class="read">この左辺をスコア関数という。解けない場合はニュートン法などで数値的に解く。</p></div></div>
 <div class="sub"><h3>推定のばらつきは情報量で決まる</h3><div class="eq" style="--w:#8a464f">\[I(\theta) = -\,\mathbb{E}\!\left[\frac{\partial^2 \ell}{\partial \theta^2}\right], \qquad \sqrt{n}\,(\hat{\theta}-\theta) \;\xrightarrow{d}\; N\!\left(0,\, I(\theta)^{-1}\right)\]<p class="read">二階微分（曲がり具合）が大きいほど、推定は安定する。信頼区間はここから出る。</p></div></div>
-<div class="sub"><h3>正規誤差を仮定すると幾何と一致する</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">対数を取ると二乗和の最小化そのものになる。最小二乗と最尤が同じ答えを出すのはこのため。</p></div></div>
+<div class="sub"><h3>正規誤差を仮定すると幾何と一致する</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">対数を取ると二乗和の最小化そのものになる。最小二乗と最尤が同じ答えを出すのはこのため。</p></div></div><div class="sub"><h3>頻度論が評価するのは、手続きの当たり率</h3><div class="eq" style="--w:#8a464f">\[ \Pr\big(\theta \in \mathrm{CI}(X_1,\dots,X_n)\big) = 0.95 \qquad \text{（標本を取り直したときの割合）} \]<p class="read">確率がかかっているのは区間のほうで、\(\theta\) は動かない。検定の第一種の誤りも、同じく「手続きを繰り返したときの割合」として定義される。</p></div></div>
 <p class="where" style="--w:#8a464f">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第7回</a>、<a href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第7回</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
@@ -251,7 +251,7 @@
         </div>
 <div class="sub"><h3>予測も分布で出す</h3><div class="eq" style="--w:#6a4d8a">\[p(\tilde{x} \mid D) = \int p(\tilde{x}\mid\theta)\, p(\theta \mid D)\, d\theta\]<p class="read">1つの値ではなく、これから出るデータの分布を返す。不確実性を持ったまま予測する。</p></div></div>
 <div class="sub"><h3>分母の積分が難しいので近似する</h3><div class="eq" style="--w:#6a4d8a">\[\log p(D) \;\ge\; \mathbb{E}_{q}\!\left[\log p(D,\theta) - \log q(\theta)\right] \;=\; \mathrm{ELBO}(q)\]<p class="read">変分推論は、この下界を最大にする \(q\) を探す。MCMCは積分を標本で置き換える。</p></div></div>
-<div class="sub"><h3>Ridge回帰はベイズのMAP推定</h3><div class="eq" style="--w:#6a4d8a">\[\arg\max_{\beta} \left[\log p(\mathbf{y}\mid\beta) + \log p(\beta)\right] \;=\; \arg\min_{\beta}\left[\lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\right]\]<p class="read">事前分布に正規分布を置くと、罰則付き最小二乗と同じ式になる（\(\lambda = \sigma^2/\tau^2\)）。</p></div></div>
+<div class="sub"><h3>仮説が有限個なら、足し算と割り算で計算できる</h3><div class="eq" style="--w:#6a4d8a">\[ P\!\left(p=\tfrac34 \,\middle|\, \text{表・表・表}\right) = \frac{(3/4)^3}{(1/4)^3+(3/4)^3} = \frac{27}{28} \]<p class="read">表の確率が \(1/4\) か \(3/4\) のどちらかで、事前をそれぞれ \(1/2\) としたとき。分母は積分ではなく<b>有限個の足し算</b>。この段階なら、微積分を学ぶ前でも事前・尤度・事後の更新を実際に計算できる。連続なパラメータに移ると積分が必要になり、近似が要る。</p></div></div><div class="sub"><h3>Ridge回帰はベイズのMAP推定</h3><div class="eq" style="--w:#6a4d8a">\[\arg\max_{\beta} \left[\log p(\mathbf{y}\mid\beta) + \log p(\beta)\right] \;=\; \arg\min_{\beta}\left[\lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\right]\]<p class="read">事前分布に正規分布を置くと、罰則付き最小二乗と同じ式になる（\(\lambda = \sigma^2/\tau^2\)）。</p></div></div>
 <p class="where" style="--w:#6a4d8a">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第12回</a>、<a href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第3回</a></p>
     </section>
     <section class="wblock" style="--w:#2f6b57">
@@ -311,7 +311,7 @@
     </section>
 
     <div class="cross">
-        <h3>同じ式が、別の世界観で読める</h3>
+        <h3>同じ式が、別の観点で読める</h3>
         <p>
         <b>Ridge回帰</b>　幾何では「罰則つきの最小二乗」、ベイズでは「正規分布を事前に置いたときのMAP推定」、学習理論では「モデルの複雑さを抑える操作」。3つとも同じ式 \(\min_\beta \lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\) を指しています。<br>
         <b>交差エントロピー</b>　最尤の負の対数尤度であり、情報理論のKLダイバージェンスの最小化であり、学習理論では損失関数のひとつです。<br>

@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>手法と数学の地図 — 小野原彩香 | Teaching</title>
-    <meta name="description" content="担当科目の各回で扱う手法が、統計・機械学習の7つの世界観と、微分積分・線形代数のどこに位置するかの一覧。">
+    <title>科目の重なり — 小野原彩香 | Teaching</title>
+    <meta name="description" content="小野原彩香の担当6科目（統計学Ⅰ・Ⅱ、社会調査入門、情報活用、行動計量学、情報入門）で、どのトピックがどの回に出てくるかの対応表。">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --navy:   #1a2535;
@@ -124,40 +126,44 @@
         .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
         .page-footer a { color: var(--gold); text-decoration: none; }
     
-        /* 世界観カード */
         .worlds { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:18px; }
         .world { background:var(--white); border:1px solid var(--line); border-left:4px solid var(--w); border-radius:var(--radius); padding:14px 18px; }
         .world .no { font-family:'DM Serif Display',serif; font-size:1.2em; color:var(--w); }
         .world h3 { font-size:1.02em; font-weight:600; color:var(--navy2); margin:2px 0 4px; }
         .world p { font-size:0.87em; color:var(--muted); line-height:1.7; }
-        .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+        .world .dim { display:block; margin-top:6px; font-size:0.8em; color:var(--w); }
+        .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
         .mtag { font-size:0.8em; font-weight:700; padding:2px 9px; border-radius:8px; border:1px solid color-mix(in srgb,var(--m) 35%,white); background:color-mix(in srgb,var(--m) 10%,white); color:var(--m); white-space:nowrap; }
         .mtag small { font-weight:500; color:var(--muted); margin-left:6px; }
+        .mtag.fut { background:white; border-style:dashed; }
         .wtag { display:inline-block; font-size:0.78em; font-weight:700; padding:1px 8px; border-radius:8px; background:color-mix(in srgb,var(--w) 12%,white); color:var(--w); border:1px solid color-mix(in srgb,var(--w) 30%,white); white-space:nowrap; }
-        td .mtag { font-size:0.74em; padding:1px 6px; margin:1px; }
+        .stage { font-size:0.76em; font-weight:700; padding:1px 8px; border-radius:8px; white-space:nowrap; border:1px solid; }
+        .stage.s1 { color:#5a6c7d; border-color:#cfd6dd; background:#f4f6f8; }
+        .stage.s2 { color:#2f6b57; border-color:#bcd8cd; background:#eef6f2; }
+        .stage.s3 { color:#8a464f; border-color:#e0c2c6; background:#faf0f1; }
         table.mm { border-collapse:collapse; width:100%; font-size:0.88em; background:var(--white); }
         table.mm th, table.mm td { padding:9px 10px; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:top; text-align:left; }
-        table.mm thead th { background:#f1f4f7; font-size:0.86em; color:var(--muted); font-weight:600; position:sticky; top:0; }
-        table.mm td.n { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--muted); width:84px; }
-        table.mm td.w { white-space:nowrap; width:120px; }
-        table.mm td.t { white-space:nowrap; width:150px; }
-        tr.course-head th { background:#e9eef3; font-size:0.82em; letter-spacing:0.08em; font-weight:700; color:var(--navy2); border-left:4px solid var(--c); }
-        tr.course-head th small { font-weight:500; color:var(--muted); letter-spacing:0; margin-left:8px; }
-        .gaps { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-top:16px; }
-        .gap { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; }
-        .gap h3 { font-size:0.98em; color:var(--navy2); margin-bottom:4px; }
-        .gap p { font-size:0.87em; color:var(--muted); line-height:1.7; }
-        .year { border-left:3px solid var(--gold); padding-left:16px; margin-top:14px; }
-        .year h3 { font-size:1em; color:var(--navy2); }
-        .year p { font-size:0.9em; color:var(--muted); line-height:1.8; }
+        table.mm thead th { background:#f1f4f7; font-size:0.86em; color:var(--muted); font-weight:600; }
+        table.mm td.c { white-space:nowrap; width:140px; }
+        table.mm td.n { white-space:nowrap; color:var(--muted); width:82px; font-variant-numeric:tabular-nums; }
+        table.mm td.s { white-space:nowrap; width:96px; }
+        table.mm td.t { white-space:nowrap; width:130px; }
+        .soon { font-size:0.7em; font-weight:700; color:var(--muted); background:#eef1f4; border-radius:6px; padding:1px 6px; margin-left:6px; white-space:nowrap; }
         .wsec { margin-top:40px; }
         .whead { display:flex; align-items:flex-start; gap:16px; border-left:4px solid var(--w); padding:4px 0 10px 16px; }
         .wno { font-family:'DM Serif Display',serif; font-size:1.8em; color:var(--w); line-height:1; }
         .whead h2 { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.45em; color:var(--w); line-height:1.3; }
         .whead p { font-size:0.9em; color:var(--muted); margin-top:2px; }
-        .wcount { margin-left:auto; font-size:0.8em; color:var(--muted); white-space:nowrap; padding-top:6px; font-variant-numeric:tabular-nums; }
-        table.mm td.c { white-space:nowrap; width:150px; }
-        .soon { font-size:0.7em; font-weight:700; color:var(--muted); background:#eef1f4; border-radius:6px; padding:1px 6px; margin-left:6px; white-space:nowrap; }
+        .whead .cnt { margin-left:auto; font-size:0.78em; color:var(--muted); white-space:nowrap; padding-top:8px; }
+        h2.sec { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.5em; color:var(--navy2); }
+        .gaps { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; margin-top:16px; }
+        .gap { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; }
+        .gap h3 { font-size:0.98em; color:var(--navy2); margin-bottom:4px; }
+        .gap p { font-size:0.87em; color:var(--muted); line-height:1.75; }
+        .gap.warn { border-left:4px solid var(--gold); }
+        .year { border-left:3px solid var(--gold); padding-left:16px; margin-top:14px; }
+        .year h3 { font-size:1em; color:var(--navy2); }
+        .year p { font-size:0.9em; color:var(--muted); line-height:1.8; }
 </style>
 </head>
 <body>
@@ -170,9 +176,9 @@
         <span class="nav-sep">/</span>
         <span class="nav-current">手法と数学の地図</span>
         <div class="nav-right">
+            <a href="worlds/">式で読む</a>
             <a href="../map/">科目の重なり</a>
             <a href="../guide/">統計の考え方ガイド</a>
-            <a href="../../#contact">Contact</a>
         </div>
     </div>
 </nav>
@@ -180,172 +186,184 @@
 <header class="page-header">
     <div class="page-header-inner">
         <h1>Methods <span>&amp; Mathematics</span></h1>
-        <p class="lead">統計・機械学習の<b>7つの世界観</b>ごとに、担当科目のどの回がそこに当たるかを並べた一覧です。数学のタグ（<b>微分積分・線形代数</b>）も添えています。<br>
-        2027年度に開設される情報科学部のカリキュラムを考えるために小野原が作成した整理（2025年9月）の、枠組みに沿っています。</p>
+        <p class="lead">統計・機械学習の<b>7つの観点</b>ごとに、担当科目のどの回がそこに当たるかを並べた一覧です。<br>
+        各回には<b>到達段階</b>（概念理解・計算・実装・理論の導出）と、<b>この回で使う数学</b>／<b>発展させると接続する数学</b>を分けて添えています。</p>
     </div>
 </header>
 
 <main class="main-content">
 
     <section>
-        <h2 style="font-family:'DM Serif Display',serif;font-weight:400;font-size:1.5em;color:var(--navy2)">7つの世界観</h2>
-        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">以下、この7つごとに担当回を並べます。手法が多いのは、問いが違うからです。同じ式が別の世界観で読めることもあります。たとえば Ridge 回帰は、幾何では罰則、ベイズではガウス事前、学習理論では容量制御として読めます。</p>
-        <p style="font-size:0.92em;color:var(--muted);margin-top:10px"><a href="worlds/" style="color:var(--navy2);font-weight:600">→ 7つの世界観を式で読む</a>　それぞれの中心となる数式と、記号の読み方を並べた子ページです。</p>
-        <div class="worlds"><div class="world" style="--w:#3d6fa8"><span class="no">1</span><h3>幾何（最小二乗）</h3><p>点の集まりにいちばん近い線を引く。ずれの二乗和を最小にする</p></div>
-<div class="world" style="--w:#8a464f"><span class="no">2</span><h3>頻度論（最尤）</h3><p>このデータがいちばん起きやすくなるパラメータを選ぶ</p></div>
-<div class="world" style="--w:#6a4d8a"><span class="no">3</span><h3>ベイズ</h3><p>観測前の知識とデータを合わせて、信念を事後分布に更新する</p></div>
-<div class="world" style="--w:#2f6b57"><span class="no">4</span><h3>学習理論</h3><p>未知のデータでの損失を見据え、当てはまりと複雑さを制御する</p></div>
-<div class="world" style="--w:#96702f"><span class="no">5</span><h3>情報理論</h3><p>短く符号化できることを、よい説明とみなす</p></div>
-<div class="world" style="--w:#8a5a2f"><span class="no">6</span><h3>ゲーム・敵対</h3><p>競い合う二者の釣り合いとして学習を捉える</p></div>
-<div class="world" style="--w:#22456d"><span class="no">7</span><h3>因果</h3><p>介入したらどうなるかという、反実仮想の問いを扱う</p></div></div>
+        <h2 class="sec">7つの観点</h2>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">手法が分かれるのは、<b>問い</b>が違うからだけではありません。<b>データに置く仮定</b>、<b>良さの評価基準</b>、<b>計算上の制約</b>が違えば、同じ予測課題でも適した手法は変わります。<br>
+        7つは互いに排他ではなく、<b>見ている次元が異なります</b>。同じ式が複数の観点で読めることも多く、たとえば Ridge 回帰は、幾何では罰則、ベイズではガウス事前のMAP推定、学習理論では複雑さの制御です。表でも、複数の観点が当てはまる回には関連の観点を併記しています。</p>
+        <div class="worlds"><div class="world" style="--w:#3d6fa8"><span class="no">1</span><h3>幾何（最小二乗）</h3><p>ずれの二乗和を最小にする。データやモデルの構造をどう表すかを見る。<span class="dim">見ている次元：構造の表し方</span></p></div>
+<div class="world" style="--w:#8a464f"><span class="no">2</span><h3>頻度論（標本変動・推定・検定）</h3><p>標本を取り直したときのばらつきで、推定や判断の質を測る。<span class="dim">見ている次元：不確実性の扱い</span></p></div>
+<div class="world" style="--w:#6a4d8a"><span class="no">3</span><h3>ベイズ</h3><p>観測前の知識とデータを合わせ、信念を事後分布に更新する。<span class="dim">見ている次元：不確実性の扱い</span></p></div>
+<div class="world" style="--w:#2f6b57"><span class="no">4</span><h3>学習理論</h3><p>まだ見ていないデータでの損失を見据え、当てはまりと複雑さを釣り合わせる。<span class="dim">見ている次元：予測性能の評価</span></p></div>
+<div class="world" style="--w:#96702f"><span class="no">5</span><h3>情報理論</h3><p>短く符号化できることを、よい説明とみなす。<span class="dim">見ている次元：情報量による評価</span></p></div>
+<div class="world" style="--w:#8a5a2f"><span class="no">6</span><h3>ゲーム・敵対</h3><p>競い合う複数の主体の相互作用として学習を捉える。<span class="dim">見ている次元：主体間の相互作用</span></p></div>
+<div class="world" style="--w:#22456d"><span class="no">7</span><h3>因果</h3><p>介入したらどうなるかという、反実仮想の問いを扱う。<span class="dim">見ている次元：問いの種類</span></p></div></div>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:14px"><a href="worlds/" style="color:var(--navy2);font-weight:600">→ 7つの観点を式で読む</a>　それぞれの中心となる数式と、記号の読み方を並べた子ページです。</p>
     </section>
 
-    <section style="margin-top:44px">
-        <h2 style="font-family:'DM Serif Display',serif;font-weight:400;font-size:1.5em;color:var(--navy2)">数学のタグ</h2>
+    <section style="margin-top:36px">
+        <h2 class="sec">表の読み方</h2>
         <div class="tags">
-            <span class="mtag" style="--m:#8a5a2f">微I<small>単変数の微積分</small></span>
-            <span class="mtag" style="--m:#8a464f">微II<small>多変数・勾配・ヘッセ</small></span>
-            <span class="mtag" style="--m:#3d6fa8">線I<small>行列計算・連立一次方程式</small></span>
-            <span class="mtag" style="--m:#22456d">線II<small>固有値・直交化・分解</small></span>
+            <span class="stage s1">概念理解</span><span style="font-size:0.85em;color:var(--muted)">言葉と図で考え方を扱う</span>
+            <span class="stage s2">計算・実装</span><span style="font-size:0.85em;color:var(--muted)">実際に計算する・動かす</span>
+            <span class="stage s3">理論の導出</span><span style="font-size:0.85em;color:var(--muted)">式を導き、性質を証明する</span>
         </div>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">微I<small>単変数の微積分</small></span><span class="mtag" style="--m:#8a464f">微II<small>多変数・勾配・ヘッセ</small></span><span class="mtag" style="--m:#3d6fa8">線I<small>行列計算・連立一次方程式</small></span><span class="mtag" style="--m:#22456d">線II<small>固有値・直交化・分解</small></span><span style="font-size:0.85em;color:var(--muted)">実線＝この回で使う／点線＝発展で接続する</span></div>
+        <p style="font-size:0.88em;color:var(--muted);margin-top:12px">行数は<b>扱いの厚さを表しません</b>。複数回をまとめた行があり、観点の広さも項目ごとに違うためです。比べるなら到達段階の列を見てください。</p>
     </section>
-
 
     <section class="wsec" style="--w:#3d6fa8">
         <div class="whead">
             <span class="wno">1</span>
-            <div><h2>幾何（最小二乗）</h2><p>点の集まりにいちばん近い線を引く。ずれの二乗和を最小にする。</p></div>
-            <span class="wcount">22 件</span>
+            <div><h2>幾何（最小二乗）</h2><p>ずれの二乗和を最小にする。データやモデルの構造をどう表すかを見る。<span style="display:block;color:#3d6fa8;font-size:0.85em;margin-top:2px">見ている次元：構造の表し方</span></p></div>
+            <span class="cnt">主として 20 行／関連として 4 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第2・3回</td><td><b>代表値・ばらつき（記述統計）</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>和と二乗和＝ノルムの計算。分布の形を数値で要約する</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第5回</td><td><b>相関</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>内積・共分散として相関を読む</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第10回</td><td><b>単回帰・重回帰（OLS）</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></td><td>正規方程式と直交射影。正規誤差を仮定すれば最尤と一致する</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第13回</td><td><b>主成分分析（PCA）</b></td><td class="t"><span class="mtag" style="--m:#22456d">線II</span></td><td>共分散行列の固有分解。再構成誤差の最小化として読む</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第4・6回</td><td><b>分布と代表値／記述統計</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>自分で集めたデータを数値で要約する</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第9回</td><td><b>グラフ・散布図</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>2変数の関係を目で読む。相関の前段</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第8回</td><td><b>相関分析と散布図</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>Rで相関係数を計算し、散布図で確かめる</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">情報入門</a></td><td class="n">第6・7回</td><td><b>記述統計とデータ読解</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>合計・平均・最大最小。表計算での集計</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">情報入門</a></td><td class="n">第10回</td><td><b>グラフの読み方</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>軸と比較の設計。誤解を招く図</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">社会調査入門</a></td><td class="n">第5回</td><td><b>公的統計の利用</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>集計表を読む。二次データの構造</td></tr>
-<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第10回</td><td><b>記述統計の基本</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>平均・分散・標準偏差をExcelで</td></tr>
-<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第12・13回</td><td><b>グラフの読み方・フェイク統計</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>図の設計と誤読</td></tr>
-<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第6・7回</td><td><b>重回帰分析</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></td><td>設計行列と正規方程式。QR・Cholesky分解</td></tr>
-<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第8・9回</td><td><b>主成分分析</b></td><td class="t"><span class="mtag" style="--m:#22456d">線II</span></td><td>固有分解とSVD</td></tr>
-<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第10・11回</td><td><b>k-means</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>クラスタ内二乗和の最小化</td></tr>
-<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第12・13回</td><td><b>PLS回帰</b></td><td class="t"><span class="mtag" style="--m:#22456d">線II</span></td><td>潜在空間での回帰。共変動の最大化</td></tr>
-<tr><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第5・6回</td><td><b>PCAとバイプロット</b></td><td class="t"><span class="mtag" style="--m:#22456d">線II</span></td><td>次元削減の可視化</td></tr>
-<tr><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第7・8回</td><td><b>k-meansと安定性評価</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>クラスタリングの再現性</td></tr>
-<tr><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第9・10回</td><td><b>PLS回帰・PLS-DA</b></td><td class="t"><span class="mtag" style="--m:#22456d">線II</span></td><td>交差検証とVIPスコア</td></tr>
-<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">BD応用Ⅱ</span><span class="soon">準備中</span></td><td class="n">第2回</td><td><b>座標変換と投影変換</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>空間データの変換は行列演算</td></tr>
-<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">BD応用Ⅱ</span><span class="soon">準備中</span></td><td class="n">第9・11・12回</td><td><b>PCA・k-means・PLS</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></td><td>特徴量の圧縮とまとまりの発見</td></tr>
-<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第5回</td><td><b>MFCC（メルフィルタバンク・DCT）</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>直交変換による特徴量の圧縮</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第2・3回</td><td><b>代表値・ばらつき</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>和と二乗和で分布を要約する。ノルムとしての読み方は発展側</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第5回</td><td><b>相関と因果</b> <span class="wtag" style="--w:#22456d">因果</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>共分散として相関を読む。因果の議論は統計学Ⅱへ渡す</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第10回</td><td><b>単回帰・重回帰（OLS）</b> <span class="wtag" style="--w:#8a464f">頻度論</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>正規方程式と射影。正規誤差を仮定すれば最尤と一致する</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第13回</td><td><b>主成分分析</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>固有分解の意味は扱うが、分解の数値計算はしない</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">社会調査入門</a></td><td class="n">第5回</td><td><b>公的統計の利用</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>集計表を読む。行列として扱うのは発展側</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第4・6回</td><td><b>分布と代表値／記述統計</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>自分で集めたデータを数値で要約する</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第9回</td><td><b>グラフ・散布図</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>2変数の関係を目で読む。数式は使わない</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第8回</td><td><b>相関分析と散布図</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>Rで相関係数を計算する</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">情報入門</a></td><td class="n">第6・7回</td><td><b>記述統計とデータ読解</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>表計算での集計。数式は使わない</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">情報入門</a></td><td class="n">第10回</td><td><b>グラフの読み方</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>軸と比較の設計。誤解を招く図</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第10回</td><td><b>記述統計の基本</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>平均・分散・標準偏差をExcelで</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第12・13回</td><td><b>グラフの読み方・フェイク統計</b> <span class="wtag" style="--w:#22456d">因果</span></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>図の設計と誤読。層別の罠にも触れる</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第6・7回</td><td><b>重回帰分析</b> <span class="wtag" style="--w:#8a464f">頻度論</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>設計行列と正規方程式。分解の数値計算は発展側</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第8・9回</td><td><b>主成分分析</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>固有分解とSVD</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第10・11回</td><td><b>k-means</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>クラスタ内二乗和の最小化</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第12・13回</td><td><b>PLS回帰</b> <span class="wtag" style="--w:#2f6b57">学習理論</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>潜在空間での回帰。交差検証で選ぶ</td></tr>
+<tr><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第5・6回</td><td><b>PCAとバイプロット</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>次元削減の可視化</td></tr>
+<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">BD応用Ⅱ</span><span class="soon">準備中</span></td><td class="n">第2回</td><td><b>座標変換と投影変換</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>空間データの変換は行列演算</td></tr>
+<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">BD応用Ⅱ</span><span class="soon">準備中</span></td><td class="n">第9・11・12回</td><td><b>PCA・k-means・PLS</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>特徴量の圧縮とまとまりの発見</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第5回</td><td><b>MFCC（メルフィルタバンク・DCT）</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>直交変換による特徴量の圧縮</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第11回</td><td>交絡と疑似相関 <span style="color:var(--muted);font-size:0.85em">（主は因果）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>共変量の調整。偏相関を計算して確かめる</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第7回</td><td>クロス集計 <span style="color:var(--muted);font-size:0.85em">（主は頻度論）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>カテゴリの同時分布。カイ二乗検定の入り口</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第7・8回</td><td>k-meansと安定性評価 <span style="color:var(--muted);font-size:0.85em">（主は学習理論）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>クラスタリングの再現性。汎化の実感として</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第9・10回</td><td>PLS-DAと交差検証 <span style="color:var(--muted);font-size:0.85em">（主は学習理論）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>訓練と検証を分ける。過学習を数で見る</td></tr>
             </tbody>
         </table></div>
     </section>
-
     <section class="wsec" style="--w:#8a464f">
         <div class="whead">
             <span class="wno">2</span>
-            <div><h2>頻度論（最尤）</h2><p>このデータがいちばん起きやすくなるパラメータを選ぶ。</p></div>
-            <span class="wcount">16 件</span>
+            <div><h2>頻度論（標本変動・推定・検定）</h2><p>標本を取り直したときのばらつきで、推定や判断の質を測る。<span style="display:block;color:#8a464f;font-size:0.85em;margin-top:2px">見ている次元：不確実性の扱い</span></p></div>
+            <span class="cnt">主として 16 行／関連として 2 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第6回</td><td><b>標本と中心極限定理</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span><span class="mtag" style="--m:#8a464f">微II</span></td><td>標本分布の形。推測統計への入り口</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第7回</td><td><b>点推定・区間推定</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span></td><td>尤度の最大化と信頼区間</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第8・9回</td><td><b>t検定・分散分析</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></td><td>二乗和の分解と自由度。ANOVAは射影の差</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第4・5回</td><td><b>二項・ポアソン・正規分布</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>確率モデルを立てる。尤度の土台</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第6回</td><td><b>標本分布と中心極限定理の再考</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span></td><td>標準誤差の式が前提にする独立性</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第7回</td><td><b>区間推定の理論</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span></td><td>t分布と自由度。被覆率という考え方</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第8・9回</td><td><b>多重比較・効果量とp値批判</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>検定の反復と、効果の大きさの報告</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">社会調査入門</a></td><td class="n">第10回</td><td><b>全数調査と標本調査</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>標本誤差と必要標本数</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第7回</td><td><b>クロス集計</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>カテゴリの同時分布。カイ二乗検定の入り口</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第9回</td><td><b>カイ二乗検定</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>期待度数とのずれ</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第10・11回</td><td><b>t検定・対応のあるt検定</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>2群の比較。データ構造が検定を変える</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第13・14回</td><td><b>分散分析・多重比較</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></td><td>二乗和の分解と、比較回数の調整</td></tr>
-<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第4回</td><td><b>社会調査史と統計学の誕生</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>ラプラス〜ゴルトン〜フィッシャー。頻度論が生まれる筋道</td></tr>
-<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第11回</td><td><b>標本と母集団・大数の法則・中心極限定理</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>推測統計の入り口</td></tr>
-<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">BD応用Ⅱ</span><span class="soon">準備中</span></td><td class="n">第5回</td><td><b>カーネル密度推定</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span></td><td>バンド幅の選択＝平滑化の最適化</td></tr>
-<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第7回</td><td><b>HMM・GMM／自己教師あり学習</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>EMアルゴリズムによる尤度最大化</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第6回</td><td><b>標本と中心極限定理</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>シミュレーションで体感する。証明はしない</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第7回</td><td><b>点推定・区間推定</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>被覆率という考え方を、区間を作って確かめる</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第8・9回</td><td><b>t検定・分散分析</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>二乗和の分解。射影としての読み方は発展側</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第4・5回</td><td><b>二項・ポアソン・正規分布</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>確率モデルを立てる。密度の積分は扱わない</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第6回</td><td><b>標本分布と中心極限定理の再考</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>標準誤差の式が前提にする独立性を、崩して確かめる</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第7回</td><td><b>区間推定の理論</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>t分布と自由度。被覆率をシミュレーションで見る</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第8・9回</td><td><b>多重比較・効果量とp値批判</b> <span class="wtag" style="--w:#2f6b57">学習理論</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>検定の反復で何が起きるか。効果の大きさの報告</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">社会調査入門</a></td><td class="n">第10回</td><td><b>全数調査と標本調査</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>標本誤差と必要標本数。選択バイアスは数式の外側</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第7回</td><td><b>クロス集計</b> <span class="wtag" style="--w:#3d6fa8">幾何</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>カテゴリの同時分布。カイ二乗検定の入り口</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第9回</td><td><b>カイ二乗検定</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>期待度数とのずれ</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第10・11回</td><td><b>t検定・対応のあるt検定</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>2群の比較。データ構造が検定を変える</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">行動計量学</a></td><td class="n">第13・14回</td><td><b>分散分析・多重比較</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>二乗和の分解と、比較回数の調整</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第4回</td><td><b>社会調査史と統計学の誕生</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>頻度論が生まれる筋道を歴史から</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第11回</td><td><b>標本と母集団・大数の法則・中心極限定理</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>推測統計の入り口</td></tr>
+<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">BD応用Ⅱ</span><span class="soon">準備中</span></td><td class="n">第5回</td><td><b>カーネル密度推定</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>バンド幅の選択＝平滑化の度合い</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第7回</td><td><b>HMM・GMM／自己教師あり学習</b> <span class="wtag" style="--w:#6a4d8a">ベイズ</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>EMによる尤度最大化。導出はしない</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第10回</td><td>単回帰・重回帰（OLS） <span style="color:var(--muted);font-size:0.85em">（主は幾何）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>正規方程式と射影。正規誤差を仮定すれば最尤と一致する</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第6・7回</td><td>重回帰分析 <span style="color:var(--muted);font-size:0.85em">（主は幾何）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>設計行列と正規方程式。分解の数値計算は発展側</td></tr>
             </tbody>
         </table></div>
     </section>
-
     <section class="wsec" style="--w:#6a4d8a">
         <div class="whead">
             <span class="wno">3</span>
-            <div><h2>ベイズ</h2><p>観測前の知識とデータを合わせて、信念を事後分布に更新する。</p></div>
-            <span class="wcount">3 件</span>
+            <div><h2>ベイズ</h2><p>観測前の知識とデータを合わせ、信念を事後分布に更新する。<span style="display:block;color:#6a4d8a;font-size:0.85em;margin-top:2px">見ている次元：不確実性の扱い</span></p></div>
+            <span class="cnt">主として 3 行／関連として 1 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第12回</td><td><b>ベイズ統計の入り口</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>事前と尤度から事後へ。信用区間と信頼区間の違い</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第2・3回</td><td><b>条件付き確率・ベイズの定理</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>信念の更新。事前確率の効き方</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第12・13回</td><td><b>情報カスケード・コンドルセの陪審定理</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>逐次的な更新と、独立性が壊れる集団判断</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第12回</td><td><b>ベイズ統計の入り口</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>離散の仮説なら、事後確率は加減乗除で計算できる</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第2・3回</td><td><b>条件付き確率・ベイズの定理</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>事前確率の効き方を、有限個の場合で数えて確かめる</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第12・13回</td><td><b>情報カスケード・コンドルセの陪審定理</b> <span class="wtag" style="--w:#8a5a2f">ゲーム・敵対</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>逐次的な更新と、独立性が壊れた集団判断をシミュレーションで</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第7回</td><td>HMM・GMM／自己教師あり学習 <span style="color:var(--muted);font-size:0.85em">（主は頻度論）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>EMによる尤度最大化。導出はしない</td></tr>
             </tbody>
         </table></div>
     </section>
-
     <section class="wsec" style="--w:#2f6b57">
         <div class="whead">
             <span class="wno">4</span>
-            <div><h2>学習理論</h2><p>未知のデータでの損失を見据え、当てはまりと複雑さを制御する。</p></div>
-            <span class="wcount">1 件</span>
+            <div><h2>学習理論</h2><p>まだ見ていないデータでの損失を見据え、当てはまりと複雑さを釣り合わせる。<span style="display:block;color:#2f6b57;font-size:0.85em;margin-top:2px">見ている次元：予測性能の評価</span></p></div>
+            <span class="cnt">主として 4 行／関連として 5 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第8回</td><td><b>Conformer・Whisper</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span></td><td>誤差逆伝播と大規模最適化。汎化の問題</td></tr>
+<tr><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第7・8回</td><td><b>k-meansと安定性評価</b> <span class="wtag" style="--w:#3d6fa8">幾何</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>クラスタリングの再現性。汎化の実感として</td></tr>
+<tr><td class="c"><span style="color:#96702f;font-weight:600">BD応用Ⅰ</span><span class="soon">準備中</span></td><td class="n">第9・10回</td><td><b>PLS-DAと交差検証</b> <span class="wtag" style="--w:#3d6fa8">幾何</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>訓練と検証を分ける。過学習を数で見る</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第8回</td><td><b>Conformer・Whisper</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>大規模学習と汎化。逆伝播の導出はしない</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第9回</td><td><b>評価指標（WER・CER）</b></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>何を誤りと数えるかの設計。人間の誤り率と比べる</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第11回</td><td>モデル選択とAIC <span style="color:var(--muted);font-size:0.85em">（主は情報理論）</span></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>当てはまりと複雑さの釣り合い。符号長の理屈は扱わない</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第8・9回</td><td>多重比較・効果量とp値批判 <span style="color:var(--muted);font-size:0.85em">（主は頻度論）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>検定の反復で何が起きるか。効果の大きさの報告</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第5回</td><td>近似アルゴリズム <span style="color:var(--muted);font-size:0.85em">（主は情報理論）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>スケッチと確率的データ構造。誤差と容量の交換</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第12・13回</td><td>PLS回帰 <span style="color:var(--muted);font-size:0.85em">（主は幾何）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">線II</span></td><td>潜在空間での回帰。交差検証で選ぶ</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第13回</td><td>ディープフェイク検出 <span style="color:var(--muted);font-size:0.85em">（主はゲーム・敵対）</span></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>生成と検出の追いかけっこ。min–maxの構図として</td></tr>
             </tbody>
         </table></div>
     </section>
-
     <section class="wsec" style="--w:#96702f">
         <div class="whead">
             <span class="wno">5</span>
-            <div><h2>情報理論</h2><p>短く符号化できることを、よい説明とみなす。</p></div>
-            <span class="wcount">2 件</span>
+            <div><h2>情報理論</h2><p>短く符号化できることを、よい説明とみなす。<span style="display:block;color:#96702f;font-size:0.85em;margin-top:2px">見ている次元：情報量による評価</span></p></div>
+            <span class="cnt">主として 2 行／関連として 0 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第11回</td><td><b>モデル選択とAIC</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>当てはまりと複雑さの釣り合い。符号長・KLの考え方</td></tr>
-<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第5回</td><td><b>近似アルゴリズム</b></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td>スケッチと確率的データ構造。誤差と容量の交換</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第11回</td><td><b>モデル選択とAIC</b> <span class="wtag" style="--w:#2f6b57">学習理論</span></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>当てはまりと複雑さの釣り合い。符号長の理屈は扱わない</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第5回</td><td><b>近似アルゴリズム</b> <span class="wtag" style="--w:#2f6b57">学習理論</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">微I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>スケッチと確率的データ構造。誤差と容量の交換</td></tr>
+
             </tbody>
         </table></div>
     </section>
-
     <section class="wsec" style="--w:#8a5a2f">
         <div class="whead">
             <span class="wno">6</span>
-            <div><h2>ゲーム・敵対</h2><p>競い合う二者の釣り合いとして学習を捉える。</p></div>
-            <span class="wcount">1 件</span>
+            <div><h2>ゲーム・敵対</h2><p>競い合う複数の主体の相互作用として学習を捉える。<span style="display:block;color:#8a5a2f;font-size:0.85em;margin-top:2px">見ている次元：主体間の相互作用</span></p></div>
+            <span class="cnt">主として 1 行／関連として 1 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第13回</td><td><b>ディープフェイク検出</b></td><td class="t"><span class="mtag" style="--m:#8a464f">微II</span></td><td>生成と検出のいたちごっこ＝min–maxの構図</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第13回</td><td><b>ディープフェイク検出</b> <span class="wtag" style="--w:#2f6b57">学習理論</span></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">微II</span></td><td>生成と検出の追いかけっこ。min–maxの構図として</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第12・13回</td><td>情報カスケード・コンドルセの陪審定理 <span style="color:var(--muted);font-size:0.85em">（主はベイズ）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">微I</span></td><td>逐次的な更新と、独立性が壊れた集団判断をシミュレーションで</td></tr>
             </tbody>
         </table></div>
     </section>
-
     <section class="wsec" style="--w:#22456d">
         <div class="whead">
             <span class="wno">7</span>
-            <div><h2>因果</h2><p>介入したらどうなるかという、反実仮想の問いを扱う。</p></div>
-            <span class="wcount">3 件</span>
+            <div><h2>因果</h2><p>介入したらどうなるかという、反実仮想の問いを扱う。<span style="display:block;color:#22456d;font-size:0.85em;margin-top:2px">見ている次元：問いの種類</span></p></div>
+            <span class="cnt">主として 3 行／関連として 2 行</span>
         </div>
         <div class="scroller"><table class="mm">
-            <thead><tr><th>科目</th><th>回</th><th>手法・話題</th><th>数学</th><th>どこで使うか</th></tr></thead>
+            <thead><tr><th>科目</th><th>回</th><th>手法・話題（関連する観点）</th><th>到達段階</th><th>この回で使う数学</th><th>発展で接続する数学</th><th>ひとこと</th></tr></thead>
             <tbody>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第10回</td><td><b>因果推論入門（RCTと観察研究）</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>介入と観察の違い。反実仮想の問い</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第11回</td><td><b>交絡と疑似相関</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></td><td>共変量の調整＝射影。偏相関の幾何</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">情報入門</a></td><td class="n">第12回</td><td><b>シンプソンのパラドックス</b></td><td class="t"><span class="mtag" style="--m:#3d6fa8">線I</span></td><td>層別すると逆転する。交絡の最初の体験</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第10回</td><td><b>因果推論入門（RCTと観察研究）</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>介入と観察の違い。識別の仮定を言葉で扱う</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">統計学Ⅱ</a></td><td class="n">第11回</td><td><b>交絡と疑似相関</b> <span class="wtag" style="--w:#3d6fa8">幾何</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span><span class="mtag fut" style="--m:#22456d">線II</span></td><td>共変量の調整。偏相関を計算して確かめる</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">情報入門</a></td><td class="n">第12回</td><td><b>シンプソンのパラドックス</b></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>層別すると逆転する。交絡の最初の体験</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">統計学Ⅰ</a></td><td class="n">第5回</td><td>相関と因果 <span style="color:var(--muted);font-size:0.85em">（主は幾何）</span></td><td class="s"><span class="stage s2">計算・実装</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">線I</span></td><td>共分散として相関を読む。因果の議論は統計学Ⅱへ渡す</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#3d6fa8;font-weight:600">データ活用入門</span><span class="soon">準備中</span></td><td class="n">第12・13回</td><td>グラフの読み方・フェイク統計 <span style="color:var(--muted);font-size:0.85em">（主は幾何）</span></td><td class="s"><span class="stage s1">概念理解</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>図の設計と誤読。層別の罠にも触れる</td></tr>
             </tbody>
         </table></div>
     </section>
@@ -353,47 +371,48 @@
     <section class="wsec" style="--w:#8a97a3">
         <div class="whead">
             <span class="wno">—</span>
-            <div><h2>数学の枠組みの外側</h2><p>手法の数学ではなく、設計・倫理・伝え方を扱う回。担当科目の少なくない部分がここにある。</p></div>
-            <span class="wcount">4 件</span>
+            <div><h2>この地図で扱う統計数理の範囲外</h2><p>手法の数理ではなく、設計・倫理・伝え方や、別種の数学が関わる回。</p></div>
         </div>
         <div class="scroller"><table class="mm">
             <thead><tr><th>科目</th><th>回</th><th>内容</th><th>扱い</th></tr></thead>
             <tbody>
-<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">社会調査入門</a></td><td class="n">第9・11〜14回</td><td><b>質的調査（インタビュー・観察・エスノグラフィ）</b></td><td>数学的技法の外側。設計と倫理、記録と解釈の問題として扱う</td></tr>
-<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第1〜3・10〜13回</td><td><b>調査の企画・成果物の公開・発表</b></td><td>調査の設計と伝え方。手法の数学は扱わない</td></tr>
-<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">音声処理と認識</span><span class="soon">準備中</span></td><td class="n">第9回</td><td><b>評価指標（WER・CER）</b></td><td>誤りの数え方を決める回。数学というより測り方の設計</td></tr>
-<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第1〜4回</td><td><b>5V・列指向・CAP定理・DAG</b></td><td>データ基盤の設計。統計手法の外側</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">社会調査入門</a></td><td class="n">第9・11〜14回</td><td><b>質的調査（インタビュー・観察・エスノグラフィ）</b></td><td>設計と倫理、記録と解釈の問題として扱う</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">情報活用</a></td><td class="n">第1〜3・10〜13回</td><td><b>調査の企画・成果物の公開・発表</b></td><td>調査の設計と伝え方</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">ビッグデータ分析</span><span class="soon">準備中</span></td><td class="n">第1〜4回</td><td><b>5V・列指向ストレージ・CAP定理・DAG</b></td><td>データ基盤の設計。分散システムや計算量という別種の数学が関わる</td></tr>
             </tbody>
         </table></div>
     </section>
 
     <section style="margin-top:44px">
-        <h2 style="font-family:'DM Serif Display',serif;font-weight:400;font-size:1.5em;color:var(--navy2)">学年ごとの到達順と、いまの位置</h2>
-        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">カリキュラム資料が示す到達順に対して、担当科目がどこを埋めているかです。</p>
-        <div class="year"><h3>1年：二乗和と内積 → 正規方程式と射影 → 1変数の極値</h3>
-        <p>データ活用入門（第10・11回）と情報活用が、記述統計と標本の考え方を扱います。情報入門は表計算での集計から入ります。<b>最小二乗の幾何までは届いていません。</b></p></div>
-        <div class="year"><h3>2年：QR・Cholesky・SVD → 多変数の勾配とヘッセ、IRLS</h3>
-        <p>統計学Ⅰが回帰・AIC・PCAまで、統計学Ⅱが確率とベイズの基礎、因果推論の入り口まで進みます。<b>行列分解の数値計算そのものは扱っていません。</b></p></div>
-        <div class="year"><h3>3年：一般化固有値・双対とKKT → カーネル → EMの交互最適化</h3>
-        <p>音声処理と認識がHMM・GMMとEMを扱います。ビッグデータ分析・応用Ⅰ・Ⅱが、PCA・k-means・PLSを実装の側から扱います。<b>SVMとカーネル法は、どの科目にもありません。</b></p></div>
-        <div class="year"><h3>4年：ラプラス近似・変分推論・HMC → 大規模計算 → 逆伝播とSDE</h3>
-        <p>音声処理と認識の第8回が、大規模モデルの学習に触れます。<b>ベイズの計算手法（MCMC・変分推論）、ガウス過程、生成モデルの数理は空いています。</b></p></div>
+        <h2 class="sec">この表から言えること、言えないこと</h2>
+        <div class="gaps">
+            <div class="gap"><h3>言えること：到達段階が「理論の導出」に届いていない</h3><p>ほとんどの回が概念理解か計算・実装です。式を導き、性質を証明する段階は、いまの担当科目にはありません。その役割を担う科目がカリキュラムの別の場所にあるかを確かめる必要があります。</p></div>
+            <div class="gap"><h3>言えること：ゲーム・敵対の観点は接点が少ない</h3><p>音声処理と認識の第13回だけです。統計学Ⅱの情報カスケードは、独立性が壊れた集団判断という点で近い位置にあります。</p></div>
+            <div class="gap warn"><h3>言えないこと：行数の差＝扱いの薄さ</h3><p>幾何の行が多いのは、記述統計・可視化・行列計算までを広くこの観点に含めているためでもあります。分類の範囲と集計単位が混ざっているので、行数から扱いの厚さは判断できません。</p></div>
+            <div class="gap warn"><h3>言えないこと：数学の前提が足りないから扱えない</h3><p>担当範囲、授業時間、到達目標、タグの付け方の影響と区別できません。この表だけでは原因を決められません。</p></div>
+        </div>
+        <div class="gap" style="margin-top:12px;border-left:4px solid var(--gold)">
+            <h3>前提の数学がなくても、扱える段階はある</h3>
+            <p>仮説が有限個なら、ベイズの更新は加減乗除で計算できます。たとえば表の確率が 1/4 か 3/4 のどちらかで、事前をそれぞれ 1/2 とし、独立な3回がすべて表なら、3/4 である事後確率は (3/4)³ ÷ ((1/4)³ + (3/4)³) ＝ 27/28 です。正規化に必要なのは足し算で、多変数の積分は要りません。<br>
+            情報理論も、有限個の結果についてのエントロピーなら、対数と加重平均で導入できます。汎化も、上界を証明するのと、訓練データと未知データで性能が違うことを実験で見るのとでは、必要な前提が違います。<b>問題は「その数学を学んでいるか」ではなく、どの到達段階まで扱うかの選択です。</b></p>
+        </div>
     </section>
 
     <section style="margin-top:44px">
-        <h2 style="font-family:'DM Serif Display',serif;font-weight:400;font-size:1.5em;color:var(--navy2)">薄い世界観には、理由がある</h2>
-        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">上の件数が偏るのは、担当科目の並びと、必要な数学の前提が噛み合っていないためです。</p>
-        <div class="gaps">
-            <div class="gap"><h3>ベイズ</h3><p>考え方は1・2年次でも伝わりますが、事後分布を実際に計算するには積分か数値計算が要ります。多変数の微積分を学ぶ前の学年では、手を動かす段階まで進めません。統計学Ⅰ・Ⅱが考え方で止めているのはこのためです。</p></div>
-            <div class="gap"><h3>情報理論</h3><p>エントロピーとKLは、対数と期待値が道具として使えることを前提にします。確率分布を一通り扱ってからでないと、式が記号の操作に見えてしまいます。いまはモデル選択の指標としてAICに触れるだけです。</p></div>
-            <div class="gap"><h3>学習理論</h3><p>汎化の議論には確率不等式が要り、学部前半の数学では扱いきれません。演習科目では、過学習と交差検証という現象の体験で代えています。理屈は3年次以降の科目に置く場所があります。</p></div>
-            <div class="gap"><h3>ゲーム・敵対</h3><p>min–maxの最適化は、勾配法をひととおり理解した後でないと動機が見えません。音声処理と認識の第13回でディープフェイクの攻防として扱うのが、いまのところ唯一の接点です。</p></div>
-        </div>
-        <p style="font-size:0.9em;color:var(--muted);margin-top:14px;line-height:1.85">逆にいえば、<b>幾何と頻度論に集まっているのは偏りというより、学年の制約に沿った結果</b>です。前提の数学が増える3年次以降に、残りの世界観を置く余地があります。</p>
+        <h2 class="sec">資料が示す到達順と、担当科目が触れている範囲</h2>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">もとにした資料が挙げる学年ごとの数学の到達順です。担当科目がどこに触れているかを併記しますが、順序そのものの妥当性はここでは検討していません。</p>
+        <div class="year"><h3>1年：二乗和と内積 → 正規方程式と射影 → 1変数の極値</h3>
+        <p>データ活用入門と情報活用が、記述統計と標本の考え方を計算・実装の段階で扱います。射影としての読み方には触れません。</p></div>
+        <div class="year"><h3>2年：QR・Cholesky・SVD → 多変数の勾配とヘッセ、IRLS</h3>
+        <p>統計学Ⅰが回帰・AIC・PCAまで、統計学Ⅱが確率とベイズ、因果推論の入り口まで。分解の数値計算そのものは扱いません。</p></div>
+        <div class="year"><h3>3年：一般化固有値・双対とKKT → カーネル → EMの交互最適化</h3>
+        <p>音声処理と認識がEMを、ビッグデータ系がPCA・k-means・PLSを実装の側から扱います。SVMとカーネル法はどの科目にもありません。</p></div>
+        <div class="year"><h3>4年：ラプラス近似・変分推論・HMC → 大規模計算 → 逆伝播とSDE</h3>
+        <p>音声処理と認識の第8回が大規模モデルの学習に触れます。ベイズの計算手法、ガウス過程、生成モデルの数理は、担当科目にはありません。</p></div>
     </section>
 
     <p class="note" style="margin-top:40px;font-size:0.86em;color:var(--muted);line-height:1.85">
-    もとにした資料：「数学的技法と統計手法・機械学習との関係」（小野原、2025年9月）。情報科学部のカリキュラムを検討するために小野原が個人で作成した整理で、学部の公式文書ではありません。7つの世界観、数学のタグ、学年ごとの到達順はこの資料によります。各回への割り当ては、公開中の授業サイトと準備中の講義資料をもとに、このページで新たに整理したものです。<br>
+    もとにした資料：「数学的技法と統計手法・機械学習との関係」（小野原、2025年9月）。情報科学部のカリキュラムを検討するために小野原が個人で作成した整理で、学部の公式文書ではありません。7つの観点と数学のタグはこの資料によります。到達段階の区別と、各回への割り当ては、このページで新たに整理したものです。<br>
     考え方そのものの解説は <a href="../guide/">統計の考え方ガイド</a>、どの科目のどの回で何を扱うかは <a href="../map/">科目の重なり一覧</a> にあります。</p>
 
 </main>
