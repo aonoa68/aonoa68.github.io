@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7つの世界観を式で読む — 小野原彩香 | Teaching</title>
+    <meta name="description" content="統計・機械学習の7つの世界観（幾何・頻度論・ベイズ・学習理論・情報理論・ゲーム・因果）を、それぞれ中心となる数式で説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* 科目色（後期5科目 内容重複マップと共通） */
+            --c-s1: #3d6fa8;
+            --c-s2: #22456d;
+            --c-sc: #96702f;
+            --c-jk: #3f7352;
+            --c-kd: #8a464f;
+            --c-past: #767c84;
+            --c-tool: #a07f2c;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV（projects/ と共通） */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER（projects/ と共通） */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 620px; line-height: 1.85; }
+
+        
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+        .legend { display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; font-size:0.84em; color:var(--muted); margin-bottom:14px; }
+        .legend .n { pointer-events:none; }
+
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid rgba(0,0,0,0.07); border-radius:var(--radius); }
+        table { border-collapse:collapse; width:100%; min-width:860px; font-size:0.88em; }
+        caption { text-align:left; padding:0 0 10px; font-size:0.84em; color:var(--muted); caption-side:top; }
+        thead th { background:#f1f4f7; font-weight:600; font-size:0.84em; text-align:center; padding:12px 8px; border-bottom:1px solid rgba(0,0,0,0.1); line-height:1.4; vertical-align:bottom; }
+        thead th:first-child { text-align:left; padding-left:18px; }
+        th.ch { color:var(--c); }
+        th.ch small { display:block; font-weight:500; font-size:0.86em; color:var(--muted); margin-top:2px; }
+        th.ch a { color:inherit; text-decoration:none; }
+        th.ch a:hover { text-decoration:underline; }
+        tbody th { text-align:left; font-weight:500; padding:11px 12px 11px 18px; border-bottom:1px solid rgba(0,0,0,0.06); position:sticky; left:0; background:var(--white); z-index:1; min-width:190px; }
+        tbody td { text-align:center; padding:9px 6px; border-bottom:1px solid rgba(0,0,0,0.06); border-left:1px solid rgba(0,0,0,0.05); }
+        tbody tr:hover th, tbody tr:hover td { background:#f7f9fb; }
+        tr.grp th { position:static; background:#e9eef3; font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--muted); padding:12px 18px 7px; }
+        .n { display:inline-block; min-width:2.2em; font-variant-numeric:tabular-nums; font-size:0.86em; font-weight:600; padding:2px 6px; margin:2px 1px; border-radius:6px; text-decoration:none;
+             color:var(--c); background:color-mix(in srgb, var(--c) 10%, white); border:1px solid color-mix(in srgb, var(--c) 26%, white); }
+        a.n:hover { background:var(--c); color:#fff; }
+        span.n { opacity:0.75; }
+        .dash { color:#b8c2cc; }
+
+        h2.sec { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.5em; color:var(--navy2); margin:52px 0 6px; }
+        .sec-lead { font-size:0.9em; color:var(--muted); margin-bottom:18px; max-width:62ch; }
+        .links { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+        .link-card { background:var(--white); border:1px solid rgba(0,0,0,0.07); border-radius:var(--radius); padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+        .link-card h3 { font-size:1em; font-weight:600; color:var(--navy2); line-height:1.5; }
+        .link-card p { font-size:0.88em; line-height:1.85; color:var(--text); }
+        .path { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:0.82em; }
+        .step { display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px; border-radius:8px; text-decoration:none; color:var(--c); border:1px solid color-mix(in srgb, var(--c) 30%, white); background:color-mix(in srgb, var(--c) 7%, white); font-weight:600; }
+        .step small { color:var(--muted); font-weight:500; font-variant-numeric:tabular-nums; }
+        a.step:hover { background:var(--c); color:#fff; }
+        a.step:hover small { color:rgba(255,255,255,0.85); }
+        .then { color:var(--muted); font-size:0.9em; }
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        a:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:4px; }
+        @media (max-width: 760px) { .links { grid-template-columns:minmax(0,1fr); } }
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            tbody th { min-width:150px; }
+        }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+    
+        /* 世界観カード */
+        .worlds { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:18px; }
+        .world { background:var(--white); border:1px solid var(--line); border-left:4px solid var(--w); border-radius:var(--radius); padding:14px 18px; }
+        .world .no { font-family:'DM Serif Display',serif; font-size:1.2em; color:var(--w); }
+        .world h3 { font-size:1.02em; font-weight:600; color:var(--navy2); margin:2px 0 4px; }
+        .world p { font-size:0.87em; color:var(--muted); line-height:1.7; }
+        .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+        .mtag { font-size:0.8em; font-weight:700; padding:2px 9px; border-radius:8px; border:1px solid color-mix(in srgb,var(--m) 35%,white); background:color-mix(in srgb,var(--m) 10%,white); color:var(--m); white-space:nowrap; }
+        .mtag small { font-weight:500; color:var(--muted); margin-left:6px; }
+        .wtag { display:inline-block; font-size:0.78em; font-weight:700; padding:1px 8px; border-radius:8px; background:color-mix(in srgb,var(--w) 12%,white); color:var(--w); border:1px solid color-mix(in srgb,var(--w) 30%,white); white-space:nowrap; }
+        td .mtag { font-size:0.74em; padding:1px 6px; margin:1px; }
+        table.mm { border-collapse:collapse; width:100%; font-size:0.88em; background:var(--white); }
+        table.mm th, table.mm td { padding:9px 10px; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:top; text-align:left; }
+        table.mm thead th { background:#f1f4f7; font-size:0.86em; color:var(--muted); font-weight:600; position:sticky; top:0; }
+        table.mm td.n { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--muted); width:84px; }
+        table.mm td.w { white-space:nowrap; width:120px; }
+        table.mm td.t { white-space:nowrap; width:150px; }
+        tr.course-head th { background:#e9eef3; font-size:0.82em; letter-spacing:0.08em; font-weight:700; color:var(--navy2); border-left:4px solid var(--c); }
+        tr.course-head th small { font-weight:500; color:var(--muted); letter-spacing:0; margin-left:8px; }
+        .gaps { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; margin-top:16px; }
+        .gap { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; }
+        .gap h3 { font-size:0.98em; color:var(--navy2); margin-bottom:4px; }
+        .gap p { font-size:0.87em; color:var(--muted); line-height:1.7; }
+        .year { border-left:3px solid var(--gold); padding-left:16px; margin-top:14px; }
+        .year h3 { font-size:1em; color:var(--navy2); }
+        .year p { font-size:0.9em; color:var(--muted); line-height:1.8; }
+        .wsec { margin-top:40px; }
+        .whead { display:flex; align-items:flex-start; gap:16px; border-left:4px solid var(--w); padding:4px 0 10px 16px; }
+        .wno { font-family:'DM Serif Display',serif; font-size:1.8em; color:var(--w); line-height:1; }
+        .whead h2 { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.45em; color:var(--w); line-height:1.3; }
+        .whead p { font-size:0.9em; color:var(--muted); margin-top:2px; }
+        .wcount { margin-left:auto; font-size:0.8em; color:var(--muted); white-space:nowrap; padding-top:6px; font-variant-numeric:tabular-nums; }
+        table.mm td.c { white-space:nowrap; width:150px; }
+        .soon { font-size:0.7em; font-weight:700; color:var(--muted); background:#eef1f4; border-radius:6px; padding:1px 6px; margin-left:6px; white-space:nowrap; }
+
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:18px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.85; }
+        .where { margin-top:14px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        mjx-container { font-size:1.05em !important; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">式で読む</span>
+        <div class="nav-right">
+            <a href="../../map/">科目の重なり</a>
+            <a href="../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <h1>Seven <span>Worldviews</span></h1>
+        <p class="lead">7つの世界観を、それぞれ<b>中心となる1本の式</b>から説明します。<br>
+        記号の読み方と、そこから出てくる代表的な手法の式を並べました。数式に慣れていなくても、何を小さく（大きく）しようとしているのかだけは読み取れるように書いています。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock" style="--w:#3d6fa8">
+        <h2><span class="no">1</span>幾何（最小二乗）</h2>
+        <p class="q">点の集まりに、いちばん近い線（面）を引く。ずれの二乗和を最小にする。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span><span class="mtag" style="--m:#8a5a2f">微I</span></div>
+        <div class="eq" style="--w:#3d6fa8">
+            <div class="lbl">何を最小にするか</div>
+            \[\hat{\beta} \;=\; \arg\min_{\beta} \; \lVert \mathbf{y} - X\beta \rVert^2\]
+            <p class="read"><b>\(\mathbf{y}\)</b> … 観測した値を縦に並べたベクトル<br><b>\(X\)</b> … 説明変数を並べた行列（設計行列）<br><b>\(\lVert\cdot\rVert^2\)</b> … 二乗和。ずれの大きさを測るものさし</p>
+        </div>
+<div class="sub"><h3>解は連立一次方程式になる</h3><div class="eq" style="--w:#3d6fa8">\[X^{\top}X\hat{\beta} = X^{\top}\mathbf{y}\]<p class="read">正規方程式。左辺の行列を分解（QR・Cholesky）して解く。ここが線形代数Ⅰの守備範囲。</p></div></div>
+<div class="sub"><h3>解は直交射影である</h3><div class="eq" style="--w:#3d6fa8">\[\hat{\mathbf{y}} = X(X^{\top}X)^{-1}X^{\top}\mathbf{y} = H\mathbf{y}\]<p class="read">\(H\) は射影行列。予測値は、観測値を「説明変数が張る空間」に垂直に落とした影である。</p></div></div>
+<div class="sub"><h3>主成分分析も同じ発想</h3><div class="eq" style="--w:#3d6fa8">\[\max_{\lVert w \rVert = 1} w^{\top}\Sigma w \quad\Longrightarrow\quad \Sigma w = \lambda w\]<p class="read">分散が最大になる方向を探すと、共分散行列の固有ベクトルに行き着く。</p></div></div>
+<div class="sub"><h3>k-means も二乗和の最小化</h3><div class="eq" style="--w:#3d6fa8">\[\min_{C,\mu} \sum_{k}\sum_{i \in C_k} \lVert x_i - \mu_k \rVert^2\]<p class="read">まとまりの中心からの距離の合計を小さくする。確率モデルは立てない。</p></div></div>
+<p class="where" style="--w:#3d6fa8">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第10回</a>、<a href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第13回</a></p>
+    </section>
+    <section class="wblock" style="--w:#8a464f">
+        <h2><span class="no">2</span>頻度論（最尤）</h2>
+        <p class="q">このデータがいちばん起きやすくなるパラメータを選ぶ。母集団は固定、データがrandomと考える。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">微I</span><span class="mtag" style="--m:#8a464f">微II</span><span class="mtag" style="--m:#3d6fa8">線I</span></div>
+        <div class="eq" style="--w:#8a464f">
+            <div class="lbl">何を最大にするか</div>
+            \[\hat{\theta} \;=\; \arg\max_{\theta} \; \ell(\theta), \qquad \ell(\theta) = \sum_{i=1}^{n} \log p(x_i \mid \theta)\]
+            <p class="read"><b>\(p(x_i\mid\theta)\)</b> … パラメータ \(\theta\) のもとで、その観測が出る確率（密度）<br><b>\(\ell(\theta)\)</b> … 対数尤度。掛け算を足し算に直すために対数を取る<br><b>\(\hat{\theta}\)</b> … 最尤推定量。尤度を最大にする値</p>
+        </div>
+<div class="sub"><h3>最大化の条件は微分＝0</h3><div class="eq" style="--w:#8a464f">\[\frac{\partial \ell(\theta)}{\partial \theta} = 0\]<p class="read">この左辺をスコア関数という。解けない場合はニュートン法などで数値的に解く。</p></div></div>
+<div class="sub"><h3>推定のばらつきは情報量で決まる</h3><div class="eq" style="--w:#8a464f">\[I(\theta) = -\,\mathbb{E}\!\left[\frac{\partial^2 \ell}{\partial \theta^2}\right], \qquad \sqrt{n}\,(\hat{\theta}-\theta) \;\xrightarrow{d}\; N\!\left(0,\, I(\theta)^{-1}\right)\]<p class="read">二階微分（曲がり具合）が大きいほど、推定は安定する。信頼区間はここから出る。</p></div></div>
+<div class="sub"><h3>正規誤差を仮定すると幾何と一致する</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">対数を取ると二乗和の最小化そのものになる。最小二乗と最尤が同じ答えを出すのはこのため。</p></div></div>
+<p class="where" style="--w:#8a464f">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第7回</a>、<a href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第7回</a></p>
+    </section>
+    <section class="wblock" style="--w:#6a4d8a">
+        <h2><span class="no">3</span>ベイズ</h2>
+        <p class="q">観測前の知識とデータを合わせて、信念を更新する。パラメータのほうが分布を持つ。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">微I</span><span class="mtag" style="--m:#8a464f">微II</span><span class="mtag" style="--m:#3d6fa8">線I</span></div>
+        <div class="eq" style="--w:#6a4d8a">
+            <div class="lbl">更新の式</div>
+            \[p(\theta \mid D) \;=\; \frac{p(D \mid \theta)\, p(\theta)}{p(D)}, \qquad p(D)=\int p(D\mid\theta)p(\theta)\,d\theta\]
+            <p class="read"><b>\(p(\theta)\)</b> … 事前分布。データを見る前の信念<br><b>\(p(D\mid\theta)\)</b> … 尤度。頻度論で最大化していたもの<br><b>\(p(\theta\mid D)\)</b> … 事後分布。更新後の信念</p>
+        </div>
+<div class="sub"><h3>予測も分布で出す</h3><div class="eq" style="--w:#6a4d8a">\[p(\tilde{x} \mid D) = \int p(\tilde{x}\mid\theta)\, p(\theta \mid D)\, d\theta\]<p class="read">1つの値ではなく、これから出るデータの分布を返す。不確実性を持ったまま予測する。</p></div></div>
+<div class="sub"><h3>分母の積分が難しいので近似する</h3><div class="eq" style="--w:#6a4d8a">\[\log p(D) \;\ge\; \mathbb{E}_{q}\!\left[\log p(D,\theta) - \log q(\theta)\right] \;=\; \mathrm{ELBO}(q)\]<p class="read">変分推論は、この下界を最大にする \(q\) を探す。MCMCは積分を標本で置き換える。</p></div></div>
+<div class="sub"><h3>Ridge回帰はベイズのMAP推定</h3><div class="eq" style="--w:#6a4d8a">\[\arg\max_{\beta} \left[\log p(\mathbf{y}\mid\beta) + \log p(\beta)\right] \;=\; \arg\min_{\beta}\left[\lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\right]\]<p class="read">事前分布に正規分布を置くと、罰則付き最小二乗と同じ式になる（\(\lambda = \sigma^2/\tau^2\)）。</p></div></div>
+<p class="where" style="--w:#6a4d8a">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第12回</a>、<a href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第3回</a></p>
+    </section>
+    <section class="wblock" style="--w:#2f6b57">
+        <h2><span class="no">4</span>学習理論（リスク最小化）</h2>
+        <p class="q">手元のデータではなく、まだ見ていないデータでの損失を小さくしたい。確率モデルは立てなくてよい。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a464f">微II</span><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span></div>
+        <div class="eq" style="--w:#2f6b57">
+            <div class="lbl">本当に小さくしたいもの</div>
+            \[R(f) \;=\; \mathbb{E}_{(x,y)\sim P}\left[\ell\big(f(x),\,y\big)\right] \qquad \text{（期待リスク）}\]
+            <p class="read"><b>\(P\)</b> … データが従う分布。中身は分からないが、存在すると考える<br><b>\(\ell\)</b> … 損失関数。予測が外れたときの痛み<br><b>\(f\)</b> … 学習する関数（モデル）</p>
+        </div>
+<div class="sub"><h3>手元で計算できるのは経験リスクだけ</h3><div class="eq" style="--w:#2f6b57">\[\hat{R}(f) = \frac{1}{n}\sum_{i=1}^{n} \ell\big(f(x_i),\,y_i\big), \qquad \hat{f} = \arg\min_{f \in \mathcal{F}} \hat{R}(f)\]<p class="read">これが経験リスク最小化（ERM）。学習とは、この最小化のことだと割り切る。</p></div></div>
+<div class="sub"><h3>差を押さえるのが汎化境界</h3><div class="eq" style="--w:#2f6b57">\[R(f) \;\le\; \hat{R}(f) \;+\; \underbrace{\mathfrak{C}(\mathcal{F},\,n,\,\delta)}_{\text{モデルの複雑さの項}}\]<p class="read">モデルの自由度が高いほど、右の項は大きくなる。正則化は、この項を抑える操作にあたる。</p></div></div>
+<div class="sub"><h3>SVMは余白を最大にする</h3><div class="eq" style="--w:#2f6b57">\[\min_{w,b}\ \tfrac{1}{2}\lVert w\rVert^2 + C\sum_{i=1}^{n}\xi_i \quad \text{s.t.}\quad y_i(w^{\top}x_i+b) \ge 1-\xi_i,\ \ \xi_i \ge 0\]<p class="read">境界から最も近い点までの距離を広く取る。確率を一切仮定しない分類法。</p></div></div>
+<p class="where">授業で扱う回：<span style="color:var(--muted)">いまのところなし</span></p>
+    </section>
+    <section class="wblock" style="--w:#96702f">
+        <h2><span class="no">5</span>情報理論</h2>
+        <p class="q">短く符号化できることを、よい説明とみなす。モデル選択の物差しになる。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">微I</span><span class="mtag" style="--m:#8a464f">微II</span></div>
+        <div class="eq" style="--w:#96702f">
+            <div class="lbl">不確かさの量</div>
+            \[H(p) \;=\; -\sum_{x} p(x)\log p(x), \qquad D_{\mathrm{KL}}(p \,\|\, q) \;=\; \sum_{x} p(x)\log\frac{p(x)}{q(x)} \;\ge\; 0\]
+            <p class="read"><b>\(H(p)\)</b> … エントロピー。その分布の予測しにくさ<br><b>\(D_{\mathrm{KL}}\)</b> … 真の分布 \(p\) をモデル \(q\) で表したときの、無駄な符号長<br><b>等号</b> … 2つの分布が一致するときだけ0になる</p>
+        </div>
+<div class="sub"><h3>交差エントロピーは最尤と同じもの</h3><div class="eq" style="--w:#96702f">\[H(p,q) = H(p) + D_{\mathrm{KL}}(p\,\|\,q) \qquad \Longleftrightarrow \qquad \min_{q} H(p,q) \;\equiv\; \max_{q}\ \text{尤度}\]<p class="read">分類モデルの損失に交差エントロピーを使うのは、最尤推定をしているのと同じである。</p></div></div>
+<div class="sub"><h3>AICは当てはまりと複雑さの釣り合い</h3><div class="eq" style="--w:#96702f">\[\mathrm{AIC} = -2\,\ell(\hat{\theta}) + 2k\]<p class="read">\(k\) はパラメータ数。当てはめを良くしても、パラメータを増やした分は差し引かれる。</p></div></div>
+<div class="sub"><h3>決定木は情報の増え方で分ける</h3><div class="eq" style="--w:#96702f">\[\mathrm{IG} = H(\text{親}) - \sum_{c}\frac{n_c}{n}H(\text{子}_c)\]<p class="read">分けたことで不確かさがどれだけ減ったかを測り、いちばん減る分割を選ぶ。</p></div></div>
+<p class="where" style="--w:#96702f">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第11回</a></p>
+    </section>
+    <section class="wblock" style="--w:#8a5a2f">
+        <h2><span class="no">6</span>ゲーム・敵対</h2>
+        <p class="q">競い合う二者の釣り合いとして学習を捉える。片方が良くなると、もう片方が困る。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a464f">微II</span><span class="mtag" style="--m:#22456d">線II</span></div>
+        <div class="eq" style="--w:#8a5a2f">
+            <div class="lbl">最小化と最大化が同時に起きる</div>
+            \[\min_{G}\ \max_{D}\ V(D,G) \;=\; \mathbb{E}_{x\sim p_{\text{data}}}\big[\log D(x)\big] \;+\; \mathbb{E}_{z\sim p_z}\big[\log\big(1-D(G(z))\big)\big]\]
+            <p class="read"><b>\(G\)</b> … 生成する側。本物らしい偽物を作りたい<br><b>\(D\)</b> … 見分ける側。本物と偽物を区別したい<br><b>\(\min\max\)</b> … 片方の最善手に対して、もう片方が最善手を返す。釣り合った点が解</p>
+        </div>
+<div class="sub"><h3>最悪の場合に備える形も同じ構造</h3><div class="eq" style="--w:#8a5a2f">\[\min_{\theta}\ \max_{Q \in \mathcal{U}}\ \mathbb{E}_{Q}\big[\ell(\theta)\big]\]<p class="read">想定しうる分布のうち、最も都合の悪いものでの損失を小さくする（分布頑健最適化）。</p></div></div>
+<div class="sub"><h3>音声のディープフェイクも同じ構図</h3><div class="eq" style="--w:#8a5a2f">\[\text{生成器の改善} \;\longrightarrow\; \text{検出器の性能低下} \;\longrightarrow\; \text{検出器の改善}\]<p class="read">偽造と検出は、終わらない追いかけっこになる。どちらか一方だけの評価では意味がない。</p></div></div>
+<p class="where" style="--w:#8a5a2f">授業で扱う回：<span style="color:var(--muted)">音声処理と認識 第13回（準備中）</span></p>
+    </section>
+    <section class="wblock" style="--w:#22456d">
+        <h2><span class="no">7</span>因果</h2>
+        <p class="q">介入したらどうなるかを問う。予測とは別の種類の問いで、データだけからは決まらない。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#3d6fa8">線I</span><span class="mtag" style="--m:#22456d">線II</span><span class="mtag" style="--m:#8a5a2f">微I</span></div>
+        <div class="eq" style="--w:#22456d">
+            <div class="lbl">見えない結果を扱う</div>
+            \[\mathrm{ATE} \;=\; \mathbb{E}\big[Y(1) - Y(0)\big]\]
+            <p class="read"><b>\(Y(1)\)</b> … 処置を受けたときの結果<br><b>\(Y(0)\)</b> … 受けなかったときの結果<br><b>問題</b> … 1人について、どちらか一方しか観測できない</p>
+        </div>
+<div class="sub"><h3>無作為化がないと使えない仮定</h3><div class="eq" style="--w:#22456d">\[\big(Y(1),\,Y(0)\big) \;\perp\!\!\!\perp\; T \;\mid\; X\]<p class="read">処置の割り当てが、共変量 \(X\) を条件づければ結果と独立であること。観察データでは仮定であって、検証はできない。</p></div></div>
+<div class="sub"><h3>調整の公式</h3><div class="eq" style="--w:#22456d">\[\mathbb{E}\big[Y \mid do(T=t)\big] \;=\; \sum_{x} \mathbb{E}\big[Y \mid T=t,\, X=x\big]\, P(X=x)\]<p class="read">層ごとに効果を見て、層の大きさで重みを付けて足す。シンプソンのパラドックスはこの重み付けの問題。</p></div></div>
+<div class="sub"><h3>回帰での調整は射影である</h3><div class="eq" style="--w:#22456d">\[\hat{\tau} = \big(Z^{\top}X\big)^{-1}Z^{\top}\mathbf{y} \quad \text{（操作変数・2段階最小二乗）}\]<p class="read">交絡を避けるために別の変数 \(Z\) を使う。計算は結局、線形代数の問題になる。</p></div></div>
+<p class="where" style="--w:#22456d">授業で扱う回：<a href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第10回</a>、<a href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第11回</a></p>
+    </section>
+
+    <div class="cross">
+        <h3>同じ式が、別の世界観で読める</h3>
+        <p>
+        <b>Ridge回帰</b>　幾何では「罰則つきの最小二乗」、ベイズでは「正規分布を事前に置いたときのMAP推定」、学習理論では「モデルの複雑さを抑える操作」。3つとも同じ式 \(\min_\beta \lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\) を指しています。<br>
+        <b>交差エントロピー</b>　最尤の負の対数尤度であり、情報理論のKLダイバージェンスの最小化であり、学習理論では損失関数のひとつです。<br>
+        <b>SVM</b>　学習理論では余白の最大化、ゲームの側から見れば最悪の場合に備える min–max 問題として読めます。
+        </p>
+    </div>
+
+    <p class="note" style="margin-top:40px;font-size:0.86em;color:var(--muted);line-height:1.85">
+    枠組みのもとにした資料：「数学的技法と統計手法・機械学習との関係」（小野原、2025年9月）。式は代表的な形に絞って書いたもので、条件や正則性の仮定は省いています。<br>
+    どの回がどの世界観に当たるかは <a href="../">手法と数学の地図</a>、考え方そのものの解説は <a href="../../guide/">統計の考え方ガイド</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-19 &nbsp;|&nbsp; <a href="../">← 手法と数学の地図へ戻る</a></p>
+</footer>
+
+</body>
+</html>
