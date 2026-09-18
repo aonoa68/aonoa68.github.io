@@ -60,6 +60,27 @@
             .cv-dl, .cv-list li { grid-template-columns:1fr; gap:2px; }
             .cv-dl dd { margin-bottom:8px; }
         }
+    
+        /* ---- 印刷・提出用 ---------------------------------------- */
+        @page { margin: 18mm 16mm; }
+        @media print {
+            .site-nav, header, footer, .cv-more, .skip-link { display: none !important; }
+            .fas, .fab, .far { display: none !important; }
+            body { background: #fff !important; color: #000 !important;
+                   font-size: 10.5pt; line-height: 1.55; }
+            .cv { max-width: none !important; margin: 0 !important; padding: 0 !important;
+                  box-shadow: none !important; border: 0 !important; }
+            .cv-sec { break-inside: avoid; page-break-inside: avoid;
+                      margin-bottom: 10pt; }
+            h1 { font-size: 16pt; margin: 0 0 4pt; }
+            h2 { font-size: 11.5pt; margin: 12pt 0 4pt;
+                 break-after: avoid; page-break-after: avoid;
+                 border-bottom: 0.5pt solid #000; padding-bottom: 2pt; }
+            .cv-dl, .cv-list li { gap: 2pt; }
+            .cv-when { color: #000 !important; }
+            .cv-note { font-size: 8.5pt; color: #333 !important; }
+            a { color: #000 !important; text-decoration: none !important; }
+        }
     </style>
 </head>
 <body>
