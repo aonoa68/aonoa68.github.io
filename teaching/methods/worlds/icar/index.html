@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICAR 空間ランダム効果 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="隣接する地点どうしが似た値を取る構造を事前分布として書く ICAR 空間ランダム効果について、非正則性と和ゼロ制約・隣接行列が設計物であること・小標本での縮退を、米原〜関ケ原の方言語彙調査の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（ベイズ） */
+            --w:      #6a4d8a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#d9c8e8; background:rgba(106,77,138,0.42); border:1px solid rgba(217,200,232,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(217,200,232,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f7f4fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f9f7fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ICAR 空間ランダム効果</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 3 ｜ <a href="../">ベイズ</a></span>
+        <h1>ICAR <span>Spatial Effects</span></h1>
+        <p class="lead">近くの地点どうしは似た値を取りやすい、という構造を<b>事前分布として</b>モデルに書き込む方法です。疫学の疾病地図のために作られ、地域を結ぶ隣接関係を通じて「隣と似る」を表現します。<br>
+        小野原が米原〜関ケ原の方言語彙調査で空間自己相関の有無を確かめるために用いた実装に即して、この手法が何を仮定しているのか、そして<b>隣接行列という設計物が結果をどこまで左右するのか</b>を整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「隣の集落と似ているだけではないか」という対抗仮説を、モデルの中で扱う。</p>
+        <p class="body">
+        地理上に並んだ地点のデータには、ほとんどの場合、空間的な構造がある。隣り合う集落は人の行き来があり、同じ学校区に属し、似た歴史を共有する。したがって<b>各集落の観測値が互いに独立だという前提は、そのままでは成り立たない</b>。独立を仮定した回帰は、この重複した情報を新しい情報として数えてしまい、係数の不確実性を小さく見積もる。
+        </p>
+        <p class="body">
+        対処は2通りある。ひとつは空間構造を取り除いてから回帰する方法、もうひとつは<b>空間構造をモデルの一部として明示的に推定する</b>方法である。ICAR は後者にあたる。各地点に空間ランダム効果 \(\phi_i\) を置き、その \(\phi\) に「隣どうしは近い値を取る」という事前分布を与える。
+        </p>
+        <p class="body">
+        この研究で問いたかったのは、人口成長率と語彙消失の関連が<b>空間的な近さで説明できてしまわないか</b>だった。近い集落は人口動態も似ているので、空間効果を入れても係数が残るかどうかが確認の要点になる。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― ガンの地図から来た手法</h2>
+        <p class="q">疫学が、地域別の発生率を地図にするために作った。</p>
+        <p class="body">
+        Julian Besag（1945–2010、英・統計学者）が York と Mollié とともに 1991 年に発表したモデルが原型である。もともとの目的は<b>地域別のガン発生率の地図を作ること</b>だった。地域ごとに発生率を素朴に計算すると、人口の少ない地域では分母が小さく、たまたま数人多いだけで発生率が跳ね上がる。地図は実態ではなく標本のばらつきを描いてしまう。
+        </p>
+        <p class="body">
+        そこで「隣の地域と発生率が似るのは当然だ」という知識を事前分布として持ち込み、各地域の推定を隣接地域のほうへ引き寄せる。人口の少ない地域ほど強く引き寄せられ、地図は安定する。空間的自己相関を邪魔者として消すのではなく、<b>推定を助ける情報として使う</b>のがこのモデルの発想である。
+        </p>
+        <div class="sub">
+            <h3>疫学から言語研究へ</h3>
+            <p>「都市部に近い農村は都市部に似た発生率を示す」という疫学の構図は、「隣の集落の語彙変化は似ている」という言語地理学の構図にそのまま移せる。この研究が生態学の希薄化や疫学の空間モデルを使っているのは偶然ではなく、<b>標本の大きさが地点ごとに違う集計データという問題の形が共通している</b>ためである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">空間版のマルコフ性。グラフの上の確率場として書く。</p>
+        <p class="body">
+        ICAR の数学的な根はマルコフ連鎖と同じところにある（Markov 1906）。時間の連鎖におけるマルコフ性は「現在が決まれば過去は未来に無関係」だった。これを空間に移すと、<b>「隣接する地点の値が決まれば、それより遠い地点は無関係」</b>になる。この性質を持つ確率場をマルコフ確率場と呼び、Hammersley–Clifford の定理が、条件付き分布の指定から同時分布が決まる条件を与えている。
+        </p>
+        <p class="body">
+        つまり ICAR は、同時分布を直接書く代わりに<b>各地点の条件付き分布だけを書く</b>モデルである。全体像を指定せず、局所的な関係だけを指定する点が特徴である。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と仮定</h2>
+        <p class="q">条件付き自己回帰（CAR）と、その極限としての ICAR。</p>
+        <div class="eq">
+            <div class="lbl">CAR ―― 各地点の条件付き分布で定義する</div>
+            \[ \phi_i \mid \phi_{-i} \;\sim\; \mathcal{N}\!\left(\alpha\,\frac{\displaystyle\sum_{j} w_{ij}\,\phi_j}{\displaystyle\sum_{j} w_{ij}},\;\; \frac{\sigma^{2}}{\displaystyle\sum_{j} w_{ij}}\right) \]
+            <p class="read"><b>\(w_{ij}\)</b> … 隣接行列の成分。隣なら 1、そうでなければ 0<br>
+            <b>\(\phi_{-i}\)</b> … 自分以外のすべての地点の空間効果<br>
+            <b>平均</b> … 隣接地点の平均に \(\alpha\) を掛けたもの。自分の値は隣の平均へ引き寄せられる<br>
+            <b>分散</b> … 隣接数が多い地点ほど小さい。情報が多いほど強く決まる</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">ICAR ―― \(\alpha = 1\) とした極限</div>
+            \[ \phi_i \mid \phi_{-i} \;\sim\; \mathcal{N}\!\left(\bar{\phi}_{\partial i},\;\; \frac{\sigma^{2}}{n_i}\right), \qquad
+               p(\boldsymbol{\phi}) \;\propto\; \exp\!\left[-\frac{1}{2\sigma^{2}}\sum_{i \sim j}\bigl(\phi_i - \phi_j\bigr)^{2}\right] \]
+            <p class="read"><b>\(\bar{\phi}_{\partial i}\)</b> … 地点 \(i\) の隣接地点における \(\phi\) の平均。<b>\(n_i\)</b> … 地点 \(i\) の隣接数<br>
+            <b>\(i \sim j\)</b> … 隣接する組についての和。<b>罰則の形は「隣どうしの差の二乗和」</b>であり、隣接する地点の値が離れているほど確率が下がる</p>
+        </div>
+        <div class="warn">
+            <h3>ICAR は事前分布として非正則である</h3>
+            <p>右の式をよく見ると、\(\boldsymbol{\phi}\) に同じ定数を足しても差 \(\phi_i - \phi_j\) は変わらない。つまり<b>この密度は全体の水準をまったく決めていない</b>。定数方向に平坦なので積分は発散し、確率分布として正規化できない。これが「非正則（improper）」ということである。</p>
+            <p>実害は2つある。第一に、そのままでは事前分布として不完全である。第二に、モデルに切片がある場合、切片と空間効果の水準が区別できず<b>識別性を失う</b>。標準的な対処は \(\sum_i \phi_i = 0\) という和ゼロ制約を課すことで、これにより水準を切片側に押しつけ、空間効果には地点間の差だけを担わせる。<code>brms</code> の <code>car(type = "icar")</code> はこの制約つきの実装である。</p>
+        </div>
+        <div class="sub">
+            <h3>隣接行列は、データではなく分析者が決める</h3>
+            <p>上の式に現れる \(w_{ij}\) は、どこからも自動的には出てこない。<b>何をもって「隣」とするかは設計判断である。</b>一定距離以内を隣とするのか、最近傍 \(k\) 個を隣とするのか、行政界を共有する地域を隣とするのか、ドロネー三角形分割で決めるのか。選び方によって隣接数の分布が変わり、引き寄せの強さが変わり、推定される空間効果が変わる。この選択はデータからは決まらない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">3km 以内を隣と定義し、空間項の有無を比較した。</p>
+        <ol class="steps">
+            <li><b>距離の計算</b>　各集落の緯度経度から大円距離（ハヴァサイン公式、地球半径 6371 km）を計算する。</li>
+            <li><b>隣接行列の構成</b>　距離が 0 より大きく 3 km 以下の組を隣接（1）、それ以外を 0 とする二値行列 \(W\) を作る。しきい値の 3 km は、先行する2016年の解析に倣った値である。</li>
+            <li><b>隣接構造の確認</b>　得られた \(W\) は 25×25、平均隣接数 4.80、孤立点 0。<b>孤立点があると ICAR は不安定になる</b>ので、この確認は必須である。</li>
+            <li><b>モデルへの投入</b>　<code>car(W, gr = settlement, type = "icar")</code> を階層ベータ回帰に加える。推定の枠組みは <a href="../bayesian-estimation/">ベイズ推定</a> のページと同じで、4連鎖・8,000標本、<code>adapt_delta = 0.97</code>。</li>
+            <li><b>空間項の要否を判定</b>　空間ありとなしを LOO 近似交差検証で比較し、空間項がデータによって支持されるかを確かめる。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>比較</th><th class="num">elpd_loo</th><th class="num">elpd_diff</th><th class="num">se_diff</th><th>判定</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>消失率・空間なし（base）</td><td class="num">33.8</td><td class="num">0.0</td><td class="num">0.0</td><td>こちらが選ばれる</td></tr>
+                <tr><td>消失率・ICAR あり（sp）</td><td class="num">33.1</td><td class="num">−0.7</td><td class="num">0.3</td><td>空間項は適合を改善しない</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値は <code>R/12_brms_loss.R</code> の実行ログからの引用。空間項を入れても人口成長率の係数はほぼ動かず、\(\beta = +0.228\)、95%確信区間 [+0.04, +0.40]、\(P(\beta&gt;0) = 0.992\) だった（空間なしは \(+0.231\)）。</p>
+
+        <div class="sub">
+            <h3>空間分散はほぼゼロに縮退した</h3>
+            <p>同じ研究の多様性モデル（51自治会）では空間分散 <code>sdcar</code> そのものを読むことができる。関西系で 0.04、95%確信区間 [0.00, 0.16]。総形質数で 0.02、[0.00, 0.09]。<b>いずれも下限が 0 に接しており、空間信号が検出されていない。</b>この場合、事後分布は空間分散が 0 に近づくほど個々の \(\phi_i\) が縮む漏斗状の形になり、サンプラーが苦しむ。実際このモデルでは <code>max_treedepth</code> に毎回到達し、有効標本サイズも 179 や 57 と低く、\(\hat{R}\) は 1.02 と 1.07 だった。</p>
+        </div>
+
+        <div class="sub">
+            <h3>結論：主モデルには入れず、頑健性確認として使う</h3>
+            <p>以上から、この研究では空間項を主モデルに入れていない。<b>ICAR は「空間構造を補正した」ためではなく、「空間構造では説明できないことを確かめる」ために使われている。</b>25地点という標本に25個の空間ランダム効果を載せるのは過剰であり、LOO もそれを支持していない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界 ―― この手法で言えないこと</h2>
+        <div class="warn">
+            <h3>隣接行列の定義を変えると、結論が変わりうる</h3>
+            <p>これは一般論ではなく、この研究群で実際に起きたことである。2016年の解析では、距離しきい値 1/2/3 km で隣接を定義し、Moran's I と Geary's C によって<b>得失率にも回帰残差にも有意な空間自己相関は検出されなかった</b>。ところが2017–2018年の解析では、ドロネー三角形分割や \(k\) 近傍など<b>複数の隣接行列を定義し直した結果、空間自己相関があることを示す指標も得られている</b>。</p>
+            <p>作業記録はこの食い違いを「要再確認の重要点」として残しており、どちらが正しいかはまだ決着していない。ここで述べられるのは、<b>同じデータに対して隣接の定義を変えると空間自己相関の有無について異なる指標が出た、という事実そのもの</b>である。したがって本ページの 3 km という値も、ひとつの設計判断として読む必要がある。しきい値 1 km・2 km での感度分析は、作業記録に残された未了の課題である。</p>
+        </div>
+        <div class="warn">
+            <h3>空間効果が「ない」ことの証明にはならない</h3>
+            <p>LOO が空間なしモデルを選び、<code>sdcar</code> が 0 に貼りついたとしても、それは<b>この隣接定義・この標本サイズのもとで空間信号を検出できなかった</b>ということである。25地点という標本では検出力そのものが低い。2016年の解析でも「Moran は『なし』だが小標本で検出力が低い」という留保が明記されており、ベイズ CAR による再検証はもともとその留保に応えるために導入されたものだった。</p>
+            <p>加えて、空間モデルの LOO 計算では Pareto \(k\) が 0.7 を超える観測が1つ（4.0%）現れており、相対有効標本サイズも 0.1–0.3 と低い。<b>比較の土台自体が完全には安定していない。</b></p>
+        </div>
+        <div class="sub">
+            <h3>空間的な近さは、近さの一種にすぎない</h3>
+            <p>ICAR が表現するのは地理的な隣接だけである。方言の伝播は道路網・通学区・通婚圏・地形の障壁に沿って進むのであって、直線距離だけで決まるわけではない。3 km の円は、そうした経路を距離で代理させたものにすぎない。<b>この点は、同じ問題を別の手法で扱った<a href="../mantel/">Mantel 検定</a>のページで「空間距離が測定値ではなく設計物である」と述べたことと同じ構図である。</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        対象は滋賀県米原市から岐阜県関ケ原町にかけての集落で行われた3世代方言語彙調査である。原調査は2015年にはびろネットが実施し、本研究はその匿名化データの二次解析にあたる。隣接行列の構成と空間モデルの推定は <code>R/03_brms_car_template.R</code>、<code>R/09_brms_diversity.R</code>、<code>R/12_brms_loss.R</code> に記述されている。<b>論文は準備中で、本稿執筆時点では公開されていない。</b>
+        </p>
+        <ul class="refs">
+            <li>研究：米原〜関ケ原 27集落の語彙得失分析（小野原彩香・井原泰雄・青木健一）。JSPS 科研費 JP18J00484。</li>
+            <li>先行する空間解析：2016年 地理情報システム学会ポスター（Moran's I・Geary's C による検定）、2017–2018年の再検討（複数の隣接定義と空間ランダム効果）。</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Besag, J., York, J. &amp; Mollié, A. (1991) Bayesian image restoration, with two applications in spatial statistics. <i>Annals of the Institute of Statistical Mathematics</i>, 43(1), 1–20. <a href="https://doi.org/10.1007/BF00116466" target="_blank" rel="noopener noreferrer">doi:10.1007/BF00116466</a></li>
+                <li>Bürkner, P.-C. (2017) brms: An R package for Bayesian multilevel models using Stan. <i>Journal of Statistical Software</i>, 80(1), 1–28. <a href="https://doi.org/10.18637/jss.v080.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v080.i01</a></li>
+                <li>Carpenter, B., Gelman, A., Hoffman, M. D. ほか (2017) Stan: A probabilistic programming language. <i>Journal of Statistical Software</i>, 76(1), 1–32. <a href="https://doi.org/10.18637/jss.v076.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v076.i01</a></li>
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>ICAR は、空間的な近さについての知識を<b>事前分布の形で</b>モデルに書き込む。隣どうしの差を罰する項がそのまま事前分布の対数密度であり、推定はデータと事前分布を合わせた事後分布から行う。<a href="../">7つの観点を式で読む</a>の<b>観点3（ベイズ）</b>に属する。同じ観点にある<a href="../bayesian-estimation/">ベイズ推定</a>のページが推定の枠組み全体を扱い、このページはその中の空間構造の書き方を扱っている。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの実行ログと出力ファイルから引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

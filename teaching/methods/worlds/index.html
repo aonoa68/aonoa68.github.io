@@ -243,6 +243,9 @@
 <div class="sub"><h3>推定のばらつきは情報量で決まる</h3><div class="eq" style="--w:#8a464f">\[I(\theta) = -\,\mathbb{E}\!\left[\frac{\partial^2 \ell}{\partial \theta^2}\right], \qquad \sqrt{n}\,(\hat{\theta}-\theta) \;\xrightarrow{d}\; N\!\left(0,\, I(\theta)^{-1}\right)\]<p class="read">二階微分（曲がり具合）が大きいほど、推定は安定する。信頼区間はここから出る。</p></div></div>
 <div class="sub"><h3>正規誤差を仮定すると幾何と一致する</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">対数を取ると二乗和の最小化そのものになる。最小二乗と最尤が同じ答えを出すのはこのため。</p></div></div><div class="sub"><h3>頻度論が評価するのは、手続きの当たり率</h3><div class="eq" style="--w:#8a464f">\[ \Pr\big(\theta \in \mathrm{CI}(X_1,\dots,X_n)\big) = 0.95 \qquad \text{（標本を取り直したときの割合）} \]<p class="read">確率がかかっているのは区間のほうで、\(\theta\) は動かない。検定の第一種の誤りも、同じく「手続きを繰り返したときの割合」として定義される。</p></div></div>
 <p class="where" style="--w:#8a464f">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第7回</a>、<a href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第7回</a></p>
+<p class="where" style="--w:#8a464f">研究で使う手法：<a href="beta-regression/">ベータ回帰 ―― 0と1のあいだの割合を、区間の外に出さずにモデル化する</a></p>
+<p class="where" style="--w:#8a464f">研究で使う手法：<a href="rarefaction/">Rarefaction ―― 標本の大きさを揃えて、語彙の豊かさを比べる</a></p>
+<p class="where" style="--w:#8a464f">研究で使う手法：<a href="power-simulation/">検出力シミュレーション ―― 効果があるとき、それを検出できるか</a></p>
 <p class="where" style="--w:#8a464f">研究で使う手法：<a href="mantel/">Mantel検定 ―― 距離行列どうしの対応を、行と列の同時並べ替えで検定する</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
@@ -258,6 +261,8 @@
 <div class="sub"><h3>分母の積分が難しいので近似する</h3><div class="eq" style="--w:#6a4d8a">\[\log p(D) \;\ge\; \mathbb{E}_{q}\!\left[\log p(D,\theta) - \log q(\theta)\right] \;=\; \mathrm{ELBO}(q)\]<p class="read">変分推論は、この下界を最大にする \(q\) を探す。MCMCは積分を標本で置き換える。</p></div></div>
 <div class="sub"><h3>仮説が有限個なら、足し算と割り算で計算できる</h3><div class="eq" style="--w:#6a4d8a">\[ P\!\left(p=\tfrac34 \,\middle|\, \text{表・表・表}\right) = \frac{(3/4)^3}{(1/4)^3+(3/4)^3} = \frac{27}{28} \]<p class="read">表の確率が \(1/4\) か \(3/4\) のどちらかで、事前をそれぞれ \(1/2\) としたとき。分母は積分ではなく<b>有限個の足し算</b>。この段階なら、微積分を学ぶ前でも事前・尤度・事後の更新を実際に計算できる。連続なパラメータに移ると積分が必要になり、近似が要る。</p></div></div><div class="sub"><h3>Ridge回帰はベイズのMAP推定</h3><div class="eq" style="--w:#6a4d8a">\[\arg\max_{\beta} \left[\log p(\mathbf{y}\mid\beta) + \log p(\beta)\right] \;=\; \arg\min_{\beta}\left[\lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\right]\]<p class="read">事前分布に正規分布を置くと、罰則付き最小二乗と同じ式になる（\(\lambda = \sigma^2/\tau^2\)）。</p></div></div>
 <p class="where" style="--w:#6a4d8a">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第12回</a>、<a href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第3回</a></p>
+<p class="where" style="--w:#6a4d8a">研究で使う手法：<a href="bayesian-estimation/">ベイズ推定（Stan / brms）―― 事前分布・収束診断・事後分布の読み方</a></p>
+<p class="where" style="--w:#6a4d8a">研究で使う手法：<a href="icar/">ICAR 空間ランダム効果 ―― 隣接関係を事前分布に入れる</a></p>
     </section>
     <section class="wblock" style="--w:#2f6b57">
         <h2><span class="no">4</span>学習理論（リスク最小化）</h2>
@@ -272,6 +277,7 @@
 <div class="sub"><h3>差を押さえるのが汎化境界</h3><div class="eq" style="--w:#2f6b57">\[R(f) \;\le\; \hat{R}(f) \;+\; \underbrace{\mathfrak{C}(\mathcal{F},\,n,\,\delta)}_{\text{モデルの複雑さの項}}\]<p class="read">モデルの自由度が高いほど、右の項は大きくなる。正則化は、この項を抑える操作にあたる。</p></div></div>
 <div class="sub"><h3>SVMは余白を最大にする</h3><div class="eq" style="--w:#2f6b57">\[\min_{w,b}\ \tfrac{1}{2}\lVert w\rVert^2 + C\sum_{i=1}^{n}\xi_i \quad \text{s.t.}\quad y_i(w^{\top}x_i+b) \ge 1-\xi_i,\ \ \xi_i \ge 0\]<p class="read">境界から最も近い点までの距離を広く取る。確率を一切仮定しない分類法。</p></div></div>
 <p class="where">授業で扱う回：<span style="color:var(--muted)">いまのところなし</span></p>
+<p class="where" style="--w:#2f6b57">研究で使う手法：<a href="loo/">LOO 感度分析 ―― 抜く単位を、従属関係のまとまりに合わせる</a></p>
     </section>
     <section class="wblock" style="--w:#96702f">
         <h2><span class="no">5</span>情報理論</h2>
@@ -313,6 +319,7 @@
 <div class="sub"><h3>調整の公式</h3><div class="eq" style="--w:#22456d">\[\mathbb{E}\big[Y \mid do(T=t)\big] \;=\; \sum_{x} \mathbb{E}\big[Y \mid T=t,\, X=x\big]\, P(X=x)\]<p class="read">層ごとに効果を見て、層の大きさで重みを付けて足す。シンプソンのパラドックスはこの重み付けの問題。</p></div></div>
 <div class="sub"><h3>回帰での調整は射影である</h3><div class="eq" style="--w:#22456d">\[\hat{\tau} = \big(Z^{\top}X\big)^{-1}Z^{\top}\mathbf{y} \quad \text{（操作変数・2段階最小二乗）}\]<p class="read">交絡を避けるために別の変数 \(Z\) を使う。計算は結局、線形代数の問題になる。</p></div></div>
 <p class="where" style="--w:#22456d">授業で扱う回：<a href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第10回</a>、<a href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第11回</a></p>
+<p class="where" style="--w:#22456d">研究で使う手法：<a href="apparent-time/">見かけ上の時間法 ―― 世代差を時間変化の代用として読む</a></p>
     </section>
 
     <div class="cross">

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ベイズ推定（Stan / brms） — 小野原彩香 | Teaching</title>
+    <meta name="description" content="階層ベイズ回帰を brms と Stan で実行する際の実務を、事前分布の選び方・収束診断・事後確率の読み方に絞って整理したページ。米原〜関ケ原の方言語彙調査の階層ベータ回帰の実装に即して説明する。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（ベイズ） */
+            --w:      #6a4d8a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#d9c8e8; background:rgba(106,77,138,0.42); border:1px solid rgba(217,200,232,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(217,200,232,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f7f4fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f9f7fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 系譜（起源の節） */
+        ul.line { list-style:none; margin-top:16px; }
+        ul.line li { font-size:0.89em; color:var(--muted); line-height:1.85; padding-left:96px; text-indent:-96px; margin-bottom:8px; }
+        ul.line li b { display:inline-block; width:84px; text-indent:0; color:var(--w); font-weight:700; font-variant-numeric:tabular-nums; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+            ul.line li { padding-left:0; text-indent:0; }
+            ul.line li b { display:block; width:auto; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ベイズ推定</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 3 ｜ <a href="../">ベイズ</a></span>
+        <h1>Bayesian <span>Estimation</span></h1>
+        <p class="lead">パラメータを分布として扱い、<b>「効果が正である事後確率」</b>を直接返す推定です。原理そのものは18世紀にさかのぼりますが、応用研究者が自分の手で階層モデルを回せるようになったのは Stan と brms 以降です。<br>
+        小野原が米原〜関ケ原の3世代方言語彙調査を階層ベータ回帰で解析した実装に即して、事前分布をどう選び、収束をどう確かめ、事後確率をどこまで読んでよいのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「人口が増えた集落ほど方言語彙が失われたか」を、係数の事後分布として問う。</p>
+        <p class="body">
+        ベイズ推定の一般的な定式化は<a href="../">7つの観点を式で読む</a>の観点3にある。このページはその繰り返しではなく、<b>実際に階層モデルを推定するときに何を決めなければならないか</b>を扱う。決めるべきものは、尤度（応答の分布とリンク関数）、事前分布、サンプラーの設定、そして収束と適合をどう確かめるかの4つである。
+        </p>
+        <p class="body">
+        この研究で欲しかったのは、標準化した人口成長率の係数 \(\beta\) について「\(\beta &gt; 0\) である事後確率」という形の答えだった。応答は語彙の消失率で、厳密に \((0,1)\) に収まる割合である。ガウス分布を当てるのは分布の誤指定になるため、ベータ分布に logit リンクを置いた（Ferrari &amp; Cribari-Neto 2004）。集落は中学校区に入れ子になっているので、区ごとの切片をランダム効果とした。
+        </p>
+        <p class="body">
+        標本は25集落しかない。<b>小標本では事前分布が結果に効く</b>。だから事前分布を既定値まかせにせず明示し、その選択が何を意味するのかを言えるようにしておく必要がある。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― 原理は18世紀、道具は2017年</h2>
+        <p class="q">定理が使えるようになるまでに250年かかっている。</p>
+        <ul class="line">
+            <li><b>1763</b>Thomas Bayes（英・牧師）の定理が没後に発表される</li>
+            <li><b>1810年代</b>Pierre-Simon Laplace（仏・数学者）が現代的な形に定式化し、「逆確率」として応用する</li>
+            <li><b>1939</b>Harold Jeffreys（英・物理学者）が科学的推論へのベイズ応用を体系化</li>
+            <li><b>1984</b>Geman &amp; Geman がギブスサンプリングを画像処理の文脈で開発。MCMC の基礎になる</li>
+            <li><b>1990年代</b>Andrew Gelman ほかが実践的ベイズ統計を普及させる</li>
+            <li><b>2017</b>Stan（確率的プログラミング言語）と brms（その R インターフェース）が論文として公刊される</li>
+        </ul>
+        <div class="sub">
+            <h3>Stan と brms が変えたのは原理ではなく参入障壁である</h3>
+            <p>Stan 以前、ベイズ階層モデルを使うにはサンプリングのコードを自分で書く必要があり、事実上、統計の専門家しか使えなかった。brms は <code>lm()</code> とほぼ同じ書き方でモデルを指定できるようにした。このページで扱う実装も <code>brm(loss ~ ... , family = Beta(link="logit"))</code> という一行で書かれている。<b>応用研究者が直接この手法を使えるようになったのは、ごく最近のことである。</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">確率論の公理、マルコフ連鎖、そして19世紀の解析力学。</p>
+        <p class="body">
+        ベイズ推定そのものは Kolmogorov (1933) の確率の公理化の上に乗っている。「\(P(\beta &gt; 0) = 0.99\)」と書けるのは、確率が集合に割り当てられた測度として厳密に定義されているからである。この基盤は頻度論の手続きとも共有されており、ベイズだけのものではない。
+        </p>
+        <p class="body">
+        計算のほうは別の系譜から来ている。事後分布の分母は積分であり、階層モデルでは解析的に解けない。そこで分布そのものを求めず、<b>そこから標本を取る</b>方針に切り替える。標本を取る仕組みがマルコフ連鎖である（Markov 1906）。現在の状態が決まれば過去は未来に無関係、という性質を使って、事後分布を定常分布とする連鎖を作り、そこを歩かせる。
+        </p>
+        <div class="eq">
+            <div class="lbl">求めたいものと、実際に計算するもの</div>
+            \[ p(\theta \mid D) \;=\; \frac{p(D \mid \theta)\,p(\theta)}{\displaystyle\int p(D\mid\theta)\,p(\theta)\,d\theta} \qquad\longrightarrow\qquad \theta^{(1)}, \theta^{(2)}, \dots, \theta^{(S)} \;\sim\; p(\theta \mid D) \]
+            <p class="read">左辺の分母は階層モデルでは解けない。右のように事後分布からの標本列が得られれば、事後平均も区間も \(P(\beta&gt;0)\) も、標本から数え上げるだけで出る。<b>MCMC は積分を標本で置き換える手続きである。</b></p>
+        </div>
+        <div class="sub">
+            <h3>Stan が使うのはハミルトン力学である</h3>
+            <p>素朴な MCMC は行き当たりばったりのランダムウォークで、次元が上がると効率が落ちる。Stan が採るハミルトニアン・モンテカルロは、事後分布の対数を位置エネルギーの地形と見なし、Hamilton (1833) の運動方程式に従ってその上でボールを転がす。勾配の情報を使うぶん、高次元でも遠くまで一度に移動できる。刻み幅と経路長を自動で決める No-U-Turn Sampler（Hoffman &amp; Gelman 2014）が既定である。<b>19世紀の解析力学が、21世紀のベイズ計算の中核にいる。</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と仮定 ―― 何を決めているのか</h2>
+        <p class="q">尤度・事前分布・サンプラー設定の3つを、すべて分析者が決める。</p>
+        <div class="eq">
+            <div class="lbl">この研究のモデル</div>
+            \[ \mathrm{loss}_i \;\sim\; \mathrm{Beta}\bigl(\mu_i \phi,\; (1-\mu_i)\phi\bigr), \qquad
+               \mathrm{logit}(\mu_i) \;=\; \alpha + u_{d(i)} + \beta\, x_i + \gamma_1 z_{1i} + \gamma_2 z_{2i} \]
+            <p class="read"><b>\(\mu_i\)</b> … 集落 \(i\) の平均消失率。logit リンクで実数直線に写す<br>
+            <b>\(\phi\)</b> … 精度パラメータ。ベータ分布の散らばりを決める<br>
+            <b>\(u_{d(i)}\)</b> … 集落 \(i\) が属する中学校区 \(d\) のランダム切片（5区）<br>
+            <b>\(x_i\)</b> … 標準化した人口成長率。<b>\(z_1, z_2\)</b> … 標準化した対数標本サイズ（中学生・高年層）</p>
+        </div>
+        <div class="sub">
+            <h3>弱情報事前分布を選ぶ理由</h3>
+            <p>事前分布には3つの選択肢がある。<b>強い事前分布</b>は結論を先に決めてしまう。<b>無情報に近い平坦な事前分布</b>は、小標本ではサンプラーが不安定になりやすく、logit スケールでは現実にはありえない大きさの係数にまで確率を配ってしまう。<b>弱情報事前分布</b>はその中間で、「おおよそこの範囲」という薄いガイドだけを与える。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">実際に置いた事前分布</div>
+            \[ \beta,\gamma \sim \mathcal{N}(0,\,1), \qquad \alpha \sim \mathcal{N}(0,\,2), \qquad \phi \sim \mathrm{Gamma}(0.1,\,0.1) \]
+            <p class="read">係数に \(\mathcal{N}(0,1)\) を置くことは、logit スケールで「効果はおおむね \(-3\) から \(+3\) の範囲だろう」と述べるのに等しい。標準化した予測変数に対しては十分に広く、かつ発散を防ぐ程度には狭い。<b>ゼロを中心に置いているので、この事前分布は効果を大きく見せる方向には働かない。</b></p>
+        </div>
+        <div class="warn">
+            <h3>事前分布は「影響がない」のではなく「影響が小さいことを確かめる」ものである</h3>
+            <p>この研究では、データが事前分布を上回る情報量を持つため最終結果への影響はほとんど出ない。ただしそれは<b>結果として確かめられたこと</b>であって、事前分布を置けば自動的にそうなるわけではない。n=25 という標本では、より狭い事前分布を置けば推定は確実にそちらへ引かれる。事前分布を明示して報告するのは、読み手がこの点を検証できるようにするためである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">4本の連鎖を回し、収束を確かめ、事後分布から確率を数える。</p>
+        <ol class="steps">
+            <li><b>データ</b>　消失率が得られた25自治会。中学校区は5区。応答 <code>loss</code> は厳密に \((0,1)\) 内にあり、端点変換は不要だった。</li>
+            <li><b>モデル指定</b>　<code>brm(loss ~ z_pop_growth + z_log_ss_ms + z_log_ss_gp + (1|district), family = Beta(link="logit"))</code>。標本努力の交絡を統制するため、両世代の対数標本サイズを共変量に入れている。</li>
+            <li><b>サンプラー設定</b>　4連鎖・各4,000反復・うち2,000をウォームアップ。ウォームアップ後の標本は合計8,000。<code>adapt_delta = 0.97</code>、<code>max_treedepth = 12</code>、<code>seed = 1</code>。バックエンドは cmdstanr。</li>
+            <li><b>収束の確認</b>　\(\hat{R}\) と有効標本サイズ、発散遷移の数を見る。報告したモデルは \(\hat{R} = 1.00\)、bulk-ESS &gt; 3,000、発散は1以下だった。</li>
+            <li><b>事後確率を数える</b>　8,000本の標本のうち \(\beta &gt; 0\) であるものの割合を数える。それが \(P(\beta &gt; 0)\) である。</li>
+            <li><b>頑健性の確認</b>　共変量を足したモデル、空間ランダム効果を入れたモデル、集落内の不確実性を伝播させたカウントレベルモデル、1集落ずつ除く感度分析、単位を統合した再解析、検出力シミュレーションを併走させた。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>モデル</th><th class="num">\(\beta\)</th><th>95% 確信区間</th><th class="num">\(P(\beta&gt;0)\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>base（主モデル）</td><td class="num">+0.231</td><td>[+0.06, +0.40]</td><td class="num">0.993</td></tr>
+                <tr><td>cov（面積・標高・建物用地を追加）</td><td class="num">+0.229</td><td>[+0.03, +0.42]</td><td class="num">0.987</td></tr>
+                <tr><td>sp（ICAR 空間ランダム効果を追加）</td><td class="num">+0.228</td><td>[+0.04, +0.40]</td><td class="num">0.992</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">標準化した人口成長率の係数。数値は <code>R/12_brms_loss.R</code> の実行ログからの引用。主モデルは \(\hat{R} = 1.00\)、Bulk-ESS 5,184、Tail-ESS 5,006。空間モデルの詳細は <a href="../icar/">ICAR 空間ランダム効果</a> のページで扱う。</p>
+
+        <div class="sub">
+            <h3>確信区間と信頼区間は、確率をどこに置くかが違う</h3>
+            <p>上の区間は事後分布の 2.5 パーセンタイルと 97.5 パーセンタイルである。「この区間に真の値がある確率が95%」と読んでよい。確率が置かれているのは<b>パラメータのほう</b>である。頻度論の信頼区間は逆で、パラメータは固定した値と見なし、確率は<b>手続きのほう</b>に置く。「同じ手続きを繰り返すと、作られる区間の95%が真の値を含む」という主張であり、いま手元にある一つの区間について確率を述べてはいない。</p>
+            <p>この違いは推定原理の違いではない。<b>尤度はベイズでも使う</b>。上の式の \(p(D\mid\theta)\) がそれで、最尤法はその尤度を最大にする点を選ぶ原理のひとつにすぎない。ベイズと頻度論を分けているのは、尤度を使うかどうかではなく、パラメータに分布を認めるかどうかである。</p>
+        </div>
+
+        <div class="sub">
+            <h3>系統別の部分プーリング</h3>
+            <p>語彙を関西系・美濃系・東京系の3系統に分け、系統ごとの成長 slope を部分プーリングで推定した。関西 \(\beta = 0.233\) [0.073, 0.394]、美濃 \(\beta = 0.240\) [0.083, 0.403]、東京 \(\beta = 0.219\) [0.022, 0.402]。事後確率はそれぞれ 0.997、0.996、0.983 である。slope がほぼ同一なのは強い縮約が効いているためで、系統間で効果が似ていることを反映している。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界 ―― この手法で言えないこと</h2>
+        <p class="q">事後確率は、モデルが正しいという条件のもとでの確率である。</p>
+        <div class="warn">
+            <h3>収束していない連鎖から出た数値は、いかなる意味も持たない</h3>
+            <p>\(\hat{R}\) は複数の連鎖が同じ分布を探索できているかを測る診断量で、収束していれば 1 に近づく。Vehtari ほか (2021) は従来の \(\hat{R}\) が裾の重い分布や連鎖間で分散が違う場合に収束failureを見落とすことを示し、順位正規化した改良版を提案している。現在の <code>brms</code> が報告するのはこの改良版である。</p>
+            <p>同じ研究の多様性モデルでは、これが実際に問題になった。非空間モデルの一部で \(\hat{R} = 1.24\) に達し、<b>未収束と判断して結果を採用していない</b>。空間モデルでは <code>max_treedepth</code> に毎回到達し、空間分散が0付近に貼りついてファネル状の事後分布になっていた。いずれも「数値が出た」ことと「推定できた」ことが別である例である。事後分布の要約を読む前に、まず診断を見る必要がある。</p>
+        </div>
+        <div class="warn">
+            <h3>「事後確率0.99」は「頑健」を意味しない</h3>
+            <p>この研究の主結果は \(P(\beta&gt;0) = 0.99\) だが、著者はこれを頑健な結論としては提示していない。集落内の標本不確実性を伝播させるカウントレベルモデルでは、対応する交互作用は \(\beta = -0.17\)、95%確信区間 [\(-0.50\), \(0.18\)] と0をまたぐ。1集落ずつ除く感度分析では、高年層が1名しかいない単一集落を除いたときだけ \(\beta = 0.12\) まで落ちる。高年層が5人以上になるまで集落を統合して再解析すると効果は消える。</p>
+            <p>検出力シミュレーションがこの食い違いを説明する。実際の標本設計のもとで、真の交互作用効果 \(-0.15\) と \(-0.30\) を検出できる確率はそれぞれ <b>12%</b> と <b>39%</b> にすぎない（\(-0.50\) でようやく82%）。<b>集落レベルの解析が強い結論を返すのは、各集落の消失率を誤差のない精密な量として扱っているからである。</b>事後確率が高いことは、モデルが置いた仮定のもとでの確からしさを示すにとどまる。</p>
+        </div>
+        <div class="sub">
+            <h3>検定と同じ誤用は、ベイズでも起きる</h3>
+            <p>「区間が0を含まない」を有意性の代わりに使えば、名前が変わっただけで同じことをしている。この研究では、効果がないことを主張したい箇所について、区間に加えて \(\pm 0.05\)・\(\pm 0.10\) の実質的等価領域に事後確率がどれだけ入るかを報告している。<b>「効果がない」と断定するのではなく、どの程度の精度で言えているのかを述べるための措置である。</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        対象は滋賀県米原市から岐阜県関ケ原町にかけての集落で行われた3世代方言語彙調査である。原調査は2015年にはびろネットが実施し、本研究はその匿名化データの二次解析にあたる。解析は <code>R/01</code> から <code>R/25</code> までのスクリプトに分けて記述され、原データファイルは改変せず作業コピー経由でのみ読む構成になっている。<b>論文は準備中で、本稿執筆時点では公開されていない。</b>
+        </p>
+        <ul class="refs">
+            <li>研究：米原〜関ケ原 27集落の語彙得失分析（小野原彩香・井原泰雄・青木健一）。JSPS 科研費 JP18J00484。</li>
+            <li>関連する先行解析：2016年 地理情報システム学会ポスター（言語外要因と語彙の得失）、2017–2018年の集団規模と語彙多様性に関する解析。</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Bürkner, P.-C. (2017) brms: An R package for Bayesian multilevel models using Stan. <i>Journal of Statistical Software</i>, 80(1), 1–28. <a href="https://doi.org/10.18637/jss.v080.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v080.i01</a></li>
+                <li>Carpenter, B., Gelman, A., Hoffman, M. D. ほか (2017) Stan: A probabilistic programming language. <i>Journal of Statistical Software</i>, 76(1), 1–32. <a href="https://doi.org/10.18637/jss.v076.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v076.i01</a></li>
+                <li>Hoffman, M. D. &amp; Gelman, A. (2014) The No-U-Turn Sampler: adaptively setting path lengths in Hamiltonian Monte Carlo. <i>Journal of Machine Learning Research</i>, 15, 1593–1623.</li>
+                <li>Vehtari, A., Gelman, A., Simpson, D., Carpenter, B. &amp; Bürkner, P.-C. (2021) Rank-normalization, folding, and localization: an improved \(\hat{R}\) for assessing convergence of MCMC. <i>Bayesian Analysis</i>, 16(2), 667–718. <a href="https://doi.org/10.1214/20-BA1221" target="_blank" rel="noopener noreferrer">doi:10.1214/20-BA1221</a></li>
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>ベイズ推定は、パラメータのほうに分布を認め、観測前の知識とデータを合わせて事後分布に更新する。返すのは点推定ではなく分布であり、「効果が正である確率」という形の答えを直接与える。<a href="../">7つの観点を式で読む</a>の<b>観点3（ベイズ）</b>にそのまま重なる。同じ研究で使っている<a href="../icar/">ICAR 空間ランダム効果</a>も、空間構造を事前分布として書くという意味で同じ観点に属する。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの実行ログと出力ファイルから引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

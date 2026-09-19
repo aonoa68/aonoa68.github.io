@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ベータ回帰 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="0と1のあいだに閉じた割合を応答にとる回帰として、ベータ回帰の定式化・指数型分布族とGLMからの系譜・端点の扱い・推定枠組みの区別を、米原方言調査の階層ベイズベータモデルの実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ベータ回帰</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Beta <span>Regression</span></h1>
+        <p class="lead">応答が <b>0 と 1 のあいだに閉じた割合</b>のとき、正規分布を仮定した線形回帰は区間の外を予測します。ベータ回帰は、開区間 \((0,1)\) 上の分布を応答に据え、平均を logit で線形予測子に接続する定式化です。<br>
+        小野原が米原〜関ケ原の3世代方言語彙調査（語彙消失率・獲得率）で用いた階層ベイズベータモデルの実装に即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">応答が割合であるとき、予測値が区間の外に出ることを構造的に防ぐ。</p>
+        <p class="body">
+        応答 \(y_s\) が「集落 \(s\) で失われた語彙の割合」のように \((0,1)\) に閉じているとする。素朴に正規分布を仮定した線形回帰 \(y_s = \mathbf{x}_s^\top \boldsymbol{\beta} + \varepsilon_s\) を当てると、線形予測子は実数全体を動くので、<b>予測値が 0 を下回ったり 1 を超えたりする</b>。割合として解釈できない値が出る時点で、モデルは応答の定義域と矛盾している。
+        </p>
+        <p class="body">
+        回避策として持ち出されがちな二つの手が、どちらも適切でない。ひとつは閾値で二値化して（たとえば 0.5 以上を 1 とする）ロジスティック回帰に持ち込む方法だが、これは連続量として測れているものを捨てている。もうひとつはロジスティック回帰をそのまま当てる方法だが、二項分布は 0 か 1 かの試行を数える分布であって、連続な割合のための分布ではない。
+        </p>
+        <p class="body">
+        ベータ回帰は、\((0,1)\) 上の連続分布であるベータ分布を応答分布に据え、その平均をリンク関数で線形予測子につなぐ。定義域の問題は、分布の選択そのものによって解消される（Ferrari &amp; Cribari-Neto 2004）。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― どの分野の誰が作ったか</h2>
+        <p class="q">割合データに回帰を当てる枠組みが欠けていた、という不足から生まれた。</p>
+        <p class="body">
+        Silvia Ferrari と Francisco Cribari-Neto が 2004 年に <i>Journal of Applied Statistics</i> に発表した定式化である。ブラジルの統計学者による仕事で、動機は明快だった。割合・比率のデータは分野を問わず現れるのに、それを応答にとる回帰の標準的な枠組みが整っていなかった。上に挙げた二つの回避策の不備が、そのまま出発点になっている。
+        </p>
+        <p class="body">
+        発表後の普及は速く、割合データが扱われる領域に広く浸透した。ただし注意すべきなのは、この論文が<b>新しい分布や新しい推定原理を発明したわけではない</b>という点である。ベータ分布は古くから知られており、一般化線形モデルの枠組みも 1972 年に整っていた。Ferrari と Cribari-Neto の貢献は、既にある部品を組み合わせ、回帰モデルとして使える形に仕上げたことにある。次節の系譜がそれを示す。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">指数型分布族 → 一般化線形モデル → ベータ回帰、という三段の接続である。</p>
+        <p class="body">
+        出発点は、ばらばらに見える分布が共通の形式を持つという発見にある。Fisher（1934）らが独立に定式化した指数型分布族は、密度を次の形に書けるものの総称である。
+        </p>
+        <div class="eq">
+            <div class="lbl">指数型分布族の一般形</div>
+            \[ f(y \mid \theta) \;=\; h(y)\,\exp\bigl[\,\eta(\theta)\,T(y) - A(\theta)\,\bigr] \]
+            <p class="read">正規分布・二項分布・ポアソン分布、そして<b>ベータ分布</b>がこの族に属する。分布の違いは \(h,\eta,T,A\) の違いに還元される。</p>
+        </div>
+        <p class="body">
+        Nelder &amp; Wedderburn（1972）は、この族のどの分布を応答に選んでも同じ手続きで回帰ができる枠組みを与えた。線形予測子 \(\mathbf{x}^\top\boldsymbol{\beta}\) と、応答分布の平均 \(\mu\) を、リンク関数 \(g\) で結ぶ。
+        </p>
+        <div class="eq">
+            <div class="lbl">一般化線形モデルの接続</div>
+            \[ g(\mu_i) \;=\; \mathbf{x}_i^\top \boldsymbol{\beta} \]
+            <p class="read">正規分布に恒等リンクを選べば線形回帰、二項分布に logit を選べばロジスティック回帰、ポアソン分布に log を選べばポアソン回帰。<b>ベータ分布に logit を選べばベータ回帰</b>になる。</p>
+        </div>
+        <div class="sub">
+            <h3>ベータ回帰は、この枠組みの空席を埋めた仕事である</h3>
+            <p>上の対応表を見ると、ベータ分布の行だけが長く空いていたことが分かる。Ferrari &amp; Cribari-Neto（2004）は、ベータ分布を平均と精度で再パラメータ化して一般化線形モデルの形に乗せ、その空席を埋めた。だからこの手法の系譜は、統計学の内部で閉じている。他分野から借りてきたものではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と仮定</h2>
+        <p class="q">平均と精度で書き直したベータ分布に、logit リンクで予測子を接続する。</p>
+        <p class="body">
+        ベータ分布は通常 \(\mathrm{Beta}(a,b)\) と2つの形状パラメータで書かれるが、回帰に使うには平均を直接扱えたほうがよい。\(\mu = a/(a+b)\)、\(\phi = a+b\) と置き直すと次の形になる。
+        </p>
+        <div class="eq">
+            <div class="lbl">平均 \(\mu\) と精度 \(\phi\) による再パラメータ化</div>
+            \[ f(y \mid \mu,\phi) \;=\; \frac{\Gamma(\phi)}{\Gamma(\mu\phi)\,\Gamma\bigl((1-\mu)\phi\bigr)}\; y^{\mu\phi-1}\,(1-y)^{(1-\mu)\phi-1} \]
+            <p class="read"><b>\(\mu \in (0,1)\)</b> … 分布の平均。これを線形予測子につなぐ<br>
+            <b>\(\phi &gt; 0\)</b> … 精度。大きいほど平均のまわりに集中する<br>
+            <b>分散</b> … \(\mathrm{Var}[y] = \mu(1-\mu)/(1+\phi)\)。平均に依存して変わる。等分散は仮定していない</p>
+        </div>
+        <p class="body">
+        この \(\mu\) を logit で線形予測子に接続する。米原調査の主モデルは、集落 \(s\) の語彙消失率について次の形をとる。
+        </p>
+        <div class="eq">
+            <div class="lbl">この研究の主モデル</div>
+            \[ \operatorname{logit}\bigl(\mathrm{loss}_s\bigr) \;=\; \beta_0 + \beta_1\,\mathrm{growth}_s + \beta_2\,\log N^{\text{ms}}_s + \beta_3\,\log N^{\text{gp}}_s + u_{\text{district}[s]} \]
+            <p class="read"><b>\(\mathrm{growth}_s\)</b> … 人口成長率（2010年人口 / 2005年人口）を標準化したもの<br>
+            <b>\(\log N^{\text{ms}}_s,\ \log N^{\text{gp}}_s\)</b> … 中学生・高年層それぞれの調査人数の対数。標本努力の統制項<br>
+            <b>\(u_{\text{district}[s]}\)</b> … 中学校区のランダム切片（5区）</p>
+        </div>
+        <div class="sub">
+            <h3>分散が平均に依存することは、仮定ではなく帰結である</h3>
+            <p>上の分散の式が示すとおり、ベータ分布では平均が 0 や 1 に近づくほど分散が小さくなる。割合データで実際に観察される「端に寄るほどばらつきが小さい」という性質が、分布の側から自動的に出てくる。正規分布を当てた場合にこれを表現するには不等分散の追加構造が要るが、ベータ回帰では分布を選んだ時点で織り込まれている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>端点の扱い ―― 0 と 1 がちょうど出たとき</h2>
+        <p class="q">ベータ分布は開区間の分布である。端点は密度を持たない。</p>
+        <p class="body">
+        定義域は \((0,1)\) であって \([0,1]\) ではない。\(y=0\) や \(y=1\) がデータに含まれると尤度が定義できず、当てはめは失敗する。割合データでは端点は珍しくないので、実務では何らかの処理が要る。
+        </p>
+        <p class="body">
+        標準的な対処は Smithson &amp; Verkuilen（2006）が与えた線形圧縮で、標本サイズ \(n\) に対して次のように区間の内側へ押し込む。
+        </p>
+        <div class="eq">
+            <div class="lbl">端点を内側へ寄せる変換（この研究では使っていない）</div>
+            \[ y' \;=\; \frac{y\,(n-1) + 1/2}{n} \]
+            <p class="read">\(n\) が大きいほど移動量は小さい。ただしこれは<b>データを動かす操作</b>であり、端点が多いデータでは結果が変換に依存しうる。端点そのものに意味がある場合は、0 と 1 に確率質量を置く zero-one inflated の定式化を検討すべき場面である。</p>
+        </div>
+        <div class="sub">
+            <h3>この研究では変換を必要としなかった</h3>
+            <p>米原調査の消失率・獲得率は元データで 0〜100 のパーセント表記であり、100 で割って \([0,1]\) に直している。その結果として得られた 25 自治会の値は<b>端点を1つも含まなかった</b>ため、圧縮変換を適用していない。これは手法の一般的性質ではなく、このデータがたまたま満たした条件である。端点を含むデータに同じモデルを当てる場合には、上の処理か別の定式化が必要になる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>起源は最尤、実装はベイズ</h2>
+        <p class="q">この区別は、結果の読み方を変える。</p>
+        <p class="body">
+        Ferrari &amp; Cribari-Neto（2004）の定式化は最尤推定である。一般化線形モデルの枠組み自体、反復重み付き最小二乗で最尤推定量を得る手続きとして整えられた（Nelder &amp; Wedderburn 1972）。この系譜において、パラメータは固定された未知の値であり、標本のほうが確率変動する。
+        </p>
+        <p class="body">
+        一方この研究の確定版モデルは、<b>brms を通じた Stan によるベイズ推定</b>で当てはめている。パラメータに事前分布を置き、事後分布を MCMC で得る。報告される区間は信用区間であって信頼区間ではなく、\(P(\beta &gt; 0)\) はパラメータについての確率として読める。
+        </p>
+        <div class="warn">
+            <h3>観点2に置いているのは、定式化の系譜による</h3>
+            <p>このページを<b>観点2（頻度論）</b>に置いているのは、ベータ回帰という手法が指数型分布族と一般化線形モデルという最尤の系譜から生まれたものだからである。<b>推定の枠組みそのものはベイズである</b>。同じ尤度に事前分布を掛けて事後分布を得ているのであって、標本のばらつきで判断しているのではない。</p>
+            <p>この区別は名目上のものではない。後掲の表で <code>base</code> の係数に添えた 0.993 は、<b>事後分布において \(\beta&gt;0\) である確率</b>であり、p 値ではない。頻度論の枠組みで同じ数字を出すことはできない。逆に、頻度論のベースラインとして併走させた <code>betareg</code> の結果には p 値が付いており、こちらはパラメータについての確率を与えない。<a href="../">7つの観点を式で読む</a>で述べているとおり、尤度はベイズでも使われる。最尤は推定原理のひとつであって、頻度論と同義ではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>この研究での使い方</h2>
+        <p class="q">人口成長率が語彙消失率を押し上げるか、を標本努力と空間構造を統制して問う。</p>
+        <ol class="steps">
+            <li><b>応答の構成</b>　集落 \(s\) の項目 \(j\) について、高年層（60歳以上）の使用割合を \(g_{sj}\)、中学生の使用割合を \(m_{sj}\) とし、\(\mathrm{loss}_s = (1/J)\sum_j \max(g_{sj}-m_{sj},\,0)\) で消失率を定める。獲得率 \(\mathrm{gain}_s\) は差の向きを逆にしたもの。</li>
+            <li><b>頻度論のベースライン</b>　<code>betareg</code> で logit リンクのベータ回帰を当て、標準化した人口規模・人口成長率・面積を予測子にする。小標本（n=25）で先に素描を取っておく段階。</li>
+            <li><b>階層ベイズへの移行</b>　<code>brms</code> ＋ cmdstanr/Stan で、中学校区のランダム切片を入れた階層ベータ回帰を当てる。標本努力の統制項として中学生・高年層それぞれの調査人数の対数を入れる。</li>
+            <li><b>事前分布</b>　傾きに \(\mathrm{Normal}(0,1)\)、切片に \(\mathrm{Normal}(0,2)\)、精度 \(\phi\) に \(\mathrm{Gamma}(0.1,0.1)\) の弱情報事前。</li>
+            <li><b>サンプリング</b>　4 鎖・4,000 反復（うち 2,000 をウォームアップ）、<code>adapt_delta = 0.97</code>、<code>max_treedepth = 12</code>。採用モデルは \(\hat{R}=1.00\)、bulk-ESS &gt; 3,000、発散遷移 1 以下。</li>
+            <li><b>空間の確認</b>　3 km 以内を隣接とする二値の隣接行列を作り、ICAR 空間ランダム効果を入れたモデルと入れないモデルを LOO 近似交差検証で比較する。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>モデル</th><th class="num">人口成長率の係数</th><th class="num">95% 信用区間</th><th class="num">\(P(\beta&gt;0)\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>base（標本努力を統制）</td><td class="num">+0.231</td><td class="num">[+0.059, +0.397]</td><td class="num">0.993</td></tr>
+                <tr><td>+ covariates（面積・標高・建物用地）</td><td class="num">+0.229</td><td class="num">[+0.032, +0.422]</td><td class="num">0.987</td></tr>
+                <tr><td>+ spatial（ICAR、3 km 隣接）</td><td class="num">+0.228</td><td class="num">[+0.045, +0.402]</td><td class="num">0.992</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">階層ベイズベータ回帰（n=25、中学校区ランダム切片）。係数は logit スケール、予測子は標準化済み。数値はリポジトリの <code>loss_growth_coefs.csv</code> と作業ログに記録された実行結果の引用。</p>
+
+        <div class="sub">
+            <h3>頻度論ベースラインとの対照</h3>
+            <p><code>betareg</code> による当てはめでは、人口成長率の標準化係数が <b>+0.2522</b>（標準誤差 0.0582、\(z=4.334\)、\(p=1.5\times10^{-5}\)）。同じモデルに含めた人口規模は \(-0.1274\)（\(p=0.101\)）、面積は \(+0.0295\)（\(p=0.690\)）で、いずれも 5% 水準に達しない。獲得率を応答にすると人口成長率の係数は \(-0.139\)（\(p=0.267\)）となり、符号が反転したうえで有意でなくなる。<b>頑健に出ているのは消失率の側だけ</b>である。</p>
+            <p>ベイズの階層モデルで得た \(+0.231\) と、頻度論の \(+0.2522\) は近い。小標本で事前分布が弱情報であれば両者が接近するのは想定どおりで、事前分布が結果を作っているわけではないことの確認になる。</p>
+        </div>
+
+        <div class="sub">
+            <h3>空間ランダム効果は採用していない</h3>
+            <p>LOO 比較では、ICAR を入れたモデルは入れないモデルよりわずかに悪い（elpd 差 \(-0.7 \pm 0.3\)）。加えて n=25 に対して 25 個の空間ランダム効果を置くのは過剰であり、サンプリングにも treedepth の問題が出た。<b>採用モデルは非空間の階層ベータ</b>である。空間項は「必要かどうかをデータで確かめる」ために置いたものであって、補正として入れたものではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>限界 ―― この手法で言えないこと</h2>
+        <p class="q">分布の選択が解決するのは定義域の問題だけである。</p>
+        <div class="warn">
+            <h3>応答の定義域が正しくなっても、因果は出ない</h3>
+            <p>ベータ回帰が保証するのは、予測値が \((0,1)\) に収まることと、分散が平均に依存する形で扱われることだけである。人口成長率と消失率の関連が \(+0.23\) で安定していることは、<b>人口成長が消失を引き起こしている証拠ではない</b>。観察データであり、処置の割り当てがない。ここで統制した標本努力・面積・標高・建物用地・空間構造は、あくまで測定できた交絡候補にすぎない。</p>
+        </div>
+        <div class="warn">
+            <h3>小標本であることは、モデルの選択では解消しない</h3>
+            <p>消失率が計算できたのは 25 自治会である。中学校区は 5 つしかなく、ランダム切片の分散を推定する材料は乏しい。弱情報事前は不確実性を適正に表現するための装置であって、<b>標本を増やす代わりにはならない</b>。実際、1 集落を除く leave-one-out の感度分析では、高年層の回答者が 1 名しかいない集落を除いた場合に係数が \(+0.12\)（\(p=0.25\)）まで落ちる。この関連は、最も情報の乏しい観測を残したときに最も強く出る。</p>
+        </div>
+        <div class="sub">
+            <h3>応答の作り方そのものが結果を左右する</h3>
+            <p>\(\mathrm{loss}_s\) は世代間の使用割合の差を項目について平均したものだが、差を \(\max(\cdot,0)\) で切り落としている。消失と獲得を別々の量として扱うための定義であり、この切り落としは負の側の情報を捨てる操作でもある。また各集落の割合は少数の回答者から推定されており、その不確実性は集計の時点で消えている。この点は、項目×集落×世代の使用者数を直接モデル化するカウントレベルのベータ二項モデルで別途確認されており、そちらでは世代×成長の交互作用が \(-0.17\)、95% 信用区間 \([-0.50,\,0.18]\) と 0 をまたぐ。<b>集計を前提にしたときにだけ関連が明確に出る</b>ことは、読み手に伝えるべき性質である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典とデータ</h2>
+        <p class="body">
+        滋賀県米原市から岐阜県関ケ原町にかけての5中学校区を対象とした、3世代方言語彙調査の二次解析である。調査票は 40 の質問概念で 106 の方言語彙変異を引き出しており、関西・近江系 45、東京・標準系 31、美濃・尾張系 26 に若者語・新方言 4 項目を加えて事前分類されている。原調査は 2015 年にはびろネットが実施し、本研究はその匿名化データを解析したもの。解析は全工程がスクリプト化されている。
+        </p>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815. <a href="https://doi.org/10.1080/0266476042000214501" target="_blank" rel="noopener noreferrer">doi:10.1080/0266476042000214501</a></li>
+                <li>Nelder, J. A. &amp; Wedderburn, R. W. M. (1972) Generalized linear models. <i>Journal of the Royal Statistical Society, Series A</i>, 135(3), 370–384. <a href="https://doi.org/10.2307/2344614" target="_blank" rel="noopener noreferrer">doi:10.2307/2344614</a></li>
+                <li>Smithson, M. &amp; Verkuilen, J. (2006) A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. <i>Psychological Methods</i>, 11(1), 54–71. <a href="https://doi.org/10.1037/1082-989X.11.1.54" target="_blank" rel="noopener noreferrer">doi:10.1037/1082-989X.11.1.54</a></li>
+                <li>Bürkner, P.-C. (2017) brms: An R package for Bayesian multilevel models using Stan. <i>Journal of Statistical Software</i>, 80(1), 1–28. <a href="https://doi.org/10.18637/jss.v080.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v080.i01</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>ベータ回帰は、指数型分布族という共通形式と、一般化線形モデルというリンク関数の枠組みから導かれる。この系譜は最尤推定を中心に据えた<b>観点2（頻度論）</b>のものだが、<a href="../">7つの観点を式で読む</a>で述べているとおり、<b>尤度はベイズでも使われる</b>。この研究の実装は事前分布を置いた事後推定であり、同じ尤度が<b>観点3（ベイズ）</b>の側から読まれている。ひとつの式が複数の観点で読めることの実例にあたる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの出力と作業記録から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

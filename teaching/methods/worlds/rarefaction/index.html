@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rarefaction（希薄化） — 小野原彩香 | Teaching</title>
+    <meta name="description" content="標本努力の違いを取り除いて豊富さを比べる希薄化について、Hurlbert の期待形質数の導出・超幾何分布との対応・言語研究への転用が置く仮定・固定リストの天井問題を、米原方言調査の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Rarefaction</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Rarefaction <span>希薄化</span></h1>
+        <p class="lead">観察される<b>種類の数は、調べた量に依存して増える</b>。標本サイズの違う集団どうしで種類数を直接比べると、豊富さの差ではなく調査努力の差を測ってしまいます。希薄化は「同じ人数を調べたら何種類出るか」に揃えて比較する手続きです。<br>
+        小野原が米原〜関ケ原の3世代方言語彙調査で用いた実装に即して、この転用が何を仮定し、どこで成り立たなくなるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">豊富さの比較は、標本サイズを揃えないかぎり成立しない。</p>
+        <p class="body">
+        集団 \(s\) で観察された種類の数を \(S_s\) とする。\(S_s\) は「そこに何種類あるか」ではなく「<b>どれだけ調べたか</b>」に強く依存する。調査した個体を増やせば、それまで出会わなかった種類に出会う機会が増えるので、\(S_s\) は標本サイズ \(N_s\) について単調に増える。したがって \(S_A > S_B\) という観察は、\(N_A > N_B\) であるかぎり豊富さの差の証拠にならない。
+        </p>
+        <p class="body">
+        この関係は確率的な必然であって、測定の不備ではない。種類 \(i\) が母集団で稀であるほど、小さい標本では見落とされる。標本サイズを増やすと見落としが減る。そのぶんだけ \(S_s\) が増える。観察された種類数は、豊富さと標本努力の積として現れる。
+        </p>
+        <p class="body">
+        希薄化は、この交絡を<b>計算によって取り除く</b>手続きである。すべての集団について「かりに \(m\) 個体だけを無作為に取り出していたら、何種類が観察されたと期待されるか」を求め、共通の \(m\) の下で比較する。実際に標本を捨てるのではなく、期待値を解析的に計算する。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― どの分野の誰が作ったか</h2>
+        <p class="q">深海底の生物多様性を比べようとして、比べられないことに気づいた研究から。</p>
+        <p class="body">
+        Howard Sanders が 1968 年に <i>The American Naturalist</i> で提案した。ウッズホール海洋研究所で深海の底生生物群集を扱っており、緯度・水深・水温・塩分の違う環境から採取した試料の多様性を比較しようとしていた。そこで直面したのが前節の問題である。<b>採取した個体数が場所ごとに違えば、種数はそのまま比べられない</b>。Sanders は標本を間引いて共通の大きさに揃えるという発想を持ち込み、これを rarefaction と呼んだ。
+        </p>
+        <p class="body">
+        Sanders の最初の定式化には計算上の偏りがあり、種数を過大に見積もることが分かった。これを正したのが Stuart Hurlbert（1971、<i>Ecology</i>）である。論文の表題は「種多様性という非概念」で、多様性指数をめぐる当時の議論が意味論的にも技術的にも混乱しているという批判が主題だった。その代替として、生物学的に解釈の定まった量をいくつか提示しており、そのひとつが<b>期待種数</b>である。今日 rarefaction として使われている式は、この Hurlbert の定式化を指す。
+        </p>
+        <div class="sub">
+            <h3>手法が、多様性指数への批判として生まれている</h3>
+            <p>この由来は読み方に関わる。Hurlbert が提示したのは「多様性をひとつの数にまとめる」ための指数ではなく、「<b>標本サイズを揃えたうえで種数を数える</b>」という、より素朴で解釈の定まった量だった。希薄化を使うということは、多様性という抽象語を避け、比較可能な条件を作ってから数えるという立場を採ることでもある。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">超幾何分布。17〜18世紀の組み合わせ論がそのまま使われている。</p>
+        <p class="body">
+        \(N\) 個体のうち種類 \(i\) に属するものが \(N_i\) 個体あるとする。ここから \(m\) 個体を非復元で無作為に取り出したとき、取り出した \(m\) 個体のなかに種類 \(i\) が<b>1個体も含まれない</b>のはどういう場合か。それは、種類 \(i\) 以外の \(N-N_i\) 個体だけから \(m\) 個体を選んだ場合である。
+        </p>
+        <div class="eq">
+            <div class="lbl">種類 \(i\) を1個体も引かない確率</div>
+            \[ \Pr\bigl(\text{種類 } i \text{ が標本に現れない}\bigr) \;=\; \frac{\dbinom{N-N_i}{m}}{\dbinom{N}{m}} \]
+            <p class="read">分母は \(N\) 個体から \(m\) 個体を選ぶ総数、分子はそのうち種類 \(i\) を避けた選び方の数。これは<b>超幾何分布</b>で 0 個を引く確率にあたる。「赤玉と白玉の入った袋から \(m\) 個取って赤玉が何個か」という古典的な問いと同じ構造である。</p>
+        </div>
+        <p class="body">
+        余事象を取れば、種類 \(i\) が標本に<b>少なくとも1個体は現れる</b>確率になる。求めたいのは観察される種類の総数の期待値なので、指示変数の和として書き、期待値の線形性で足し合わせればよい。
+        </p>
+        <div class="eq">
+            <div class="lbl">Hurlbert（1971）の期待種数</div>
+            \[ \mathbb{E}\bigl[S_m\bigr] \;=\; \sum_{i=1}^{S} \left[\, 1 - \frac{\dbinom{N-N_i}{m}}{\dbinom{N}{m}} \,\right] \]
+            <p class="read"><b>\(S\)</b> … 全標本で観察された種類の総数<br>
+            <b>\(N\)</b> … その集団の標本サイズ、<b>\(N_i\)</b> … 種類 \(i\) の個体数、<b>\(m\)</b> … 揃える深さ<br>
+            <b>期待値の線形性</b> … 種類ごとの出現確率を単に足している。種類どうしの独立性は仮定していない</p>
+        </div>
+        <div class="sub">
+            <h3>シミュレーションではなく、閉じた式である</h3>
+            <p>「標本をランダムに間引いて数える」という操作を繰り返し実行して平均を取っても同じ値に近づくが、その必要はない。上の式は期待値そのものを与える。実装上は \(\binom{N-N_i}{m}\big/\binom{N}{m}\) を対数で計算して指数を取る（<code>exp(lchoose(N-k, m) - lchoose(N, m))</code>）のが安定で、\(N-N_i &lt; m\) のときは自動的に 0 になり、その種類の寄与が 1 になる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>言語研究への転用 ―― 何を読み替えているか</h2>
+        <p class="q">生態学の「個体」と「種」を、言語調査の「話者」と「語彙項目」に置き換える操作である。</p>
+        <p class="body">
+        文化進化の研究では、集団規模と文化的多様性の関係が主題になることが多い。語彙についても「大きい集落ほど語彙が豊富か」という問いが立てられる。ここで観察される語彙項目数は、生態学における種数と同じ構造の問題を抱えている。<b>大きい集落ほど多くの話者を調査できるので、項目が多く観測される</b>。
+        </p>
+        <div class="eq">
+            <div class="lbl">読み替えの対応</div>
+            <p class="read"><b>採取した個体数 \(N\)</b> → 調査した話者数<br>
+            <b>種類 \(i\) の個体数 \(N_i\)</b> → 語彙項目 \(i\) を使用すると答えた話者数 \(k_i\)<br>
+            <b>観察された種数 \(S_m\)</b> → \(m\) 人を調べたときに出現すると期待される語彙項目数<br>
+            式の形は変わらない。\(N_i\) を \(k_i\) と読み替えるだけである。</p>
+        </div>
+        <div class="warn">
+            <h3>ひとつ、構造が違う点がある</h3>
+            <p>生態学の設定では、<b>1個体は1つの種にしか属さない</b>。したがって \(\sum_i N_i = N\) が成り立つ。ところが言語調査では、<b>1人の話者が多数の語彙項目を使う</b>。この研究の場合、106 項目に対して1人が何十項目も「使う」と答えるので \(\sum_i k_i \gg N\) である。</p>
+            <p>式そのものは破綻しない。上の導出が使っているのは「\(m\) 人のなかに項目 \(i\) の使用者が1人も含まれない確率」だけであり、話者が他の項目も使うかどうかには依存しないからである。生態学でも、個体ではなく標本単位の出現・非出現を数える形（incidence-based / sample-based rarefaction）として確立した使い方にあたる。</p>
+            <p>ただし<b>解釈は変わる</b>。得られる量は「\(m\) 個体を採取したときの期待種数」ではなく「\(m\) 人に尋ねたときに少なくとも1人が使うと答える項目の期待数」である。個体数に基づく希薄化の直感をそのまま持ち込むと、この違いを見落とす。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">人口規模と語彙の豊富さの相関が、標本努力の産物かどうかを確かめる。</p>
+        <ol class="steps">
+            <li><b>個人データの復元</b>　集計表ではなく個人単位の回答が必要なので、原データの全体シートから中学生の個票を復元する。実在する中学校名・学年 1〜3・語彙回答がすべて 0/1/2 のいずれか、という条件で 510 人・49 集落を抽出し、値が 2（「使う」）のものを使用とみなす。</li>
+            <li><b>使用行列の構成</b>　106 の語彙項目について、集落ごとに調査人数 \(N\) と、項目 \(i\) の使用者数 \(k_i\) を数える。系統別（関西・近江系／東京・標準系／美濃・尾張系）にも同じ集計を作る。</li>
+            <li><b>生の豊富さ</b>　\(k_i &gt; 0\) である項目の数を数える。これが補正前の richness。</li>
+            <li><b>希薄化した豊富さ</b>　Hurlbert の式で \(\mathbb{E}[S_m]\) を計算する。深さは \(m = 3,\,5,\,8\) の3通りを試す。<b>\(N &lt; m\) の集落は計算できないので除外する</b>（\(m=3\) で 37 集落、\(m=5\) で 29 集落が残る）。</li>
+            <li><b>人口との回帰</b>　生の豊富さと希薄化した豊富さのそれぞれを、集落人口の常用対数に回帰し、傾きを比べる。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>系統</th><th class="num">生の豊富さ</th><th class="num">希薄化 \(m=3\)</th><th class="num">希薄化 \(m=5\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>総項目数</td><td class="num">+21.0〜+21.5 (p&lt;.001)</td><td class="num">−4.3 (p=.21)</td><td class="num">−2.4 (p=.49)</td></tr>
+                <tr><td>関西・近江系</td><td class="num">+10.3〜+11.5 (p&lt;.001)</td><td class="num">−2.8 (p=.23)</td><td class="num">−3.3 (p=.22)</td></tr>
+                <tr><td>美濃・尾張系</td><td class="num">+8.5〜+13.4 (p&lt;.01)</td><td class="num">−1.3 (p=.55)</td><td class="num">+0.6 (p=.81)</td></tr>
+                <tr><td>東京・標準系</td><td class="num">+0.7〜+0.8 (p&lt;.03)</td><td class="num">−0.3 (p=.38)</td><td class="num">+0.1 (p=.68)</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">集落人口の常用対数に対する回帰の傾き。数値は解析スクリプトの実行結果を作業記録から引用したもの。生の側に幅があるのは、系統分類の版によって値が動くため。</p>
+
+        <div class="sub">
+            <h3>補正すると、関連は消えてわずかに負へ転じる</h3>
+            <p>生の豊富さでは、人口の対数に対する傾きが総項目数で \(+21\) 前後、いずれも \(p&lt;.001\) と強い正の関連が出る。ところが標本サイズを揃えると、<b>すべての系統で有意でなくなり、符号も安定しない</b>。\(m=3\) と \(m=5\) で結論は一致している。「人口が大きい集落ほど語彙が豊富」という観察は、大きい集落ほど多くの中学生を調査したという標本努力の差でほぼ説明される。</p>
+            <p>同じ結論が、独立な二つ目の経路からも得られている。希薄化のように標本を物理的に揃えるのではなく、階層モデルに調査人数の対数を共変量として入れて統制する方法でも、関西系の人口効果は \(-0.07\) まで落ちる。<b>手続きの違う二つの方法が同じ向きの結論に収束している</b>ことが、この判断の根拠になっている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界 ―― この手法で言えないこと</h2>
+        <p class="q">標本努力を揃えても、測定の上限までは取り除けない。</p>
+        <div class="warn">
+            <h3>固定リスト調査では、天井が効く</h3>
+            <p>ここが最も重い制約である。生態学の設定では、観察されうる種数に人為的な上限がない。採取を増やせば新しい種が出てくる余地が常に残っている。ところがこの調査は<b>あらかじめ用意された 106 項目のチェックリスト</b>で行われている。豊富さの上限は 106 であり、それ以上は原理的に増えない。</p>
+            <p>語彙変異が実際に豊かな集落ほど、リストが埋まりきる方向に近づく。すると<b>本当の差がリストの上限で圧縮される</b>。100 問のテストで実力差を測るとき、上位層が揃って満点に近づけば差が見えなくなるのと同じ構造である。希薄化は標本努力の交絡を取り除くが、この天井には何もしない。</p>
+            <p>したがって、この研究の結論は「<b>固定リスト調査では、richness を語彙多様性の指標として使えない</b>」という否定形になる。人口と多様性のあいだに関連がないことを示したのではなく、この測定方法では関連の有無を判定できないことを示している。両者は別の主張である。</p>
+        </div>
+        <div class="warn">
+            <h3>読み替えが持ち込む仮定</h3>
+            <p>第4節で述べたとおり、話者は個体と違って多数の項目を同時に使う。加えて、生態学の希薄化は個体が母集団から無作為に抽出されることを前提とするが、この調査は地域を単位に実施されており、<b>世帯内の非独立性を排除できない</b>。同じ世帯の中学生どうしは語彙を共有しやすい。有効な標本サイズは \(N\) より小さい可能性があり、その場合、希薄化した値の不確実性は見かけより大きい。</p>
+        </div>
+        <div class="sub">
+            <h3>復元データそのものへの留保</h3>
+            <p>希薄化には個人単位のデータが要るため、集計済みの原資料から個票を復元している。この復元で得た豊富さは原著の値と完全には一致せず、相関は 0.64 である。差の原因は項目分類と使用判定の閾値の定義差にあり、データの誤りではないことが確認されている。生の豊富さと希薄化した豊富さの比較は<b>同一の復元データ内での比較</b>なので結論は内的に妥当だが、原著の個人集合そのものを特定できれば確度は上がる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        滋賀県米原市から岐阜県関ケ原町にかけての5中学校区を対象とした、3世代方言語彙調査の二次解析である。調査票は 40 の質問概念で 106 の方言語彙変異を引き出しており、関西・近江系 45、東京・標準系 31、美濃・尾張系 26 に若者語・新方言 4 項目を加えて事前分類されている。原調査は 2015 年にはびろネットが実施し、本研究はその匿名化データを解析したもの。解析は全工程がスクリプト化されており、原データファイルは改変せず作業コピー経由でのみ読んでいる。
+        </p>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Sanders, H. L. (1968) Marine benthic diversity: a comparative study. <i>The American Naturalist</i>, 102(925), 243–282. <a href="https://doi.org/10.1086/282541" target="_blank" rel="noopener noreferrer">doi:10.1086/282541</a></li>
+                <li>Hurlbert, S. H. (1971) The nonconcept of species diversity: a critique and alternative parameters. <i>Ecology</i>, 52(4), 577–586. <a href="https://doi.org/10.2307/1934145" target="_blank" rel="noopener noreferrer">doi:10.2307/1934145</a></li>
+                <li>Henrich, J. (2004) Demography and cultural evolution: how adaptive cultural processes can produce maladaptive losses—the Tasmanian case. <i>American Antiquity</i>, 69(2), 197–214. <a href="https://doi.org/10.2307/4128416" target="_blank" rel="noopener noreferrer">doi:10.2307/4128416</a>（人口規模と文化的多様性を結ぶ議論の代表例）</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>希薄化が扱っているのは、<b>標本の取り方によって統計量がどう変わるか</b>という問題そのものである。母集団の量は固定されたものと見て、標本サイズを揃えることで観測量の比較可能性を回復させる。分布の形を仮定せず、組み合わせ論から期待値を直接計算する点で、<a href="../">7つの観点を式で読む</a>の<b>観点2（頻度論）</b>に重なる。<a href="../mantel/">Mantel 検定</a>が並べ替えで帰無分布を作るのと同じく、標本の側を操作して判断の基準を作る発想にあたる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの出力と作業記録から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検出力シミュレーション — 小野原彩香 | Teaching</title>
+    <meta name="description" content="設計ベースの検出力シミュレーションについて、検出力の定義・Cohen の警告と再現性問題・実デザインからの生成手順を、米原〜関ケ原の方言語彙調査の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">検出力シミュレーション</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Power <span>Simulation</span></h1>
+        <p class="lead">「効果が見つからなかった」には2つの意味があります。効果がないのか、<b>この設計では見つけられなかった</b>のか。検出力はその2つを切り分けるための量で、解析的に解けない設計では、実際のデータ構造から生成して直接数えます。<br>
+        小野原が米原〜関ケ原の方言語彙調査で用いた設計ベースのシミュレーションに即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">有意にならなかった結果を、どう読むかを決める。</p>
+        <p class="body">
+        検定が有意にならなかったとき、「効果がない」と書いてはいけない。検定は帰無仮説を棄却できるかどうかしか答えず、棄却できないことは帰無仮説が正しいことを意味しない。標本が小さければ、本当に効果があっても棄却できない。
+        </p>
+        <p class="body">
+        検出力は、この区別をつけるための量である。<b>効果が本当にあるとき、それを検出できる確率</b>として定義される。検出力が高い設計で有意にならなかったなら、効果は小さいと言ってよい。検出力が低い設計なら、何も言えていない。どちらなのかを、結果を見る前ではなく結果の解釈と同時に示す必要がある。
+        </p>
+        <p class="body">
+        この研究では、査読で指摘された「効果が credible でない」という結果に対して、それが効果の不在なのか標本の小ささなのかを切り分けるために用いられた。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>定義</h2>
+        <p class="q">第二種の誤りの余事象。3つの量で決まる。</p>
+        <div class="eq">
+            <div class="lbl">検出力の定義</div>
+            \[ 1-\beta \;=\; \Pr\bigl(\text{帰無仮説を棄却} \;\bigm|\; H_1 \text{が真}\bigr) \]
+            <p class="read"><b>\(\alpha\)</b> … 第一種の誤り。効果がないのに「ある」と言う確率<br>
+            <b>\(\beta\)</b> … 第二種の誤り。効果があるのに「ない」と言う確率（見逃し）<br>
+            <b>\(1-\beta\)</b> … 検出力。見逃さない確率</p>
+        </div>
+        <p class="body">
+        検出力は、標本サイズ \(n\)、真の効果量、有意水準 \(\alpha\) の3つで決まる。単純な設計であれば解析的に書ける。たとえば1標本の \(z\) 検定なら次の形になる。
+        </p>
+        <div class="eq">
+            <div class="lbl">解析的に書ける場合（片側 \(z\) 検定）</div>
+            \[ 1-\beta \;=\; \Phi\!\left(\frac{|\delta|\sqrt{n}}{\sigma} - z_{1-\alpha}\right) \]
+            <p class="read"><b>\(\delta\)</b> … 真の効果の大きさ<br>
+            <b>\(\sigma\)</b> … 標準偏差<br>
+            <b>\(\Phi\)</b> … 標準正規分布の累積分布関数<br>
+            <b>読み方</b> … \(n\) が増えると括弧の中が大きくなり検出力が上がる。効果が小さければ \(n\) で補う必要がある</p>
+        </div>
+        <div class="sub">
+            <h3>4つの量のうち3つを決めれば残りが決まる</h3>
+            <p>検出力・標本サイズ・効果量・有意水準は互いに結ばれている。研究計画では検出力を0.8に置いて必要な \(n\) を逆算するのが通例だが、標本サイズが先に決まってしまう観察研究では、<b>その \(n\) で何が検出できるのか</b>を後から評価することになる。この研究はその後者である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>起源</h2>
+        <p class="q">Neyman と Pearson が枠組みを作り、Cohen が実務に持ち込んだ。</p>
+        <p class="body">
+        1933年、Jerzy Neyman と Egon Pearson は仮説検定を「2種類の誤りのバランスを取る決定問題」として定式化した（Neyman &amp; Pearson 1933）。第一種の誤りを一定に抑えたうえで第二種の誤りを最小にする検定が最も効率的である、という枠組みであり、ここで検出力という概念が明示的に定義された。
+        </p>
+        <p class="body">
+        しかし実務では長く第一種の誤りだけが注目された。1969年、心理学者 Jacob Cohen が <i>Statistical Power Analysis for the Behavioral Sciences</i> を著し、行動科学の研究者に検出力分析を届けた。効果量の指標として広く使われる Cohen's \(d\) も同じ流れにある。
+        </p>
+        <div class="sub">
+            <h3>計算機が手法を変えた</h3>
+            <p>解析的な検出力計算が使えるのは、検定統計量の帰無分布と対立分布の両方が書ける場合に限られる。階層モデルや混合モデルでは、それが閉じた形で書けないことが多い。計算機が安価になったことで、<b>データを生成して数える</b>という方法が一般的になった。シミュレーションベースの検出力計算はその産物である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Cohen の警告と、再現性問題</h2>
+        <p class="q">検出力の低い研究を量産すると、文献全体が信用できなくなる。</p>
+        <p class="body">
+        Cohen は1962年、<i>Journal of Abnormal and Social Psychology</i> の1960〜61年の78本の論文を調べ、仮説に関わる検定を含む70本について検出力を計算した。結果は、<b>中程度の効果に対して統計的な確認を得る確率が平均して2分の1未満</b>というものだった（Cohen 1962）。標本サイズは合理的な検出力分析ではなく、慣習や都合や交渉で決まっていた。
+        </p>
+        <div class="warn">
+            <h3>低い検出力は、見逃しだけの問題ではない</h3>
+            <p>検出力が低い設計では、有意になった結果のほうも歪む。効果が小さいとき、偶然大きく出た標本だけが有意の閾値を越えるため、<b>報告される効果量が真の値より大きくなる</b>。さらに、有意でない結果が出版されにくければ、文献に残るのは過大な推定値ばかりになる。出版バイアスと低検出力が組み合わさると、個々の研究に不正がなくても、分野全体の推定が系統的にずれる。</p>
+            <p>再現性問題の議論で検出力が繰り返し取り上げられるのは、この構造のためである。追試が失敗するのは、元の研究が嘘だったからとは限らない。元の研究の設計が、効果を安定して捉えられる水準になかったという説明で足りることが多い。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>設計ベースのシミュレーション</h2>
+        <p class="q">公式に当てはめるのではなく、実際の設計からデータを作って数える。</p>
+        <p class="body">
+        この研究のモデルは、項目・集落・学区の3層の変量効果を持つベータ二項混合モデルである。検出力の解析式は存在しない。そこで、<b>実際の設計をそのまま使って</b>データを生成する方法を取る。
+        </p>
+        <ol class="steps">
+            <li><b>設計を固定する</b>　各集落の実際の中学生数と高年世代数、実際の標準化人口成長率と規模、102項目、25集落という構造をそのまま用いる。仮想的な均衡設計ではなく、現実の不均衡をそのまま持ち込む点が要点である。</li>
+            <li><b>分散構造を借りる</b>　実データに当てはめたカウントレベルモデル <code>fit_rawcount</code> から、変量効果の分散成分を取る。</li>
+            <li><b>真の効果を置く</b>　世代×成長の交互作用の真値を \(\beta_{\text{true}} \in \{0,\,-0.15,\,-0.30,\,-0.50\}\) と決める。</li>
+            <li><b>生成する</b>　その真値のもとでベータ二項データを生成する。各水準につき100データセット。</li>
+            <li><b>推定し直す</b>　生成したデータを高速な一般化線形混合モデル（lme4、<code>nAGQ=0</code>、観測レベル変量で過分散を近似）で推定する。</li>
+            <li><b>数える</b>　交互作用の95%信頼区間が0を下回った割合を検出力とする。あわせて推定値の分布も記録する。</li>
+        </ol>
+        <div class="eq">
+            <div class="lbl">検出力を割合として数える</div>
+            \[ \widehat{1-\beta} \;=\; \frac{1}{S}\sum_{s=1}^{S} \mathbf{1}\bigl\{\,\text{CI}^{(s)}_{\text{upper}} < 0 \,\bigr\},
+               \qquad S=100 \]
+            <p class="read"><b>\(\mathbf{1}\{\cdot\}\)</b> … 条件が成り立てば1、そうでなければ0<br>
+            <b>読み方</b> … 生成した100個のうち、交互作用が確かに負だと言えたものの割合。これがこの設計の検出力の推定値になる</p>
+        </div>
+        <div class="sub">
+            <h3>この推定にも誤差がある</h3>
+            <p>各水準100回なので、検出力の推定自体が二項分布に従う標本値である。真の検出力が0.12前後なら、100回での標準誤差はおよそ0.03になる。表の数値を小数第2位まで確定した値として読むべきではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>この研究での結果</h2>
+        <p class="q">推定量は正しい。足りないのは検出力のほうだった。</p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(\beta_{\text{true}}\)</th><th class="num">推定の平均</th><th>90%範囲</th><th class="num">検出力</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0</td><td class="num">−0.015</td><td>[−0.284, 0.254]</td><td class="num">0.02</td></tr>
+                <tr><td class="num">−0.15</td><td class="num">−0.147</td><td>[−0.447, 0.179]</td><td class="num">0.12</td></tr>
+                <tr><td class="num">−0.30</td><td class="num">−0.317</td><td>[−0.636, −0.066]</td><td class="num">0.39</td></tr>
+                <tr><td class="num">−0.50</td><td class="num">−0.541</td><td>[−0.876, −0.257]</td><td class="num">0.82</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値は <code>20_power_simulation.R</code> の出力 <code>power_simulation.csv</code> をそのまま引用。各水準100シミュレーション。</p>
+        <div class="sub">
+            <h3>推定量は不偏である</h3>
+            <p>推定の平均は真値をほぼ正確に回収している（−0.15 に対して −0.147、−0.30 に対して −0.317、−0.50 に対して −0.541）。モデルが偏った推定を返しているわけではない。問題は<b>ばらつきの大きさ</b>にあり、90%範囲はいずれの水準でも広く、−0.15 と −0.30 では0をまたいでいる。</p>
+        </div>
+        <div class="sub">
+            <h3>現実的な効果量では、ほとんど検出できない</h3>
+            <p>言語変化の研究で想定される効果の大きさ、つまり −0.15 から −0.30 の範囲で、検出力は12%から39%にとどまる。100回この研究を繰り返しても、効果を捉えられるのは12回から39回である。0.8に達するのは −0.50 という大きな効果を置いたときだけだった。</p>
+        </div>
+        <div class="sub">
+            <h3>観測値をこの分布の上に置く</h3>
+            <p>実データでの交互作用の推定値は −0.165 である。これは \(\beta_{\text{true}}\) が −0.15 から −0.20 のあたりに置かれたときの分布と整合し、効果が0のときの分布の中心（−0.015）からは外れている。つまり観測は、検出力が足りなかった中程度の効果と読むほうが自然である。</p>
+        </div>
+        <div class="warn">
+            <h3>この結果が変えたのは、主張の書き方である</h3>
+            <p>検出力シミュレーションは効果の存在を証明しない。できるのは、<b>「効果がなかった」という読み方を退ける</b>ことだけである。この研究では、集計モデルと個票レベルモデルで方向が一致していること、そして設計の検出力が低いことを併記したうえで、主結果を「方向は一貫しており示唆的だが、設計上の検出力の限界により決定的ではない」という形に書き改めている。</p>
+            <p>あわせて、集計モデルが示していた高い精度（事後確率0.99）が、高年世代の人数が極端に少ないこと（中央値で数名）による不確実性を無視した結果であることも明らかになった。検出力の評価は、他の結果の読み直しにも波及している。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        シミュレーションは <code>20_power_simulation.R</code> に実装され、実デザインの再構成から生成・再推定・集計までを一続きに実行する。入力は解析マスタと集落一覧で、出力は <code>power_simulation.csv</code> と図 <code>FigS_power</code> である。解析は R スクリプトとして手順化され、原データファイルは改変せず作業コピー経由でのみ読む構成になっている。
+        </p>
+        <ul class="refs">
+            <li>解析スクリプト：<code>19_rawcount_model.R</code>（カウントレベルモデル）、<code>20_power_simulation.R</code>（検出力シミュレーション）、<code>22_loso_sensitivity.R</code>（集落単位の感度分析）。</li>
+            <li>言語データ：2015年11月21日〜12月20日、市民団体「はびろネット」による米原市・関ケ原町の方言調査（小野原も調査設計に参加）。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Neyman, J. &amp; Pearson, E. S. (1933) On the problem of the most efficient tests of statistical hypotheses. <i>Philosophical Transactions of the Royal Society of London, Series A</i>, 231, 289–337. <a href="https://doi.org/10.1098/rsta.1933.0009" target="_blank" rel="noopener noreferrer">doi:10.1098/rsta.1933.0009</a></li>
+                <li>Cohen, J. (1962) The statistical power of abnormal-social psychological research: a review. <i>Journal of Abnormal and Social Psychology</i>, 65(3), 145–153. <a href="https://doi.org/10.1037/h0045186" target="_blank" rel="noopener noreferrer">doi:10.1037/h0045186</a></li>
+                <li>Cohen, J. (1969) <i>Statistical Power Analysis for the Behavioral Sciences</i>.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>検出力は、真の値を固定したうえで<b>標本を取り直したときに手続きがどれだけ当たるか</b>を測る量である。第一種の誤りと同じく、繰り返しのなかでの割合として定義される。このシミュレーションがしていることは、解析式が書けない設計について、その割合を生成によって直接数えることにほかならない。<a href="../">7つの観点を式で読む</a>の<b>観点2（頻度論）</b>に書いた「確率がかかっているのは区間のほうで、パラメータは動かない」という構図が、そのまま当てはまる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの出力から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

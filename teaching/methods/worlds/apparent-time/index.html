@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>見かけ上の時間法 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="世代差を時間変化の代用とする見かけ上の時間法について、仮定・Age-grading の問題・3世代による検証を、米原〜関ケ原の方言語彙調査の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（因果） */
+            --w:      #22456d;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bcd2ea; background:rgba(34,69,109,0.46); border:1px solid rgba(188,210,234,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(188,210,234,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f5f9; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f7f9fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">見かけ上の時間法</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 7 ｜ <a href="../">因果</a></span>
+        <h1>Apparent-time <span>Method</span></h1>
+        <p class="lead">言語変化を調べたいが、同じ話者を数十年追うことはできません。<b>いま同時に測った世代差</b>を、過ぎた時間の代用として読む。それが見かけ上の時間法です。代用が成り立つかどうかはデータの外側にある仮定に委ねられ、そこにこの手法の力と弱さの両方があります。<br>
+        小野原が米原〜関ケ原の3世代方言語彙調査で用いた実装に即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「この方言語彙は失われつつあるのか」を、1回の横断調査から問う。</p>
+        <p class="body">
+        言語変化を直接測るなら、同じ話者集団を時点 \(t_1\) と \(t_2\) で二度調べればよい。これをリアルタイム調査という。方法としては最も素直だが、数十年の待ち時間が要り、その間に対象者は移動し、亡くなる。調査設計としてほとんど実行できない。
+        </p>
+        <p class="body">
+        見かけ上の時間法は、この時間軸を<b>世代軸に置き換える</b>。1時点の調査で高年世代と若年世代を同時に測り、高年世代の言語を過去の状態の近似、若年世代の言語を現在ないし未来の状態の近似として読む。世代間の差を、経過した時間の差として解釈する。
+        </p>
+        <p class="body">
+        この操作が成立するかどうかは、観測からは決まらない。世代差というひとつの観測に、時間変化という別の解釈を重ねる操作であり、<b>観察データから変化の向きを語ろうとする点で因果推論の問題</b>にあたる。第6節で述べるとおり、この手法の限界もそこから来る。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源</h2>
+        <p class="q">William Labov が、変化の途中を捉えるために立てた枠組み。</p>
+        <p class="body">
+        1963年、Labov はマサチューセッツ州マーサズ・ヴィンヤード島で二重母音 /aɪ/ /aʊ/ の第一要素の位置が動いていることを報告した。島の住民を地域・年齢層・職業・民族で分け、変異の分布を調べることで<b>この音変化の最近の歴史を再構成できる</b>という立論である（Labov 1963）。年齢層ごとの分布を時間軸として読む発想がここにある。
+        </p>
+        <p class="body">
+        以後、Labov は1966年のニューヨーク市の音変化研究、1994年から2010年にかけての『言語変化の原理』全3巻を通じて、変異社会言語学という分野そのものを立ち上げた。見かけ上の時間法はその中核的な道具として定着し、方言研究で広く使われている。
+        </p>
+        <div class="sub">
+            <h3>「変化の途中」を観測できるという主張</h3>
+            <p>この手法が前提にしているのは、言語変化が集団の中で一様に進むのではなく、世代という層を持って進むという見方である。変化が完了していれば世代差は消え、変化が始まっていなければ世代差は現れない。世代差が観測されるのは変化が進行中のときだけだ、という理屈になっている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にはどこから来ているか</h2>
+        <p class="q">手法そのものに固有の数学はない。数学が入るのは、世代差を測る側である。</p>
+        <p class="body">
+        見かけ上の時間法は、統計手法というより<b>調査設計上の読み替え</b>である。世代差を時間差として解釈してよい、という仮定を置くこと自体に数式はない。数学が必要になるのは、その世代差をどう測り、どう検定するかという段階からである。
+        </p>
+        <p class="body">
+        この研究では、世代ごとの使用割合の差を消失・獲得として定義し、その割合をベータ回帰でモデル化している。割合を扱うベータ分布は指数型分布族に属し、一般化線形モデルの枠組みで線形予測子と結ばれる。つまり数学的なルーツは、見かけ上の時間法の側ではなく、<b>指数型分布族と一般化線形モデル</b>の側にある。
+        </p>
+        <div class="eq">
+            <div class="lbl">世代差から消失・獲得を作る</div>
+            \[ \mathrm{loss}_s = \frac{1}{J}\sum_{j=1}^{J}\max\bigl(g_{sj}-m_{sj},\,0\bigr), \qquad
+               \mathrm{gain}_s = \frac{1}{J}\sum_{j=1}^{J}\max\bigl(m_{sj}-g_{sj},\,0\bigr) \]
+            <p class="read"><b>\(g_{sj}\)</b> … 集落 \(s\) で項目 \(j\) を使う高年世代（60歳以上）の割合<br>
+            <b>\(m_{sj}\)</b> … 同じ項目を使う中学生の割合<br>
+            <b>\(J\)</b> … 両世代にデータのある項目数<br>
+            <b>\(\max(\cdot,0)\)</b> … 減った分だけを消失、増えた分だけを獲得として数える</p>
+        </div>
+        <div class="sub">
+            <h3>正の部分だけを取ることの意味</h3>
+            <p>差をそのまま平均すると、減った項目と増えた項目が打ち消し合う。消失と獲得は別々に起きうる現象なので、片方ずつ正の部分を取り出している。この定義は原集計値を再現しており、Pearson 相関で \(r=0.999\) である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と仮定</h2>
+        <p class="q">代用が成り立つために、何を置いているか。</p>
+        <p class="body">
+        観測されるのは世代差、主張したいのは時間変化である。両者を結ぶには次の仮定が要る。
+        </p>
+        <ol class="steps">
+            <li><b>言語の安定性</b>　個人の言語は一定の年齢を過ぎるとほぼ固定され、その後は大きく変わらない。高年世代の言語が過去の状態を保存している、と読めるのはこの仮定による。</li>
+            <li><b>年齢による使い分けがない</b>　世代差が、変化ではなく「その年齢ではそう話すもの」という規範の反映ではないこと。これが破れる現象を Age-grading という。第6節の主題である。</li>
+            <li><b>集団の連続性</b>　高年世代と若年世代が、同じ言語共同体の異なる時点を代表していること。大規模な転入や転出があれば、世代差は変化ではなく集団の入れ替わりを映す。</li>
+        </ol>
+        <div class="sub">
+            <h3>この研究での標本の作り方</h3>
+            <p>米原市3学区・関ケ原町2学区で2015年11月21日から12月20日に実施された方言調査から、中学生544名と60歳以上142名を用いている。40〜50歳のコホートを除外して、対比を最若年世代と最高年世代のあいだに置いた。「高年世代」は年齢（60歳以上）で定義したものであり、参加した中学生の血縁上の祖父母とは限らない。</p>
+        </div>
+        <div class="warn">
+            <h3>世帯内の非独立性は排除できていない</h3>
+            <p>調査は地域を単位として実施され、どの回答者とどの回答者が同じ世帯かという情報を持たない。同居する祖父母と孫が両方回答している可能性があり、その場合、両者の言語は独立な2つの観測ではない。この点は限界として明記されている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">世代差として測った消失を、集落ごとの人口動態に対して回帰する。</p>
+        <ol class="steps">
+            <li><b>語彙の設計</b>　40の質問概念で106の方言語彙変異を引き出し、関西・近江系45、東京・標準31、美濃・尾張系26、若者/新方言4項目に事前分類する。</li>
+            <li><b>消失・獲得の算出</b>　第3節の定義で集落ごとに算出する。両世代のデータが揃う25集落が解析対象になる。</li>
+            <li><b>モデル化</b>　消失・獲得をベータ分布（logit リンク）でモデル化し、標準化した人口成長率、log中学生標本、log高年標本を予測変数とする。中学校区（5区）をランダム切片に置く。</li>
+            <li><b>推定</b>　弱情報事前分布のもと brms と Stan で推定する。傾きに Normal(0,1)、切片に Normal(0,2)、精度 \(\phi\) に Gamma(0.1,0.1)。</li>
+            <li><b>人口成長率の定義</b>　2010年の集落人口を2005年で割った比を用いる。これは移住や住民の入れ替わりを直接測ったものではなく、<b>近年の人口変化の代理</b>である。</li>
+        </ol>
+        <div class="sub">
+            <h3>観測しているものと推論しているものを分けて書く</h3>
+            <p>人口成長率は観測値だが、それが意味する住民の入れ替わりは推論である。この研究は両者を明示的に分けて記述しており、人口成長という観測を、集団の連続性という仮定の検証材料としても使っている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界 ―― Age-grading をどう切り分けるか</h2>
+        <p class="q">世代差が変化ではなく、年齢に応じた使い分けである可能性。</p>
+        <p class="body">
+        この手法の最大の弱点は Age-grading（年齢段階効果）である。若いときには若者らしい言い方を使い、年を取ると改まった言い方に移る。この場合、同じ世代が加齢に伴って話し方を変えているだけであり、共同体の言語は変化していない。それでも横断調査では世代差として観測される。
+        </p>
+        <p class="body">
+        観測だけからは、世代差が変化の途中なのか、年齢による使い分けなのかを区別できない。<b>2つの解釈が同じデータを生む</b>からである。ここが、この手法を因果の観点に置くべき理由でもある。
+        </p>
+        <div class="eq">
+            <div class="lbl">2つの解釈が予測する世代パターンの違い</div>
+            \[
+            \underbrace{\beta_{\text{old}} > \beta_{\text{middle}} > \beta_{\text{pupil}}}_{\text{変化進行中なら単調}}
+            \qquad\text{に対して}\qquad
+            \underbrace{\beta_{\text{middle}} \not\in \bigl(\beta_{\text{pupil}},\,\beta_{\text{old}}\bigr)}_{\text{年齢段階効果なら非単調}}
+            \]
+            <p class="read">中間世代を加えると、2つの解釈は異なる形を予測する。変化が世代を追って進んでいるなら、効果は世代順に単調に動く。年齢による使い分けなら、中間世代が両端の外に出る形（逆U字など）になりうる。</p>
+        </div>
+        <div class="sub">
+            <h3>この研究での切り分け</h3>
+            <p>30〜59歳の中間世代211名を加え、3世代が揃う21集落で世代×人口成長の交互作用をモデル化している（lme4、観測レベル変量を入れた二項モデル）。人口成長の世代別の傾きは次のとおりである。</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>世代</th><th class="num">成長の傾き</th><th class="num">標準誤差</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>高年（60歳以上）</td><td class="num">+0.049</td><td class="num">0.170</td></tr>
+                <tr><td>中間（30–59歳）</td><td class="num">−0.053</td><td class="num">0.170</td></tr>
+                <tr><td>中学生</td><td class="num">−0.184</td><td class="num">0.168</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値は <code>23_three_gen_model.R</code> の出力 <code>three_gen_summary.txt</code> から引用。各傾きは個別には有意でない。</p>
+        <div class="sub">
+            <h3>読み方 ―― 個々の有意性ではなく、順序</h3>
+            <p>高年から中間、中学生へと傾きが単調に下がっている。高成長の集落ほど、若い世代ほど当該語彙の使用が低い。この形は変化が世代を追って進んでいるという読みと整合し、年齢段階効果だけでは説明しにくい。ただし各推定の標準誤差は約0.17で、<b>個々の傾きはいずれも有意ではない</b>。主張の根拠は個別の有意性ではなく、3点が示す順序のほうにある。</p>
+        </div>
+        <div class="warn">
+            <h3>これは Age-grading を排除した証明ではない</h3>
+            <p>単調性は、変化進行中という解釈と整合するというだけであって、年齢段階効果が働いていないことを示すものではない。両方が同時に起きている可能性も残る。決着をつけるにはリアルタイム調査が要り、それができないからこそ見かけ上の時間法を使っている、という循環がここにある。</p>
+            <p>この研究はその点を隠さず、Introduction で apparent-time の採用と age-grading への留保を併記し、限界の節でも明示している。<b>代用であることを認めたうえで、代用が破れる方向を別のデータで確かめる</b>というのが、この手法に対して取りうる最も誠実な姿勢である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        言語データは、2015年に市民団体「はびろネット」が米原市・関ケ原町で実施した方言調査による（小野原も調査設計に参加）。873名、地域人口の4.27%を収集している。土地利用は国土交通省の国土数値情報、人口は2010年国勢調査小地域（総務省統計局）、標高は国土地理院の基盤地図情報から取得している。解析は R スクリプトとして手順化され、原データファイルは改変せず作業コピー経由でのみ読む構成になっている。
+        </p>
+        <ul class="refs">
+            <li>解析スクリプト：<code>01_prep_data.R</code>（データ整備）、<code>12_brms_loss.R</code>（消失モデル）、<code>23_three_gen_model.R</code>（3世代モデル）ほか。</li>
+            <li>関連する研究系譜：2016年 地理情報システム学会ポスター（言語外要因と語彙得失）、2017–2018年の集団規模と語彙多様性の分析を経て、本解析に至る。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Labov, W. (1963) The social motivation of a sound change. <i>Word</i>, 19(3), 273–309. <a href="https://doi.org/10.1080/00437956.1963.11659799" target="_blank" rel="noopener noreferrer">doi:10.1080/00437956.1963.11659799</a></li>
+                <li>Labov, W. (1966) <i>The Social Stratification of English in New York City</i>.</li>
+                <li>Labov, W. (1994, 2001, 2010) <i>Principles of Linguistic Change</i>, Vol. 1–3.</li>
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>見かけ上の時間法は、観測された世代差に<b>時間変化という別の解釈を重ねる</b>操作である。同じ観測が Age-grading でも生じうる以上、どちらであるかはデータだけからは決まらず、言語の安定性や集団の連続性という仮定が要る。仮定を置いて初めて変化を語れるという構造は、<a href="../">7つの観点を式で読む</a>の<b>観点7（因果）</b>そのものである。そこに書いた「処置の割り当てが結果と独立であることは観察データでは仮定であって検証できない」という一文が、この手法にもそのまま当てはまる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの出力から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

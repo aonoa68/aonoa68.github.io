@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOO 感度分析 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="一つ抜き交差検証（LOO）について、期待リスクと経験リスクの差という学習理論の枠組み、PSIS による近似とパレートk診断、抜く単位を従属関係のまとまりに合わせる設計（LOSO）を、米原・関ケ原の方言語彙調査の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（学習理論） */
+            --w:      #2f6b57;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bfe0d1; background:rgba(47,107,87,0.42); border:1px solid rgba(191,224,209,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(191,224,209,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f1f8f4; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6faf8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">LOO 感度分析</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 4 ｜ <a href="../">学習理論（リスク最小化）</a></span>
+        <h1>Leave-One-Out <span>Cross-Validation</span></h1>
+        <p class="lead">手元のデータで当てはめた模型が、<b>まだ見ていないデータ</b>をどれだけ予測できるか。それを手元のデータだけで見積もる手続きです。学習理論が扱う「経験リスクと期待リスクの差」を、標本の抜き差しで埋めにいきます。<br>
+        小野原が米原・関ケ原の方言語彙調査（3世代・25集落）で用いた実装に即して、近似であることの代償と、<b>何を単位として抜くか</b>という設計判断を整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">当てはまりの良さではなく、まだ見ていないデータでの当たり方を知りたい。</p>
+        <p class="body">
+        学習理論が本当に小さくしたいのは期待リスク \(R(f)=\mathbb{E}_{(x,y)\sim P}[\ell(f(x),y)]\) である。ところがデータの従う分布 \(P\) は分からないので、手元で計算できるのは経験リスク \(\hat{R}(f)\) だけになる。同じデータで当てはめて同じデータで測れば、当てはまりは必ず良く出る。<b>この二つの量の差をどう埋めるか</b>が、観点4の中心的な問いである。
+        </p>
+        <p class="body">
+        <a href="../">7つの観点を式で読む</a>では、この差を上から押さえる道具として汎化境界 \(R(f) \le \hat{R}(f) + \mathfrak{C}(\mathcal{F},n,\delta)\) を挙げた。複雑さの項を理論的に評価する道である。交差検証はそれとは別の道をとる。<b>実際に一部を隠して、隠した分で測る</b>。理論的な上界ではなく、標本の抜き差しによる直接の見積もりである。
+        </p>
+        <p class="body">
+        一つ抜き交差検証は、その最も極端な形にあたる。隠すのは毎回ひとつだけで、残り全部で当てはめる。訓練に使えるデータを最大限に残せるので、小標本で使いやすい。米原・関ケ原の研究が集落 \(n=25\) という規模であることは、この手法を選ぶ直接の理由になっている。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― 予測のための標本再利用として</h2>
+        <p class="q">当てはめの評価ではなく、予測の評価のために作られた。</p>
+        <p class="body">
+        交差検証は 1970 年代に、Seymour Geisser と Mervyn Stone によってほぼ同時期に独立に定式化された。Geisser (1975) は自らの手続きを「予測的標本再利用（predictive sample reuse）」と呼んでいる。この名前が手法の性格をよく表している。新しいデータを取ってこられないとき、<b>手元の標本を訓練用と評価用に繰り返し使い回すことで、予測の良さを測る</b>という発想である。
+        </p>
+        <p class="body">
+        1990 年代に機械学習の標準的な評価手法となったのち、ベイズ推定の文脈で再び道具立てが整えられた。Vehtari, Gelman &amp; Gabry (2017) は、事後標本を作り直さずに一つ抜きの予測性能を見積もる計算法を整理し、重点重みを安定化させるパレート平滑化重点サンプリング（PSIS）を導入した。<code>brms</code> の <code>loo()</code> はこの実装であり、米原・関ケ原の研究が使っているのもこれである。
+        </p>
+        <div class="sub">
+            <h3>米原・関ケ原の研究では二つの役割で使われている</h3>
+            <p>ひとつはモデル比較である。空間ランダム効果を入れた模型と入れない模型の、どちらが予測において良いかを <code>loo()</code> で比べている。もうひとつは<b>影響度分析</b>で、1集落を外すと結果がどれだけ動くかを見る。後者はモデル選択ではなく、疫学や生態学の感度分析の伝統に近い使い方である。同じ「一つ抜き」でも目的が違い、計算の仕方も違う。第4節と第5節で分けて扱う。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">期待値を標本平均で置き換える、という一点に尽きる。</p>
+        <p class="body">
+        交差検証が拠っているのは、知りたい期待値を計算可能な平均で置き換えるという操作である。期待リスクは分布 \(P\) についての積分だが、\(P\) は分からない。そこで各観測を一度ずつ「まだ見ていないデータ」の役に回し、そこでの損失を平均する。
+        </p>
+        <div class="eq">
+            <div class="lbl">一つ抜き交差検証の定義</div>
+            \[ \widehat{R}_{\mathrm{LOO}} \;=\; \frac{1}{n}\sum_{i=1}^{n} \ell\Bigl(f^{(-i)}(x_i),\; y_i\Bigr) \]
+            <p class="read"><b>\(f^{(-i)}\)</b> … 第 \(i\) 観測を<b>除いて</b>当てはめた模型<br>
+            <b>\(\ell\bigl(f^{(-i)}(x_i), y_i\bigr)\)</b> … その模型が、当てはめに使わなかった点をどれだけ当てたか<br>
+            <b>\(n\)</b> … 観測数。当てはめ直しも \(n\) 回必要になる</p>
+        </div>
+        <p class="body">
+        ベイズ模型では損失として対数予測密度をとる。このとき評価されるのは点推定ではなく事後予測分布であり、不確実性を含んだまま予測の良さが測られる。
+        </p>
+        <div class="eq">
+            <div class="lbl">ベイズ流の一つ抜き（elpd）</div>
+            \[ \mathrm{elpd}_{\mathrm{LOO}} \;=\; \sum_{i=1}^{n} \log \int p\bigl(y_i \mid \theta\bigr)\, p\bigl(\theta \mid y_{-i}\bigr)\, d\theta \]
+            <p class="read"><b>\(p(\theta \mid y_{-i})\)</b> … 第 \(i\) 観測を除いた事後分布<br>
+            <b>elpd</b> … expected log pointwise predictive density。<b>大きいほど予測が良い</b><br>
+            模型どうしの比較では、この差 \(\Delta\mathrm{elpd}\) とその標準誤差を見る</p>
+        </div>
+        <div class="sub">
+            <h3>情報量規準との関係</h3>
+            <p>観点5（情報理論）で扱う AIC は、当てはまりに複雑さの罰則を足して予測の良さを見積もる規準だった。一つ抜き交差検証は、罰則の形を理論的に導く代わりに、実際に抜いて測る。同じ「未知データでの予測」を狙いながら、片方は解析的に、片方は標本操作で到達する。<a href="../">7つの観点を式で読む</a>で同じ式が別の観点から読めると述べているのは、こういう関係を指している。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>近似と、その代償</h2>
+        <p class="q">定義どおりに実装すると、ベイズ模型では現実的でなくなる。</p>
+        <p class="body">
+        第3節の定義をそのまま実装すると、観測数と同じ回数だけ当てはめ直すことになる。最小二乗のような軽い当てはめなら問題にならないが、MCMC で事後分布を得るベイズ模型では、\(n\) 回のサンプリングを走らせることになり現実的でない。
+        </p>
+        <p class="body">
+        そこで、<b>全データで一度だけ得た事後標本を使い回す</b>。第 \(i\) 観測を除いた事後分布は、全データの事後分布を重み付けし直したものとして書けるからである。重みはその観測の尤度の逆数に比例する。
+        </p>
+        <div class="eq">
+            <div class="lbl">重点重み ―― 抜いた分を重みで打ち消す</div>
+            \[ w_i^{(s)} \;\propto\; \frac{1}{p\bigl(y_i \mid \theta^{(s)}\bigr)} \qquad \theta^{(s)} \sim p(\theta \mid y) \]
+            <p class="read"><b>\(\theta^{(s)}\)</b> … 全データの事後から得た \(s\) 番目の標本<br>
+            観測 \(i\) をよく説明する \(\theta\) ほど重みが小さくなる。これで「\(i\) を見ていない事後」を近似する</p>
+        </div>
+        <p class="body">
+        問題は、この重みが<b>非常に大きな値をとりうる</b>ことである。ある観測が模型にとって極端で、それを説明できる \(\theta\) が事後のごく一部にしかないとき、重みの分布は右に重い裾を持ち、少数の標本が総和を支配する。推定は不安定になる。PSIS は重みの上位側に一般化パレート分布を当てはめて平滑化し、この裾を抑える。
+        </p>
+        <div class="warn">
+            <h3>近似である以上、効いているかを確かめる必要がある</h3>
+            <p>一般化パレート分布の形状パラメータの推定値 \(\hat{k}\) が、そのまま診断量になる。\(\hat{k}\) が大きいほど裾が重く、重点サンプリングの収束が悪い。従来は \(\hat{k} > 0.7\) を目安に、その観測については近似が信頼できないと判断してきた（標本数に依存する閾値が後に提案されている）。</p>
+            <p>ここで注意すべきなのは、<b>診断が引っかかった観測こそが、その模型にとって最も影響の大きい観測である</b>という点である。\(\hat{k}\) が大きいとは、その1点を抜くと事後が大きく動くということにほかならない。近似の破れと、結果の脆さとは、同じことの裏表である。</p>
+        </div>
+        <div class="sub">
+            <h3>この研究で実際に出た診断</h3>
+            <p>空間ランダム効果を入れない模型では、25 観測すべてで \(\hat{k} \le 0.7\) だった。一方、ICAR 空間ランダム効果を入れた模型では 24 観測（96.0%）が良好で、<b>1 観測が \(\hat{k} > 0.7\) に入った</b>。実行ログにはモーメント合わせを勧める警告がそのまま残っている。この模型は採用されなかったため再計算は行われていない。近似が全域で効いているとは限らない、という実例である。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>模型</th><th class="num">elpd</th><th class="num">p_loo</th><th class="num">looic</th><th>パレート \(\hat{k}\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>階層ベータ（空間項なし）</td><td class="num">33.8 ± 2.6</td><td class="num">4.4</td><td class="num">−67.7</td><td>25/25 が良好</td></tr>
+                <tr><td>＋ICAR 空間ランダム効果</td><td class="num">33.1 ± 2.4</td><td class="num">4.8</td><td class="num">−66.3</td><td>24/25 が良好、1 が 0.7 超</td></tr>
+                <tr><td>差（空間あり − なし）</td><td class="num">−0.7 ± 0.3</td><td class="num">—</td><td class="num">—</td><td>—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">8,000 事後標本 × 25 観測の対数尤度行列から算出。空間項を足すと elpd はわずかに下がる。差が標準誤差の 2 倍程度にとどまるため強い選好とは言えないが、<b>空間項を入れる理由がデータにない</b>ことの根拠として使われている。</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方 ―― 何を単位として抜くか</h2>
+        <p class="q">抜く単位を、従属関係のまとまりに合わせる。</p>
+        <p class="body">
+        この研究の主分析は、集落を単位とした集計模型である。25 集落それぞれについて、祖父母世代が使い中学生世代が使わなくなった語彙の割合（消失率）を応答とし、人口成長率を説明変数に置く。<b>1 集落が 1 行</b>という構造なので、この模型では一つ抜きと「1集落抜き」が一致する。
+        </p>
+        <p class="body">
+        小野原はこれを LOSO（Leave-One-Settlement-Out）と呼び、集計ベータ回帰を 25 回<b>完全に当てはめ直して</b>いる。第4節の重点サンプリングによる近似ではなく、定義どおりの計算である。ベータ回帰の当てはめは軽いので近似を使う必要がない。
+        </p>
+        <ol class="steps">
+            <li><b>全データでの推定</b>　25 集落すべてで人口成長率の標準化係数を推定する。\(b = +0.246\)、\(p < .0001\)。</li>
+            <li><b>1集落ずつ外す</b>　集落 \(i\) を除いた 24 集落で同じ模型を当てはめ直し、係数と \(p\) 値を記録する。これを 25 回繰り返す。</li>
+            <li><b>係数の動きを見る</b>　係数は \(b \in [0.115,\ 0.267]\) の範囲で動いた。符号はすべて正で、方向は一貫している。</li>
+            <li><b>有意性の維持を数える</b>　25 通りのうち <b>24 通りで \(p<.05\) を維持</b>した。崩れたのは1通りだけである。</li>
+            <li><b>仕様への頑健性も確認する</b>　中学校区をランダム効果ではなく固定効果にした版でも \(b = +0.228\)、\(p<.0001\) と変わらない。</li>
+        </ol>
+
+        <div class="warn">
+            <h3>有意性が、最も信頼できない1集落に依存していた</h3>
+            <p>崩れた1通りは「杉澤」を外した場合である。この集落は祖父母世代の回答者が <b>1 名</b>しかおらず、人口成長率は 25 集落中<b>最大</b>の 1.315、消失率は 0.5 と高い。外すと係数は \(b = 0.115\)、\(p = 0.2501\) となり、有意性が失われる。</p>
+            <p>つまり、正の関連そのものは 24 集落で一貫している一方で、<b>統計的有意性は、回答者1名という最も推定精度の低い集落が支えている</b>。高レバレッジかつ低信頼の点に主結果が駆動されている、という構図である。LOSO はこれを具体的な数字として示した。</p>
+        </div>
+
+        <div class="sub">
+            <h3>なぜ「集落」を単位にするのか ―― カウントレベル模型との対比</h3>
+            <p>集計模型では 1 集落 = 1 観測なので、抜く単位を考える余地はない。問題になるのは、同じ研究が並行して走らせている<b>カウントレベル模型</b>のほうである。こちらは語彙項目 × 集落 × 世代の 5,100 セルを直接モデル化する。ここで素朴に 1 セルだけ抜いても、<b>同じ集落の他のセルから情報が漏れる</b>。同一集落のセルは共通のランダム効果を通じて互いに従属しているからである。1 セルを隠しても、模型はその集落をほぼ知ったままになる。</p>
+            <p>この状況で予測性能を正しく見積もるには、抜く単位を<b>従属関係のまとまり</b>に合わせる必要がある。集落まるごとを抜けば、その集落について模型は本当に何も知らない状態になる。「新しい集落が来たときにどれだけ予測できるか」を問うなら、抜く単位は集落でなければならない。一つ抜き交差検証における単位の選択は、計算の都合ではなく<b>どの予測課題を評価したいのかの表明</b>である。</p>
+        </div>
+
+        <div class="sub">
+            <h3>三方向のロバストネス検証のうちの一角である</h3>
+            <p>LOSO は単独で使われているのではなく、集計値で分析することの危うさを三方向から確かめる構成の一角にあたる。残り二つは、集計せず生の人数のままモデル化するカウントレベル模型と、隣接集落を統合して標本を増やしてからの再分析である。三つの結果は同じ方向を向いていない。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>分析</th><th>単位</th><th class="num">人口成長 → 消失</th><th>読み方</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>集計ベータ回帰（主分析）</td><td>25 集落</td><td class="num">+0.23</td><td>確信区間が 0 を除外</td></tr>
+                <tr><td>LOSO（影響度分析）</td><td>24 集落 × 25 通り</td><td class="num">0.115 〜 0.267</td><td>方向は一貫、有意性は 24/25</td></tr>
+                <tr><td>カウントレベル模型</td><td>5,100 セル</td><td class="num">+0.17</td><td>区間が 0 をまたぐ</td></tr>
+                <tr><td>集落統合（祖父母 5 名以上）</td><td>12 ユニット</td><td class="num">−0.07</td><td>関連が消える</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">集計から生データへ、統合へと単位を変えるにつれて主張が弱くなる。この勾配そのものが結果であり、論文では暫定的な位置づけを支える根拠として報告されている。</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界 ―― この手法で言えないこと</h2>
+        <p class="q">予測の良さを測る道具であって、正しさを保証する道具ではない。</p>
+        <div class="sub">
+            <h3>係数が動かないことは、模型が正しいことを意味しない</h3>
+            <p>LOSO で係数が安定していても、それは「どの1点を抜いても同じ答えが出る」ことを示すだけである。模型の形が誤っていれば、誤った答えが安定して出る。交差検証が測るのは予測性能であって、因果構造でも模型の妥当性でもない。</p>
+        </div>
+        <div class="sub">
+            <h3>elpd の差は、小さいと解釈が難しい</h3>
+            <p>この研究の空間あり・なしの差は \(-0.7 \pm 0.3\) である。標準誤差の 2 倍強という大きさで、決定的な差ではない。<b>差が小さいときに「良い」と言い切れない</b>のはこの手法の性格であり、実際この研究も「空間項は適合を改善しない」という形で、弱い結論にとどめている。</p>
+        </div>
+        <div class="sub">
+            <h3>抜く単位を変えれば、評価している問いも変わる</h3>
+            <p>1 セルを抜くのと 1 集落を抜くのとでは、予測性能の数値が違うのは当然である。どちらが正しいという話ではなく、<b>問いが違う</b>。「同じ集落の別の語彙項目を予測する」のか「新しい集落を予測する」のかで、評価すべき単位が変わる。この選択を明示しないまま数値だけを比べることはできない。</p>
+        </div>
+        <div class="sub">
+            <h3>小標本では診断そのものが不安定になる</h3>
+            <p>この研究の集計模型は \(n=25\) である。パレート \(\hat{k}\) の推定も、elpd の標準誤差も、この規模では精度に限りがある。診断が良好だったことは近似が破綻していないことを示すが、それ以上の保証ではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        滋賀県米原市から岐阜県関ケ原町にかけての 25 集落を対象とした、3 世代方言語彙調査のデータにもとづく分析である。集計模型のベイズ推定は <code>brms</code> と Stan、LOSO の再当てはめは <code>betareg</code> による。モデル比較の <code>loo()</code> 出力と LOSO の全 25 行の結果は、実行ログと CSV として保存されている。
+        </p>
+        <ul class="refs">
+            <li>解析スクリプト：<code>12_brms_loss.R</code>（階層ベータ回帰とモデル比較）、<code>22_loso_sensitivity.R</code>（LOSO 影響度分析）、<code>19_rawcount_model.R</code>（カウントレベル模型）、<code>21_merge_settlements.R</code>（集落統合）</li>
+            <li>結果：<code>output/loso_sensitivity.csv</code>（除外集落ごとの係数と \(p\) 値、25 行）、<code>output/run_12.log</code>（<code>loo()</code> の出力とパレート \(\hat{k}\) 診断）</li>
+            <li>本ページの数値は、いずれもこれらの実行結果からの引用であり、推定値や概算は含まない。</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Geisser, S. (1975) The predictive sample reuse method with applications. <i>Journal of the American Statistical Association</i>, 70(350), 320–328. <a href="https://doi.org/10.1080/01621459.1975.10479865" target="_blank" rel="noopener noreferrer">doi:10.1080/01621459.1975.10479865</a></li>
+                <li>Vehtari, A., Gelman, A. &amp; Gabry, J. (2017) Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC. <i>Statistics and Computing</i>, 27, 1413–1432. <a href="https://doi.org/10.1007/s11222-016-9696-4" target="_blank" rel="noopener noreferrer">doi:10.1007/s11222-016-9696-4</a></li>
+                <li>Vehtari, A., Simpson, D., Gelman, A., Yao, Y. &amp; Gabry, J. (2024) Pareto smoothed importance sampling. <i>Journal of Machine Learning Research</i>, 25. <a href="https://jmlr.org/papers/volume25/19-556/19-556.pdf" target="_blank" rel="noopener noreferrer">jmlr.org</a>（初出は arXiv:1507.02646, 2015）</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>一つ抜き交差検証は、確率模型の正しさを問わず、<b>まだ見ていないデータでの損失</b>だけを見る。手元で計算できる経験リスクと、本当に知りたい期待リスクの差を、標本の抜き差しで直接見積もる道具である。汎化境界が複雑さの項で上から押さえるのに対し、こちらは実測で埋めにいく。<a href="../">7つの観点を式で読む</a>の<b>観点4（学習理論・リスク最小化）</b>に重なる。同じ「未知データでの予測」を情報量規準の側から見たものが、観点5の AIC にあたる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて解析スクリプトの実行結果から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>
