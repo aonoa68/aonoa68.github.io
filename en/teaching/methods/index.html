@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Methods &amp; Mathematics — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Which session of which course falls under each of seven perspectives on statistics and machine learning, with the stage each one reaches and the mathematics it uses and connects to.">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Course colours (shared with the course map) */
+            --c-s1: #3d6fa8;
+            --c-s2: #22456d;
+            --c-sc: #96702f;
+            --c-jk: #3f7352;
+            --c-kd: #8a464f;
+            --c-past: #767c84;
+            --c-tool: #a07f2c;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 620px; line-height: 1.85; }
+
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+        .legend { display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; font-size:0.84em; color:var(--muted); margin-bottom:14px; }
+        .legend .n { pointer-events:none; }
+
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid rgba(0,0,0,0.07); border-radius:var(--radius); }
+        table { border-collapse:collapse; width:100%; min-width:860px; font-size:0.88em; }
+        caption { text-align:left; padding:0 0 10px; font-size:0.84em; color:var(--muted); caption-side:top; }
+        thead th { background:#f1f4f7; font-weight:600; font-size:0.84em; text-align:center; padding:12px 8px; border-bottom:1px solid rgba(0,0,0,0.1); line-height:1.4; vertical-align:bottom; }
+        thead th:first-child { text-align:left; padding-left:18px; }
+        th.ch { color:var(--c); }
+        th.ch small { display:block; font-weight:500; font-size:0.86em; color:var(--muted); margin-top:2px; }
+        th.ch a { color:inherit; text-decoration:none; }
+        th.ch a:hover { text-decoration:underline; }
+        tbody th { text-align:left; font-weight:500; padding:11px 12px 11px 18px; border-bottom:1px solid rgba(0,0,0,0.06); position:sticky; left:0; background:var(--white); z-index:1; min-width:190px; }
+        tbody td { text-align:center; padding:9px 6px; border-bottom:1px solid rgba(0,0,0,0.06); border-left:1px solid rgba(0,0,0,0.05); }
+        tbody tr:hover th, tbody tr:hover td { background:#f7f9fb; }
+        tr.grp th { position:static; background:#e9eef3; font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--muted); padding:12px 18px 7px; }
+        .n { display:inline-block; min-width:2.2em; font-variant-numeric:tabular-nums; font-size:0.86em; font-weight:600; padding:2px 6px; margin:2px 1px; border-radius:6px; text-decoration:none;
+             color:var(--c); background:color-mix(in srgb, var(--c) 10%, white); border:1px solid color-mix(in srgb, var(--c) 26%, white); }
+        a.n:hover { background:var(--c); color:#fff; }
+        span.n { opacity:0.75; }
+        .dash { color:#b8c2cc; }
+
+        h2.sec { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.5em; color:var(--navy2); margin:52px 0 6px; }
+        .sec-lead { font-size:0.9em; color:var(--muted); margin-bottom:18px; max-width:62ch; }
+        .links { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+        .link-card { background:var(--white); border:1px solid rgba(0,0,0,0.07); border-radius:var(--radius); padding:18px 20px; display:flex; flex-direction:column; gap:10px; }
+        .link-card h3 { font-size:1em; font-weight:600; color:var(--navy2); line-height:1.5; }
+        .link-card p { font-size:0.88em; line-height:1.85; color:var(--text); }
+        .path { display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:0.82em; }
+        .step { display:inline-flex; align-items:baseline; gap:6px; padding:3px 10px; border-radius:8px; text-decoration:none; color:var(--c); border:1px solid color-mix(in srgb, var(--c) 30%, white); background:color-mix(in srgb, var(--c) 7%, white); font-weight:600; }
+        .step small { color:var(--muted); font-weight:500; font-variant-numeric:tabular-nums; }
+        a.step:hover { background:var(--c); color:#fff; }
+        a.step:hover small { color:rgba(255,255,255,0.85); }
+        .then { color:var(--muted); font-size:0.9em; }
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        a:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:4px; }
+        @media (max-width: 760px) { .links { grid-template-columns:minmax(0,1fr); } }
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            tbody th { min-width:150px; }
+        }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .worlds { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; margin-top:18px; }
+        .world { background:var(--white); border:1px solid var(--line); border-left:4px solid var(--w); border-radius:var(--radius); padding:14px 18px; }
+        .world .no { font-family:'DM Serif Display',serif; font-size:1.2em; color:var(--w); }
+        .world h3 { font-size:1.02em; font-weight:600; color:var(--navy2); margin:2px 0 4px; }
+        .world p { font-size:0.87em; color:var(--muted); line-height:1.7; }
+        .world .dim { display:block; margin-top:6px; font-size:0.8em; color:var(--w); }
+        .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
+        .mtag { font-size:0.8em; font-weight:700; padding:2px 9px; border-radius:8px; border:1px solid color-mix(in srgb,var(--m) 35%,white); background:color-mix(in srgb,var(--m) 10%,white); color:var(--m); white-space:nowrap; }
+        .mtag small { font-weight:500; color:var(--muted); margin-left:6px; }
+        .mtag.fut { background:white; border-style:dashed; }
+        .wtag { display:inline-block; font-size:0.78em; font-weight:700; padding:1px 8px; border-radius:8px; background:color-mix(in srgb,var(--w) 12%,white); color:var(--w); border:1px solid color-mix(in srgb,var(--w) 30%,white); white-space:nowrap; }
+        .stage { font-size:0.76em; font-weight:700; padding:1px 8px; border-radius:8px; white-space:nowrap; border:1px solid; }
+        .stage.s1 { color:#5a6c7d; border-color:#cfd6dd; background:#f4f6f8; }
+        .stage.s2 { color:#2f6b57; border-color:#bcd8cd; background:#eef6f2; }
+        .stage.s3 { color:#8a464f; border-color:#e0c2c6; background:#faf0f1; }
+        table.mm { border-collapse:collapse; width:100%; font-size:0.88em; background:var(--white); }
+        table.mm th, table.mm td { padding:9px 10px; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:top; text-align:left; }
+        table.mm thead th { background:#f1f4f7; font-size:0.86em; color:var(--muted); font-weight:600; }
+        table.mm td.c { white-space:nowrap; width:150px; }
+        table.mm td.n { white-space:nowrap; color:var(--muted); width:92px; font-variant-numeric:tabular-nums; }
+        table.mm td.s { white-space:nowrap; width:112px; }
+        table.mm td.t { white-space:nowrap; width:140px; }
+        .soon { font-size:0.7em; font-weight:700; color:var(--muted); background:#eef1f4; border-radius:6px; padding:1px 6px; margin-left:6px; white-space:nowrap; }
+        .wsec { margin-top:40px; }
+        .whead { display:flex; align-items:flex-start; gap:16px; border-left:4px solid var(--w); padding:4px 0 10px 16px; }
+        .wno { font-family:'DM Serif Display',serif; font-size:1.8em; color:var(--w); line-height:1; }
+        .whead h2 { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.45em; color:var(--w); line-height:1.3; }
+        .whead p { font-size:0.9em; color:var(--muted); margin-top:2px; }
+        .whead .cnt { margin-left:auto; font-size:0.78em; color:var(--muted); white-space:nowrap; padding-top:8px; }
+        h2.sec { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.5em; color:var(--navy2); }
+        .gaps { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; margin-top:16px; }
+        .gap { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:14px 18px; }
+        .gap h3 { font-size:0.98em; color:var(--navy2); margin-bottom:4px; }
+        .gap p { font-size:0.87em; color:var(--muted); line-height:1.75; }
+        .gap.warn { border-left:4px solid var(--gold); }
+        .year { border-left:3px solid var(--gold); padding-left:16px; margin-top:14px; }
+        .year h3 { font-size:1em; color:var(--navy2); }
+        .year p { font-size:0.9em; color:var(--muted); line-height:1.8; }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Methods &amp; Mathematics</span>
+        <div class="nav-right">
+            <a href="worlds/">In equations</a>
+            <a href="../map/">Course map</a>
+            <a href="../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <h1>Methods <span>&amp; Mathematics</span></h1>
+        <p class="lead">Which session of which course falls under each of the <b>seven perspectives</b> on statistics and machine learning.<br>
+        Every session carries the <b>stage it reaches</b> — concepts, computation, derivation — together with <b>the mathematics used in that session</b> and <b>the mathematics it connects to when taken further</b>, kept in separate columns.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section>
+        <h2 class="sec">Seven perspectives</h2>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">Methods divide for more than one reason. The <b>question</b> differs, certainly. But so do the <b>assumptions placed on the data</b>, the <b>criteria for what counts as good</b>, and the <b>constraints on computation</b>. Change any one of those and a different method suits the same prediction task.<br>
+        The seven are not mutually exclusive; they <b>look at different dimensions</b>. The same equation often reads in several of them at once. Ridge regression, for instance, is a penalty in the geometric view, a MAP estimate under a Gaussian prior in the Bayesian view, and a control on complexity in learning theory. In the tables, a session that fits more than one perspective has the related perspectives named alongside it.</p>
+        <div class="worlds"><div class="world" style="--w:#3d6fa8"><span class="no">1</span><h3>Geometry (least squares)</h3><p>Minimize the sum of squared deviations. Concerned with how the structure of the data and the model is represented.<span class="dim">What it looks at: how structure is represented</span></p></div>
+<div class="world" style="--w:#8a464f"><span class="no">2</span><h3>Frequentist (sampling variation, estimation, testing)</h3><p>Judge the quality of an estimate or a decision by how it varies when the sample is drawn again.<span class="dim">What it looks at: how uncertainty is handled</span></p></div>
+<div class="world" style="--w:#6a4d8a"><span class="no">3</span><h3>Bayesian</h3><p>Combine what was known before observing with the data, and update belief into a posterior distribution.<span class="dim">What it looks at: how uncertainty is handled</span></p></div>
+<div class="world" style="--w:#2f6b57"><span class="no">4</span><h3>Learning theory</h3><p>Keep the loss on data not yet seen in view, and balance fit against complexity.<span class="dim">What it looks at: how predictive performance is judged</span></p></div>
+<div class="world" style="--w:#96702f"><span class="no">5</span><h3>Information theory</h3><p>Treat a short encoding as a good explanation.<span class="dim">What it looks at: evaluation in terms of information</span></p></div>
+<div class="world" style="--w:#8a5a2f"><span class="no">6</span><h3>Games and adversaries</h3><p>Read learning as the interaction of several agents in competition.<span class="dim">What it looks at: interaction between agents</span></p></div>
+<div class="world" style="--w:#22456d"><span class="no">7</span><h3>Causality</h3><p>Ask what would happen under an intervention — a counterfactual question.<span class="dim">What it looks at: the kind of question asked</span></p></div></div>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:14px"><a href="worlds/" style="color:var(--navy2);font-weight:600">&rarr; Read the seven perspectives in equations</a>　A child page setting out the equation at the centre of each one, and how to read the symbols.</p>
+    </section>
+
+    <section style="margin-top:36px">
+        <h2 class="sec">How to read the tables</h2>
+        <div class="tags">
+            <span class="stage s1">Concepts</span><span style="font-size:0.85em;color:var(--muted)">the idea is handled in words and pictures</span>
+            <span class="stage s2">Computation</span><span style="font-size:0.85em;color:var(--muted)">actually computed and run</span>
+            <span class="stage s3">Derivation</span><span style="font-size:0.85em;color:var(--muted)">equations derived, properties proved</span>
+        </div>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">Calc I<small>single-variable calculus</small></span><span class="mtag" style="--m:#8a464f">Calc II<small>multivariable, gradient, Hessian</small></span><span class="mtag" style="--m:#3d6fa8">Lin I<small>matrix computation, linear systems</small></span><span class="mtag" style="--m:#22456d">Lin II<small>eigenvalues, orthogonalization, decomposition</small></span><span style="font-size:0.85em;color:var(--muted)">solid = used in the session / dashed = connected when taken further</span></div>
+        <p style="font-size:0.88em;color:var(--muted);margin-top:12px">The number of rows <b>does not stand for how thoroughly something is covered</b>. Some rows gather several sessions together, and the breadth of a perspective differs from item to item. For comparison, read the stage column.</p>
+    </section>
+
+    <section class="wsec" style="--w:#3d6fa8">
+        <div class="whead">
+            <span class="wno">1</span>
+            <div><h2>Geometry (least squares)</h2><p>Minimize the sum of squared deviations. Concerned with how the structure of the data and the model is represented.<span style="display:block;color:#3d6fa8;font-size:0.85em;margin-top:2px">What it looks at: how structure is represented</span></p></div>
+            <span class="cnt">20 primary &middot; 4 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S2 &middot; S3</td><td><b>Averages and spread</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Summarize a distribution with sums and sums of squares. Reading them as norms comes later</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S5</td><td><b>Correlation and causation</b> <span class="wtag" style="--w:#22456d">Causality</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Read correlation as covariance. The causal argument is handed on to Statistics II</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S10</td><td><b>Simple and multiple regression (OLS)</b> <span class="wtag" style="--w:#8a464f">Frequentist</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>The normal equations and projection. Assume normal errors and it agrees with maximum likelihood</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S13</td><td><b>Principal component analysis</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>What the eigendecomposition means is covered; computing it numerically is not</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">Social Research</a></td><td class="n">S5</td><td><b>Using official statistics</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Read aggregate tables. Treating them as matrices comes later</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">Applied Info. Literacy</a></td><td class="n">S4 &middot; S6</td><td><b>Distributions, averages, descriptive statistics</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Summarize, in numbers, data the students gathered themselves</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">Applied Info. Literacy</a></td><td class="n">S9</td><td><b>Graphs and scatter plots</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>Read a relationship between two variables by eye. No equations</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">Behaviormetrics</a></td><td class="n">S8</td><td><b>Correlation and scatter plots</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Compute the correlation coefficient in R</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">Intro. to Information</a></td><td class="n">S6 &middot; S7</td><td><b>Descriptive statistics and reading data</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>Aggregation in a spreadsheet. No equations</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">Intro. to Information</a></td><td class="n">S10</td><td><b>Reading graphs</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>Designing axes and comparisons. Figures that mislead</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">Introduction to Data Use</span><span class="soon">in preparation</span></td><td class="n">S10</td><td><b>Basics of descriptive statistics</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Mean, variance and standard deviation in Excel</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">Introduction to Data Use</span><span class="soon">in preparation</span></td><td class="n">S12 &middot; S13</td><td><b>Reading graphs, fake statistics</b> <span class="wtag" style="--w:#22456d">Causality</span></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>Designing figures, and misreading them. The trap of stratification is touched on</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S6 &middot; S7</td><td><b>Multiple regression</b> <span class="wtag" style="--w:#8a464f">Frequentist</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>The design matrix and the normal equations. Numerical decomposition comes later</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S8 &middot; S9</td><td><b>Principal component analysis</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Eigendecomposition and SVD</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S10 &middot; S11</td><td><b>k-means</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Minimizing the within-cluster sum of squares</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S12 &middot; S13</td><td><b>PLS regression</b> <span class="wtag" style="--w:#2f6b57">Learning theory</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Regression in a latent space. Chosen by cross-validation</td></tr>
+<tr><td class="c"><span style="color:#96702f;font-weight:600">Big Data Apps I</span><span class="soon">in preparation</span></td><td class="n">S5 &middot; S6</td><td><b>PCA and biplots</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Visualizing dimension reduction</td></tr>
+<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">Big Data Apps II</span><span class="soon">in preparation</span></td><td class="n">S2</td><td><b>Coordinate and projection transforms</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Transforming spatial data is matrix arithmetic</td></tr>
+<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">Big Data Apps II</span><span class="soon">in preparation</span></td><td class="n">S9 &middot; S11 &middot; S12</td><td><b>PCA, k-means, PLS</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Compressing features, and finding the groupings in them</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S5</td><td><b>MFCC (mel filterbank, DCT)</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Compressing features by an orthogonal transform</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S11</td><td>Confounding and spurious correlation <span style="color:var(--muted);font-size:0.85em">(primarily Causality)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Adjusting for covariates. Checked by computing a partial correlation</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">Applied Info. Literacy</a></td><td class="n">S7</td><td>Cross-tabulation <span style="color:var(--muted);font-size:0.85em">(primarily Frequentist)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>The joint distribution of categories. The doorway to the chi-square test</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#96702f;font-weight:600">Big Data Apps I</span><span class="soon">in preparation</span></td><td class="n">S7 &middot; S8</td><td>k-means and stability assessment <span style="color:var(--muted);font-size:0.85em">(primarily Learning theory)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Whether a clustering reproduces. Generalization made tangible</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#96702f;font-weight:600">Big Data Apps I</span><span class="soon">in preparation</span></td><td class="n">S9 &middot; S10</td><td>PLS-DA and cross-validation <span style="color:var(--muted);font-size:0.85em">(primarily Learning theory)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Separate training from validation. See overfitting as a number</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+    <section class="wsec" style="--w:#8a464f">
+        <div class="whead">
+            <span class="wno">2</span>
+            <div><h2>Frequentist (sampling variation, estimation, testing)</h2><p>Judge the quality of an estimate or a decision by how it varies when the sample is drawn again.<span style="display:block;color:#8a464f;font-size:0.85em;margin-top:2px">What it looks at: how uncertainty is handled</span></p></div>
+            <span class="cnt">16 primary &middot; 2 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S6</td><td><b>Samples and the central limit theorem</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>Felt through simulation. Not proved</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S7</td><td><b>Point and interval estimation</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>Check the idea of coverage by building the intervals</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S8 &middot; S9</td><td><b>t-tests and ANOVA</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Decomposing a sum of squares. Reading it as a projection comes later</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S4 &middot; S5</td><td><b>Binomial, Poisson, normal distributions</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Set up a probability model. Integrating the density is not covered</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S6</td><td><b>Sampling distributions and the CLT revisited</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>Break the independence the standard error formula assumes, and see what follows</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S7</td><td><b>The theory of interval estimation</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>The t distribution and degrees of freedom. Coverage seen by simulation</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S8 &middot; S9</td><td><b>Multiple comparisons, effect size, criticism of p-values</b> <span class="wtag" style="--w:#2f6b57">Learning theory</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>What repeating a test does. Reporting the size of an effect</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">Social Research</a></td><td class="n">S10</td><td><b>Census and sample survey</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Sampling error and the sample size needed. Selection bias sits outside the equations</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">Applied Info. Literacy</a></td><td class="n">S7</td><td><b>Cross-tabulation</b> <span class="wtag" style="--w:#3d6fa8">Geometry</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>The joint distribution of categories. The doorway to the chi-square test</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">Behaviormetrics</a></td><td class="n">S9</td><td><b>The chi-square test</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>The gap from the expected frequencies</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">Behaviormetrics</a></td><td class="n">S10 &middot; S11</td><td><b>t-tests and paired t-tests</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Comparing two groups. The structure of the data changes the test</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/kodo-keiryo/" target="_blank" rel="noopener noreferrer" style="color:#8a464f;font-weight:600;text-decoration:none">Behaviormetrics</a></td><td class="n">S13 &middot; S14</td><td><b>ANOVA and multiple comparisons</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Decomposing a sum of squares, and adjusting for the number of comparisons</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">Introduction to Data Use</span><span class="soon">in preparation</span></td><td class="n">S4</td><td><b>The history of social research and the birth of statistics</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>How the frequentist view came about, followed through its history</td></tr>
+<tr><td class="c"><span style="color:#3d6fa8;font-weight:600">Introduction to Data Use</span><span class="soon">in preparation</span></td><td class="n">S11</td><td><b>Sample and population, the law of large numbers, the CLT</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>The doorway to inferential statistics</td></tr>
+<tr><td class="c"><span style="color:#8a5a2f;font-weight:600">Big Data Apps II</span><span class="soon">in preparation</span></td><td class="n">S5</td><td><b>Kernel density estimation</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>Choosing the bandwidth is choosing how much to smooth</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S7</td><td><b>HMM, GMM, self-supervised learning</b> <span class="wtag" style="--w:#6a4d8a">Bayesian</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Maximizing likelihood by EM. Not derived</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S10</td><td>Simple and multiple regression (OLS) <span style="color:var(--muted);font-size:0.85em">(primarily Geometry)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>The normal equations and projection. Assume normal errors and it agrees with maximum likelihood</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S6 &middot; S7</td><td>Multiple regression <span style="color:var(--muted);font-size:0.85em">(primarily Geometry)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>The design matrix and the normal equations. Numerical decomposition comes later</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+    <section class="wsec" style="--w:#6a4d8a">
+        <div class="whead">
+            <span class="wno">3</span>
+            <div><h2>Bayesian</h2><p>Combine what was known before observing with the data, and update belief into a posterior distribution.<span style="display:block;color:#6a4d8a;font-size:0.85em;margin-top:2px">What it looks at: how uncertainty is handled</span></p></div>
+            <span class="cnt">3 primary &middot; 1 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S12</td><td><b>The doorway to Bayesian statistics</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>With discrete hypotheses, the posterior is arithmetic</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S2 &middot; S3</td><td><b>Conditional probability and Bayes&rsquo; theorem</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>How much the prior bites, checked by counting in the finite case</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S12 &middot; S13</td><td><b>Information cascades and Condorcet&rsquo;s jury theorem</b> <span class="wtag" style="--w:#8a5a2f">Games</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Sequential updating, and group judgement once independence has broken, by simulation</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S7</td><td>HMM, GMM, self-supervised learning <span style="color:var(--muted);font-size:0.85em">(primarily Frequentist)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Maximizing likelihood by EM. Not derived</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+    <section class="wsec" style="--w:#2f6b57">
+        <div class="whead">
+            <span class="wno">4</span>
+            <div><h2>Learning theory</h2><p>Keep the loss on data not yet seen in view, and balance fit against complexity.<span style="display:block;color:#2f6b57;font-size:0.85em;margin-top:2px">What it looks at: how predictive performance is judged</span></p></div>
+            <span class="cnt">4 primary &middot; 5 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><span style="color:#96702f;font-weight:600">Big Data Apps I</span><span class="soon">in preparation</span></td><td class="n">S7 &middot; S8</td><td><b>k-means and stability assessment</b> <span class="wtag" style="--w:#3d6fa8">Geometry</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Whether a clustering reproduces. Generalization made tangible</td></tr>
+<tr><td class="c"><span style="color:#96702f;font-weight:600">Big Data Apps I</span><span class="soon">in preparation</span></td><td class="n">S9 &middot; S10</td><td><b>PLS-DA and cross-validation</b> <span class="wtag" style="--w:#3d6fa8">Geometry</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Separate training from validation. See overfitting as a number</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S8</td><td><b>Conformer and Whisper</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>Large-scale training and generalization. Backpropagation is not derived</td></tr>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S9</td><td><b>Evaluation metrics (WER, CER)</b></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>Designing what counts as an error. Compared against the human error rate</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S11</td><td>Model selection and AIC <span style="color:var(--muted);font-size:0.85em">(primarily Information theory)</span></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Balancing fit against complexity. The code-length argument is not covered</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S8 &middot; S9</td><td>Multiple comparisons, effect size, criticism of p-values <span style="color:var(--muted);font-size:0.85em">(primarily Frequentist)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>What repeating a test does. Reporting the size of an effect</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S5</td><td>Approximation algorithms <span style="color:var(--muted);font-size:0.85em">(primarily Information theory)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Sketches and probabilistic data structures. Trading error against capacity</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S12 &middot; S13</td><td>PLS regression <span style="color:var(--muted);font-size:0.85em">(primarily Geometry)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Regression in a latent space. Chosen by cross-validation</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S13</td><td>Deepfake detection <span style="color:var(--muted);font-size:0.85em">(primarily Games and adversaries)</span></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>The chase between generation and detection, read as a min&ndash;max</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+    <section class="wsec" style="--w:#96702f">
+        <div class="whead">
+            <span class="wno">5</span>
+            <div><h2>Information theory</h2><p>Treat a short encoding as a good explanation.<span style="display:block;color:#96702f;font-size:0.85em;margin-top:2px">What it looks at: evaluation in terms of information</span></p></div>
+            <span class="cnt">2 primary &middot; 0 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S11</td><td><b>Model selection and AIC</b> <span class="wtag" style="--w:#2f6b57">Learning theory</span></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Balancing fit against complexity. The code-length argument is not covered</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S5</td><td><b>Approximation algorithms</b> <span class="wtag" style="--w:#2f6b57">Learning theory</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span class="mtag" style="--m:#8a5a2f">Calc I</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Sketches and probabilistic data structures. Trading error against capacity</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+    <section class="wsec" style="--w:#8a5a2f">
+        <div class="whead">
+            <span class="wno">6</span>
+            <div><h2>Games and adversaries</h2><p>Read learning as the interaction of several agents in competition.<span style="display:block;color:#8a5a2f;font-size:0.85em;margin-top:2px">What it looks at: interaction between agents</span></p></div>
+            <span class="cnt">1 primary &middot; 1 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><span style="color:#6a4d8a;font-weight:600">Speech Processing</span><span class="soon">in preparation</span></td><td class="n">S13</td><td><b>Deepfake detection</b> <span class="wtag" style="--w:#2f6b57">Learning theory</span></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a464f">Calc II</span></td><td>The chase between generation and detection, read as a min&ndash;max</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S12 &middot; S13</td><td>Information cascades and Condorcet&rsquo;s jury theorem <span style="color:var(--muted);font-size:0.85em">(primarily Bayesian)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#8a5a2f">Calc I</span></td><td>Sequential updating, and group judgement once independence has broken, by simulation</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+    <section class="wsec" style="--w:#22456d">
+        <div class="whead">
+            <span class="wno">7</span>
+            <div><h2>Causality</h2><p>Ask what would happen under an intervention — a counterfactual question.<span style="display:block;color:#22456d;font-size:0.85em;margin-top:2px">What it looks at: the kind of question asked</span></p></div>
+            <span class="cnt">3 primary &middot; 2 related</span>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Method or topic (related perspectives)</th><th>Stage</th><th>Mathematics used</th><th>Connects to</th><th>Note</th></tr></thead>
+            <tbody>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S10</td><td><b>Introduction to causal inference (RCTs and observational studies)</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>The difference between intervening and observing. Identification assumptions handled in words</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/toukei-2/" target="_blank" rel="noopener noreferrer" style="color:#22456d;font-weight:600;text-decoration:none">Statistics II</a></td><td class="n">S11</td><td><b>Confounding and spurious correlation</b> <span class="wtag" style="--w:#3d6fa8">Geometry</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span><span class="mtag fut" style="--m:#22456d">Lin II</span></td><td>Adjusting for covariates. Checked by computing a partial correlation</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer" style="color:#767c84;font-weight:600;text-decoration:none">Intro. to Information</a></td><td class="n">S12</td><td><b>Simpson&rsquo;s paradox</b></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Stratify and it reverses. A first encounter with confounding</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><a href="https://aonoa68.github.io/toukei-1/" target="_blank" rel="noopener noreferrer" style="color:#3d6fa8;font-weight:600;text-decoration:none">Statistics I</a></td><td class="n">S5</td><td>Correlation and causation <span style="color:var(--muted);font-size:0.85em">(primarily Geometry)</span></td><td class="s"><span class="stage s2">Computation</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span class="mtag fut" style="--m:#3d6fa8">Lin I</span></td><td>Read correlation as covariance. The causal argument is handed on to Statistics II</td></tr>
+<tr style="background:#fbfcfd"><td class="c"><span style="color:#3d6fa8;font-weight:600">Introduction to Data Use</span><span class="soon">in preparation</span></td><td class="n">S12 &middot; S13</td><td>Reading graphs, fake statistics <span style="color:var(--muted);font-size:0.85em">(primarily Geometry)</span></td><td class="s"><span class="stage s1">Concepts</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td class="t"><span style="color:#b8c2cc">—</span></td><td>Designing figures, and misreading them. The trap of stratification is touched on</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+
+    <section class="wsec" style="--w:#8a97a3">
+        <div class="whead">
+            <span class="wno">—</span>
+            <div><h2>Outside the statistical mathematics this map covers</h2><p>Sessions concerned with design, ethics and communication, or with a different kind of mathematics, rather than with the mathematics of a method.</p></div>
+        </div>
+        <div class="scroller"><table class="mm">
+            <thead><tr><th>Course</th><th>Session</th><th>Content</th><th>How it is handled</th></tr></thead>
+            <tbody>
+<tr><td class="c"><a href="https://aonoa68.github.io/shakaichosa/" target="_blank" rel="noopener noreferrer" style="color:#96702f;font-weight:600;text-decoration:none">Social Research</a></td><td class="n">S9, S11&ndash;S14</td><td><b>Qualitative research (interviews, observation, ethnography)</b></td><td>Handled as questions of design and ethics, of recording and interpretation</td></tr>
+<tr><td class="c"><a href="https://aonoa68.github.io/joho-katsuyo/" target="_blank" rel="noopener noreferrer" style="color:#3f7352;font-weight:600;text-decoration:none">Applied Info. Literacy</a></td><td class="n">S1&ndash;S3, S10&ndash;S13</td><td><b>Planning a survey, publishing and presenting the results</b></td><td>Designing a survey, and communicating it</td></tr>
+<tr><td class="c"><span style="color:#2f6b57;font-weight:600">Big Data Analysis</span><span class="soon">in preparation</span></td><td class="n">S1&ndash;S4</td><td><b>The five Vs, columnar storage, the CAP theorem, DAGs</b></td><td>Designing the data platform. A different kind of mathematics is involved here: distributed systems, and computational complexity</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+
+    <section style="margin-top:44px">
+        <h2 class="sec">What this table can and cannot show</h2>
+        <div class="gaps">
+            <div class="gap"><h3>Can show: nothing reaches the derivation stage</h3><p>Almost every session sits at concepts or at computation. Deriving the equations and proving the properties is not part of any course currently taught here. Whether some other part of the curriculum carries that role is worth checking.</p></div>
+            <div class="gap"><h3>Can show: the games perspective has few points of contact</h3><p>Only session 13 of Speech Processing. The information cascade in Statistics II sits close to it, in that it is about group judgement once independence has broken.</p></div>
+            <div class="gap warn"><h3>Cannot show: that fewer rows means thinner coverage</h3><p>Geometry has many rows partly because descriptive statistics, visualization and matrix computation are all gathered under that one perspective. The scope of the classification and the unit of aggregation are mixed together here, so the number of rows cannot tell you how thoroughly a topic is covered.</p></div>
+            <div class="gap warn"><h3>Cannot show: that something is missing because the mathematical prerequisites are missing</h3><p>That cannot be separated from what happens to be assigned to this teacher, from the hours available, from the stated goals, or from how the tags were applied. This table alone does not settle the cause.</p></div>
+        </div>
+        <div class="gap" style="margin-top:12px;border-left:4px solid var(--gold)">
+            <h3>There are stages within reach even without the prerequisite mathematics</h3>
+            <p>With finitely many hypotheses, a Bayesian update is arithmetic. Take the probability of heads to be either 1/4 or 3/4, with a prior of 1/2 on each, and suppose three independent tosses all come up heads: the posterior probability of 3/4 is (3/4)³ ÷ ((1/4)³ + (3/4)³) = 27/28. Normalizing takes addition; no multivariable integration is needed.<br>
+            Information theory can be introduced the same way, through the entropy of finitely many outcomes, with logarithms and a weighted average. Generalization, too, asks for different prerequisites depending on whether a bound is being proved or the gap between training and unseen performance is being watched in an experiment. <b>The question is not whether that mathematics has been studied, but which stage one chooses to work at.</b></p>
+        </div>
+    </section>
+
+    <section style="margin-top:44px">
+        <h2 class="sec">The order the source document sets out, and what these courses touch</h2>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:6px">The order in which the source document places the mathematics, year by year. What the courses touch is noted alongside it. Whether that order is itself the right one is not examined here.</p>
+        <div class="year"><h3>Year 1: sums of squares and inner products &rarr; normal equations and projection &rarr; extrema in one variable</h3>
+        <p>Introduction to Data Use and Applied Information Literacy handle descriptive statistics and the idea of a sample, at the computation stage. Reading them as projections is not touched.</p></div>
+        <div class="year"><h3>Year 2: QR, Cholesky, SVD &rarr; multivariable gradient and Hessian, IRLS</h3>
+        <p>Statistics I goes as far as regression, AIC and PCA; Statistics II as far as probability, Bayes, and the doorway to causal inference. Computing the decompositions numerically is not covered.</p></div>
+        <div class="year"><h3>Year 3: generalized eigenvalues, duality and KKT &rarr; kernels &rarr; alternating optimization in EM</h3>
+        <p>Speech Processing handles EM, and the big-data courses handle PCA, k-means and PLS from the side of implementation. SVMs and kernel methods appear in no course here.</p></div>
+        <div class="year"><h3>Year 4: Laplace approximation, variational inference, HMC &rarr; large-scale computation &rarr; backpropagation and SDEs</h3>
+        <p>Session 8 of Speech Processing touches the training of large models. Bayesian computation, Gaussian processes, and the mathematics of generative models appear in no course here.</p></div>
+    </section>
+
+    <p class="note" style="margin-top:40px;font-size:0.86em;color:var(--muted);line-height:1.85">
+    Source document: &ldquo;Mathematical techniques and their relation to statistical methods and machine learning&rdquo; (Onohara, September 2025). It is a set of notes Onohara wrote privately in order to think through the curriculum of the Faculty of Information Science, and it speaks for no one but its author. The seven perspectives and the mathematics tags come from it. The distinction between stages, and the assignment of each session, were worked out for this page.<br>
+    The ideas themselves are explained in <a href="../guide/">A Guide to Statistical Thinking</a>, and which session of which course covers what is set out in the <a href="../map/">course map</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to Teaching</a></p>
+</footer>
+
+</body>
+</html>

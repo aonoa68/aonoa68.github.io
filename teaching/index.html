@@ -169,6 +169,21 @@
         .tool-card p { font-size: 0.84em; color: var(--muted); line-height: 1.7; }
         .tool-card .go { margin-top: auto; font-size: 0.78em; font-weight: 600; color: var(--c-tool); }
 
+        /* CROSS（授業をまたいで読む横断ページ） */
+        .cross-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+        .cross-card {
+            background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-top: 3px solid var(--navy2);
+            border-radius: var(--radius); padding: 20px 22px;
+            display: flex; flex-direction: column; gap: 8px;
+            text-decoration: none; color: var(--text);
+            transition: box-shadow 0.22s ease;
+        }
+        .cross-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .cross-card h3 { font-size: 1.04em; font-weight: 600; color: var(--navy2); display: flex; align-items: center; gap: 9px; }
+        .cross-card h3 i { color: var(--gold); }
+        .cross-card p { font-size: 0.86em; color: var(--muted); line-height: 1.8; }
+        .cross-card .go { margin-top: auto; font-size: 0.8em; font-weight: 600; color: var(--navy2); }
+
         .note { margin-top: 36px; font-size: 0.86em; color: var(--muted); line-height: 1.85; }
         .note a { color: var(--navy2); }
 
@@ -335,6 +350,26 @@
             <a class="open-site" href="https://aonoa68.github.io/joho-nyumon/" target="_blank" rel="noopener noreferrer">資料サイトを開く <i class="fas fa-arrow-up-right-from-square"></i></a>
         </div>
     </article>
+
+    <div class="group-label">授業をまたいで読む <small>── 受講していない方も読めます</small></div>
+
+    <div class="cross-grid">
+        <a class="cross-card" href="guide/">
+            <h3><i class="fas fa-lightbulb"></i> 統計の考え方ガイド</h3>
+            <p>授業を受けていなくても統計が分かるように、8つの考え方を霊長類のデータを動かしながら説明しています。</p>
+            <span class="go">開く <i class="fas fa-arrow-right"></i></span>
+        </a>
+        <a class="cross-card" href="map/">
+            <h3><i class="fas fa-diagram-project"></i> 科目の重なり</h3>
+            <p>5科目で同じ話題がどこで重なるかを一覧にしています。どの授業で何を先に学ぶかが見えます。</p>
+            <span class="go">開く <i class="fas fa-arrow-right"></i></span>
+        </a>
+        <a class="cross-card" href="methods/">
+            <h3><i class="fas fa-compass"></i> 手法と数学の地図</h3>
+            <p>担当している各回の手法が、7つの観点のどこに位置するかを整理しています。式で読む子ページもあります。</p>
+            <span class="go">開く <i class="fas fa-arrow-right"></i></span>
+        </a>
+    </div>
 
     <div class="group-label">教材ツール <small>── 情報入門で使用・誰でも使えます</small></div>
 

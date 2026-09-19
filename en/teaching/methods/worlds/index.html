@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Perspectives — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Seven perspectives on statistics and machine learning — geometry, frequentist, Bayesian, learning theory, information theory, games, causality — each explained from the one equation at its centre.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Course colours (shared with the course map) */
+            --c-s1: #3d6fa8;
+            --c-s2: #22456d;
+            --c-sc: #96702f;
+            --c-jk: #3f7352;
+            --c-kd: #8a464f;
+            --c-past: #767c84;
+            --c-tool: #a07f2c;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 620px; line-height: 1.85; }
+
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        h2.sec { font-family:'DM Serif Display', serif; font-weight:400; font-size:1.5em; color:var(--navy2); margin:52px 0 6px; }
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        a:focus-visible { outline:2px solid var(--gold); outline-offset:2px; border-radius:4px; }
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+        }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+        .mtag { font-size:0.8em; font-weight:700; padding:2px 9px; border-radius:8px; border:1px solid color-mix(in srgb,var(--m) 35%,white); background:color-mix(in srgb,var(--m) 10%,white); color:var(--m); white-space:nowrap; }
+        .mtag small { font-weight:500; color:var(--muted); margin-left:6px; }
+
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:18px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.85; }
+        .where { margin-top:14px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        mjx-container { font-size:1.05em !important; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">In Equations</span>
+        <div class="nav-right">
+            <a href="../../map/">Course map</a>
+            <a href="../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <h1>Seven <span>Perspectives</span></h1>
+        <p class="lead">Each of the seven perspectives, explained from the one equation at its centre. They divide not only by the question asked, but by the assumptions placed on the data, the criteria for what counts as good, and the constraints on computation. They are not mutually exclusive.<br>
+        For each one: how to read the symbols, and the equations of the methods that follow from it. Written so that a reader not used to equations can still see what is being made small, or large.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock" style="--w:#3d6fa8">
+        <h2><span class="no">1</span>Geometry (least squares)</h2>
+        <p class="q">Draw the line, or the surface, that comes closest to a cloud of points. Minimize the sum of squared deviations.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#3d6fa8">Lin I</span><span class="mtag" style="--m:#22456d">Lin II</span><span class="mtag" style="--m:#8a5a2f">Calc I</span></div>
+        <div class="eq" style="--w:#3d6fa8">
+            <div class="lbl">WHAT IS MADE SMALL</div>
+            \[\hat{\beta} \;=\; \arg\min_{\beta} \; \lVert \mathbf{y} - X\beta \rVert^2\]
+            <p class="read"><b>\(\mathbf{y}\)</b> … the observed values, stacked into a vector<br><b>\(X\)</b> … the explanatory variables arranged as a matrix (the design matrix)<br><b>\(\lVert\cdot\rVert^2\)</b> … the sum of squares; the ruler that measures how large the deviation is</p>
+        </div>
+<div class="sub"><h3>The solution is a system of linear equations</h3><div class="eq" style="--w:#3d6fa8">\[X^{\top}X\hat{\beta} = X^{\top}\mathbf{y}\]<p class="read">The normal equations. They are solved by decomposing the matrix on the left (QR, Cholesky). This is the territory of Linear Algebra I.</p></div></div>
+<div class="sub"><h3>The solution is an orthogonal projection</h3><div class="eq" style="--w:#3d6fa8">\[\hat{\mathbf{y}} = X(X^{\top}X)^{-1}X^{\top}\mathbf{y} = H\mathbf{y}\]<p class="read">\(H\) is the projection matrix. The fitted values are the shadow cast by dropping the observations perpendicularly onto the space that the explanatory variables span.</p></div></div>
+<div class="sub"><h3>Principal component analysis has the same idea behind it</h3><div class="eq" style="--w:#3d6fa8">\[\max_{\lVert w \rVert = 1} w^{\top}\Sigma w \quad\Longrightarrow\quad \Sigma w = \lambda w\]<p class="read">Look for the direction in which the variance is largest, and you arrive at an eigenvector of the covariance matrix.</p></div></div>
+<div class="sub"><h3>k-means also minimizes a sum of squares</h3><div class="eq" style="--w:#3d6fa8">\[\min_{C,\mu} \sum_{k}\sum_{i \in C_k} \lVert x_i - \mu_k \rVert^2\]<p class="read">Make the total distance from the centre of each grouping small. No probability model is set up.</p></div></div>
+<p class="where" style="--w:#3d6fa8">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer">Statistics I, session 10</a>, <a href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer">Statistics I, session 13</a></p>
+    </section>
+    <section class="wblock" style="--w:#8a464f">
+        <h2><span class="no">2</span>Frequentist (sampling variation, estimation, testing)</h2>
+        <p class="q">The parameter of the population is a fixed value; what is random is the sample. The quality of an estimator or a test is judged by how it varies when the sample is drawn again. Maximum likelihood is a much-used principle for choosing a parameter, but likelihood is used in Bayesian work as well.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">Calc I</span><span class="mtag" style="--m:#8a464f">Calc II</span><span class="mtag" style="--m:#3d6fa8">Lin I</span></div>
+        <div class="eq" style="--w:#8a464f">
+            <div class="lbl">WHAT IS MADE LARGE</div>
+            \[\hat{\theta} \;=\; \arg\max_{\theta} \; \ell(\theta), \qquad \ell(\theta) = \sum_{i=1}^{n} \log p(x_i \mid \theta)\]
+            <p class="read"><b>\(p(x_i\mid\theta)\)</b> … the probability, or density, of that observation under the parameter \(\theta\)<br><b>\(\ell(\theta)\)</b> … the log-likelihood; logarithms turn the product into a sum<br><b>\(\hat{\theta}\)</b> … the maximum likelihood estimate, the value that makes the likelihood largest</p>
+        </div>
+<div class="sub"><h3>The condition for a maximum is that the derivative is zero</h3><div class="eq" style="--w:#8a464f">\[\frac{\partial \ell(\theta)}{\partial \theta} = 0\]<p class="read">The left-hand side is called the score function. Where it cannot be solved in closed form, it is solved numerically, by Newton's method among others.</p></div></div>
+<div class="sub"><h3>How much an estimate varies is set by the information</h3><div class="eq" style="--w:#8a464f">\[I(\theta) = -\,\mathbb{E}\!\left[\frac{\partial^2 \ell}{\partial \theta^2}\right], \qquad \sqrt{n}\,(\hat{\theta}-\theta) \;\xrightarrow{d}\; N\!\left(0,\, I(\theta)^{-1}\right)\]<p class="read">The larger the second derivative — the curvature — the steadier the estimate. Confidence intervals come out of here.</p></div></div>
+<div class="sub"><h3>Assume normal errors and it coincides with the geometric view</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">Take logarithms and it becomes exactly the minimization of a sum of squares. This is why least squares and maximum likelihood give the same answer.</p></div></div><div class="sub"><h3>What this perspective evaluates is the hit rate of a procedure</h3><div class="eq" style="--w:#8a464f">\[ \Pr\big(\theta \in \mathrm{CI}(X_1,\dots,X_n)\big) = 0.95 \qquad \text{(the proportion over repeated samples)} \]<p class="read">The probability attaches to the interval; \(\theta\) does not move. The type I error rate of a test is defined the same way, as a proportion over repetitions of the procedure.</p></div></div>
+<p class="where" style="--w:#8a464f">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer">Statistics I, session 7</a>, <a href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer">Statistics II, session 7</a></p>
+    </section>
+    <section class="wblock" style="--w:#6a4d8a">
+        <h2><span class="no">3</span>Bayesian</h2>
+        <p class="q">Combine what was known before observing with the data, and update belief. Here it is the parameter that carries a distribution.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">Calc I</span><span class="mtag" style="--m:#8a464f">Calc II</span><span class="mtag" style="--m:#3d6fa8">Lin I</span></div>
+        <div class="eq" style="--w:#6a4d8a">
+            <div class="lbl">THE UPDATE</div>
+            \[p(\theta \mid D) \;=\; \frac{p(D \mid \theta)\, p(\theta)}{p(D)}, \qquad p(D)=\int p(D\mid\theta)p(\theta)\,d\theta\]
+            <p class="read"><b>\(p(\theta)\)</b> … the prior; belief before the data are seen<br><b>\(p(D\mid\theta)\)</b> … the likelihood, the same quantity the frequentist view was maximizing<br><b>\(p(\theta\mid D)\)</b> … the posterior; belief after the update</p>
+        </div>
+<div class="sub"><h3>Predictions also come out as distributions</h3><div class="eq" style="--w:#6a4d8a">\[p(\tilde{x} \mid D) = \int p(\tilde{x}\mid\theta)\, p(\theta \mid D)\, d\theta\]<p class="read">Not a single value but a distribution over the data still to come. The prediction carries its uncertainty with it.</p></div></div>
+<div class="sub"><h3>The integral in the denominator is hard, so it is approximated</h3><div class="eq" style="--w:#6a4d8a">\[\log p(D) \;\ge\; \mathbb{E}_{q}\!\left[\log p(D,\theta) - \log q(\theta)\right] \;=\; \mathrm{ELBO}(q)\]<p class="read">Variational inference looks for the \(q\) that makes this lower bound largest. MCMC replaces the integral with samples.</p></div></div>
+<div class="sub"><h3>With finitely many hypotheses, addition and division are enough</h3><div class="eq" style="--w:#6a4d8a">\[ P\!\left(p=\tfrac34 \,\middle|\, \text{H, H, H}\right) = \frac{(3/4)^3}{(1/4)^3+(3/4)^3} = \frac{27}{28} \]<p class="read">Taking the probability of heads to be either \(1/4\) or \(3/4\), with a prior of \(1/2\) on each. The denominator is not an integral but a <b>sum over finitely many terms</b>. At this stage the update from prior through likelihood to posterior can be carried out before any calculus has been studied. Move to a continuous parameter and the integral returns, and with it the need to approximate.</p></div></div><div class="sub"><h3>Ridge regression is a Bayesian MAP estimate</h3><div class="eq" style="--w:#6a4d8a">\[\arg\max_{\beta} \left[\log p(\mathbf{y}\mid\beta) + \log p(\beta)\right] \;=\; \arg\min_{\beta}\left[\lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\right]\]<p class="read">Place a normal distribution as the prior and the expression becomes penalized least squares (\(\lambda = \sigma^2/\tau^2\)).</p></div></div>
+<p class="where" style="--w:#6a4d8a">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer">Statistics I, session 12</a>, <a href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer">Statistics II, session 3</a></p>
+    </section>
+    <section class="wblock" style="--w:#2f6b57">
+        <h2><span class="no">4</span>Learning theory (risk minimization)</h2>
+        <p class="q">What is to be made small is the loss on data not yet seen, not the loss on the data at hand. No probability model need be set up.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a464f">Calc II</span><span class="mtag" style="--m:#3d6fa8">Lin I</span><span class="mtag" style="--m:#22456d">Lin II</span></div>
+        <div class="eq" style="--w:#2f6b57">
+            <div class="lbl">WHAT WE ACTUALLY WANT SMALL</div>
+            \[R(f) \;=\; \mathbb{E}_{(x,y)\sim P}\left[\ell\big(f(x),\,y\big)\right] \qquad \text{(the expected risk)}\]
+            <p class="read"><b>\(P\)</b> … the distribution the data follow; its contents are unknown, but it is taken to exist<br><b>\(\ell\)</b> … the loss function; the pain of a prediction that misses<br><b>\(f\)</b> … the function being learned (the model)</p>
+        </div>
+<div class="sub"><h3>Only the empirical risk can be computed from what is at hand</h3><div class="eq" style="--w:#2f6b57">\[\hat{R}(f) = \frac{1}{n}\sum_{i=1}^{n} \ell\big(f(x_i),\,y_i\big), \qquad \hat{f} = \arg\min_{f \in \mathcal{F}} \hat{R}(f)\]<p class="read">This is empirical risk minimization. Learning is taken to be this minimization and nothing more.</p></div></div>
+<div class="sub"><h3>A generalization bound holds down the gap</h3><div class="eq" style="--w:#2f6b57">\[R(f) \;\le\; \hat{R}(f) \;+\; \underbrace{\mathfrak{C}(\mathcal{F},\,n,\,\delta)}_{\text{model complexity term}}\]<p class="read">The more freedom the model has, the larger the term on the right becomes. Regularization is the act of holding that term down.</p></div></div>
+<div class="sub"><h3>The SVM makes the margin as wide as possible</h3><div class="eq" style="--w:#2f6b57">\[\min_{w,b}\ \tfrac{1}{2}\lVert w\rVert^2 + C\sum_{i=1}^{n}\xi_i \quad \text{s.t.}\quad y_i(w^{\top}x_i+b) \ge 1-\xi_i,\ \ \xi_i \ge 0\]<p class="read">Take the distance from the boundary to the nearest point as wide as it will go. A classifier that assumes nothing about probability.</p></div></div>
+<p class="where">Sessions that cover this: <span style="color:var(--muted)">none at present</span></p>
+    </section>
+    <section class="wblock" style="--w:#96702f">
+        <h2><span class="no">5</span>Information theory</h2>
+        <p class="q">Treat a short encoding as a good explanation. It gives a ruler for choosing between models.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">Calc I</span><span class="mtag" style="--m:#8a464f">Calc II</span></div>
+        <div class="eq" style="--w:#96702f">
+            <div class="lbl">HOW MUCH UNCERTAINTY THERE IS</div>
+            \[H(p) \;=\; -\sum_{x} p(x)\log p(x), \qquad D_{\mathrm{KL}}(p \,\|\, q) \;=\; \sum_{x} p(x)\log\frac{p(x)}{q(x)} \;\ge\; 0\]
+            <p class="read"><b>\(H(p)\)</b> … the entropy; how hard that distribution is to predict<br><b>\(D_{\mathrm{KL}}\)</b> … the code length wasted when the true distribution \(p\) is described by the model \(q\)<br><b>equality</b> … reached only when the two distributions agree</p>
+        </div>
+<div class="sub"><h3>Cross-entropy is the same thing as maximum likelihood</h3><div class="eq" style="--w:#96702f">\[H(p,q) = H(p) + D_{\mathrm{KL}}(p\,\|\,q) \qquad \Longleftrightarrow \qquad \min_{q} H(p,q) \;\equiv\; \max_{q}\ \text{likelihood}\]<p class="read">Using cross-entropy as the loss of a classifier is doing maximum likelihood estimation.</p></div></div>
+<div class="sub"><h3>AIC balances fit against complexity</h3><div class="eq" style="--w:#96702f">\[\mathrm{AIC} = -2\,\ell(\hat{\theta}) + 2k\]<p class="read">\(k\) is the number of parameters. A better fit counts in a model's favour, but the parameters it took are subtracted back out.</p></div></div>
+<div class="sub"><h3>A decision tree splits on how much information is gained</h3><div class="eq" style="--w:#96702f">\[\mathrm{IG} = H(\text{parent}) - \sum_{c}\frac{n_c}{n}H(\text{child}_c)\]<p class="read">Measure how far the uncertainty fell by splitting, and take the split that lowers it most.</p></div></div>
+<p class="where" style="--w:#96702f">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer">Statistics I, session 11</a></p>
+    </section>
+    <section class="wblock" style="--w:#8a5a2f">
+        <h2><span class="no">6</span>Games and adversaries</h2>
+        <p class="q">Read learning as a balance between two sides in competition. What helps one side hurts the other.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a464f">Calc II</span><span class="mtag" style="--m:#22456d">Lin II</span></div>
+        <div class="eq" style="--w:#8a5a2f">
+            <div class="lbl">MINIMIZING AND MAXIMIZING AT ONCE</div>
+            \[\min_{G}\ \max_{D}\ V(D,G) \;=\; \mathbb{E}_{x\sim p_{\text{data}}}\big[\log D(x)\big] \;+\; \mathbb{E}_{z\sim p_z}\big[\log\big(1-D(G(z))\big)\big]\]
+            <p class="read"><b>\(G\)</b> … the generating side; it wants to make fakes that pass for real<br><b>\(D\)</b> … the discriminating side; it wants to tell real from fake<br><b>\(\min\max\)</b> … each side answers the other's best move with its own best move; the point of balance is the solution</p>
+        </div>
+<div class="sub"><h3>Preparing for the worst case has the same structure</h3><div class="eq" style="--w:#8a5a2f">\[\min_{\theta}\ \max_{Q \in \mathcal{U}}\ \mathbb{E}_{Q}\big[\ell(\theta)\big]\]<p class="read">Make small the loss under the least convenient of the distributions one is willing to entertain (distributionally robust optimization).</p></div></div>
+<div class="sub"><h3>Audio deepfakes have the same shape</h3><div class="eq" style="--w:#8a5a2f">\[\text{generator improves} \;\longrightarrow\; \text{detector weakens} \;\longrightarrow\; \text{detector improves}\]<p class="read">Forgery and detection become a chase that does not end. Evaluating either side on its own means nothing.</p></div></div>
+<p class="where" style="--w:#8a5a2f">Sessions that cover this: <span style="color:var(--muted)">Speech Processing, session 13 (in preparation)</span></p>
+    </section>
+    <section class="wblock" style="--w:#22456d">
+        <h2><span class="no">7</span>Causality</h2>
+        <p class="q">Ask what would happen under an intervention. A different kind of question from prediction, and one the data alone do not settle.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#3d6fa8">Lin I</span><span class="mtag" style="--m:#22456d">Lin II</span><span class="mtag" style="--m:#8a5a2f">Calc I</span></div>
+        <div class="eq" style="--w:#22456d">
+            <div class="lbl">HANDLING AN OUTCOME THAT CANNOT BE SEEN</div>
+            \[\mathrm{ATE} \;=\; \mathbb{E}\big[Y(1) - Y(0)\big]\]
+            <p class="read"><b>\(Y(1)\)</b> … the outcome had the treatment been given<br><b>\(Y(0)\)</b> … the outcome had it not been<br><b>the problem</b> … for any one person, only one of the two can ever be observed</p>
+        </div>
+<div class="sub"><h3>An assumption that is unusable without randomization</h3><div class="eq" style="--w:#22456d">\[\big(Y(1),\,Y(0)\big) \;\perp\!\!\!\perp\; T \;\mid\; X\]<p class="read">That the assignment of treatment is independent of the outcome once the covariates \(X\) are conditioned on. In observational data this is an assumption, and it cannot be checked.</p></div></div>
+<div class="sub"><h3>The adjustment formula</h3><div class="eq" style="--w:#22456d">\[\mathbb{E}\big[Y \mid do(T=t)\big] \;=\; \sum_{x} \mathbb{E}\big[Y \mid T=t,\, X=x\big]\, P(X=x)\]<p class="read">Look at the effect within each stratum, then add them up weighted by the size of the stratum. Simpson's paradox is a problem of this weighting.</p></div></div>
+<div class="sub"><h3>Adjustment by regression is a projection</h3><div class="eq" style="--w:#22456d">\[\hat{\tau} = \big(Z^{\top}X\big)^{-1}Z^{\top}\mathbf{y} \quad \text{(instrumental variables, 2SLS)}\]<p class="read">Another variable \(Z\) is brought in to avoid confounding. The computation comes down, in the end, to linear algebra.</p></div></div>
+<p class="where" style="--w:#22456d">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer">Statistics II, session 10</a>, <a href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer">Statistics II, session 11</a></p>
+    </section>
+
+    <div class="cross">
+        <h3>The same equation reads differently from another perspective</h3>
+        <p>
+        <b>Ridge regression</b>　In the geometric view, penalized least squares. In the Bayesian view, a MAP estimate with a normal distribution placed as the prior. In learning theory, an operation that holds down the complexity of the model. All three point at the same expression, \(\min_\beta \lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\).<br>
+        <b>Cross-entropy</b>　It is the negative log-likelihood of maximum likelihood, it is the minimization of the KL divergence in information theory, and in learning theory it is one loss function among others.<br>
+        <b>The SVM</b>　In learning theory, the maximization of a margin. Seen from the side of games, a min–max problem that prepares for the worst case.
+        </p>
+    </div>
+
+    <p class="note" style="margin-top:40px;font-size:0.86em;color:var(--muted);line-height:1.85">
+    The framework follows &ldquo;Mathematical techniques and their relation to statistical methods and machine learning&rdquo; (Onohara, September 2025), a set of notes Onohara wrote privately in order to think through the curriculum of the Faculty of Information Science. It speaks for no one but its author. The equations are given in representative form only; conditions and regularity assumptions are left out.<br>
+    Which session falls under which perspective is in <a href="../">Methods &amp; Mathematics</a>; the ideas themselves are explained in <a href="../../guide/">A Guide to Statistical Thinking</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to Methods &amp; Mathematics</a></p>
+</footer>
+
+</body>
+</html>
