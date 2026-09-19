@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantel検定 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="距離行列どうしの対応を並べ替えで検定する Mantel 検定について、統計量の定義・並べ替えの必要性・p値の下限・部分Mantelの限界を、GISA2025の分析（感情×空間×テキスト）の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Mantel検定</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Mantel <span>Test</span></h1>
+        <p class="lead">2つの<b>距離行列</b>のあいだに対応があるかを調べる検定です。行列の成分は互いに独立ではないため、成分を標本と見なした通常の相関の検定は使えません。標本のほうを作り替えて帰無分布を得る、という頻度論の発想を、行と列の同時並べ替えで実装します。<br>
+        小野原が GISA2025 の発表（場所と感情の地理的相関分析）で用いた実装に即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「近い場所どうしは、似た感情を呼ぶか」を、2つの距離行列の対応として問う。</p>
+        <p class="body">
+        対象が \(n\) 個あり、それぞれの組について2種類の「隔たり」が測れているとする。一方を \(D^{(1)}\)、もう一方を \(D^{(2)}\) と書く。いずれも \(n \times n\) の対称行列で、対角は 0 である。問いは、<b>片方で近い組は、もう片方でも近いか</b>という一点にある。
+        </p>
+        <p class="body">
+        素朴には、上三角の成分を取り出して2本のベクトルにし、相関を取ればよさそうに見える。実際、統計量としてはそれで正しい。問題は<b>検定のほう</b>にある。\(n\) 個の対象から作られる組は \(n(n-1)/2\) 個あるが、これらは独立な観測ではない。同じ対象 \(i\) が \(n-1\) 個の組に繰り返し現れるからである。独立標本を前提とした相関の検定（\(t\) 分布による検定）をそのまま当てると、有効な自由度を過大に見積もり、第一種の誤りが名目水準を大きく超える。
+        </p>
+        <p class="body">
+        Mantel 検定は、この依存構造を壊さずに帰無分布を作るための手続きである。原型は疾病の時空間クラスターの検出のために提案された（Mantel 1967）。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>統計量の定義</h2>
+        <p class="q">上三角の成分どうしの Pearson 相関。それ以上のものではない。</p>
+        <div class="eq">
+            <div class="lbl">Mantel 統計量</div>
+            \[ r_M \;=\; \frac{\displaystyle\sum_{i&lt;j}\bigl(d^{(1)}_{ij}-\bar{d}^{(1)}\bigr)\bigl(d^{(2)}_{ij}-\bar{d}^{(2)}\bigr)}{\sqrt{\displaystyle\sum_{i&lt;j}\bigl(d^{(1)}_{ij}-\bar{d}^{(1)}\bigr)^{2}}\;\sqrt{\displaystyle\sum_{i&lt;j}\bigl(d^{(2)}_{ij}-\bar{d}^{(2)}\bigr)^{2}}} \]
+            <p class="read"><b>\(i&lt;j\)</b> … 上三角のみ。対称なので下三角は同じ情報の重複、対角は定数 0<br>
+            <b>\(\bar{d}^{(k)}\)</b> … 上三角成分の平均<br>
+            <b>\(r_M\)</b> … 値域は \([-1,\,1]\)。単位に依存しない</p>
+        </div>
+        <div class="sub">
+            <h3>統計量そのものには新しさがない</h3>
+            <p>上の式は、2本のベクトルの Pearson 相関の定義そのものである。Mantel 検定の中身は統計量ではなく、この \(r_M\) をどの分布と比べるかにある。実装上も、上三角を <code>np.triu_indices_from(D, k=1)</code> で抜き出して <code>pearsonr</code> に渡すだけでよい。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>なぜ並べ替えるのか</h2>
+        <p class="q">成分を並べ替えてはいけない。並べ替えるのは対象のラベルのほうである。</p>
+        <p class="body">
+        帰無仮説は「2つの距離行列のあいだに対応がない」である。これを、<b>対象につけられたラベルが入れ替わっても構わない</b>という形で表現する。置換 \(\pi\) をひとつ選び、片方の行列に対して行と列の<b>両方</b>に同じ \(\pi\) を適用する。
+        </p>
+        <div class="eq">
+            <div class="lbl">行と列に同じ置換を当てる</div>
+            \[ \bigl(D^{(2)\pi}\bigr)_{ij} \;=\; d^{(2)}_{\pi(i)\,\pi(j)} \qquad \pi \in \mathfrak{S}_n \]
+            <p class="read">置換は \(n!\) 通りあるが、全部は数えられないので \(B\) 個を無作為に選んで近似する。各回について \(r_M^{(b)} = r_M\bigl(D^{(1)},\,D^{(2)\pi_b}\bigr)\) を計算し、その分布を帰無分布とする。</p>
+        </div>
+        <div class="sub">
+            <h3>ここが手法の核心である</h3>
+            <p>行だけ、あるいは上三角の成分だけを並べ替えたのでは意味がない。成分を個別に並べ替えると、距離行列としての構造（同じ対象が複数の組に現れること、三角不等式に由来する制約）が壊れ、独立標本を仮定したのと変わらなくなる。行と列に同じ置換を当てるという操作は、<b>「どの対象がどの対象か」という対応づけだけを壊し、行列の内部構造は保つ</b>。だからこそ、この帰無分布は依存構造を織り込んだものになる。</p>
+        </div>
+        <div class="sub">
+            <h3>片側か両側か</h3>
+            <p>「近いものは似る」だけを問うなら片側でよい。小野原の実装は \(|r_M^{(b)}| \ge |r_M^{\mathrm{obs}}|\) を数える両側である。負の対応（遠いほど似る）も検出の対象に含めるという選択であり、同じデータでも片側にすれば p 値はおおむね半分になる。報告の際はどちらを使ったかを明示する必要がある。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>p値と、その下限</h2>
+        <p class="q">並べ替え回数を決めた時点で、到達できる最小の p 値も決まる。</p>
+        <div class="eq">
+            <div class="lbl">観測値を帰無分布に1つ加えて数える</div>
+            \[ \hat{p} \;=\; \frac{1+\#\bigl\{\,b \;:\; \bigl|r_M^{(b)}\bigr| \ge \bigl|r_M^{\mathrm{obs}}\bigr|\,\bigr\}}{1+B} \]
+            <p class="read"><b>分子・分母の \(+1\)</b> … 観測値そのものを帰無分布の1標本として数える。これを入れないと p 値が 0 になりうる<br>
+            <b>\(B\)</b> … 並べ替え回数</p>
+        </div>
+        <div class="sub">
+            <h3>下限は \(1/(B+1)\) である</h3>
+            <p>分子は最小でも 1 なので、\(\hat{p}\) は \(1/(B+1)\) より小さくなれない。\(B=1999\) なら 0.0005、\(B=9999\) なら 0.0001 が下限である。<b>下限に張り付いた p 値は点推定として読んではいけない</b>。それは「並べ替えのなかに観測値を超えるものが1つもなかった」以上のことを意味せず、真の p が 0.0004 なのか \(10^{-8}\) なのかを区別しない。小さい p を主張したい場合は \(B\) を増やす以外に方法がない。</p>
+        </div>
+        <div class="sub">
+            <h3>実装上の既定値と実際の値</h3>
+            <p>小野原の <code>mantel_test</code> は既定を \(B=9999\) としているが、報告された実行はいずれも <code>perms=1999</code> で呼ばれている。乱数の種は <code>seed=42</code> で固定されており、同じ入力なら同じ p 値が再現する。下の結果表の 0.0005 は、この \(B=1999\) における下限そのものである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>部分Mantel検定と、その限界</h2>
+        <p class="q">第3の行列の影響を除く。ただし、この拡張には正当性への疑義がある。</p>
+        <p class="body">
+        3つ目の距離行列 \(D^{(3)}\) があるとき、その効果を取り除いた対応を測りたくなる。発想は偏相関と同じで、上三角ベクトル \(v_1, v_2, v_3\) について次を計算する。
+        </p>
+        <div class="eq">
+            <div class="lbl">偏相関を統計量にする</div>
+            \[ r_{12\cdot 3} \;=\; \frac{r_{12} - r_{13}\,r_{23}}{\sqrt{\bigl(1-r_{13}^{2}\bigr)\bigl(1-r_{23}^{2}\bigr)}} \]
+            <p class="read">帰無分布は、\(D^{(1)}\) と \(D^{(3)}\) を固定したまま \(D^{(2)}\) だけを行・列同時に並べ替えて作る。p 値の数え方は単純 Mantel と同じ。</p>
+        </div>
+        <div class="warn">
+            <h3>この拡張は、名目水準を守らないことが報告されている</h3>
+            <p>部分 Mantel 検定は、とくに<b>行列に空間的自己相関があるとき</b>に第一種の誤りが名目水準を超える。Raufaste &amp; Rousset (2001) は p 値が第一種の誤りを表さない例を示し、Guillot &amp; Rousset (2013) は単純 Mantel と部分 Mantel の双方について誤り率の増大を示したうえで、部分 Mantel が空間的自己相関の効果を補正できていないと論じている。系統比較の文脈でも同様の指摘がある（Harmon &amp; Glor 2010）。</p>
+            <p>したがって、部分 Mantel の結果は<b>交絡を統制した証拠としては読めない</b>。上の偏相関の式が想定している「\(v_3\) を線形に引き算すれば影響が消える」という前提は、距離行列の成分が空間的に相関している状況では満たされない。小野原の分析でもこの検定を併用しているが、位置づけは補助的な確認にとどまる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>この研究での使い方</h2>
+        <p class="q">感情・空間・テキストの3つの距離行列を作り、対応を比べる。</p>
+        <ol class="steps">
+            <li><b>感情データの集計</b>　ニッチ構築と環境選択に関する調査の回答（4,424行）を、場所 ID × 24 感情カテゴリの件数表に集計する。カテゴリは8基本感情それぞれに3段階の強度を与えたもの。</li>
+            <li><b>正規化</b>　複数回答のため場所ごとに総件数が異なる。各行の合計が 1 になるよう割合化して、件数の多寡が距離に混入しないようにする。</li>
+            <li><b>感情距離</b>　割合化した 50 × 24 の行列からコサイン距離を取り、\(D_{\text{emotion}}\)（50 × 50）を作る。</li>
+            <li><b>空間距離</b>　サブカテゴリの隣接関係をグラフとして定義し、その<b>最短路距離</b>を \(D_{\text{space}}\) とする。緯度経度から計算した地理距離ではなく、設計された近接構造である。</li>
+            <li><b>テキスト距離</b>　各場所の記述文を日本語 BERT（<code>cl-tohoku/bert-base-japanese-v2</code>、最大長 128）に通し、CLS ベクトルを L2 正規化したうえでコサイン距離を取って \(D_{\text{text}}\) とする。</li>
+            <li><b>検定</b>　3つの組み合わせについて単純 Mantel を、さらに第3の行列を条件づけた部分 Mantel を実行する。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>比較</th><th class="num">\(r\)</th><th class="num">\(p\)</th><th>読み方</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>感情 × 空間</td><td class="num">0.3595</td><td class="num">0.0005</td><td>p は下限に到達（\(B=1999\)）</td></tr>
+                <tr><td>感情 × テキスト</td><td class="num">0.0600</td><td class="num">0.4775</td><td>対応を認めない</td></tr>
+                <tr><td>テキスト × 空間</td><td class="num">0.1685</td><td class="num">0.0800</td><td>5%水準では有意でない</td></tr>
+                <tr><td>感情 × 空間 ｜ テキスト</td><td class="num">0.3551</td><td class="num">0.0005</td><td>部分Mantel。限界は前節のとおり</td></tr>
+                <tr><td>感情 × テキスト ｜ 空間</td><td class="num">−0.0007</td><td class="num">0.9940</td><td>部分Mantel</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値はリポジトリのノートブックに保存された実行結果をそのまま引用したもの。いずれも \(B=1999\)、<code>seed=42</code>、両側。</p>
+
+        <div class="sub">
+            <h3>距離行列の作り方が、結果そのものを決めている</h3>
+            <p>ここで注意すべきは、\(D_{\text{space}}\) が測定値ではなく<b>設計物</b>である点である。サブカテゴリの隣接をどう引くかで距離が変わり、感情との対応も変わる。地理座標に基づく距離を使えば別の値が出る。Mantel 検定が答えているのは「この定義の近さと、この定義の感情の似かたが対応するか」であって、それ以上ではない。</p>
+        </div>
+        <div class="sub">
+            <h3>テキストは感情を引き出した刺激そのものである</h3>
+            <p>回答者は場所の記述文を読んで感情を選んでいる。つまり \(D_{\text{text}}\) と \(D_{\text{emotion}}\) は独立な2つの測定ではなく、後者は前者を刺激として生成されている。テキストを条件づけた部分 Mantel を併用しているのは、この構造を踏まえた確認だと位置づけられる。</p>
+        </div>
+
+        <div class="warn">
+            <h3>実装が黙って誤った値を返した例</h3>
+            <p>段階ごとに10地点へ分割して検定した最初の試行で、一部の段階の \(p\) が下限 0.0005 と表示された。実際には \(D_{\text{space}}\) の部分行列が<b>すべて同じ値</b>になっており、Pearson 相関の分母が 0 で \(r\) は定義できていなかった。<code>pearsonr</code> は <code>ConstantInputWarning</code> を出して <code>NaN</code> を返していたが、<code>mantel_test</code> がそれを検出せず、比較 <code>abs(r) >= abs(r_obs)</code> が常に偽となった結果、計数が 0 のまま下限の p 値が出力されていた。</p>
+            <p>小野原はこれを検出し、サブカテゴリの隣接グラフから最短路距離を作り直して部分行列が定数にならないようにしたうえで、段階ごとの検定をやり直している。<b>下限に張り付いた p 値は、強い証拠のしるしであると同時に、計算が壊れているしるしでもある</b>。並べ替え検定では、統計量が定義できているかを先に確かめる必要がある。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        分析スクリプトとデータは公開されている。ノートブックは前処理から検定・可視化までを一続きに実行する構成で、<code>pivot_table_id.csv</code>（場所 ID × 感情件数）と <code>place_subcategory_neighbors.csv</code>（サブカテゴリの隣接定義）を入力に取る。
+        </p>
+        <ul class="refs">
+            <li>小野原彩香「GISA2025 Mantel Proximity Analysis」<a href="https://github.com/aonoa68/GISA2025_mantel_analysis" target="_blank" rel="noopener noreferrer">github.com/aonoa68/GISA2025_mantel_analysis</a>（2025-10-24 公開）　DOI: <a href="https://doi.org/10.5281/zenodo.17432950" target="_blank" rel="noopener noreferrer">10.5281/zenodo.17432950</a></li>
+            <li>ライセンス：コードは MIT License、データおよび文書は <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>。</li>
+            <li>関連する発表：2025年度 地理情報システム学会（GISA 2025）「場所と感情の地理的相関分析」</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Mantel, N. (1967) The detection of disease clustering and a generalized regression approach. <i>Cancer Research</i>, 27(2), 209–220.</li>
+                <li>Raufaste, N. &amp; Rousset, F. (2001) Are partial Mantel tests adequate? <i>Evolution</i>, 55(8), 1703–1705. <a href="https://doi.org/10.1111/j.0014-3820.2001.tb00689.x" target="_blank" rel="noopener noreferrer">doi:10.1111/j.0014-3820.2001.tb00689.x</a></li>
+                <li>Harmon, L. J. &amp; Glor, R. E. (2010) Poor statistical performance of the Mantel test in phylogenetic comparative analyses. <i>Evolution</i>.</li>
+                <li>Guillot, G. &amp; Rousset, F. (2013) Dismantling the Mantel tests. <i>Methods in Ecology and Evolution</i>. <a href="https://doi.org/10.1111/2041-210x.12018" target="_blank" rel="noopener noreferrer">doi:10.1111/2041-210x.12018</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>Mantel 検定は、パラメータを固定した値と見て、<b>標本のほうを作り替えたときの統計量のばらつき</b>で判断する。分布の形は仮定せず、帰無分布を並べ替えで直接作る点が特徴で、正規分布や \(t\) 分布を持ち出さない。評価しているのは「手続きを繰り返したときの当たり率」であり、<a href="../">7つの観点を式で読む</a>の<b>観点2（頻度論）</b>にそのまま重なる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて公開リポジトリの実行結果から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-19 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

@@ -243,6 +243,7 @@
 <div class="sub"><h3>推定のばらつきは情報量で決まる</h3><div class="eq" style="--w:#8a464f">\[I(\theta) = -\,\mathbb{E}\!\left[\frac{\partial^2 \ell}{\partial \theta^2}\right], \qquad \sqrt{n}\,(\hat{\theta}-\theta) \;\xrightarrow{d}\; N\!\left(0,\, I(\theta)^{-1}\right)\]<p class="read">二階微分（曲がり具合）が大きいほど、推定は安定する。信頼区間はここから出る。</p></div></div>
 <div class="sub"><h3>正規誤差を仮定すると幾何と一致する</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">対数を取ると二乗和の最小化そのものになる。最小二乗と最尤が同じ答えを出すのはこのため。</p></div></div><div class="sub"><h3>頻度論が評価するのは、手続きの当たり率</h3><div class="eq" style="--w:#8a464f">\[ \Pr\big(\theta \in \mathrm{CI}(X_1,\dots,X_n)\big) = 0.95 \qquad \text{（標本を取り直したときの割合）} \]<p class="read">確率がかかっているのは区間のほうで、\(\theta\) は動かない。検定の第一種の誤りも、同じく「手続きを繰り返したときの割合」として定義される。</p></div></div>
 <p class="where" style="--w:#8a464f">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第7回</a>、<a href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer">統計学Ⅱ 第7回</a></p>
+<p class="where" style="--w:#8a464f">研究で使う手法：<a href="mantel/">Mantel検定 ―― 距離行列どうしの対応を、行と列の同時並べ替えで検定する</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
         <h2><span class="no">3</span>ベイズ</h2>
