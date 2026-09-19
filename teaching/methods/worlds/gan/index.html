@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>敵対的生成ネットワークによる文化動態のモデリング — 小野原彩香 | Teaching</title>
+    <meta name="description" content="生成器と識別器の競い合いに、理論駆動の特徴報酬を時間の関数で配分する λ スケジューリング。WCTP2025 の論文と公開パッケージでは実装が異なるため、両者を分けて整理したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（ゲーム・敵対） */
+            --w:      #8a5a2f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e6c9a8; background:rgba(138,90,47,0.42); border:1px solid rgba(230,201,168,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(230,201,168,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf7f2; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf8f6; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">敵対的生成ネットワーク</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 6 ｜ <a href="../">ゲーム・敵対</a></span>
+        <h1>Adversarial <span>Cultural Dynamics</span></h1>
+        <p class="lead">生成する側と見分ける側の<b>競い合い</b>に、理論のほうから与えた特徴報酬を混ぜる。その配分を時間の関数 \(\lambda(t)\) で動かす、というのがこの手法の骨格です。<br>
+        小野原が WCTP2025 で報告した分析と、公開されているソフトウェアパッケージとでは<b>実装が異なります</b>。何が公開されていて何が公開されていないのかを含めて整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「環境の作り替えが進むと、そこで呼び起こされる感情はどう変わるか」を、生成モデルで問う。</p>
+        <p class="body">
+        ニッチ構築理論は、生物が環境を改変し、その改変が次世代の選択圧に影響する過程を扱う（Odling-Smee, Laland &amp; Feldman 2003）。人間では、火の使用・農耕・住居建築・都市形成・制度設計がその一形態とされる。小野原の研究は、この枠組みに<b>感情</b>を持ち込む。環境の作り替えの度合いが進むにつれて、その場所で呼び起こされる感情のパターンが変わるのではないか、という問いである。
+        </p>
+        <p class="body">
+        ここで敵対的生成ネットワークを使う理由は、単に「生成できるから」ではない。この手法が表現しようとしているのは、<b>2つの圧力の釣り合い</b>である。ひとつは「その環境に適応しているように見えるか」という圧力で、これを識別器が担う。もうひとつは「理論が望ましいとする文化的・感情的特徴に近いか」という圧力で、これを外から与えた評価器が担う。文化進化の理論が語る探索と定着のせめぎ合いを、この2つの配分として書き下せないか、というのが設計の動機である。
+        </p>
+        <p class="body">
+        ただし、この「書き下せないか」という設計の動機と、それが実証データの機構を捉えているかどうかは別の話である。後者については第7節で扱う。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― 2つの系譜が合流している</h2>
+        <p class="q">計算の側は機械学習から、問いの側は進化生物学から来ている。</p>
+
+        <div class="sub">
+            <h3>計算の側：敵対的生成ネットワーク</h3>
+            <p>生成器 \(G\) と識別器 \(D\) を同時に訓練し、\(G\) は \(D\) を誤らせることを目指し、\(D\) は本物と偽物を見分けることを目指す。この枠組みは Goodfellow ら (2014) が提案したもので、2人零和ゲームの極小極大問題として定式化される。片方の改善がもう片方の悪化になる構造が、そのまま目的関数に現れる。</p>
+        </div>
+
+        <div class="sub">
+            <h3>問いの側：ニッチ構築理論と文化進化理論</h3>
+            <p>生物が環境を改変し、その改変が選択圧を変えるという見方は Odling-Smee ら (2003) が体系化した。文化を継承と変異と選択を持つ過程として扱う枠組みは Boyd &amp; Richerson (1985) に遡り、Henrich (2016) は累積的文化進化が人間の成功の鍵であると論じている。社会的学習の環境そのものが世代を越えて豊かになる過程は Sterelny (2012) が「進化した徒弟」として描いた。これらを含む拡張進化総合説の整理は Laland ら (2015) にある。</p>
+        </div>
+
+        <div class="sub">
+            <h3>探索と目的のせめぎ合い</h3>
+            <p>パッケージの側が明示的に参照しているのは、目的関数に向かって進むことが かえって目的への到達を妨げうる、という議論である（Lehman &amp; Stanley 2011）。目標を定めた最適化と、開かれた探索とのあいだの時間的な取り合いを、パラメータとして外に出すというのが λ スケジューリングの発想にあたる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>観点6「ゲーム・敵対」との対応</h2>
+        <p class="q">片方が良くなると、もう片方が困る。その釣り合いとして学習を捉える。</p>
+        <div class="eq">
+            <div class="lbl">敵対的生成ネットワークの目的関数</div>
+            \[\min_{G}\ \max_{D}\ V(D,G) \;=\; \mathbb{E}_{x\sim p_{\text{data}}}\big[\log D(x)\big] \;+\; \mathbb{E}_{z\sim p_z}\big[\log\big(1-D(G(z))\big)\big]\]
+            <p class="read"><b>\(G\)</b> … 生成する側。本物らしい偽物を作りたい<br>
+            <b>\(D\)</b> … 見分ける側。本物と偽物を区別したい<br>
+            <b>\(\min\max\)</b> … 片方の最善手に対して、もう片方が最善手を返す。釣り合った点が解</p>
+        </div>
+        <div class="sub">
+            <h3>この研究が付け加えているもの</h3>
+            <p><a href="../">7つの観点を式で読む</a>の観点6は、この極小極大の形そのものを扱っている。小野原の研究が付け加えているのは、<b>この敵対的な圧力を唯一の圧力にしない</b>という点である。理論の側から「望ましい」と定めた特徴への報酬をもうひとつ用意し、両者の配分を時間とともに動かす。次節がその定式化にあたる。</p>
+            <p>なお観点6には、最悪の場合に備える分布頑健最適化や、音声のディープフェイクにおける生成と検出の追いかけっこも並べてある。いずれも「片方の改善が他方の悪化になる」という同じ構造を持つ。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>λ スケジューリングの定式化</h2>
+        <p class="q">ここが中核である。2つの圧力の配分を、時間の関数として外に出す。</p>
+        <div class="eq">
+            <div class="lbl">配分つきの損失（公開パッケージの実装）</div>
+            \[ L(t) \;=\; \bigl(1-\lambda(t)\bigr)\, L_{\mathrm{adv}} \;-\; \lambda(t)\,\beta\,R \]
+            <p class="read"><b>\(L_{\mathrm{adv}}\)</b> … 敵対的損失。小さいほど良いものとして扱う<br>
+            <b>\(R\)</b> … 理論駆動の特徴報酬。大きいほど良い。だから符号が負で入る<br>
+            <b>\(\beta\)</b> … 報酬項のスケール調整。既定値は 0.10<br>
+            <b>\(\lambda(t)\)</b> … \([0,1]\) の値。0 に近いほど敵対的学習を重視し、1 に近いほど特徴報酬を重視する</p>
+        </div>
+        <p class="body">
+        \(\lambda\) が 0 から 1 へ動くことで、序盤は「その環境に適応しているように見えるか」を、後半は「理論が望ましいとする特徴に近いか」を重視する、という時間的な切り替えが起きる。探索から定着へ、という文化進化の語り口を、損失関数のなかの配分として書いたものだと読める。
+        </p>
+
+        <div class="sub">
+            <h3>3つのスケジュールの形</h3>
+            <p><code>scheduler.py</code> は総ステップ数 \(T\) と到達割合 \(p\) から \(t^{\ast} = \lfloor pT \rfloor\) を定め、窓幅 \(w = \lfloor p_w T \rfloor\) を使って3つの形を与える。</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">linear ―― \(t^{\ast}\) までに線形で 1 に達する</div>
+            \[ \lambda(t) \;=\; \min\!\left(1,\; \frac{t}{t^{\ast}}\right) \]
+        </div>
+        <div class="eq">
+            <div class="lbl">logistic ―― シグモイドで滑らかに移る</div>
+            \[ \lambda(t) \;=\; \frac{1}{1+\exp\!\bigl(-k\,(t-t_0)\bigr)}, \qquad k = \frac{s}{t^{\ast}}, \quad t_0 = t^{\ast} - \frac{w}{2} \]
+            <p class="read"><b>\(s\)</b> … 鋭さ。既定値は 12.0。大きいほど遷移が急になる</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">delayed ―― しばらく 0 のまま、短い窓で立ち上がる</div>
+            \[ \lambda(t) \;=\; \begin{cases} 0 & (t &lt; t^{\ast}-w) \\[4pt] \dfrac{t-(t^{\ast}-w)}{w} & (t^{\ast}-w \le t &lt; t^{\ast}) \\[6pt] 1 & (t \ge t^{\ast}) \end{cases} \]
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>パラメータ</th><th class="num">既定値</th><th>意味</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>total_steps</code> \(T\)</td><td class="num">400</td><td>総ステップ数</td></tr>
+                <tr><td><code>reach_portion</code> \(p\)</td><td class="num">0.30</td><td>\(\lambda\) を 1 に到達させるまでの割合</td></tr>
+                <tr><td><code>window_portion</code> \(p_w\)</td><td class="num">0.05</td><td>立ち上がりの窓幅（delayed / logistic）</td></tr>
+                <tr><td><code>sharpness</code> \(s\)</td><td class="num">12.0</td><td>logistic の鋭さ</td></tr>
+                <tr><td><code>beta</code> \(\beta\)</td><td class="num">0.10</td><td>特徴報酬のスケール</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">公開パッケージ <code>placemotiongan</code> の既定値。<code>scheduler.py</code> と <code>losses.py</code> の定義から引用した。</p>
+
+        <div class="sub">
+            <h3>スケジュールの形を変えることが、この研究の操作である</h3>
+            <p>3つの形はいずれも最終的に \(\lambda=1\) に達するが、そこへ至る道筋が違う。<code>analyses/sensitivity.py</code> は同じ乱数の種のもとで3条件を走らせ、結果を1つの表にまとめる。何を測っているかというと、<b>制約をいつ掛けるかが学習の道筋を変えるか</b>である。到達点ではなく途中の形を操作変数にしている点が、このパッケージの主張にあたる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>論文の側の実装（WCTP2025）</h2>
+        <p class="q">150名の調査データと、段階ラベルで条件づけた生成。</p>
+        <p class="body">
+        論文が報告しているのは、実証データの収集と、それに合わせて作られた条件付き敵対的生成ネットワークによる分析である。ニッチ構築の進み具合を5段階に分けた枠組みが土台になっている。
+        </p>
+        <ol class="steps">
+            <li><b>段階モデルの設定</b>　自然段階（手つかずの環境）、第一段階（単純な生存戦略）、第二段階（学習・定型化された行動）、第三段階（社会的協力）、第四段階（計画的・意図的な環境改変）の5段階を置く。この枠組みの位置づけには注意が要る（第7節）。</li>
+            <li><b>調査</b>　成人男女150名（20〜50歳）、実施日 2025年6月2日。評価対象は文化進化5段階×各10場所＝計50場所。</li>
+            <li><b>感情評価</b>　プルチックの感情の輪に基づく8基本感情それぞれに3段階の強度を与え、24カテゴリとする。性格特性は TIPI-J による Big Five 5因子で測定する。</li>
+            <li><b>特徴の定義</b>　文化的特徴4つ（明確性・協調性・革新性・伝達可能性）と感情的特徴4つ（喜び反応・恐れ反応・信頼構築・期待）の計8次元。評価器は重み付き和で、文化側の重みの合計が 0.6、感情側が 0.4 になるよう設定されている。</li>
+            <li><b>条件付き生成</b>　128次元の雑音ベクトルに、段階の 5 次元 one-hot を連結した 133 次元を生成器の入力とする。生成器は残差結合と バッチ正規化を持つネットワーク、識別器は<b>段階ごとに5つ</b>用意し、スペクトル正規化を掛ける。</li>
+            <li><b>学習</b>　400世代、バッチサイズ 64。\(\lambda\) を 0.000 から 1.000 へ動かし、120世代かけて遷移させる。全特徴は Z スコア正規化のうえ tanh を通す。</li>
+        </ol>
+
+        <div class="sub">
+            <h3>報告されている結果</h3>
+            <p>実証データの側では、段階が進むほど恐れ・嫌悪が抑制され、信頼・喜びが高まる傾向が報告されている。第四段階では期待が突出し、感情の多様性（エントロピー）が最も低くなる。論文はこれを「感情の収束」と呼び、高度に管理された環境での新たなストレス形態を示唆するものと位置づけている。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>生成された文化的特徴</th><th class="num">初期</th><th class="num">最終世代</th><th>論文の記述</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>clarity（明確性）</td><td class="num">0.245</td><td class="num">0.678</td><td>増加</td></tr>
+                <tr><td>cooperation（協調性）</td><td class="num">0.312</td><td class="num">0.723</td><td>増加</td></tr>
+                <tr><td>innovation（革新性）</td><td class="num">0.456</td><td class="num">0.534</td><td>微増</td></tr>
+                <tr><td>fear_response（恐れ反応）</td><td class="num">0.634</td><td class="num">0.289</td><td>減少</td></tr>
+                <tr><td>trust_building（信頼構築）</td><td class="num">0.278</td><td class="num">0.687</td><td>増加</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">論文 3.4.2「文化的特徴の進化軌跡」に記載された値をそのまま引用した。生成モデルの出力であって、実証データの観測値ではない。</p>
+
+        <div class="warn">
+            <h3>識別器損失の数値が、資料によって食い違っている</h3>
+            <p>論文本文 3.4.3 は、段階ごとの識別器損失（低いほど適応的）を<b>第二段階 0.23（最も適応的）</b>、第四段階 0.31、自然段階 0.45（最も非適応的）としている。一方、同じ研究に付属する構成図 <code>gan.html</code> には <b>first_stage: 0.2511（best adapted）</b> と書かれており、どの段階が最も適応的かが一致しない。</p>
+            <p>どちらが最終版の結果なのかは、手元の資料からは判定できない。ここでは論文本文の記載を採り、食い違いがある事実をそのまま記す。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>公開パッケージが提供しているもの</h2>
+        <p class="q">ここは論文の実装ではない。λ スケジューリングの枠組みだけを取り出したものである。</p>
+
+        <div class="warn">
+            <h3>パッケージの訓練ループは、ネットワークを学習させていない</h3>
+            <p><code>placemotiongan/train.py</code> の <code>simulate_training</code> は、敵対的損失と特徴報酬を<b>確率的な減衰と上昇の式で生成している</b>。敵対的損失は 0.80 付近から始めて毎ステップ 0.35% ずつ減衰させ、正規乱数の雑音を加える。特徴報酬は 0.10 付近から始めて飽和しながら上昇させる。コード内のコメントにも「制御された確率性のもとでダミーの adv_loss と feature_reward を生成する」と明記されている。</p>
+            <p><code>model.py</code> には生成器と識別器のクラスが定義されているが、<b>この訓練ループからは呼ばれていない</b>。つまりパッケージを実行して得られる曲線は、λ スケジュールが損失の配分をどう動かすかを示すものであって、モデルが何かを学習した結果ではない。</p>
+        </div>
+
+        <div class="sub">
+            <h3>では何のための公開物か</h3>
+            <p>パッケージ自身の説明は一貫している。「大規模なニューラルネットワークの訓練に焦点を当てるのではなく、λ スケジューリングという制御可能な機構を通じて、敵対的圧力と構造化された特徴の出現とのあいだのトレードオフを明示的にモデル化することを重視する」と述べている。提供されているのは<b>時間構造を第一級の部品として扱う枠組み</b>であり、決定論的に再現できる形でその挙動を観察するための道具立てである。</p>
+            <p>したがってこのパッケージは、論文の分析を再現するものではない。両者は λ スケジューリングという同じ着想を共有するが、実装は別物である。</p>
+        </div>
+
+        <div class="warn">
+            <h3>損失の符号が、資料によって違う</h3>
+            <p>パッケージの <code>losses.py</code> は \(L = (1-\lambda)L_{\mathrm{adv}} - \lambda\beta R\) と、報酬項を<b>引く</b>形で書いている。損失は小さいほど良いので、報酬が大きいほど損失が下がるという整合的な向きである。一方 <code>gan.html</code> の構成図には <code>Loss = λ×emotion_reward + (1-λ)×adv_loss</code> と、報酬を<b>足す</b>形で、しかも \(\beta\) なしで書かれている。</p>
+            <p>式として両立しないため、ここではパッケージの実装を引用した。図の側は説明のための簡略表記か、あるいは論文側の実装が別の符号規約を採っている可能性がある。いずれにせよ、公開されているコードから確認できるのは前者だけである。</p>
+        </div>
+
+        <div class="sub">
+            <h3>実行結果は公開されていない</h3>
+            <p>どちらのリポジトリにも、CSV ログや図といった実行結果は保存されていない。したがってこのページには、パッケージ側の出力数値を一切記載していない。書けるのは既定のパラメータ値と、コードから読み取れる式だけである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>限界</h2>
+        <p class="q">この手法で言えないこと。4点ある。</p>
+
+        <div class="warn">
+            <h3>1. 段階モデルは仮説的な枠組みである</h3>
+            <p>5段階の区分について、論文自身が「仮説的五段階モデル」と呼び、「段階モデルそのものは先行研究で明示されていない」と述べている。既存理論（ニッチ構築理論・文化進化理論・協力行動の進化論）との整合性は主張されているが、<b>実証によって確認された段階区分ではない</b>。段階ラベルで条件づけた生成も、分析で得られた段階差も、この枠組みを前提として初めて意味を持つ。</p>
+        </div>
+
+        <div class="warn">
+            <h3>2. 説明文バイアス ―― 回答者は場所を見ていない</h3>
+            <p>論文 4.3.1 が方法論的限界として挙げている点である。BERT による分析の結果、<b>喜び感情の 65% がテキスト説明に依存し、恐れ感情の 43% がテキストの影響を受ける</b>と報告されている。</p>
+            <p>回答者は実際の場所を訪れたのではなく、場所の説明文を読んで感情を選んでいる。したがって測定されたのは「場所が呼び起こす感情」ではなく、少なくとも部分的には「その説明文が呼び起こす感情」である。段階ごとの感情パターンの差が、環境の作り替えの度合いによるものなのか、段階ごとに書き分けられた説明文の文体によるものなのかを、このデータは分離できない。論文の今後の展開に VR/AR を用いた実体験との比較検証が挙げられているのは、この限界に対応するものである。</p>
+        </div>
+
+        <div class="warn">
+            <h3>3. パターンの再現は、機構の一致を意味しない</h3>
+            <p>論文は、生成された感情パターンが実証データと高い一致を示したと述べている。しかし<b>生成モデルが観測パターンを再現できることは、その生成過程が現実の文化進化の機構と同じであることを意味しない</b>。十分な自由度を持つモデルは、異なる機構からでも同じ分布を作れる。ここで確認されたのは「この定式化のもとで、このパターンを出すことが可能である」という存在の主張であって、「文化進化が実際にこの機構で進む」という主張ではない。</p>
+            <p>まして、評価器の特徴重みは分析者が設定した値である。何を「望ましい文化的特徴」とするかを先に決めたうえで、その方向へ生成物を動かす報酬を与えている以上、生成物がその方向へ動くこと自体は結果ではなく設計である。</p>
+        </div>
+
+        <div class="warn">
+            <h3>4. 公開されているものと、報告されているものが違う</h3>
+            <p>第6節のとおり、公開パッケージはシミュレーションであり、論文の実験を再現しない。論文側の実装コード（段階別識別器、残差生成器、評価器）は公開リポジトリに含まれていない。<b>報告された数値を第三者が検証する手段は、現時点では提供されていない</b>。この点は、再現可能性を掲げたパッケージが併存しているぶん、かえって誤解を招きやすい。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>出典とデータ</h2>
+        <p class="body">
+        論文は WCTP 2025 の予稿集に収録されている。ソフトウェアは2つのリポジトリで公開されており、<code>cultural-dynamics-gan</code> のほうがパッケージとして整理された版にあたる。
+        </p>
+        <ul class="refs">
+            <li>Onohara, A. &amp; Ouchi, H. (2026) GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction: An Integrated Empirical Approach. <i>Proceedings of the Workshop on Computation: Theory and Practice (WCTP 2025)</i>, Atlantis Press. DOI: <a href="https://doi.org/10.2991/978-94-6239-638-8_25" target="_blank" rel="noopener noreferrer">10.2991/978-94-6239-638-8_25</a></li>
+            <li>小野原彩香「PlaceEmotion-GAN」<a href="https://github.com/aonoa68/cultural-dynamics-gan" target="_blank" rel="noopener noreferrer">github.com/aonoa68/cultural-dynamics-gan</a>（パッケージ版、MIT License）</li>
+            <li>小野原彩香「PlaceEmotion-GAN」<a href="https://github.com/aonoa68/PlaceEmotionGAN" target="_blank" rel="noopener noreferrer">github.com/aonoa68/PlaceEmotionGAN</a>　DOI: <a href="https://doi.org/10.5281/zenodo.17401003" target="_blank" rel="noopener noreferrer">10.5281/zenodo.17401003</a></li>
+            <li>調査票：<a href="https://github.com/aonoa68/niche_construction_survey" target="_blank" rel="noopener noreferrer">niche_construction_survey</a>（ニッチ構築と協力行動の環境影響を測る調査項目）</li>
+            <li>科学研究費補助金 若手研究「進化的アプローチによる音声と場所の感情的関係の解明」（課題番号 JP24K16071、2024〜2026年度）</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Goodfellow, I., Pouget-Abadie, J., Mirza, M., Xu, B., Warde-Farley, D., Ozair, S., Courville, A. &amp; Bengio, Y. (2014) Generative Adversarial Nets. <i>Advances in Neural Information Processing Systems</i>, 27, 2672–2680.</li>
+                <li>Lehman, J. &amp; Stanley, K. O. (2011) Abandoning Objectives: Evolution Through the Search for Novelty Alone. <i>Evolutionary Computation</i>, 19(2), 189–223. <a href="https://doi.org/10.1162/EVCO_a_00025" target="_blank" rel="noopener noreferrer">doi:10.1162/EVCO_a_00025</a></li>
+                <li>小塩真司・阿部晋吾・Pino Cutrone (2012) 日本語版Ten Item Personality Inventory（TIPI-J）作成の試み. <i>パーソナリティ研究</i>, 21(1), 40–52.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>理論の文献</h3>
+            <ul class="refs">
+                <li>Odling-Smee, F. J., Laland, K. N. &amp; Feldman, M. W. (2003) <i>Niche Construction: The Neglected Process in Evolution</i>. Princeton University Press.</li>
+                <li>Boyd, R. &amp; Richerson, P. J. (1985) <i>Culture and the Evolutionary Process</i>. University of Chicago Press.</li>
+                <li>Sterelny, K. (2012) <i>The Evolved Apprentice: How Evolution Made Humans Unique</i>. MIT Press.</li>
+                <li>Laland, K. N., Uller, T., Feldman, M. W., Sterelny, K., Müller, G. B., Moczek, A., Jablonka, E. &amp; Odling-Smee, J. (2015) The extended evolutionary synthesis: its structure, assumptions and predictions. <i>Proceedings of the Royal Society B</i>, 282(1813), 20151019. <a href="https://doi.org/10.1098/rspb.2015.1019" target="_blank" rel="noopener noreferrer">doi:10.1098/rspb.2015.1019</a></li>
+                <li>Henrich, J. (2016) <i>The Secret of Our Success: How Culture Is Driving Human Evolution, Domesticating Our Species, and Making Us Smarter</i>. Princeton University Press.</li>
+            </ul>
+            <p style="font-size:0.84em;color:var(--muted);line-height:1.85;margin-top:6px">論文の参考文献欄には Tomasello (2014) <i>A Natural History of Human Cooperation</i>, MIT Press. の記載があるが、この書名の書誌を確認できなかった。2014年の同著者の著作は <i>A Natural History of Human Thinking</i>（Harvard University Press）である。確認できなかったため、ここには挙げていない。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>敵対的生成ネットワークは、<b>競い合う二者の釣り合い</b>として学習を定式化する。生成器が良くなると識別器が困り、識別器が良くなると生成器が困る。解は、どちらも一方的には改善できなくなった点である。<a href="../">7つの観点を式で読む</a>の<b>観点6（ゲーム・敵対）</b>がそのまま当てはまる。<br>
+        ただしこの研究は、敵対的な圧力に理論駆動の報酬を混ぜ、その配分を時間で動かしている。純粋な極小極大ではなく、<b>ゲームの外から与えた目的関数との合成</b>になっている点が、教科書的な設定との違いである。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値は論文および公開コードに記載された値のみを引用し、どちらの資料から来たものかを本文中に明示しています。推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>
