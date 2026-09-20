@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>対応分析 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="分割表の行と列を同じ平面に布置する対応分析について、カイ二乗距離のもとでの特異値分解という定式化、主成分分析との違い、説明率と軸の解釈の限界を、雑誌『行動計量学』の投稿論文分析と滋賀・岐阜県境の方言調査の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">対応分析</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（最小二乗）</a></span>
+        <h1>Correspondence <span>Analysis</span></h1>
+        <p class="lead">分割表の<b>行と列を同じ平面に置く</b>手法です。カイ二乗距離のもとでの特異値分解にあたり、主成分分析と同じ「ずれの二乗和を最小にする」枠組みに属します。違いは距離の測り方にあります。<br>
+        小野原が学術誌の投稿論文分析（2014）と、滋賀・岐阜県境の方言調査（2015）で用いた実装に即して、何が読めて何が読めないのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「どの対象が、どのカテゴリと結びついているか」を、1枚の図にする。</p>
+        <p class="body">
+        手元にあるのは \(I \times J\) の分割表 \(N\) である。行は対象（論文、回答者）、列はカテゴリ（名詞、方言項目）で、各セルには度数が入っている。問いは、<b>どの行とどの列が結びついているか</b>という一点にある。
+        </p>
+        <p class="body">
+        素朴には、行ごとに使用率を出して並べればよさそうに見える。しかし列が24個も30個もあると、表を眺めて全体の構造を掴むことはできない。次元を落として図にしたい。ここで主成分分析を使うこともできるが、主成分分析が布置するのは行か列のどちらか一方である。<b>対応分析は、行と列を同じ平面に同時に置く</b>。「この論文はこの語を特徴的に使う」「この世代はこの方言を使う」という結びつきを、点と点の近さとして読めるようにする。
+        </p>
+        <p class="body">
+        これが、小野原の2つの研究で対応分析が中核に据えられている理由である。論文分析では30編の論文と24語を、方言調査では809人の回答者と調査項目を、それぞれ1枚の図に載せている。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源</h2>
+        <p class="q">分割表の連関を相関に読み替えるという発想から、フランスのデータ解析へ。</p>
+        <p class="body">
+        出発点は Hirschfeld (1935) である。分割表の行と列にそれぞれ数値を割り当て、その相関が最大になるように選ぶ、という問題を立てた。今日の言葉で言えば、正準相関の離散版にあたる。
+        </p>
+        <p class="body">
+        これを体系化したのが Benzécri (1973) で、<i>L'Analyse des Correspondances</i> としてフランスのデータ解析学派の中心的な道具になった。モデルを立てて検定するのではなく、データの幾何構造をそのまま図にするという姿勢が特徴で、英語圏には Greenacre の一連の仕事を通じて広まった。日本語では足立・村上 (2011) が主成分分析からの連続として整理しており、小野原・矢野 (2014) もこの本を引いて対応分析を定義している。
+        </p>
+        <div class="sub">
+            <h3>論文中での定義</h3>
+            <p>小野原・矢野 (2014) は対応分析を「同一対象群に対して名義尺度によって観測された変量が複数個得られた際に、対象間の近さ遠さ、各変量に属するカテゴリ間の近さ遠さ、対象と各カテゴリ間の近さ遠さの関係を低次元空間で同時に表現する視覚化法」と述べている。<b>3種類の近さを同時に扱う</b>という点に力点が置かれている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">カイ二乗距離のもとでの特異値分解。重み付きの最小二乗近似である。</p>
+        <p class="body">
+        総度数を \(n\) として対応行列 \(P = N/n\) を作る。行和を \(\mathbf{r}\)、列和を \(\mathbf{c}\) とし、\(D_r = \mathrm{diag}(\mathbf{r})\)、\(D_c = \mathrm{diag}(\mathbf{c})\) と書く。対応分析が分解するのは、<b>行と列が独立だとしたときからのずれ</b>である。
+        </p>
+        <div class="eq">
+            <div class="lbl">標準化した残差を特異値分解する</div>
+            \[ S \;=\; D_r^{-1/2}\bigl(P - \mathbf{r}\mathbf{c}^{\top}\bigr)D_c^{-1/2} \;=\; U\,\Sigma\,V^{\top} \]
+            <p class="read"><b>\(\mathbf{r}\mathbf{c}^{\top}\)</b> … 行と列が独立なら期待される割合<br>
+            <b>\(D_r^{-1/2},\,D_c^{-1/2}\)</b> … 周辺度数による重み付け。まれな行・列ほど大きく扱う<br>
+            <b>\(\Sigma\)</b> … 特異値 \(\sigma_1 \ge \sigma_2 \ge \cdots\)。各軸の「慣性」の平方根</p>
+        </div>
+        <div class="sub">
+            <h3>全慣性はカイ二乗統計量そのもの</h3>
+            <div class="eq">
+                \[ \sum_{k}\sigma_k^{2} \;=\; \lVert S \rVert_F^{2} \;=\; \frac{\chi^{2}}{n} \]
+                <p class="read">独立からのずれの総量が、そのまま分解の対象になっている。各軸の説明率 \(\sigma_k^2 / \sum_l \sigma_l^2\) は、このずれのうち何割をその軸が拾ったかを表す。</p>
+            </div>
+        </div>
+        <div class="sub">
+            <h3>使っている距離はユークリッドではない</h3>
+            <div class="eq">
+                \[ d_{\chi^2}(i,i')^{2} \;=\; \sum_{j} \frac{1}{c_j}\left(\frac{p_{ij}}{r_i} - \frac{p_{i'j}}{r_{i'}}\right)^{2} \]
+                <p class="read">行を合計1のプロファイル \(p_{ij}/r_i\) に直してから比べる。各項を列の周辺割合 \(c_j\) で割るのがカイ二乗距離の定義であり、<b>ここが主成分分析との分かれ目</b>である。</p>
+            </div>
+        </div>
+        <div class="sub">
+            <h3>主成分分析との違いを式で並べる</h3>
+            <p>主成分分析が最大化するのは、ユークリッド距離のもとでの分散である。</p>
+            <div class="eq">
+                \[ \text{PCA:}\quad \max_{\lVert w \rVert = 1} w^{\top}\Sigma\, w \qquad\Longleftrightarrow\qquad \min_{\mathrm{rank}\le K} \lVert X - \hat{X} \rVert_F^{2} \]
+                \[ \text{CA:}\quad \min_{\mathrm{rank}\le K}\; \bigl\lVert D_r^{-1/2}(P - \mathbf{r}\mathbf{c}^{\top})D_c^{-1/2} - \hat{S} \bigr\rVert_F^{2} \]
+                <p class="read">どちらも<b>低ランク近似における二乗誤差の最小化</b>であり、解は特異値分解で与えられる（Eckart–Young）。違うのは、何を行列に入れ、どう重み付けするかだけである。<br>
+                主成分分析は生の値（あるいは標準化した値）を、対応分析は<b>独立からのずれを周辺度数で重み付けしたもの</b>を分解する。</p>
+            </div>
+            <p>したがって対応分析は、<a href="../">7つの観点</a>の<b>観点1（幾何）</b>にある「主成分分析も同じ発想」という節の、そのまた延長線上にある。設計行列と重みを取り替えただけで、最小にしているものは変わっていない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と仮定</h2>
+        <p class="q">入力は非負の度数表。行の大きさは消える。</p>
+        <ol class="steps">
+            <li><b>非負の度数であること</b>　分割表として意味を持つ必要がある。負の値や、意味の違う量が混在した表には使えない。</li>
+            <li><b>行プロファイル化</b>　各行を合計1に直してから比べるので、<b>行の大きさの違いは消える</b>。論文の長さ、回答者数の違いは距離に入らない。逆に言えば、量そのものを問いたいときには向かない。</li>
+            <li><b>軸は慣性の大きい順に出る</b>　第1軸は最も多くのずれを拾う方向として決まる。その軸が何を意味するかは、手法は答えない。</li>
+            <li><b>次元は連続的に落ちる</b>　\(K\) 次元に落としたときの損失は \(\sum_{k&gt;K}\sigma_k^2\) で決まる。2次元の図を見るということは、第3軸以降を捨てるということである。</li>
+        </ol>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">2つの研究で、行と列の中身がまったく違う。</p>
+
+        <div class="sub">
+            <h3>(A) 学術誌の投稿論文分析（2014）</h3>
+            <p>行が論文、列が名詞である。学際分野の学術誌で、どんな話題がどう移り変わってきたかを問う研究である。</p>
+        </div>
+        <ol class="steps">
+            <li><b>対象の選定</b>　J-STAGE 上で公開されている『行動計量学』481編のうち、題名・キーワード・本文に「方言」「言語」「音声」「テキストマイニング」が現れる30編を選んだ。</li>
+            <li><b>データクリーニング</b>　英語要旨、巻末の参考文献、文中の参考文献情報、数式、記号、所属欄の内容、図表の文字情報、謝辞を除外した。</li>
+            <li><b>形態素解析と集計</b>　MeCab で解析し、MTMiner で名詞の件数のみを集計した。異なり語数は6,096である。</li>
+            <li><b>長さの正規化</b>　論文ごとに長さが違うため、論文 \(d_i\) の総名詞数 \(n_i\) で割った \(tf_j/n_i\) を各語の頻度とした。</li>
+            <li><b>語の絞り込み</b>　この値の標準偏差 \(s\) を語ごとに計算し、大きい順に並べた。減少率が安定し始める<b>24語目</b>までを採用した。</li>
+            <li><b>対応分析</b>　30編 × 24語の表に対応分析をかけた。</li>
+            <li><b>主成分分析</b>　同じデータ構造に主成分分析もかけ、別の角度から見た。</li>
+        </ol>
+        <div class="eq">
+            <div class="lbl">語を選ぶのに使った標準偏差</div>
+            \[ s \;=\; \sqrt{\frac{1}{30-1}\sum_{i}\left(\frac{tf_j}{n_i} - \overline{\left(\frac{tf_j}{n_i}\right)}\right)^{2}} \]
+            <p class="read">論文ごとの使われ方の<b>ばらつきが大きい語</b>ほど、論文の違いをよく表すという考え方による。全語を入れると、どの論文にも等しく現れる語が軸を占めてしまう。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>手法</th><th class="num">第1軸</th><th class="num">第2軸</th><th class="num">第3軸</th><th class="num">第4軸</th><th>読めたこと</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>対応分析</td><td class="num">14.45%</td><td class="num">13.01%</td><td class="num">—</td><td class="num">—</td><td>論文がジャンルごとに固まる</td></tr>
+                <tr><td>主成分分析</td><td class="num">20.54%</td><td class="num">12.1%</td><td class="num">10.27%</td><td class="num">9.38%</td><td>第1主成分得点に時系列変化</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値は小野原・矢野 (2014) 本文から引用。対応分析は第3軸以降の説明率が論文に記載されていないため空欄とした。</p>
+
+        <div class="sub">
+            <h3>なぜ両方をかけたのか</h3>
+            <p>論文は「別の角度からデータを考察するために」同じ 30編 × 24語 のデータで主成分分析を行ったと述べている。結果として、<b>2つの手法は違うものを見せた</b>。</p>
+            <p>対応分析の図では、論文が年代別に固まっているように一見見える。しかし元の論文をジャンル（音声・社会調査・教育・心理・テキストマイニング・他）で分けて重ねると、年代ではなく<b>ジャンルごとに固まっている</b>ことが分かった。1995年・2003年・2011年に特集が組まれ、同じジャンルの論文が複数掲載されたことが、年代に見えた原因である。つまり対応分析が拾ったのは「分野によって使う語が違う」という構造だった。</p>
+            <p>一方、主成分分析では第1主成分得点を年代順に並べ直すことで、<b>2000年代に入ってから得点が負から正へ変化する</b>ことが見えた。第1主成分負荷量の正側は「評価」「性」「採点」「課題」「者」、負側は「語」「音素」「単語」「音声」「言語」で、教育に関する話題への移行と読める。この時系列変化は第2主成分以下では見られなかった。</p>
+            <p>ただし正確に言えば、この差は手法だけによるものではない。対応分析の結果は<b>ジャンル情報を重ねて</b>読み、主成分分析の結果は<b>得点を年代順に並べ直して</b>読んでいる。低次元に落とした座標をどの外部情報と突き合わせるかで、見えるものが変わっている。</p>
+        </div>
+
+        <div class="sub">
+            <h3>(B) 県境の方言調査（2015）</h3>
+            <p>行が回答者、列が方言項目である。滋賀県米原市と岐阜県関ケ原町という、近江と美濃の旧国境をまたぐ地域で、方言の使用と理解がどう分かれるかを問う調査である。</p>
+        </div>
+        <ol class="steps">
+            <li><b>調査</b>　質問紙他記式。米原市の3中学校区（柏原・河南・伊吹山）と関ケ原町の2中学校区（今須・関ケ原）の中学生と、その地域に在住する成人を対象とした。成人は親世代（60歳未満）と祖父母世代（60歳以上）に区分している。</li>
+            <li><b>規模</b>　調査実施人数は中学生544人・成人329人。有効回答は<b>809人</b>、有効回答率92.6%。調査時期は2015年11〜12月。</li>
+            <li><b>項目</b>　全40項目106語について、「知っているか／知らないか」と、使用・不使用を聞いた。</li>
+            <li><b>対応分析</b>　回答者と調査項目を同じ図に布置した（図2）。さらに中学校区別（図3）、東西対立項目（図4）、地域の類似関係（図6）、近江系・美濃系それぞれの使用率（図8・図9）、中学生の学校方言（図13）と、冊子全体で繰り返し用いられている。</li>
+        </ol>
+        <div class="sub">
+            <h3>読み取られたこと</h3>
+            <p>図2では、中学生・親世代・祖父母世代が図の左から右へきれいに分かれ、原点の上側に関ケ原町、下側に米原市の対象者が集中した。世代によって使うことばが違い、かつ両市町のあいだでも違うという結果である。調査項目のほうも、左側が若い世代で使われることば、右に行くほど高年層のことばとして並んだ。</p>
+            <p>冊子は対応分析を「多次元のデータを低次元に縮約することで、データの傾向を把握しやすくする手法」と紹介している。専門用語を最小限にしたうえで、図の読み方（近い点どうしは似た回答）を先に示す構成になっている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界</h2>
+        <p class="q">図はよく読めるが、読めているのは一部である。</p>
+
+        <div class="warn">
+            <h3>2次元の図が説明しているのは、全体の3割に満たない</h3>
+            <p>(A) の対応分析は、第1軸 14.45%、第2軸 13.01% である。<b>合わせても 27.46%</b>にすぎない。残りの7割以上は、この平面に描かれていない第3軸以降に入っている。主成分分析でも第1・第2で 32.64%、第4軸まで足してようやく 52.29% である。</p>
+            <p>したがって、図の上で2点が近いことは「この2次元では近い」以上を意味しない。捨てた軸の上で大きく離れている可能性は常にある。逆に、図の上で離れている点が実際に無関係だとも限らない。<b>布置図から読める主張は、説明率の範囲でしか保証されない</b>。</p>
+        </div>
+
+        <div class="warn">
+            <h3>軸の意味は、手法ではなく分析者が与えている</h3>
+            <p>対応分析が出すのは、慣性の大きい順に並んだ軸だけである。第1軸が「新しい↔古い」を表すとも、第2軸が「関ケ原↔米原」を表すとも、手法は一言も言わない。</p>
+            <p>(B) の図2には横軸に「新 ← → 古」、縦軸に「関ケ原 ↑ ／ 米原 ↓」と書き込まれているが、これは<b>布置を見てから分析者が与えた解釈</b>である。世代と地域という既知の情報が軸に沿って並んだことを確認したうえで名前を付けており、順序としては正しい。ただし読者には、軸のラベルが分析の出力ではなく解釈であることが見えにくい。一般向けの資料ではとくに注意が要る点である。</p>
+        </div>
+
+        <div class="warn">
+            <h3>カイ二乗距離は、まれなカテゴリを重く扱う</h3>
+            <p>距離の定義に \(1/c_j\) が入っているため、<b>出現の少ない列ほど軸を強く引っ張る</b>。1編の論文にしか出てこない語、1人しか使わない方言項目が、第1軸を決めてしまうことがありうる。</p>
+            <p>(A) が全6,096語をそのまま使わず、標準偏差の上位24語に絞ったのは、この影響への対処でもある。論文自身は「件数がかなり低いものも含まれる。これらは、分析の際に大きな影響をおよぼすことがないため、あらかじめ除外するのが望ましい」と述べている。ただし<b>どこで切るかは分析者の判断</b>であり、24語という閾値は標準偏差の減少率が安定する点を目視で選んだものである。</p>
+        </div>
+
+        <div class="warn">
+            <h3>行の大きさが消えることは、長所でも短所でもある</h3>
+            <p>プロファイル化により、論文の長さや回答者数の違いは距離に入らない。分量の違う対象を比べられるのは利点だが、<b>「よく使われている」という量の情報は落ちる</b>。ある語が全体の何割を占めるかを問いたいなら、対応分析の図からは読めない。(A) が語の出現件数や IDF を表2に併記しているのは、この不足を補う配置だと読める。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+
+        <div class="sub">
+            <h3>(A) 学術誌の投稿論文分析</h3>
+            <ul class="refs">
+                <li>小野原彩香・矢野環 (2014)「雑誌『行動計量学』における言語に関する投稿論文の傾向——投稿論文の時系列変化と『計量国語学』論文との比較」岸江信介・田畑智司 編『<a href="https://www.hituzi.co.jp/hituzibooks/ISBN978-4-89476-695-2.htm" target="_blank" rel="noopener noreferrer">テキストマイニングによる言語研究</a>』ひつじ研究叢書〈言語編〉第121巻、pp. 1–20、ひつじ書房。ISBN 978-4-89476-695-2（2014年12月3日 初版1刷）</li>
+                <li>分析対象は J-STAGE 上で公開されている『行動計量学』の論文。『計量国語学』側は学会ウェブサイトで公開されている題名とキーワード（1957–1987年、CSV形式）。</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>(B) 県境の方言調査</h3>
+            <ul class="refs">
+                <li>はびろネット『滋賀・岐阜県境を越えた方言ハンドブック』（「まいばら協働事業提案制度」採択事業、東西東西プロジェクト）。米原市柏原地区の市民グループによる発行物。</li>
+                <li>あとがきによれば、はびろネットは2014年度から同制度に採択され「東西東西プロジェクト」を展開しており、2015年度のテーマがことば（方言）文化であった。関ケ原町でも同様の調査が検討されていたため共同企画として実施され、県境を越えたアンケート調査となった。調査にあたっての助言と分析は<b>小野原彩香・杉崎好洋</b>が担当したと記されている。</li>
+            </ul>
+            <div class="warn" style="margin-top:14px">
+                <h3>この冊子は査読論文ではない</h3>
+                <p>(B) は地域の市民グループが発行した<b>一般向けの調査報告冊子</b>であり、学術誌に投稿・査読を経た論文ではない。方言辞典やコラムを含む読み物としての構成を取っており、分析手法の詳細（使用したソフトウェア、前処理、軸の選択基準など）は記載されていない。ここで引用しているのは、冊子に印刷された調査概要と図、および本文の記述である。</p>
+            </div>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Hirschfeld, H. O. (1935) A connection between correlation and contingency. <i>Mathematical Proceedings of the Cambridge Philosophical Society</i>, 31(4), 520–524. <a href="https://doi.org/10.1017/S0305004100013517" target="_blank" rel="noopener noreferrer">doi:10.1017/S0305004100013517</a></li>
+                <li>Benzécri, J.-P. (1973) <i>L'Analyse des Données. Tome 2: L'Analyse des Correspondances</i>. Paris: Dunod.</li>
+                <li>足立浩平・村上隆 (2011)『<a href="https://www.asakura.co.jp/detail.php?book_code=12829" target="_blank" rel="noopener noreferrer">非計量多変量解析法：主成分分析から多重対応分析へ</a>』シリーズ〈行動計量の科学〉9、朝倉書店。ISBN 978-4-254-12829-1</li>
+                <li>古沢正三・芳賀敏郎 (1992)『多変量解析事例集 第1集』日科技連出版社（小野原・矢野 2014 が主成分分析の定義に用いた文献）</li>
+            </ul>
+            <p class="cap">小野原・矢野 (2014) の参考文献欄では足立・村上 (2011) の副題が「主成分分析から対応分析へ」と表記されているが、書籍の正式な副題は「主成分分析から多重対応分析へ」である。ここでは書誌情報を優先した。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>対応分析は確率モデルを立てない。独立からのずれを行列に並べ、<b>低ランク近似の二乗誤差を最小にする</b>ことで軸を決める。解が特異値分解で与えられる点も、主成分分析や k-means と同じ構造である。違うのは距離の測り方だけで、最小化しているものは変わらない。<a href="../">7つの観点を式で読む</a>の<b>観点1（幾何・最小二乗）</b>にそのまま重なる。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて出典に印刷された値から引用し、推定値や概算は記載していません。<br>
+    同じ研究で併用された系統ネットワークについては <a href="../neighbor-net/">Neighbor-Net</a> を、手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

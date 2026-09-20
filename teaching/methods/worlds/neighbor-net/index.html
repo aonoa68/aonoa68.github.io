@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統ネットワーク（Neighbor-Net） — 小野原彩香 | Teaching</title>
+    <meta name="description" content="距離行列から系譜関係をネットワークとして描く Neighbor-Net について、分割の非負最小二乗という定式化、系統樹との違い、図の読み方の制約を、雑誌『行動計量学』と『計量国語学』の論文比較の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">系統ネットワーク</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（最小二乗）</a></span>
+        <h1>Neighbor-<span>Net</span></h1>
+        <p class="lead">距離行列から、対象どうしの<b>系譜関係をネットワークとして</b>描く手法です。系統樹が分岐だけを表すのに対し、複数の系統が融合する状態（混態）を平面に残せます。中身は距離を分割の重ね合わせで近似する<b>非負最小二乗</b>です。<br>
+        小野原・矢野 (2014) が、2つの学術誌に投稿された論文の系譜を比べるために用いた実装に即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「どれがどれから受け継いだか」を問いたいが、系統樹を仮定できないとき。</p>
+        <p class="body">
+        入力は距離行列 \(D\) ひとつである。\(n\) 個の対象について、互いの隔たりが測れている。問いは、<b>これらの対象のあいだに系譜の構造があるか</b>という点にある。
+        </p>
+        <p class="body">
+        小野原・矢野 (2014) は、論文にこの問いを当てている。論文を書くとき、著者は先行研究を参照し、特殊な事情がない限り用語や言い回しは以前の論文のものを踏襲する。だとすれば、同じ分野・同じテーマを扱う論文のあいだには系譜があると考えられる。ここから、<b>2つの学術誌に投稿された論文群が、語彙の上で別系統をなしているか</b>を問うことができる。
+        </p>
+        <p class="body">
+        ただし、ここで系統樹を当てはめるのは強すぎる。樹形は「どの対象も唯一の親から分かれた」という構造を仮定するが、論文のあいだに生物のような正確な継承があるとは限らない。系統ネットワークは、この仮定を緩めて<b>矛盾する信号をそのまま図に残す</b>ための道具である。
+        </p>
+        <div class="sub">
+            <h3>混態（contamination）とは</h3>
+            <p>論文は、系統ネットワークを「系統推定の結果を、混態を許すネットワークの形で示したもの」と定義している。混態とは、生物系統学で言えば<b>混血</b>、複数の系統が融合する状態を指す（矢野 2012）。系統樹では表せないこの状態を、ネットワークは平行な枝の組（箱）として描く。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源</h2>
+        <p class="q">近隣結合法と分割分解、2つの系譜が合流してできた。</p>
+        <ol class="steps">
+            <li><b>近隣結合法</b>（Saitou &amp; Nei 1987）　距離行列から系統樹を作る方法。各段階で枝長の総和を最小にする組を選んで結合していく。距離ベースの系統推定として最も広く使われている。</li>
+            <li><b>分割分解</b>（Bandelt &amp; Dress 1992）　距離を<b>分割</b>（対象集合の二分割）の重ね合わせに分解する理論。矛盾する分割が同時に支持されるとき、それを樹形に潰さずネットワークとして描ける。ただし対象数が増えると計算が重く、細かい構造を出しにくい。</li>
+            <li><b>Neighbor-Net</b>（Bryant &amp; Moulton 2003）　両者を合わせた方法。近隣結合法と同じ凝集的な手続きで対象を順に並べ、得られた<b>循環順序</b>に整合する分割だけを取り出す。これにより計算量を抑えつつ、数百の対象でも平面に描けるネットワークが得られる。</li>
+        </ol>
+        <div class="sub">
+            <h3>文化への応用</h3>
+            <p>系統学的方法とは、複数の事象を単に分類するのではなく、<b>その背後に系譜の関係を想定する</b>方法であり、その数理は主に進化生物学の分野で生み出されてきた（中尾 2012）。写本・連歌・言語・工芸品といった文化資料への応用は「文化系統学」と呼ばれ、矢野 (2012) は連歌撰集『老葉』の諸本の系譜にこの方法を当てている。小野原・矢野 (2014) はその枠組みを学術論文に向けたものである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>数学的にどこから来ているか</h2>
+        <p class="q">距離を分割の重ね合わせで近似する。係数を求めるのは非負最小二乗である。</p>
+        <p class="body">
+        対象集合 \(X\) の<b>分割</b> \(S = \{A, X \setminus A\}\) に対し、分割距離 \(\delta_S\) を次のように定める。\(i\) と \(j\) が分割の別側にあれば 1、同じ側にあれば 0 である。
+        </p>
+        <div class="eq">
+            <div class="lbl">距離を分割の重ね合わせとして書く</div>
+            \[ d_{ij} \;=\; \sum_{S \in \mathcal{S}} \alpha_S\, \delta_S(i,j) \;+\; (d_0)_{ij}, \qquad \alpha_S \ge 0 \]
+            <p class="read"><b>\(\alpha_S\)</b> … 分割 \(S\) の重み。ネットワーク上では<b>枝の長さ</b>として描かれる<br>
+            <b>\(\mathcal{S}\)</b> … 採用する分割の集合<br>
+            <b>\(d_0\)</b> … どの分割でも説明できない残り（split-prime residue）</p>
+        </div>
+        <div class="sub">
+            <h3>樹形とネットワークの違いは、分割集合の性質にある</h3>
+            <p>採用した分割がどの2つを取っても<b>両立する</b>（一方の片側がもう一方の片側に含まれる）とき、この表現はちょうど系統樹になる。両立しない分割が同時に正の重みを持つとき、それを樹形に潰さず<b>平行四辺形（箱）</b>として描いたものがネットワークである。箱の幅がその分割の重みにあたる。</p>
+            <p>Neighbor-Net は、対象を円周上に並べる順序をまず決め、<b>その順序で連続する区間になる分割</b>だけを候補にする。この制限により、得られるネットワークは必ず平面に描ける。</p>
+        </div>
+        <div class="sub">
+            <h3>重みを求めているのは最小二乗である</h3>
+            <div class="eq">
+                \[ \min_{\alpha \ge 0} \;\sum_{i&lt;j}\Bigl(d_{ij} - \sum_{S \in \mathcal{S}} \alpha_S\,\delta_S(i,j)\Bigr)^{2} \]
+                <p class="read">観測された距離と、分割の重ね合わせで再現した距離との<b>ずれの二乗和</b>を最小にする。制約は \(\alpha_S \ge 0\)（枝の長さは負にならない）だけである。</p>
+            </div>
+            <p>これは<a href="../">観点1（幾何）</a>の中心にある式そのものである。回帰では設計行列 \(X\) の列が説明変数だったが、ここでは<b>各列が1つの分割の指示関数</b>になっている。最小にしているものは変わらない。違うのは、何を基底に取るかと、係数に非負制約が付くかという点だけである。</p>
+            <div class="eq">
+                \[ \underbrace{\min_{\beta}\;\lVert \mathbf{y} - X\beta \rVert^{2}}_{\text{回帰}} \qquad\longleftrightarrow\qquad \underbrace{\min_{\alpha \ge 0}\;\lVert \mathbf{d} - \Delta\,\alpha \rVert^{2}}_{\text{分割分解}} \]
+                <p class="read"><b>\(\mathbf{d}\)</b> … 距離行列の上三角を縦に並べたベクトル<br>
+                <b>\(\Delta\)</b> … 列が分割距離 \(\delta_S\) に対応する行列</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と仮定</h2>
+        <p class="q">入力は距離だけ。だからこそ、距離の作り方がすべてを決める。</p>
+        <ol class="steps">
+            <li><b>入力は距離行列のみ</b>　対象の中身は見ない。語の頻度から距離を作れば、あとは距離だけが結果を決める。</li>
+            <li><b>系譜の存在は仮定しない</b>　樹形を当てはめないので、「どの対象も唯一の親を持つ」という構造は要求されない。矛盾する信号は箱として残る。</li>
+            <li><b>平面に描けることを優先している</b>　循環順序に整合する分割だけを採るという制限は、可視化のための制約であって、データから導かれるものではない。</li>
+            <li><b>枝の長さには尺度がある</b>　分割の重みがそのまま枝の長さになるため、図にはスケールバーが添えられる。小野原・矢野 (2014) の図8には 0.01 のスケールが付いている。</li>
+        </ol>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">2つの学術誌を、語彙の上で比べる。ただし入力の作り方が両者で違う。</p>
+        <ol class="steps">
+            <li><b>『計量国語学』側のデータ</b>　本文の電子化されたものがないため、学会ウェブサイトで公開されている<b>題名とキーワードのみ</b>を用いた。1957年から1987年までが CSV 形式で配布されている。</li>
+            <li><b>1つのテキストに束ねる</b>　この題名とキーワードを<b>一括で1つのテキストとみなし</b>、形態素解析して名詞のみを取り出し、頻度データにした。</li>
+            <li><b>語の選択</b>　頻度の高いものから、減少率が安定するまでの30件を選んだ。『行動計量学』側で用いた標準偏差による選択とは<b>手順が異なる</b>。題名とキーワードのみであることから、あらかじめ重要な名詞だけが扱われていると見なしたためである。</li>
+            <li><b>行列の作成</b>　選んだ30語について『行動計量学』の論文30編の頻度を合わせ、<b>テキスト31編 × 名詞30件</b>の表に加工した。31編目が『計量国語学』をまとめた <code>reskk</code> である。</li>
+            <li><b>Neighbor-Net</b>　この表から距離を作り、系統ネットワークを構築した（図8）。</li>
+        </ol>
+
+        <div class="sub">
+            <h3>読み取られたこと</h3>
+            <p>枝の長さと分かれ方を見ると、1957年から1987年にかけて『計量国語学』で頻繁に使われた名詞と、1974年以降の『行動計量学』で使われた名詞は<b>比較的異なる</b>ことが分かる。両誌はそれぞれ違うテーマを扱ってきた、という読みである。</p>
+            <p>しかし一部の論文は <code>reskk</code> の近隣の枝から伸びていた。論文は 1974_03、1978、1982、1985_02、1990、1995_01、2003_01、2003_02、2003_04 の9編を挙げている。</p>
+        </div>
+
+        <div class="warn" style="background:#fff8e8; border-color:color-mix(in srgb,var(--gold) 35%,white)">
+            <h3 style="color:var(--navy2)">外部の情報で、布置を検証している</h3>
+            <p>近い位置にあった論文の<b>筆者を調べたところ</b>、1974_03、1978、1982、1985_02、1990、1995_01、2003_01 の7編は、『計量国語学』にも投稿したことのある著者であることが判明した。</p>
+            <p>これは重要な手続きである。ネットワーク上の近さは、語彙の頻度から作った距離が近いというだけのことで、それ自体は系譜の証拠ではない。<b>著者という、分析に使っていない情報</b>と突き合わせることで、布置が偶然ではないという裏づけが得られている。距離だけを入力とする手法では、こうした外部検証が結果の信頼性を支える。</p>
+            <p>ただし、挙げられた9編のうち著者が確認されたのは7編である。2003_02 と 2003_04 については同様の記述がない。近さの説明が全てついたわけではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界</h2>
+        <p class="q">論文自身が、手法の選択という形で留保を表明している。</p>
+
+        <div class="warn">
+            <h3>継承パターンが存在するかは、そもそも不明である</h3>
+            <p>論文は次のように述べている。「本分析では、『行動計量学』論文と『計量国語学』論文という異なる2つの系譜を持つ論文を対象としていることと、<b>そもそも先行論文—後発論文間で、生物で見られるような正確な継承パターンが存在するかは不明である</b>ため、混態を許すネットワークの形で考察するのが望ましいと考えられる」。</p>
+            <p>系統樹ではなくネットワークを選んだこと自体が、この留保の表明になっている。手法の選択が、主張できる範囲を先に限定しているという意味で、誠実な構成である。逆に言えば、<b>このネットワークから「AがBを受け継いだ」と読むことはできない</b>。読めるのは、語彙の上での遠近と、その遠近が樹形に収まらないことだけである。</p>
+        </div>
+
+        <div class="warn">
+            <h3>図の上の距離と位置には意味がない</h3>
+            <p>論文は図8について「<b>枝の長さと枝の分かれ方のみが意味を持つ</b>」と明記している。ノードが紙面のどこに置かれているか、2つのノードを結ぶ直線距離がどれくらいか、といったことは読んではいけない。</p>
+            <p>同じ注意は、同論文の共起ネットワーク（図6・図7）にも付されている。そちらは「エッジの太さのみが意味を持ち、エッジの長さ、ノードの位置関係などには意味が無い」とされる。<b>ネットワーク図は、どの量が意味を持つかが図ごとに違う</b>。凡例を読まずに見た目の近さを解釈すると誤る。</p>
+        </div>
+
+        <div class="warn">
+            <h3>比べている2つの入力が、揃っていない</h3>
+            <p>31編のうち30編は個別の論文だが、31編目の <code>reskk</code> は<b>31年分の題名とキーワードを1つに束ねたテキスト</b>である。単位が揃っていない。</p>
+            <p>データの性質も違う。『行動計量学』側は本文（英語要旨・参考文献・数式・図表などを除去したもの）、『計量国語学』側は題名とキーワードのみである。語の選び方も、前者は標準偏差の大きい順、後者は頻度の高い順で、<b>手順が異なる</b>。時期も、『計量国語学』は1957–1987年、『行動計量学』は1974年から論文執筆時点までで、重なりは一部にすぎない。</p>
+            <p>これらは論文中にすべて明記されており、隠されてはいない。ただし、ネットワーク上で <code>reskk</code> と各論文の距離を読むとき、その距離のうちどれだけが<b>内容の違い</b>で、どれだけが<b>データの作り方の違い</b>によるものかは分離できない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>採用する分割の集合は、可視化の都合で決まっている</h3>
+            <p>Neighbor-Net が候補にするのは、先に決めた循環順序に整合する分割だけである。この制限は、平面に描けるネットワークを得るために置かれたもので、データから導かれたものではない。<b>順序の決め方が変われば、採用される分割の集合も変わりうる</b>。ネットワークの形を「データが示した構造」として読むときには、この設計上の制約を踏まえる必要がある。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <ul class="refs">
+            <li>小野原彩香・矢野環 (2014)「雑誌『行動計量学』における言語に関する投稿論文の傾向——投稿論文の時系列変化と『計量国語学』論文との比較」岸江信介・田畑智司 編『<a href="https://www.hituzi.co.jp/hituzibooks/ISBN978-4-89476-695-2.htm" target="_blank" rel="noopener noreferrer">テキストマイニングによる言語研究</a>』ひつじ研究叢書〈言語編〉第121巻、pp. 1–20、ひつじ書房。ISBN 978-4-89476-695-2（2014年12月3日 初版1刷）</li>
+            <li>『行動計量学』側のデータは J-STAGE 上で公開されている論文。『計量国語学』側は学会ウェブサイトで公開されている題名とキーワード（1957–1987年、CSV形式）。前処理は MeCab（形態素解析）、MTMiner および RMeCab（集計）による。</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Saitou, N. &amp; Nei, M. (1987) The neighbor-joining method: a new method for reconstructing phylogenetic trees. <i>Molecular Biology and Evolution</i>, 4(4), 406–425. <a href="https://academic.oup.com/mbe/article/4/4/406/1029664" target="_blank" rel="noopener noreferrer">academic.oup.com</a></li>
+                <li>Bandelt, H.-J. &amp; Dress, A. W. M. (1992) A canonical decomposition theory for metrics on a finite set. <i>Advances in Mathematics</i>, 92(1), 47–105. <a href="https://www.sciencedirect.com/science/article/pii/000187089290061O" target="_blank" rel="noopener noreferrer">sciencedirect.com</a></li>
+                <li>Bryant, D. &amp; Moulton, V. (2003) Neighbor-Net: an agglomerative method for the construction of phylogenetic networks. <i>Molecular Biology and Evolution</i>, 21(2), 255–265. <a href="https://academic.oup.com/mbe/article/21/2/255/1187993" target="_blank" rel="noopener noreferrer">academic.oup.com</a></li>
+                <li>矢野環 (2012)「『老葉』に対する系統学的アプローチ——宗祇による連歌の系譜」中尾央・三中信宏 編『<a href="https://www.keisoshobo.co.jp/book/b100532.html" target="_blank" rel="noopener noreferrer">文化系統学への招待：文化の進化パターンを探る</a>』勁草書房。ISBN 978-4-326-10216-7</li>
+                <li>中尾央 (2012)「文化の過去を復元すること」同書所収。</li>
+            </ul>
+            <p class="cap">小野原・矢野 (2014) の参考文献欄では Bryant and Moulton (2003) の巻号が「Molecular Biology and Evolution 21」と記されている。原論文は 2003 年にオンライン公開され、誌面は 21 巻 2 号 255–265 頁である。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>Neighbor-Net は確率モデルを立てない。距離を分割の重ね合わせで近似し、<b>再現誤差の二乗和を最小にする</b>ことで枝の長さを決める。非負制約の付いた最小二乗であり、設計行列の列が分割の指示関数になっただけで、最小化しているものは回帰や主成分分析と変わらない。<a href="../">7つの観点を式で読む</a>の<b>観点1（幾何・最小二乗）</b>に属する。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値と引用はすべて出典に印刷された記述から取り、推定や概算は記載していません。<br>
+    同じ論文で併用された対応分析については <a href="../correspondence-analysis/">対応分析</a> を、手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>
