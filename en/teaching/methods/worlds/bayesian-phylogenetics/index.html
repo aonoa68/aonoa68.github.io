@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accentual Class Merger — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Bayesian phylogenetic inference for pitch-accent systems, in which accentual class merger itself is modelled as mutation and geographical diffusion supplies the tree prior. The method, its formulation and its C++ implementation are the work of Takuya Takahashi (first author); Onohara is second author.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (Bayesian) */
+            --w:      #6a4d8a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#d9c8e8; background:rgba(106,77,138,0.42); border:1px solid rgba(217,200,232,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(217,200,232,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box where this method's weaknesses go) */
+        .warn { background:#f7f4fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Reference box (gold, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results table */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f9f7fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Procedure list */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* Lineage (origin section) */
+        ul.line { list-style:none; margin-top:16px; }
+        ul.line li { font-size:0.89em; color:var(--muted); line-height:1.85; padding-left:96px; text-indent:-96px; margin-bottom:8px; }
+        ul.line li b { display:inline-block; width:84px; text-indent:0; color:var(--w); font-weight:700; font-variant-numeric:tabular-nums; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        /* .nav-inner is capped at 1100px, so the bar gains no room on a wider
+           screen. The English breadcrumb at this depth already fills it, and the
+           secondary links would wrap inside a 56px bar, so they are dropped here.
+           Both remain one level up, on the In Equations page. */
+        .nav-logo, .nav-current { white-space: nowrap; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+            ul.line li { padding-left:0; text-indent:0; }
+            ul.line li b { display:block; width:auto; }
+        }
+
+        /* Attribution box: who devised and implemented the method */
+        .attrib { background:#f3f0f8; border:1px solid color-mix(in srgb, var(--w) 34%, white);
+                  border-left:5px solid var(--w); border-radius:var(--radius);
+                  padding:18px 22px; margin-top:30px; }
+        .attrib h3 { font-size:1em; color:var(--w); margin-bottom:8px; }
+        .attrib p { font-size:0.9em; color:var(--muted); line-height:1.95; max-width:66ch; }
+        .attrib p + p { margin-top:10px; }
+        .attrib b { color:var(--text); font-weight:600; }
+        .attrib a { color:var(--w); font-weight:600; text-decoration:none; }
+        .attrib a:hover { text-decoration:underline; }
+        .filelist { margin-top:14px; font-size:0.86em; color:var(--muted); line-height:1.9; }
+        .filelist code { font-size:0.92em; }
+        .sub p + p { margin-top:10px; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Accentual Class Merger</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/bayesian-phylogenetics/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 3 ｜ <a href="../">Bayesian (prior, likelihood, posterior)</a></span>
+        <h1>Accentual Class <span>Merger</span></h1>
+        <p class="lead">A method for inferring the phylogeny of pitch-accent systems across Japanese dialects, in which <b>accentual class merger</b> — the phenomenon itself — is modelled as mutation. Its distinguishing feature is that the tree prior is built from geographical diffusion weighted by population size and distance.<br>
+        The method was devised, formulated and implemented by <b>Takuya Takahashi</b>. Onohara took part in the collaboration as second author.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <div class="attrib">
+        <h3>Attribution for the method described on this page</h3>
+        <p><b>The methodology described here is Takuya Takahashi's</b>, the first author of the paper. The design of the mutation model representing accentual class merger, the formulation that embeds it in a Bayesian phylogenetic framework with spatial diffusion, and the C++ implementation described below are all his work. Ayaka Onohara took part in the collaboration as second author.</p>
+        <p>This page was written by Onohara to connect that methodology to <b>Perspective 3 (Bayesian)</b> of the <a href="../">seven perspectives</a> used in her teaching. <b>She is not the originator or implementer of the method itself.</b> For citation, please refer to the original paper (Takahashi, Onohara &amp; Ihara 2024) and the Zenodo code repository listed at the end.</p>
+    </div>
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Borrowing is the hardest problem in linguistic phylogenetics. Accentual class merger is one of the few phenomena that sidesteps it.</p>
+        <p class="body">
+        When phylogenies are inferred from vocabulary, there is no way to tell whether two similar words descend from a common ancestor or were borrowed through contact. That ambiguity pulls the inferred tree away from genealogy and towards a <b>map of contact</b>.
+        </p>
+        <p class="body">
+        Japanese pitch accent has a property that avoids this. It is <b>accentual class merger</b>. Several accentual classes that were distinguished at an earlier stage collapse into one in a given dialect and lose their distinction. Once lost, the distinction is not restored by borrowing words from elsewhere. Which classes have merged with which is therefore a phylogenetic signal that contact does not easily scramble.
+        </p>
+        <p class="body">
+        Bimoraic nouns, for instance, have five accentual classes. In the Tokyo dialect, classes 2 and 3 have merged, and so have classes 4 and 5; this is written <code>1/23/45</code>. Kyoto is <code>1/23/4/5</code>, and Ibukijima is <code>1/2/3/4/5</code> — no classes merged at all. Traditional dialectology has long argued about phylogeny from the distribution of such merger states, but <b>it had rarely been written down as a statistical model</b>. This method formulates merger as a stochastic process and puts it inside a Bayesian phylogenetic framework.
+        </p>
+        <div class="where">
+            Related: <a href="../neighbor-net/">Phylogenetic networks (Neighbor-Net)</a> — drawing structure from a distance matrix without assuming a tree. Here, by contrast, the tree itself is what carries a posterior distribution.
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>The data: what counts as an observation</h2>
+        <p class="q">All that is observed is the surface accent pattern and the merger state readable from it.</p>
+        <p class="body">
+        The scope is mainland dialects. Ryukyuan and Hokkaido are excluded. <b>Fifteen taxa</b> — modern dialects plus accent systems recorded in historical documents — are placed at twelve mainland locations and form the leaves of the tree. Geographical space is divided into <b>691 cells</b> of roughly 20 km (0.25° longitude by 0.167° latitude).
+        </p>
+        <p class="body">
+        Accent descriptions are split into six <b>word categories</b> \(C_1,\dots,C_6\), which differ in number of morae, part of speech and conjugation and are therefore not pooled. Writing \(l(i)\) for the number of accentual classes in \(C_i\): \(l(1)=3,\ l(2)=5,\ l(3)=2,\ l(4)=3,\ l(5)=2,\ l(6)=2\).
+        </p>
+        <p class="body">
+        Two things are observed for each taxon. One is the <b>surface accent pattern</b> \(D_i\), the pattern actually heard, written as a sequence over H/L/M/F/R. The other is the <b>surface merger state</b> \(M_i\), written with slashes as in <code>1/23/45</code>, saying which classes have collapsed together. Their combination \(Y_i = D_i \cap M_i\) is the data given to the model.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Model I: why latent variables are introduced</h2>
+        <p class="q">Making the observation itself a Markov process would blow up the state space. The design that keeps it small is the heart of the model.</p>
+        <p class="body">
+        Each cell is assigned two <b>latent variables</b> per word category.
+        </p>
+        <div class="eq">
+            <div class="lbl">Latent variables</div>
+            \[ N_i : \text{extended merger state} \qquad b_i = (b_{i1},\dots,b_{il(i)}) : \text{latent accent patterns} \]
+            <p class="read"><b>\(N_i\)</b> is the surface merger state <code>1/234/5</code> plus the information of <i>which class overrode the others</i>. It is written <code>'1','234','5'</code>, where the first character of each string is the <b>leading class</b>, the one that overrode the rest. <code>'1','234','5'</code> and <code>'1','324','5'</code> are the same <code>1/234/5</code> on the surface but are distinct extended merger states. Since which class swallowed which cannot be observed, this is a latent variable.<br>
+            <b>\(b_i\)</b> is the “underlying” pattern assigned to each accentual class, taking one of the patterns empirically documented for that word category.</p>
+        </div>
+        <p class="body">
+        The surface pattern follows from these two. Within a merged block, <b>the latent pattern of the leading class is what is observed as the surface pattern of every class in that block</b>. Take bimoraic nouns. If the extended merger state is \(N_2 = \) <code>'1','23','54'</code> and the latent patterns are \(b_2 = (\mathrm{HHM},\ \mathrm{HLL},\ \mathrm{HHL},\ \mathrm{LHL},\ \mathrm{LLH})\), the surface is
+        </p>
+        <div class="eq">
+            <div class="lbl">Latent → surface</div>
+            \[ D_2 = (\mathrm{HHM},\ \mathrm{HLL},\ \mathrm{HLL},\ \mathrm{LLH},\ \mathrm{LLH}) \]
+            <p class="read">In block <code>'23'</code> class 2 leads, so class 3 is also HLL; in block <code>'54'</code> class 5 leads, so class 4 is also LLH.</p>
+        </div>
+        <div class="sub">
+            <h3>Two properties this design captures</h3>
+            <p>First, <b>merged classes change together</b>. A shift of the surface from (LHH, HLL, HLL) to (LHH, LHL, LHL) is explained by a single change in the leading class's latent pattern, not by two mutations. Second, <b>merged classes always show the same pattern</b>. Both are definitional of merger, and neither can be expressed by the standard phylogenetic models that line up binary characters.</p>
+        </div>
+        <div class="sub">
+            <h3>State space: why 196 is enough</h3>
+            <p>Bimoraic nouns have five accentual classes. There are 52 ways to partition a set of five (the Bell number), but an extended merger state additionally distinguishes the leading class of each block, so each partition contributes the product of its block sizes. Counting by partition type: 5 gives \(1\times5=5\); 4+1 gives \(5\times4=20\); 3+2 gives \(10\times6=60\); 3+1+1 gives \(10\times3=30\); 2+2+1 gives \(15\times4=60\); 2+1+1+1 gives \(10\times2=20\); and 1+1+1+1+1 gives \(1\times1=1\). The total is <b>196</b>. These are all the values \(N_i\) can take.</p>
+            <p>Had the surface pattern \(D_i\) been made a Markov process directly, the state space would run to thousands or tens of thousands and the matrix powers inside the pruning algorithm would not finish in practical time. The latent variables exist to solve that computational problem.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Model II: building the tree prior out of space</h2>
+        <p class="q">The prior over phylogenies is constructed from the probability of inheriting from each cell, weighted by population size and geographical distance.</p>
+        <p class="body">
+        In this discrete-time model, at the start of each time step every cell inherits its <b>entire</b> pitch-accent system from exactly one cell. Taking some variables from one cell and the rest from another is not allowed. This guarantees that the history is represented as a phylogenetic <b>tree</b> rather than a <b>network</b>.
+        </p>
+        <div class="eq">
+            <div class="lbl">Equation (2.1) — inheritance probability</div>
+            \[ a_{ij} \;=\; K_i^{-1}\,\pi_j \exp\!\left(-\frac{d_{ij}^{\,2}}{2\sigma^{2}}\right) \]
+            <div class="lbl" style="margin-top:14px">Equation (2.2) — normalising constant</div>
+            \[ K_i \;=\; \sum_{k=1}^{n} \pi_k \exp\!\left(-\frac{d_{ik}^{\,2}}{2\sigma^{2}}\right) \]
+            <p class="read"><b>\(a_{ij}\)</b> is the probability that cell \(P_i\) inherits its accent system from cell \(P_j\). <b>\(\pi_j\)</b> is the population size of \(P_j\), <b>\(d_{ij}\)</b> the great-circle distance between the two cells, and <b>\(\sigma\)</b> the standard deviation of the Gaussian kernel. \(K_i\) is no more than the constant that makes \(\sum_j a_{ij}=1\).</p>
+        </div>
+        <p class="body">
+        The equation says two things. Cells <b>learn more readily from nearby cells</b> (the Gaussian kernel), and <b>populous cells exert more influence</b> (the factor \(\pi_j\)). The consequence is that trees in which geographically close taxa group together score a higher prior probability. The population data are built from provincial estimates of the Heian period, distributed in space using a 1 km mesh population grid from 1995.
+        </p>
+        <p class="body">
+        Storing the source cell for the past \(\tau\) steps in a \(\tau \times n\) matrix \(G\) lets the tree \(T\) over the taxa be cut out of \(G\). The prior probability of \(G\) is a product of terms of the form (2.1), so <b>the pattern of spatial interaction among cells becomes the tree prior directly</b>.
+        </p>
+        <div class="warn">
+            <h3>\(\sigma\) is not estimated</h3>
+            <p>Leaving \(\sigma\) free prevented the MCMC from converging, so this analysis <b>fixes</b> \(\sigma = 70\,\mathrm{km}\). That is an analytical setting, not a result. Runs at other values of \(\sigma\) are reported as sensitivity analyses in the electronic supplementary material, where the tree topology is said to be broadly unchanged.</p>
+        </div>
+        <div class="where">
+            Related: <a href="../icar/">ICAR spatial random effects</a> — both put “spatial closeness” into a prior, but ICAR smooths over an adjacency graph, whereas here it is <b>the source of inheritance itself</b> that is weighted by space.
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Model III: splitting mutation into two kinds</h2>
+        <p class="q">Merger (\(q\)) and pattern substitution (\(\alpha\)) are written as two independent processes.</p>
+        <p class="body">
+        After inheriting, each cell may mutate. Mutations are assumed independent across word categories: the evolution of \(N_i,b_i\) is independent of \(N_j,b_j\) for \(i \neq j\).
+        </p>
+        <div class="eq">
+            <div class="lbl">Merger mutation — parameter \(q\)</div>
+            \[ \Pr[\,\text{a merger occurs in } N_i \text{ in one step}\,] \;=\; \binom{u_i}{2} q \;=\; \tfrac{1}{2}\,u_i\,(u_i-1)\,q \]
+            <p class="read"><b>\(u_i\)</b> is the number of blocks in \(N_i\). Every pair of blocks is assumed to merge with the same probability \(q\), so the number of available pairs \(\binom{u_i}{2}\) multiplies it. When two blocks merge, the strings representing them are concatenated in random order, so the leading class of one overrides the classes of the other. For example \(N_i=\) <code>'1','23','45'</code> may mutate into <code>'123','45'</code>, <code>'231','45'</code>, <code>'145','23'</code>, <code>'451','23'</code>, <code>'1','2345'</code> or <code>'1','4523'</code>, each with probability \(q/2\).</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Pattern substitution — parameter \(\alpha\)</div>
+            \[ \Pr[\,b_{ij} \to b'\,] = \alpha \quad (b' \neq b_{ij},\ b' \text{ documented for that word category}) \]
+            <p class="read">Latent accent patterns change element by element, moving with equal probability to any other pattern empirically documented for that word category. This is a <b>discrete-time version of the Mk model</b>, in which a trait moves among \(k\) possible states at a common rate. Monomoraic nouns have seven documented patterns — HL, LH, HM, HH, LL, LM, MH — so the probability that a given class's latent pattern changes is \(6\alpha\).</p>
+        </div>
+        <div class="sub">
+            <h3>Merger is irreversible; substitution is reversible</h3>
+            <p>This asymmetry is the crux of the model. The \(q\) process merges blocks in one direction only, and blocks once joined never come apart. The \(\alpha\) process moves back and forth among patterns. The phylogenetic signal is carried mainly by the former; the latter accounts for differences among dialects that share the same merger state.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>The posterior, and how the likelihood is computed</h2>
+        <p class="q">The joint posterior is written out, and the tree likelihood is computed with Felsenstein's pruning algorithm.</p>
+        <div class="eq">
+            <div class="lbl">Equation (2.3) — joint posterior</div>
+            \[ P(G,q,\alpha,B^{A},N \mid Y) \;\propto\; P(G)\,P(q)\,P(\alpha) \prod_{i=1}^{6} P(b_i^{A})\, P(N_i \mid T,q)\, P(M_i \mid N_i)\, P(D_i \mid T,\alpha,b_i^{A},N_i) \]
+            <p class="read"><b>\(B^A=(b_1^A,\dots,b_6^A)\)</b> holds the latent accent patterns at the root of the tree. No classes are merged at the root, so its latent patterns coincide with its surface patterns. <b>\(P(q)\)</b> and <b>\(P(\alpha)\)</b> are both uniform. <b>\(P(G)\)</b> is the product of the \(a_{ij}\) of equation (2.1). <b>\(P(b_i^{A})\)</b> is uniform: for monomoraic nouns, three classes drawn without repetition from seven patterns give \(7\times6\times5=210\) possibilities, each with probability \(1/210\).</p>
+        </div>
+        <p class="body">
+        The term \(P(M_i \mid N_i)\) acts as a filter. It is 1 when the extended merger state \(N_i\) is consistent with the observed surface merger state \(M_i\), and 0 otherwise. The MCMC therefore only has to explore the space of \(N_i\) that do not contradict the observed \(M_i\).
+        </p>
+        <div class="sub">
+            <h3>Pruning: treating non-leading classes as missing data</h3>
+            <p>The last term \(P(D_i \mid T,\alpha,b_i^{A},N_i)\) is computed by running Felsenstein's pruning algorithm <b>in an irregular way</b>. The point is that a class which is not leading under \(N_i\) does not appear on the surface — that is, <b>the observation is missing at that leaf</b>.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Initialisation at the leaves</div>
+            \[ L_{ij}(p,v) = \begin{cases} 1 & \text{class } j \text{ is leading at } v \text{ and } p = D_{ij} \\ 0 & \text{class } j \text{ is leading at } v \text{ and } p \neq D_{ij} \\ 1 & \text{class } j \text{ is not leading at } v \end{cases} \]
+            <div class="lbl" style="margin-top:14px">Recursion at internal nodes (children \(s_1, s_2\))</div>
+            \[ L_{ij}(p,v) = \left[\sum_{p'} L_{ij}(p',s_1)\,P(s_1 \text{ has } p' \mid v \text{ has } p)\right] \times \left[\sum_{p'} L_{ij}(p',s_2)\,P(s_2 \text{ has } p' \mid v \text{ has } p)\right] \]
+            <div class="lbl" style="margin-top:14px">Likelihood of the whole tree</div>
+            \[ P(D_i \mid T,\alpha,b_i^{A},N_i) = \prod_{j=1}^{l(i)} L_{ij}\!\left(b_{ij}^{A},\ \text{root of } T\right) \]
+            <p class="read">Putting 1 at a leaf where the class is not leading is how missingness is handled: it means “whatever that leaf is, nothing is contradicted”, and the usual recursion then goes through unchanged.</p>
+        </div>
+        <div class="sub">
+            <h3>Implementation: the two-state transition probability is written in closed form</h3>
+            <p>In Takahashi's C++ implementation, the two-state case of pruning is computed not by matrix powers but by a closed-form expression. For a discrete-time two-state Markov chain with rates \(q_{12}, q_{21}\), setting \(\lambda = q_{12}/(q_{12}+q_{21})\) gives</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">The closed form used in the code (<code>prob_two</code> in <code>pruning.cpp</code>)</div>
+            \[ P(X_t = 2) \;=\; (1-q_{12}-q_{21})^{t}\,\bigl(P(X_0=2) - \lambda\bigr) + \lambda \]
+            <p class="read">It follows immediately from the eigenvalues of the transition matrix being \(1\) and \(1-q_{12}-q_{21}\). Avoiding numerical matrix powers makes the inner MCMC loop fast and robust to rounding. The implementation uses <code>long double</code> throughout, and explicitly allocates the dynamic-programming arrays over the \(2M-1\) nodes on the way from leaves to root.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Time calibration and MCMC settings</h2>
+        <p class="body">
+        Branch lengths come out in time steps and have to be mapped onto real time. <b>One time step is taken to be 25 years</b>, roughly a human generation. An MCMC assuming 10 years per step was also run, and the resulting phylogeny is reported to be almost unchanged.
+        </p>
+        <p class="body">
+        The observation year of the taxa (the leaves) was set to <b>AD 1950</b>, reflecting the survey and publication dates of the descriptions of modern dialects. Accent systems recorded in historical documents are placed at their respective dates. The prior on the age of the root — the common ancestor — is <b>uniform over AD 450 to 1100</b>. The upper bound of AD 450 reflects the date of the split between Ryukyuan and mainland Japanese, which recent work places around the 3rd to 7th centuries; since Ryukyuan has accentual classes not found on the mainland, the common ancestor of mainland accent systems should be younger than that split.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>MCMC setting</th><th class="num">Value</th></tr></thead>
+            <tbody>
+                <tr><td>Independent chains</td><td class="num">3</td></tr>
+                <tr><td>Iterations per chain</td><td class="num">4 × 10<sup>6</sup></td></tr>
+                <tr><td>Discarded as burn-in</td><td class="num">1 × 10<sup>6</sup></td></tr>
+                <tr><td>Sampling interval (thinning)</td><td class="num">10<sup>3</sup></td></tr>
+                <tr><td>Total sample size</td><td class="num">9,000</td></tr>
+                <tr><td>Gaussian kernel \(\sigma\) (fixed)</td><td class="num">70 km</td></tr>
+                <tr><td>Spatial cells</td><td class="num">691</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Two further MCMC runs were carried out from different starting trees (different initial values of \(G\)) as a check. The MCC tree was produced with TreeAnnotator, distributed with BEAST, and visualised in FigTree.</p>
+        <div class="where">
+            Related: <a href="../bayesian-estimation/">Bayesian estimation (Stan / brms)</a> — the practical side common to Bayesian work, priors, convergence diagnostics and reading posteriors, is set out there.
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>What could be concluded</h2>
+        <p class="q">Three clades, the homeland of the common ancestor, and the posteriors of the mutation rates.</p>
+        <p class="body">
+        The inferred MCC tree consists of <b>three clades — Tokyo type, Keihan type and N-kei type (Kyushu)</b> — which agrees with the traditional classification of pitch-accent systems. What is notable is that Tokyo-type accent, distributed in two separated regions in the west (Hiroshima, Oita) and the east (Tokyo, Hirosaki) of the archipelago, is suggested to form a <b>monophyletic group</b>. It grouped together even with spatial diffusion in the prior.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>Time to the most recent common ancestor</th><th class="num">95% credibility interval</th></tr></thead>
+            <tbody>
+                <tr><td>Common ancestor of all modern dialects (root)</td><td class="num">AD 450 – 825</td></tr>
+                <tr><td>Tokyo type</td><td class="num">AD 1000 – 1550</td></tr>
+                <tr><td>Keihan type (including Ruiju Myōgishō)</td><td class="num">AD 825 – 1100</td></tr>
+                <tr><td>N-kei type</td><td class="num">AD 1050 – 1700</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">The root falls between the middle Kofun and the early Heian period. As noted under “Limits” below, however, this posterior depends strongly on the prior.</p>
+        <div class="sub">
+            <h3>The homeland of the common ancestor</h3>
+            <p>Because the matrix \(G\) records which cell each lineage occupied at every past step, a <b>posterior distribution over the geographical location</b> of the MRCA is available. The common ancestor of all taxa most probably lies around present-day Kyoto, Osaka, Nara and Kobe, and the MRCA of the Keihan type falls in the same region. The MRCA of the N-kei type most probably lies in northern or central Kyushu. The MRCA of the Tokyo type is spread comparatively widely, with the highest peak around Kinki and a second peak around Tokyo; Tohoku and Kyushu are unlikely.</p>
+            <p>This inference carries a structural bias. Equation (2.1) rewards inheritance from populous cells, so <b>the MRCA tends to be placed where the population was large</b>. The cell containing Kyoto has the highest posterior probability both because it is the most populous cell in Kinki and because the accent patterns of Ruiju Myōgishō, the source closest to the root, were assigned to it.</p>
+        </div>
+        <div class="sub">
+            <h3>Mutation rates</h3>
+            <p>The posterior median of the merger rate \(q\) is \(3.37 \times 10^{-4}\) per annum (95% credibility interval \(2.25 \times 10^{-4}\) – \(4.86 \times 10^{-4}\)), which means that a given pair of unmerged blocks merges about once every <b>2,967 years</b> (\(1/3.37\times10^{-4}\)). The posterior median of the substitution rate \(\alpha\) is \(9.89 \times 10^{-5}\) per annum (95% credibility interval \(6.97 \times 10^{-5}\) – \(1.39 \times 10^{-4}\)); for monomoraic nouns the rate of leaving a pattern is \(6\alpha\), since there are six alternatives among the seven documented, so a latent pattern changes about once every <b>1,685 years</b>.</p>
+        </div>
+        <div class="sub">
+            <h3>Where this conflicts with established hypotheses</h3>
+            <p>The result does not sit comfortably with several hypotheses from dialectology. First, the <i>gairin</i> subtype (Oita, Hirosaki) was assumed by Kindaichi to be phylogenetically distant from the <i>chūrin</i> subtype (Tokyo, Hiroshima), but the inferred tree suggests that Tokyo-type accent is monophyletic, with <i>gairin</i> and <i>chūrin</i> appearing as paraphyletic or polyphyletic groupings that share no immediate common ancestor. Second, the prominent hypothesis deriving the <i>chūrin</i> type from the system recorded in the <i>Bumōki</i> was not supported. Third, the modern Kyoto system is suggested to descend not from the <i>Bumōki</i> system but from an <b>undocumented lineage surviving from the Muromachi period</b> with merger state <code>1/2/3/4/5</code>. On this reading, the lineages leading to modern Kyoto and to the <i>Bumōki</i> each underwent the merger of classes 2 and 3 independently.</p>
+            <p>The result also disagrees with the east–west split of mainland dialects found in lexically based work such as the Bayesian phylogenetic analysis of Lee &amp; Hasegawa. That suggests the accent systems and the lexicon of mainland dialects may have different histories; it does not by itself show that either is wrong.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Limits</h2>
+        <div class="warn">
+            <h3>The dates depend strongly on the prior</h3>
+            <p>As the paper itself repeatedly cautions, <b>the posterior on the age of the common ancestor depends heavily on the prior</b>. The interval “AD 450–825” given above holds under a uniform prior on the root over AD 450–1100, and rests on the assumption that the MRCA of mainland accent does not predate AD 450. In contrast to the tree topology, which was stable across the sensitivity analyses, <b>the dates are a weak conclusion</b>.</p>
+        </div>
+        <div class="warn">
+            <h3>Trimoraic nouns are excluded</h3>
+            <p>The number of possible extended merger states grows steeply with the number of accentual classes, so trimoraic nouns, with six or seven classes, were excluded for computational reasons. Several earlier studies reconstruct phylogenies from trimoraic nouns, and this analysis may miss the signal they carry. How much is lost is not obvious, however, since in many dialects the accent patterns of trimoraic nouns are not independent of those of bimoraic nouns.</p>
+        </div>
+        <div class="warn">
+            <h3>The data are assembled from several sources</h3>
+            <p>No published database records the accent patterns of Japanese dialects exhaustively under a consistent standard, so the patterns were collected from a number of different studies. Inconsistency in descriptive criteria across the dialects included is unavoidable, and <b>the results may be biased by the choice of sources</b>.</p>
+        </div>
+        <div class="warn">
+            <h3>Independence across word categories does not hold in reality</h3>
+            <p>The model assumes mutations occur independently in each word category, yet in the data the accent patterns of class 1 of bimoraic nouns and of verbs are the same in most modern dialects. Correlated change of this kind requires a double mutation under the model and could bias the tree. A sensitivity analysis using only the noun subset (\(C_1, C_2\)) was run, and the topology is reported to be broadly unchanged.</p>
+        </div>
+        <div class="warn">
+            <h3>The latent variables are a heuristic</h3>
+            <p>Assuming that latent accent patterns follow a Markov process is a device that makes computation possible, not a claim about the substance of language change. The paper itself describes the setting as heuristic and somewhat difficult to interpret. <b>What this method infers is a posterior under this model, not language change itself.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">10</span>Sources and code</h2>
+        <div class="attrib">
+            <h3>The methodology and the implementation are Takuya Takahashi's</h3>
+            <p><b>The design of the mutation model, its integration into a Bayesian phylogenetic framework, and the whole of the C++ implementation described on this page are the work of Takuya Takahashi</b>, the first author. Ayaka Onohara took part in the collaboration as second author. Please cite the original paper and the code repository below directly.</p>
+        </div>
+        <ul class="refs">
+            <li>Takahashi, T., Onohara, A., &amp; Ihara, Y. (2024) Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects. <i>Journal of Language Evolution</i>, 8(2), 169–191. <a href="https://doi.org/10.1093/jole/lzae004" target="_blank" rel="noopener noreferrer">doi:10.1093/jole/lzae004</a> (published 22 July 2024)</li>
+            <li>Takahashi, T., Onohara, A., &amp; Ihara, Y. Data and code for “Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger”. <i>Zenodo</i>. <a href="https://doi.org/10.5281/zenodo.7983118" target="_blank" rel="noopener noreferrer">doi:10.5281/zenodo.7983118</a> (licence: CC BY 4.0)</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>Structure of the implementation</h3>
+            <p>The MCMC is written in C++, with each part of the model in its own file. The division of responsibilities maps directly onto the structure of the model.</p>
+            <div class="filelist">
+                <code>main.cpp</code> — the MCMC itself (the sampling loop)<br>
+                <code>parameter_set.cpp</code> — proposal and acceptance of parameter sets<br>
+                <code>genealogy.cpp</code> — management of the matrix \(G\): initialisation by simulation, cutting out the tree (<code>cut_tree_exact</code>), proposing changes to \(G\) (<code>mutate_diagram</code>), and the prior of equation (2.1) (<code>log_prior_from_matrix</code>)<br>
+                <code>group_integration.cpp</code> — representation of the extended merger state \(N_i\) and merger mutation<br>
+                <code>pruning.cpp</code> — Felsenstein pruning; the two-state transition probability in closed form, with dynamic programming in <code>long double</code><br>
+                <code>tree.cpp</code> — tree structure (children and branch lengths)<br>
+                <code>transmission_rate.cpp</code> — computation of the inheritance probabilities \(a_{ij}\)<br>
+                <code>lexical_class.cpp</code>, <code>location.cpp</code>, <code>id_converter.cpp</code>, <code>csv_input.cpp</code> — word categories, locations, ID conversion, data input
+            </div>
+        </div>
+        <div class="sub" style="margin-top:22px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Felsenstein, J. (1981) Evolutionary trees from DNA sequences: a maximum likelihood approach. <i>Journal of Molecular Evolution</i>, 17, 368–376. (the pruning algorithm)</li>
+                <li>Lewis, P. O. (2001) A likelihood approach to estimating phylogeny from discrete morphological character data. <i>Systematic Biology</i>, 50(6), 913–925. (the Mk model)</li>
+                <li>Bouckaert, R. et al. (2012) Mapping the origins and expansion of the Indo-European language family. <i>Science</i>, 337, 957–960. (spatial models in linguistic phylogenetics)</li>
+                <li>Lee, S. &amp; Hasegawa, T. (2011) Bayesian phylogenetic analysis supports an agricultural origin of Japonic languages. <i>Proceedings of the Royal Society B</i>, 278, 3662–3669.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>The method treats the tree \(T\), the mutation rates \(q, \alpha\) and the root state \(B^A\) all as <b>random variables</b>, and builds a posterior from a prior and a likelihood. The distinguishing feature is that the tree itself carries a posterior, so competing phylogenetic hypotheses can be compared as probabilities. This is <b>Perspective 3 (Bayesian)</b> of <a href="../">Seven Perspectives in Equations</a>. It can also be read against <a href="../icar/">ICAR in Perspective 3</a>, which likewise puts spatial structure into a prior, and against <a href="../neighbor-net/">Neighbor-Net in Perspective 1</a>, which takes the opposite route of drawing a structure from distances.</p>
+    </div>
+
+    <p class="note">
+    <b>This page was written by Onohara, but the method it describes was devised and implemented by Takuya Takahashi.</b> Every figure is quoted from the published paper; no estimated or approximate values are given.<br>
+    The whole picture of where each method sits is in <a href="../">Seven Perspectives in Equations</a>, and which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-21 &nbsp;|&nbsp; <a href="../">← Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>
