@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線形混合モデルとAICによるモデル選択 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="観測が集団に入れ子になっているときの回帰を、ランダム効果と最尤推定の枠組みで扱う線形混合モデルについて、ランダム効果の定義・周辺尤度・空間誤差モデル・AICによる選択を、米原〜関ケ原の方言語彙調査と揖斐川上流域の方言分布の実装に即して説明したページ。同じデータをベイズで解き直した場合との対比を含む。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">線形混合モデル</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Mixed <span>Models</span></h1>
+        <p class="lead">観測が集団に<b>入れ子</b>になっているとき、独立を仮定した回帰は不確実性を小さく見積もります。集団ごとの切片のばらつきを分散パラメータ1つで表し、最尤で推定して AIC で選ぶ、というのがこの枠組みです。<br>
+        小野原が米原〜関ケ原の方言語彙調査と揖斐川上流域の方言分布に用いた実装に即して、何を仮定しているのか、そして<b>同じデータを後にベイズで解き直したときに何が変わったのか</b>を整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">観測が集団に入れ子になっているとき、独立を仮定した回帰では何が壊れるのか。</p>
+        <p class="body">
+        米原〜関ケ原の調査では、各集落の語彙消失率が応答であり、集落は中学校の<b>学区</b>に属している。同じ学区の集落は通学圏を共有し、同じ学校で同じ世代がことばを交わす。したがって、学区内の集落が互いに独立な観測だという前提は、そのままでは成り立たない。
+        </p>
+        <p class="body">
+        独立を仮定した回帰をそのまま当てると何が起きるか。<a href="../">観点2</a>の枠組みでは、推定のばらつきは情報量 \(I(\theta)\) の逆数として決まり、信頼区間はそこから出る。観測が重複した情報を含んでいるのに独立として数えると、実際より多くの情報があることになり、\(I(\theta)\) を過大に見積もる。結果として<b>標準誤差が小さく出て、信頼区間が狭くなり、検定は有意を出しやすくなる</b>。「手続きを繰り返したときの当たり率」という頻度論の約束が、そこで破れる。
+        </p>
+        <p class="body">
+        対処は2通りある。ひとつは学区ごとに別々の切片を<b>固定効果</b>として推定する方法、もうひとつは学区ごとの切片のばらつきを<b>分散パラメータ1つ</b>で表す方法である。線形混合モデルは後者にあたる。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>ランダム効果とは何をモデルに入れているのか</h2>
+        <p class="q">集団ごとに別々の値を推定するのではなく、値の散らばりの幅だけを推定する。</p>
+        <div class="eq">
+            <div class="lbl">固定効果で書く場合</div>
+            \[ y_i \;=\; \beta_0 \;+\; \sum_{d=2}^{D} \gamma_d\,\mathbf{1}\!\left[d(i)=d\right] \;+\; \mathbf{x}_i^{\top}\boldsymbol{\beta} \;+\; \varepsilon_i, \qquad \varepsilon_i \sim \mathcal{N}\!\left(0,\sigma_\varepsilon^2\right) \]
+            <p class="read"><b>\(\gamma_d\)</b> … 学区 \(d\) の切片。基準の1区を除いて \(D-1\) 個のパラメータが増える<br>
+            <b>\(d(i)\)</b> … 集落 \(i\) が属する学区。この研究では \(D=5\)</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">ランダム効果で書く場合</div>
+            \[ y_i \;=\; \beta_0 \;+\; u_{d(i)} \;+\; \mathbf{x}_i^{\top}\boldsymbol{\beta} \;+\; \varepsilon_i, \qquad u_d \sim \mathcal{N}\!\left(0,\sigma_u^2\right),\quad \varepsilon_i \sim \mathcal{N}\!\left(0,\sigma_\varepsilon^2\right) \]
+            <p class="read"><b>\(u_d\)</b> … 学区 \(d\) の切片のずれ。これ自体はパラメータではなく、正規分布から引かれた確率変数と見る<br>
+            <b>\(\sigma_u^2\)</b> … 推定するのはこの<b>1つ</b>だけ。学区が5つでも50でも増えない</p>
+        </div>
+        <p class="body">
+        差は「何を推定するか」にある。固定効果版は学区の数だけパラメータが増え、各学区は自分の観測だけで決まる。ランダム効果版が推定するのは散らばりの幅 \(\sigma_u^2\) ひとつで、個々の \(u_d\) はその幅のもとで全体平均のほうへ引き寄せられる。観測の少ない学区ほど強く引き寄せられるこの性質を<b>縮約</b>（部分プーリング）という。
+        </p>
+        <div class="eq">
+            <div class="lbl">独立をどこで使っているか ―― 周辺共分散</div>
+            \[ \mathrm{Cov}\!\left(y_i,\,y_j\right) \;=\; \begin{cases} \sigma_u^2 & d(i)=d(j),\ i \neq j \\[4pt] 0 & d(i) \neq d(j) \end{cases} \qquad\Longrightarrow\qquad \mathrm{ICC} \;=\; \frac{\sigma_u^2}{\sigma_u^2+\sigma_\varepsilon^2} \]
+            <p class="read">誤差 \(\varepsilon_i\) は互いに独立だが、<b>同じ学区の観測は \(u_d\) を共有する</b>ため、周辺的には相関する。その大きさが級内相関 ICC である。独立の仮定は、誤差の層に押し込められただけで消えていない。</p>
+        </div>
+        <div class="sub">
+            <h3>「独立をどの行で使ったか」を指せることが要点である</h3>
+            <p>ふつうの回帰が置く独立の仮定は、観測どうしが無関係だという主張である。混合モデルはそれを弱め、<b>学区を条件づけたうえでの独立</b>に置き換える。仮定が消えたのではなく、どこに置かれているかが変わった。統計学Ⅱで「独立を式のどの行で使ったか」を毎回指し示しているのは、この種の読み替えを自分でできるようにするためである。学区をまたぐ相関（たとえば隣接する学区どうしが似る）は、この式では依然として 0 と置かれている。そちらを扱うには別の構造が要る（<a href="#sec5">第5節</a>）。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>観点2との対応 ―― 最尤で何を最大にしているか</h2>
+        <p class="q">ランダム効果は積分で消し、残った尤度を最大にする。</p>
+        <p class="body">
+        \(u_d\) はパラメータではなく確率変数なので、尤度に残すことができない。そこで積分して消す。残るのは固定効果 \(\boldsymbol{\beta}\) と分散 \(\sigma_u^2,\sigma_\varepsilon^2\) についての関数であり、これを最大にする。
+        </p>
+        <div class="eq">
+            <div class="lbl">周辺尤度 ―― ランダム効果を積分消去する</div>
+            \[ L\!\left(\boldsymbol{\beta},\sigma_u^2,\sigma_\varepsilon^2\right) \;=\; \int p\!\left(\mathbf{y}\mid \mathbf{u}\right)\, p\!\left(\mathbf{u}\right)\, d\mathbf{u} \qquad\Longrightarrow\qquad \mathbf{y} \sim \mathcal{N}\!\left(X\boldsymbol{\beta},\; ZGZ^{\top}+R\right) \]
+            <p class="read"><b>\(Z\)</b> … どの観測がどの学区に属するかを示す計画行列<br>
+            <b>\(G=\sigma_u^2 I\)</b>、<b>\(R=\sigma_\varepsilon^2 I\)</b> … ランダム効果と誤差の分散<br>
+            線形かつ正規のときに限り、この積分は解析的に解けて多変量正規分布になる。<a href="../beta-regression/">ベータ回帰</a>のような非正規の応答では解けず、数値積分か MCMC が要る。</p>
+        </div>
+        <p class="body">
+        ここから先は<a href="../">観点2</a>の定石どおりである。対数尤度を微分してゼロと置き、数値的に解く。推定のばらつきは情報量から出て、そこから標準誤差と信頼区間と検定が組み立てられる。パラメータは固定した未知の値であり、確率変動するのは標本のほうだと考える。
+        </p>
+        <div class="sub">
+            <h3>REML ―― 分散推定の偏りを直す代わりに、比較できる範囲が狭まる</h3>
+            <p>最尤で分散成分を推定すると、固定効果を同時に推定した分だけ下向きに偏る。制限最尤（REML）は固定効果の影響を除いた尤度を使ってこの偏りを補正する。ただし REML の尤度は固定効果の計画行列に依存するため、<b>固定効果の構造が違うモデルどうしでは、REML の尤度も AIC も比較できない</b>（Pinheiro &amp; Bates 2000）。説明変数の組を選ぶために AIC を使うなら、最尤で当てはめ直す必要がある。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>同じ構造をベイズで推定すると、何が変わるのか</h2>
+        <p class="q">構造は同じ。違うのは \(\sigma_u\) に点を与えるか、分布を与えるかである。</p>
+        <p class="body">
+        この研究では、同じ米原〜関ケ原のデータが後に階層ベイズで解き直されている。<a href="../bayesian-estimation/">ベイズ推定</a>のページが扱っているのがそれで、モデル式の <code>(1|district)</code> は本ページの \(u_{d(i)}\) と同じものである。学区をランダム効果に置くという構造自体は変わっていない。変わったのは推定の枠組みと、応答に置く分布である。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>　</th><th>線形混合モデル（本ページ）</th><th>階層ベイズ（<a href="../bayesian-estimation/">ベイズ推定</a>）</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>階層構造</td><td>学区をランダム効果</td><td>学区をランダム効果（同じ）</td></tr>
+                <tr><td>応答の分布</td><td>正規分布</td><td>ベータ分布・logit リンク</td></tr>
+                <tr><td>\(\sigma_u\) の扱い</td><td>点推定を1つ返す</td><td>事後分布を返す</td></tr>
+                <tr><td>係数の不確実性</td><td>信頼区間（手続きの当たり率）</td><td>確信区間（パラメータの確率）</td></tr>
+                <tr><td>出力できる量</td><td>p 値</td><td>\(P(\beta&gt;0)\)</td></tr>
+                <tr><td>選択の道具</td><td>AIC・BIC</td><td>LOO 近似交差検証</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">同じデータ・同じ階層構造に対する2つの枠組みの対比。応答の分布が変わっている点については<a href="../beta-regression/">ベータ回帰</a>のページを参照。</p>
+
+        <div class="sub">
+            <h3>クラスタ数が少ないとき、この違いが効いてくる</h3>
+            <p>学区は5つ、集落は25である。\(\sigma_u^2\) は「5個の値の散らばり」から推定されることになり、情報がきわめて少ない。最尤はこの状況で \(\hat{\sigma}_u = 0\) という<b>境界解</b>を返すことがある。分散は負になれないので、尤度の最大が母数空間の端に来てしまう場合である。推定値が 0 だからといって学区差が存在しないわけではなく、「このデータからは幅を推定できなかった」という意味にすぎないが、出力される数値は同じ 0 である。</p>
+            <p>ベイズでは \(\sigma_u\) に事前分布を置くため、事後分布が 0 に一点集中することはない。区間として返るので、「0 に接しているが幅がある」ことが読める。実際、同じ研究の空間分散について<a href="../icar/">ICAR のページ</a>が報告している <code>sdcar</code> は 0.04、95%確信区間 [0.00, 0.16] で、下限が 0 に接しながら区間として表示されている。最尤ならここは 0 という1つの数字になり、接しているのか幅があるのかは区別できない。</p>
+        </div>
+        <div class="warn">
+            <h3>2つの解析の数値を混同してはいけない</h3>
+            <p>本ページ第7節の表に載せた AIC や係数は、<b>正規分布を仮定した最尤推定</b>の出力である。<a href="../bayesian-estimation/">ベイズ推定</a>のページが報告する \(\beta = +0.231\)、\(P(\beta&gt;0)=0.993\) は、<b>ベータ分布を仮定した事後分布</b>から得た別の量である。応答の分布もリンク関数も推定原理も違うため、係数の大きさを直接比べることはできない。同じ研究の同じデータでありながら、2つの数値は別のモデルの出力である。</p>
+        </div>
+    </section>
+
+    <section class="wblock" id="sec5">
+        <h2><span class="no">5</span>空間的自己相関を頻度論で扱う ―― 空間誤差モデル</h2>
+        <p class="q">学区で括れない「隣と似る」を、誤差の相関としてパラメータ化する。</p>
+        <p class="body">
+        第2節の周辺共分散は、学区をまたぐ相関を 0 と置いていた。しかし地理上に並んだ集落では、学区が違っても隣り合えば似る。この構造を扱うのが空間モデルである。揖斐川上流域の18地点を対象とした解析では、空間誤差モデル（spatial error model）が用いられている。
+        </p>
+        <div class="eq">
+            <div class="lbl">空間誤差モデル ―― 誤差そのものが空間的に相関する</div>
+            \[ \mathbf{y} \;=\; X\boldsymbol{\beta} + \mathbf{u}, \qquad \mathbf{u} \;=\; \lambda W \mathbf{u} + \boldsymbol{\varepsilon} \qquad\Longrightarrow\qquad \mathbf{u} \;=\; \left(I-\lambda W\right)^{-1}\boldsymbol{\varepsilon} \]
+            <p class="read"><b>\(W\)</b> … 近隣行列。どの地点とどの地点が隣かを定める<br>
+            <b>\(\lambda\)</b> … 空間自己相関の強さ。\(\lambda=0\) なら通常の回帰に戻る<br>
+            ランダム効果と違い、空間構造は<b>誤差の相関</b>として書かれる。推定は最尤で行う。</p>
+        </div>
+        <div class="sub">
+            <h3><a href="../icar/">ICAR</a> との対比 ―― 同じ問題を、別の層で書いている</h3>
+            <p>ICAR は各地点に空間ランダム効果 \(\phi_i\) を置き、その \(\phi\) に「隣どうしは近い値を取る」という<b>事前分布</b>を与える。空間誤差モデルは \(\phi\) を明示せず、誤差の共分散構造をパラメータ \(\lambda\) ひとつで表す。前者はベイズの枠組みで空間構造を事前分布として書き、後者は頻度論の枠組みで相関構造として書く。扱っている問題は同じで、どの層に構造を置くかが違う。</p>
+        </div>
+        <div class="sub">
+            <h3>近隣の定義は、ここでも設計物である</h3>
+            <p>この解析の近隣リストは、直線距離ではなく<b>集落間の歩行コスト距離</b>から作られている。山間の渓谷に位置する集落では、直線で近くても尾根を越える必要があれば実際の往来は遠い。歩行コスト関数（Aiken 1977、Langmuir 1984）を使うのはその補正である。ただし、どの関数を使うか、どこで切って隣とするかは分析者が決める。<a href="../icar/">ICAR のページ</a>で「何を隣とするかはデータから決まらない」と述べたのと同じ論点が、頻度論側でもそのまま当てはまる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>AICによるモデル選択 ―― 観点5への橋</h2>
+        <p class="q">当てはまりから複雑さを差し引く。情報理論の量が、頻度論の推定の上に乗る。</p>
+        <div class="eq">
+            <div class="lbl">赤池情報量規準</div>
+            \[ \mathrm{AIC} \;=\; -2\,\ell\!\left(\hat{\theta}\right) + 2k \]
+            <p class="read"><b>\(\ell(\hat{\theta})\)</b> … 最大対数尤度。第3節で最大化したもの<br>
+            <b>\(k\)</b> … 推定したパラメータの数<br>
+            第1項は当てはまりの良さ、第2項は複雑さの罰則である（Akaike 1974）。</p>
+        </div>
+        <p class="body">
+        AIC は<a href="../">観点5（情報理論）</a>の量である。真の分布をモデルで表したときの無駄な符号長、すなわちカルバック・ライブラー情報量を、手元のデータから推定する形になっている。最尤で当てはめ、情報理論の基準で選ぶ。この2つの観点は対立せず、<b>推定は頻度論、選択は情報理論</b>という分担で組み合わされている。同じ観点5にある<a href="../ncd/">正規化圧縮距離</a>が「圧縮できた量で近さを測る」のに対し、AIC は「符号長でモデルを比べる」という位置にある。
+        </p>
+        <div class="sub">
+            <h3>米原〜関ケ原では、全部分集合の総当たりで選んでいる</h3>
+            <p>説明変数は経度・緯度・面積・標高・土地利用（建物用地・森林・田）・人口・人口密度・人口増加率・高齢化率・15歳未満率と多い。GISA2016 の解析では <code>MuMIn::dredge</code> によって全部分集合を総当たりし、AIC の低い上位を取り出したうえで、\(\Delta\mathrm{AIC} &lt; 4\) のモデルを平均している。総合・関西系・東京系・美濃系それぞれの gain / loss について、同じ手続きが実施された。この探索の危うさについては第8節で述べる。</p>
+        </div>
+        <div class="sub">
+            <h3>揖斐川上流域では、空間項の要否を AIC で判断している</h3>
+            <p>空間誤差モデルの AIC は \(-52.203\)、同じ説明変数で空間項を持たない線形モデルの AIC は \(-50.466\) と報告されている。差は約 1.7 で、空間項を入れたほうが小さい。ただし AIC は相対指標であり、この差の大きさが何を意味するかは別途の判断になる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>この研究での使い方</h2>
+        <p class="q">2つの地域、2つの応答、2つの空間の扱い。</p>
+
+        <div class="sub">
+            <h3>(A) 米原〜関ケ原 ―― 語彙の消失率・獲得率と環境・社会的要因</h3>
+        </div>
+        <ol class="steps">
+            <li><b>応答の構成</b>　滋賀県米原市と岐阜県関ケ原町の集落について、40項目106語の調査から、60歳以上世代（142人）から中学生世代（544人）へかけての語の得失率の平均値を集落ごとに算出する。関西系・美濃尾張系・東京系の3タイプそれぞれについて、消失率と獲得率を分けて作る。</li>
+            <li><b>説明変数</b>　土地利用（建物用地・森林・田の割合）は国土交通省「国土数値情報 土地利用細分メッシュ」（平成18年度）から、人口・人口密度・人口増加率・高齢化率・15歳未満率・面積は総務省統計局 e-Stat の平成22年国勢調査（小地域）から取る。</li>
+            <li><b>標準化</b>　説明変数を <code>scale</code> で標準化し、係数の大きさを比較できるようにする。</li>
+            <li><b>モデル</b>　中学校の学区をランダム効果とする線形混合モデルを当てる。</li>
+            <li><b>選択</b>　全部分集合を総当たりし、AIC の最も低いモデルを各応答について選ぶ。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>応答（AIC 最小モデル）</th><th class="num">AIC</th><th class="num">BIC</th><th class="num">logLik</th><th class="num">deviance</th><th class="num">df.resid</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>関西系　消失率</td><td class="num">70.05</td><td class="num">76.53</td><td class="num">−30.03</td><td class="num">60.05</td><td class="num">22</td></tr>
+                <tr><td>東京系　消失率</td><td class="num">63.30</td><td class="num">74.98</td><td class="num">−22.65</td><td class="num">45.30</td><td class="num">18</td></tr>
+                <tr><td>美濃系　消失率</td><td class="num">75.27</td><td class="num">84.35</td><td class="num">−30.64</td><td class="num">61.27</td><td class="num">20</td></tr>
+                <tr><td>関西系　獲得率</td><td class="num">76.03</td><td class="num">81.22</td><td class="num">−34.02</td><td class="num">68.03</td><td class="num">23</td></tr>
+                <tr><td>東京系　獲得率</td><td class="num">66.12</td><td class="num">75.19</td><td class="num">−28.06</td><td class="num">52.12</td><td class="num">20</td></tr>
+                <tr><td>美濃系　獲得率</td><td class="num">69.82</td><td class="num">80.19</td><td class="num">−26.91</td><td class="num">53.82</td><td class="num">19</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">GISA2016 発表要旨の表1より、各応答について AIC が最小となったモデルの適合指標。係数については同表に11変数分が掲載されているが、ここでは本文が明示的に述べている知見のみを下に記す。</p>
+
+        <p class="body">
+        要旨本文が述べている知見は次の3つである。<b>どのタイプでも、人口が多い集落ほど消失率・獲得率がともに低い。</b>消失率に特有の要素は人口増加率であり、獲得率に特有の要素は面積である。すなわち人口が増えている場所では語が失われやすく、集落の面積が広ければ新しい語を得やすい。さらに東京系・美濃尾張系の項目では、経度が大きい側（関ケ原側）で消失率・獲得率がともに高い。
+        </p>
+        <div class="sub">
+            <h3>要旨は27集落と書くが、モデルに入ったのは25集落と読める</h3>
+            <p>上の表の <code>df.resid</code> は、標本数から固定効果の数（切片を含む）を引いた値として読める。関西系獲得率は説明変数1つ＋切片で <code>df.resid</code> 23、東京系消失率は説明変数6つ＋切片で 18 である。いずれも \(n=25\) と置いたときに一致する。要旨は対象地域を27集落と記しているが、消失率・獲得率が得られた25集落がモデルに投入されたと考えるのが整合的である。作業記録も <code>n=25</code> と記しており、後のベイズ再解析も25自治会を用いている。</p>
+        </div>
+
+        <div class="sub" style="margin-top:30px">
+            <h3>(B) 揖斐川上流域 ―― 系統推定の合成変数と集落の条件</h3>
+        </div>
+        <ol class="steps">
+            <li><b>対象</b>　岐阜県西北部、揖斐川上流域の18地点。徳山村8地点、藤橋村2地点、坂内村3地点、久瀬村5地点である。</li>
+            <li><b>言語データ</b>　山田（1978, 1980）が報告した47項目の基礎語彙を用いる。</li>
+            <li><b>系統推定</b>　基礎語彙について系統推定を行う。枝の信頼度はブートストラップ法1000回で評価し、徳山村とそれ以外が 68.3%、徳山村・坂内村とそれ以外が 95.2% の信頼度で分岐すると報告されている。</li>
+            <li><b>合成変数の作成</b>　系統推定で算出された距離に多次元尺度構成法を適用し、集落間距離の分散を最大にする第1軸（MDS1）を目的変数とする。</li>
+            <li><b>説明変数</b>　戸数、人口（1875年〜1920年）、田の面積、畑の面積、石高、標高を用いる。いずれも揖斐郡志と角川日本地名大辞典に依る。</li>
+            <li><b>空間誤差モデル</b>　歩行コスト距離から近隣リストを作り、空間誤差モデルを最尤推定で当てはめる。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>項目</th><th class="num">推定値</th><th class="num">標準誤差</th><th class="num">z 値</th><th class="num">p 値</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>切片</td><td class="num">0.10843771</td><td class="num">0.03987366</td><td class="num">2.7195</td><td class="num">0.0065374</td></tr>
+                <tr><td>戸数</td><td class="num">0.00352194</td><td class="num">0.00106948</td><td class="num">3.2931</td><td class="num">0.0009908</td></tr>
+                <tr><td>人口</td><td class="num">−0.00056370</td><td class="num">0.00017643</td><td class="num">−3.1951</td><td class="num">0.0013979</td></tr>
+                <tr><td>田</td><td class="num">−0.00134113</td><td class="num">0.00067133</td><td class="num">−1.9977</td><td class="num">0.0457472</td></tr>
+                <tr><td>畑</td><td class="num">−0.00115608</td><td class="num">0.00037578</td><td class="num">−3.0765</td><td class="num">0.0020944</td></tr>
+                <tr><td>石高</td><td class="num">0.00029381</td><td class="num">0.00018060</td><td class="num">1.6269</td><td class="num">0.1037645</td></tr>
+                <tr><td>標高</td><td class="num">−0.00043152</td><td class="num">0.00013314</td><td class="num">−3.2411</td><td class="num">0.0011909</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">空間誤差モデルの偏回帰係数。発表資料に掲載された <code>errorsarlm</code> の出力からの引用。観測数18、推定パラメータ数9。\(\lambda = -1.2505\)、LR 検定統計量 3.7368（p = 0.053227）、Wald 統計量 24.445（p = 7.648e−07）、AIC −52.203（線形モデルでは −50.466）。</p>
+
+        <p class="body">
+        資料はこの結果を、MDS1 が増加すると戸数と石高が増加し、田・畑・標高が減少する関係として読んでいる。石高については p 値が 0.104 で 0.05 をやや上回るが、有意傾向とみなせるレベルだと述べている。
+        </p>
+        <div class="sub">
+            <h3>\(\lambda\) が負である</h3>
+            <p>推定された \(\lambda\) は \(-1.2505\) と負である。空間モデルで通常想定されるのは「隣どうしは似る」という正の空間自己相関であり、負の \(\lambda\) はその逆、隣どうしが<b>異なる</b>方向の構造を意味する。山間の渓谷に沿って並ぶ集落について、この符号が何を反映しているのかは資料には記されていない。あわせて LR 検定の p 値は 0.053 で、空間項そのものの必要性は明確には支持されていない。観測数18に対してパラメータ9という規模も、この検定の解釈を慎重にさせる条件である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>限界 ―― この手法で言えないこと</h2>
+
+        <div class="warn">
+            <h3>「ランダム効果の分散がゼロ」は、ふつうの検定にかけられない</h3>
+            <p>\(H_0:\sigma_u^2=0\) を尤度比検定で調べたくなるが、この帰無仮説は母数空間の<b>境界</b>にある。分散は負になれないため、帰無仮説のもとでパラメータが内点にあるという通常の正則条件が満たされない。このとき尤度比統計量は自由度1のカイ二乗分布に従わず、Self &amp; Liang (1987) が一般の枠組みを与え、Stram &amp; Lee (1994) が縦断混合モデルについて \(\chi^2_0\) と \(\chi^2_1\) の 50 対 50 の混合になることを示している。標準的なカイ二乗分布を当てると<b>保守的な側に外れる</b>、すなわち有意になりにくい方向に誤る。</p>
+        </div>
+
+        <div class="warn">
+            <h3>AIC は相対指標であり、同じデータ・同じ応答でなければ比べられない</h3>
+            <p>AIC の絶対値そのものには意味がない。上の表の 70.05 や \(-52.203\) は、それ単体では何も語らない。比較できるのは、同一のデータに対して同一の応答を当てはめたモデルどうしの差だけである。欠測の扱いが違って行数が変わっていれば、その時点で比較は成立しない。統計学Ⅰ <a href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer">第11回</a>でも同じ注意を扱っている。</p>
+            <p>加えて、第3節で述べたとおり<b>REML で当てはめたモデルの AIC は、固定効果が違うモデルのあいだで比較できない</b>。説明変数の組を選ぶ用途に使うなら最尤での当てはめが必要になる。今回参照した2つの資料には、どちらで推定したかの記載がない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>全部分集合の総当たりは、標本が小さいほど危うい</h3>
+            <p>説明変数が11あれば部分集合は2000通りを超える。そのすべてに AIC を計算して最小を選ぶ手続きは、\(n=25\) という標本では過学習と偽陽性の危険が大きい。選ばれたモデルは「このデータに最もよく当てはまった組み合わせ」であって、母集団で最も良いモデルとは限らない。加えて、選択という操作そのものを経た後の係数や p 値は、選択を経ていない場合と同じようには読めない。</p>
+            <p>この点は外部からの批判ではなく、研究自身の作業記録が「n=25 で全探索は過学習・偽陽性リスク大」と記しているものである。同じ記録は、割合データに正規分布を仮定していたことも<b>分布の誤指定</b>として挙げ、ベータ回帰への移行を課題としている。</p>
+        </div>
+
+        <div class="warn">
+            <h3>応答が割合であることを、正規分布は扱えていない</h3>
+            <p>消失率・獲得率は \([0,1]\) に閉じた割合である。正規分布を仮定した線形混合モデルは、予測値が区間の外に出ることを構造的に防げない。標本の範囲内で当てはまりが良くても、定式化としては誤っている。この問題に対処するために応答分布をベータ分布へ置き換えたのが<a href="../beta-regression/">ベータ回帰</a>であり、同じ研究の後続の解析がその形を採っている。本ページが扱っているのは、その前段にあたる解析である。</p>
+        </div>
+
+        <div class="warn">
+            <h3>近隣の定義と、クラスタ数の少なさ</h3>
+            <p>空間誤差モデルの近隣行列も、混合モデルのクラスタ（学区）も、分析者が決める枠組みである。歩行コスト関数の選択、距離の切り方、どの単位を集団と見なすか。いずれもデータからは決まらない。同じ論点は<a href="../icar/">ICAR のページ</a>で、同じ研究群において隣接の定義を変えると空間自己相関の有無について異なる指標が出た事実として記録されている。</p>
+            <p>クラスタ数についても同様である。学区は5つ、地点は18ないし25である。この規模で分散成分を推定するとき、推定値は不安定になり、検定の検出力も低い。「学区差が検出されなかった」ことと「学区差がない」ことは、この標本では区別しにくい。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典とデータ</h2>
+        <p class="body">
+        2つの解析を扱った。(A) は滋賀県米原市から岐阜県関ケ原町にかけての集落で行われた3世代方言語彙調査に基づく。原調査は2015年度に米原市「まいばら協働事業提案制度」のもとではびろネット（滋賀県米原市柏原）が実施し、調査総数は809人である。(B) は岐阜県揖斐川上流域18地点を対象とし、山田（1978, 1980）が報告した基礎語彙を用いている。
+        </p>
+        <ul class="refs">
+            <li>小野原彩香「言語の消失と獲得に関連する環境・社会的要因」（発表時の所属：日本学術振興会特別研究員、東京大学）。JSPS 特別研究員奨励費 13J03462 および 16J40096。</li>
+            <li>小野原彩香「方言分布データの数理的分析」（発表時の所属：同志社大学大学院 文化情報学研究科）。発表媒体・巻号は手元の資料からは確認できなかったため記載していない。</li>
+            <li>言語データの提供：はびろネット事務局、および方言に関する知識・資料・巡検で協力を得た杉崎好洋氏、調査対象地区の各自治会（(A) の謝辞による）。</li>
+            <li>先行解析との関係：米原〜関ケ原のデータは、後に階層ベータ回帰による再解析が行われている（<a href="../bayesian-estimation/">ベイズ推定</a>、<a href="../beta-regression/">ベータ回帰</a>、<a href="../icar/">ICAR 空間ランダム効果</a>の各ページ）。</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Akaike, H. (1974) A new look at the statistical model identification. <i>IEEE Transactions on Automatic Control</i>, 19(6), 716–723. <a href="https://doi.org/10.1109/TAC.1974.1100705" target="_blank" rel="noopener noreferrer">doi:10.1109/TAC.1974.1100705</a></li>
+                <li>Self, S. G. &amp; Liang, K.-Y. (1987) Asymptotic properties of maximum likelihood estimators and likelihood ratio tests under nonstandard conditions. <i>Journal of the American Statistical Association</i>, 82(398), 605–610. <a href="https://doi.org/10.1080/01621459.1987.10478472" target="_blank" rel="noopener noreferrer">doi:10.1080/01621459.1987.10478472</a></li>
+                <li>Stram, D. O. &amp; Lee, J. W. (1994) Variance components testing in the longitudinal mixed effects model. <i>Biometrics</i>, 50(4), 1171–1177.</li>
+                <li>Pinheiro, J. C. &amp; Bates, D. M. (2000) <i>Mixed-Effects Models in S and S-PLUS</i>. Springer.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>研究の文献</h3>
+            <ul class="refs">
+                <li>Bromham, L., Hua, X., Fitzpatrick, T. G. &amp; Greenhill, S. J. (2015) Rate of language evolution is affected by population size. <i>Proceedings of the National Academy of Sciences</i>, 112(7), 2097–2102. <a href="https://doi.org/10.1073/pnas.1419704112" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.1419704112</a></li>
+                <li>Aoki, K., Lehmann, L. &amp; Feldman, M. W. (2011) Rates of cultural change and patterns of cultural accumulation in stochastic models of social transmission. <i>Theoretical Population Biology</i>, 79(4), 192–202.</li>
+                <li>Trudgill, P. (2011) <i>Sociolinguistic Typology: Social Determinants of Linguistic Complexity</i>. Oxford University Press.</li>
+                <li>山田達也 (1978) 揖斐川上流域における基礎語彙について. 名古屋市立大学教養部紀要 人文社会研究, 22, 33–66.</li>
+                <li>山田達也 (1980) 福井県今庄、池田方言及び滋賀県木之本方言の基礎語彙について ―― 徳山村方言に関連して. 名古屋市立大学教養部紀要 人文社会研究, 24, 23–34.</li>
+                <li>Aiken, R. (1977) <i>Wilderness areas in Scotland</i>. Unpublished Ph.D. thesis, University of Aberdeen.　／　Langmuir, E. (1984) <i>Mountaincraft and leadership</i>. The Scottish Sports Council/MLTB, Cordee.　（歩行コスト関数の出典として (B) が引くもの。(B) の本文は「Aitken」、参考文献欄は「Aiken」と表記が揺れている）</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>線形混合モデルは、パラメータを固定された未知の値と見て、ランダム効果を積分消去した周辺尤度を最大にする。返すのは点推定と信頼区間であり、確率がかかっているのは区間のほうである。<a href="../">7つの観点を式で読む</a>の<b>観点2（頻度論）</b>に属する。一方、モデルを選ぶ道具として用いる AIC は<b>観点5（情報理論）</b>の量であり、同じ観点には<a href="../ncd/">正規化圧縮距離</a>がある。推定は頻度論、選択は情報理論という組み合わせで動いている点が、この手法の位置づけである。同じデータを観点3（ベイズ）で解き直した場合については<a href="../bayesian-estimation/">ベイズ推定</a>と<a href="../icar/">ICAR 空間ランダム効果</a>を参照。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて発表資料に印刷された値および解析の作業記録から引用し、推定値や概算は記載していません。確認できなかった書誌情報は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>
