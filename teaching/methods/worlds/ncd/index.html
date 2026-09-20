@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正規化圧縮距離（NCD） — 小野原彩香 | Teaching</title>
+    <meta name="description" content="正規化圧縮距離（Normalized Compression Distance）について、コルモゴロフ複雑性との関係・定義と正規化の意味・圧縮器への依存という限界を、岐阜県方言語彙の仮想的文化領域抽出（2010）の実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（情報理論） */
+            --w:      #96702f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#ecd9ae; background:rgba(150,112,47,0.42); border:1px solid rgba(236,217,174,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(236,217,174,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf8ee; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#fbf8f2; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">正規化圧縮距離</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 5 ｜ <a href="../">情報理論</a></span>
+        <h1>Normalized Compression <span>Distance</span></h1>
+        <p class="lead">2つの対象がどれくらい似ているかを、<b>圧縮したときのファイルサイズだけ</b>から測る距離です。何を特徴として取り出すかを決める必要がなく、構造の複雑なデータをそのまま比較できます。理論上の裏づけはコルモゴロフ複雑性にありますが、その量は計算できないため、実在の圧縮器で近似したものが NCD です。<br>
+        小野原 (2010) が岐阜県全域の方言語彙から仮想的な文化領域を抽出した分析に即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「この2つは似ているか」を、何を特徴と見るかを決めずに問う。</p>
+        <p class="body">
+        ふつう、2つの対象の類似度を測るには、まず<b>特徴を取り出す</b>。単語の頻度、座標、カテゴリの有無といった数値の列に直し、そのうえでユークリッド距離やコサイン距離を計算する。この手順には、どの特徴を選ぶかという判断が最初に入り込む。選ばなかった情報は、そこで落ちる。
+        </p>
+        <p class="body">
+        正規化圧縮距離（Normalized Compression Distance, NCD）は、この手順を踏まない。2つのファイルを<b>そのまま圧縮器に渡し、圧縮後のサイズだけを見る</b>。似ている2つを連結して圧縮すると、共通する部分が繰り返しとして検出されて縮む。似ていなければ縮まない。この差を数値にしたものが NCD である。
+        </p>
+        <p class="body">
+        小野原 (2010) がこの手法を採ったのは、比較したい対象が<b>入れ子構造を持つ XML ドキュメント</b>だったからである。地理情報標準に準拠して設計したモデルに従い、調査地点ごとの方言情報を XML にした。緯度経度、語彙の一般名称、語彙の発音が階層的に入っている。このような複雑な構造を持つデータは、論文の言葉を借りれば「分析方法が限られるため、取り扱われる機会は少なくなる」。NCD は、その構造を平坦な数値表に直すことなく距離行列を得る道を与える。
+        </p>
+        <div class="sub">
+            <h3>論文が挙げている利点</h3>
+            <p>「この分析方法の利点の一つは、一般的な分析手法と比較して、<b>事前のデータ抽出や整形などが簡略化できる</b>ことにある」と論文は述べている。特徴設計をしないことは、情報を捨てない代わりに、何を測っているのかが見えにくくなることでもある。この裏表は第6節で扱う。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― 計算できない量を、圧縮器で置き換える</h2>
+        <p class="q">出発点はコルモゴロフ複雑性。ただしそれは計算できない。</p>
+        <p class="body">
+        コルモゴロフ (1965) は、個々の対象の情報量を、確率分布を経由せずに定義した。文字列 \(x\) の複雑性 \(K(x)\) とは、<b>\(x\) を出力する最短プログラムの長さ</b>である。規則的な文字列は短いプログラムで書けるので \(K\) が小さく、でたらめな文字列は自分自身を書き下すしかないので \(K\) が大きい。
+        </p>
+        <p class="body">
+        ここから2つの対象の隔たりを定義できる。\(x\) を知ったうえで \(y\) を作るのに必要な追加の記述長を使う考え方で、Li ら (2004) はこれを正規化して<b>正規化情報距離</b>（normalized information distance）とし、一定の意味で最適な距離であることを示した。
+        </p>
+        <p class="body">
+        問題は、\(K\) が<b>計算不可能</b>なことである。ある文字列に対する最短プログラムを一般に求める手続きは存在しない。そこで Cilibrasi と Vitányi (2005) は、\(K(x)\) を実在の圧縮器による圧縮後サイズ \(C(x)\) で置き換えた。こうして得られるのが NCD であり、理論上の最適性と引き換えに、実際に計算できる量になっている。
+        </p>
+        <div class="sub">
+            <h3>この置き換えが、手法のすべてを決めている</h3>
+            <p>圧縮器は最短プログラムを見つける装置ではない。GZIP なら直前の一定範囲に現れた繰り返しを辞書で置き換えるだけで、それ以上のことはしない。したがって NCD が捉える「似ている」は、<b>その圧縮器が捉えられる種類の規則性</b>に限られる。近似の質は圧縮器の性能そのものであり、手法の妥当性はここに集約される。</p>
+        </div>
+        <div class="sub">
+            <h3>論文はこの系譜を引用していない</h3>
+            <p>小野原 (2010) の参考文献に Kolmogorov や Cilibrasi &amp; Vitányi は含まれておらず、NCD は定義式とともに「汎用類似度算出技術の一つ」として導入されている。上に述べた系譜は、この手法の位置づけを説明するために本ページで補ったものである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>観点5「情報理論」のどこに当たるか</h2>
+        <p class="q">同じ「情報量」でも、測っている対象が違う。</p>
+        <p class="body">
+        <a href="../">7つの観点を式で読む</a>の<b>観点5</b>は、「短く符号化できることを、よい説明とみなす」という立場をまとめている。そこに並ぶエントロピー \(H(p)=-\sum_x p(x)\log p(x)\)、カルバック・ライブラー情報量、AIC はいずれも<b>確率分布に対して</b>定義された量である。符号長の期待値を考えており、背後には「データを生む分布がある」という前提が置かれている。
+        </p>
+        <p class="body">
+        NCD が属するのは、同じ情報理論でも<b>アルゴリズム的情報理論</b>の側である。\(K(x)\) は分布ではなく<b>個々の対象1つ</b>に対して定義される。確率モデルを立てないので、モデルが正しいかという問いが発生しない。代わりに、圧縮器が十分よいかという問いが発生する。
+        </p>
+        <div class="eq">
+            <div class="lbl">2つの情報量の、測る対象の違い</div>
+            \[ H(p) \;=\; -\sum_{x} p(x)\log p(x) \qquad \text{対} \qquad K(x) \;=\; \min\{\,|P| \;:\; U(P)=x\,\} \]
+            <p class="read"><b>\(H(p)\)</b> … 分布 \(p\) の平均的な予測しにくさ。個々の \(x\) には値が付かない<br>
+            <b>\(K(x)\)</b> … 対象 \(x\) そのものの記述長。\(U\) は万能機械、\(|P|\) はプログラム長<br>
+            <b>共通するもの</b> … どちらも「短く書けること」を良さとみなす</p>
+        </div>
+        <div class="sub">
+            <h3>AICと同じ屋根の下にあるが、立っている場所が違う</h3>
+            <p>観点5の AIC は、当てはまりを対数尤度で測り、パラメータ数で罰を与える。<b>モデルの複雑さ</b>を数えている。NCD は対象そのものの記述長を問題にし、モデルを持たない。どちらも「記述が短いほうがよい」という同じ原理を共有しながら、一方は分布とモデルの世界に、他方は個別の対象の世界に立っている。観点5にこの手法を置くのは前者の意味ではなく、<b>符号長で良さを測る</b>という原理を共有するからである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>定義と、なぜ正規化するのか</h2>
+        <p class="q">連結して圧縮したときに、どれだけ得をするか。</p>
+        <div class="eq">
+            <div class="lbl">正規化圧縮距離</div>
+            \[ \mathrm{NCD}(x,y) \;=\; \frac{C_{XY} - \min\{C_X,\, C_Y\}}{\max\{C_X,\, C_Y\}} \]
+            <p class="read"><b>\(C\)</b> … 圧縮アルゴリズム<br>
+            <b>\(C_X,\, C_Y\)</b> … \(x\)、\(y\) をそれぞれ単独で圧縮したファイルサイズ<br>
+            <b>\(C_{XY}\)</b> … \(x\) に \(y\) を連結して圧縮したファイルサイズ</p>
+        </div>
+        <p class="body">
+        式の形は論文に記載されたとおりである。読み方は次のようになる。
+        </p>
+        <div class="sub">
+            <h3>分子は「一方を知った上での、もう一方の追加分」</h3>
+            <p>仮に \(C_X \le C_Y\) とすると、分子は \(C_{XY} - C_X\) である。これは<b>\(x\) をすでに書いたあとで、\(y\) を書き足すのに追加で必要になった量</b>にあたる。\(x\) と \(y\) が似ていれば、\(y\) の多くは \(x\) の繰り返しとして参照でき、追加分は小さくなる。全く似ていなければ、\(y\) をほぼ丸ごと書くことになり、追加分は \(C_Y\) に近づく。</p>
+        </div>
+        <div class="sub">
+            <h3>分母は長さの違いを打ち消すため</h3>
+            <p>追加分をそのまま使うと、長いファイルほど距離が大きく出てしまう。長い文書どうしは、似ていても追加分の絶対量が大きい。そこで大きいほうの圧縮サイズで割り、<b>「追加分は、丸ごと書いた場合の何割か」</b>という比に直す。これにより値はおおよそ \([0,1]\) に収まり、長さの異なる対象どうしを同じ物差しで比べられる。</p>
+            <p><b>0 に近いほど似ている、1 に近いほど似ていない</b>。完全に同じ対象なら、連結しても圧縮後サイズはほとんど増えないので、分子はほぼ 0 になる。</p>
+        </div>
+        <div class="warn">
+            <h3>近似であることは、定義の時点で織り込まれている</h3>
+            <p>この式の \(C\) を \(K\) に置き換えたものが理論上の正規化情報距離である。\(K\) は計算できないので、実在の圧縮器を代入して使う。したがって NCD は<b>常に近似であり、圧縮器を変えれば値が変わる</b>。論文も「NCD は、圧縮アルゴリズムに依存する」と明記したうえで、使用したソフトウェアが GZIP 圧縮のみをサポートしていることを述べている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>この研究での使い方</h2>
+        <p class="q">方言の分布図を XML に直し、地点どうしの NCD から領域を抽出する。</p>
+        <p class="body">
+        対象は岐阜県全域の方言語彙である。『岐阜県方言の研究』（奥村, 1976）に掲載された10枚の分布図から、125箇所の調査地点について、唐がらし・唐もろこし・薬指・旋毛・竹馬・お手玉・粳米・馬鈴薯・真綿・里芋の10語彙をどう発音するかを読み取った。
+        </p>
+        <ol class="steps">
+            <li><b>属性の抽出</b>　各分布図から、調査地点ごとに「緯度経度情報」「語彙の一般的名称情報」「語彙の発音情報（方言）」の3つを取り出す。たとえば調査地点1では、唐がらしが「ナンバン」、唐もろこしが「トウナ」、薬指が「ベニサシユビ」、真綿と里芋はデータ無しである。</li>
+            <li><b>メタモデルの設計</b>　文化現象を時空間上で人間が行う一連の行動として定義した「メタ・メタモデル」を上位概念に置き、その下に方言のメタモデルを設計する。地理情報標準の<b>応用スキーマ（ISO19109）</b>に準拠させ、「方言（Dialects）」クラスが「話し手（Speaker）」と「語彙（Vocabulary）」に関係を持つ「メッセージ（Message）」クラスから成る構造とした。</li>
+            <li><b>XML へのインスタンス化</b>　地理情報標準の<b>符号化規則（ISO19118）</b>に従い、調査地点ごとに1つの XML ドキュメントを作る。125地点ぶんの XML が比較対象になる。</li>
+            <li><b>NCD の算出</b>　藤本が開発した NCD 算出ソフトウェア「百花壱式 Ver1.0」を用い、125個のドキュメントの<b>すべての組み合わせ</b>について NCD を計算して距離行列を得る。同ソフトウェアのバージョンは GZIP 圧縮のみをサポートする。</li>
+            <li><b>欠損の多い地点の除外</b>　XML 内で「NULL」と表した欠損が類似性として結果に影響を及ぼすため、欠損値の多い15地点（35, 62, 93, 96, 104, 114, 115, 116, 119, 120, 121, 122, 123, 124, 125）をあらかじめ分析対象から外し、110地点とする。</li>
+            <li><b>クラスタリング</b>　得られた距離行列に、非階層的な PAM、階層的な Ward・Average、系統学的な Neighbor Joining・<a href="../neighbor-net/">Neighbor-Net</a>、グラフクラスタリングの DPClus を当て、結果を比較する。</li>
+            <li><b>検証</b>　同じ調査から別のデータセットを作り、先行研究と照合する。</li>
+        </ol>
+
+        <div class="sub">
+            <h3>分類の結果</h3>
+            <p>PAM では5クラスタとし、外れ値の1クラスタを除いた4分類が適切だと判断された。一方、NCD 行列からの分類法としては、<b>Neighbor Joining のアルゴリズムに基づく Neighbor-Net が、先行研究の成果を最も忠実に再現した</b>。具体的には、徳山村戸入地区（調査地点28）の孤立と、大垣市（調査地点63）と垂井町（調査地点51）のあいだの東西アクセントの対立が図に現れている。いずれも方言学で古くから知られてきた事実である。</p>
+        </div>
+
+        <div class="sub">
+            <h3>検証は、別のデータと別の距離で行われた</h3>
+            <p>NCD が発音の類似性を適切に反映しているかを確かめるため、同じ調査から2種類の行列を別に作った。ひとつは列を調査語彙、行を調査地点とし、各地点での発音を一文字の記号に置き換えたもの。もうひとつは列を調査語彙のすべての発音、行を調査地点とし、その語彙が存在すれば1、しなければ0とした2値データである。距離には Gower と（2値データには）Jaccard を用い、クラスタリングは NCD の場合と同じ手法を試した。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>データ</th><th>距離</th><th>先行研究を最もよく再現した分類法</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>XML ドキュメント</td><td>NCD（GZIP）</td><td>Neighbor-Net</td></tr>
+                <tr><td>発音を記号化した行列</td><td>Gower</td><td>―（下の行が最良）</td></tr>
+                <tr><td>語彙の有無の2値データ</td><td>Jaccard</td><td>DPClus（距離&lt;0.85, density=0.95, 最小構成地点数=4）</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">いずれも110地点での分析。論文は、両者の結果を比較して「各グループの中核的な構成地点に差は無く、NCD による分析の有効性は示された」と述べている。用いたのは語彙分布の類似性データであるが、アクセント分布による先行研究結果との間にも齟齬が無いことにも注目すべきである、としている。</p>
+
+        <div class="sub">
+            <h3>結論として得られた領域</h3>
+            <p>調査地点は7から8のクラスタに分類でき、そのうち3から4のクラスタは地理的なまとまりを持たない。そこから地理空間的な視点で見ると、<b>岐阜県下は大きく4つのグループに分けられる</b>という結論が導かれた。論文は、これら4グループの境界の一つが岐阜市周辺に位置し、同じ傾向が藤本 (2010) による縄文土器を用いた分析でも指摘されていることに触れている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>限界</h2>
+        <p class="q">値を左右するのは、対象そのものだけではない。</p>
+
+        <div class="warn">
+            <h3>圧縮器を変えれば、距離が変わる</h3>
+            <p>NCD は \(K\) の近似なので、どの圧縮器を使うかが結果に直接効く。この研究では GZIP のみが使われた。GZIP は直前の一定幅（ウィンドウ）に現れた繰り返しを辞書で置き換える方式で、<b>ウィンドウを超えて離れた位置にある繰り返しは捉えられない</b>。連結したファイルが長くなると、前半と後半の対応が見えなくなる領域が生じる。</p>
+            <p>Cebrián ら (2005) は、圧縮器が<b>冪等でない</b>こと、すなわち同じ内容を2つ並べても圧縮後サイズが単独の場合の2倍近くになってしまう場合があることを示し、対象のサイズとウィンドウサイズによって NCD が歪むこと、その結果として \(\mathrm{NCD}(x,x)=0\) という同一性が崩れることを報告している。論文自身も圧縮アルゴリズムへの依存には言及しているが、ウィンドウサイズの影響までは検討していない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>同じスキーマから作った XML どうしは、はじめから似ている</h3>
+            <p>比較対象の125個の XML は、いずれも同じメタモデルから生成されている。したがって<b>タグ構造がすべて共通</b>である。<code>&lt;dataset&gt;</code>、<code>&lt;communication&gt;</code>、<code>&lt;message&gt;</code>、<code>&lt;pronunciation&gt;</code> といった文字列が、中身の発音が全く違う地点どうしでも同じように並ぶ。連結して圧縮すれば、この共通部分がまとめて縮む。</p>
+            <p>その結果、距離行列の値は全体として<b>似ている側に寄り、地点間の差が圧縮される</b>方向に偏りうる。タグの冗長性が大きいほど、発音情報という本来見たい部分の寄与は相対的に小さくなる。論文はこの点に触れていない。本ページで指摘しておくのは、XML を入力とする NCD 分析に共通して当てはまる性質だからである。</p>
+        </div>
+
+        <div class="warn">
+            <h3>距離の公理を厳密には満たさないまま、系統推定に渡されている</h3>
+            <p>前述のとおり、実在の圧縮器を使う NCD では同一性が厳密には成り立たず、三角不等式も保証されない。ところがこの研究では、得られた行列を PAM、Ward、Average、Neighbor Joining、Neighbor-Net、DPClus に渡している。とくに Neighbor Joining と <a href="../neighbor-net/">Neighbor-Net</a> は、距離が<b>加法的</b>であること、すなわち枝長の和として表せることを前提に枝を組み立てる手法である。</p>
+            <p>NCD の値はこの前提を満たすように作られていない。それでも先行研究を再現できたという事実は、手法の頑健さを示す実証的な証拠ではあるが、<b>理論的な正当化ではない</b>。得られたネットワークの枝長を、系統の分岐年代のように読むことはできない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>除外の基準が示されていない</h3>
+            <p>15地点が「欠損値が多い」として除外されたが、何件以上を多いとしたかは論文に書かれていない。除外の理由そのもの（XML 内の「NULL」という文字列が共通するために、中身と無関係に似てしまう）は妥当であり、これは上で述べたタグの冗長性と同じ問題の別の現れでもある。</p>
+            <p>ただし除外は分析対象そのものを減らす操作であり、地図上ではそれらの地点が空白になる。論文は図の中で除外した地点を小円・茶色で示し、クラスタに分類されなかった地点を灰色で示したうえで「灰色の調査地点内で一つのクラスタを形成することを示すものではない」と注記している。<b>図の読み方についての注意が明示されている点は、手法の使い方として適切である。</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>クラスタ数は、先行研究をどれだけ再現したいかで変わっている</h3>
+            <p>多次元尺度構成法で概要を把握したところ、全調査地点を<b>4つ</b>にグループ分けするのが適当だと分かった。その一方で、先行研究を通して明らかとなった地域差を見ようとするならば、どのクラスタ分析においても<b>7から8</b>のクラスタに分ける必要があることも明らかとなった、と論文は述べている。</p>
+            <p>つまりクラスタ数は、データだけから決まったのではなく、<b>何を見たいかによって選ばれている</b>。最終的な「岐阜県下は大きく4つ」という結論は、7から8のクラスタのうち3から4が地理的まとまりを持たないという観察を経て導かれたものであり、この経路は論文に明記されている。先行研究との一致は妥当性の傍証になるが、同時に、先行研究が示す構造を見るようにクラスタ数を選んだという循環も含んでいる。</p>
+        </div>
+
+        <div class="sub">
+            <h3>論文自身が述べている留保</h3>
+            <p>結論部で、語彙変化の方向の推定と「典型（Archetype）」データを用いた岐阜県外との関係の分析について、「<b>厳密な部分の解釈を行うためには、より慎重なデータ作成や先行研究データの精査が必要となることが分かった</b>」と述べられている。NCD による領域抽出そのものは有効と判断したうえで、そこから先の解釈には慎重さを求める書き方になっている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>出典とデータ</h2>
+        <p class="body">
+        本ページは、2010年11月付の発表資料に基づく。執筆時点の所属は同志社大学大学院 文化情報学研究科 博士前期課程であり、本研究は CITMAS プロジェクト（代表者：藤本悠）における研究成果の一部である。
+        </p>
+        <ul class="refs">
+            <li>小野原彩香「岐阜県方言語彙による仮想的文化領域抽出と語彙変化の方向 ―メタモデルと Normalized Compression Distance を用いて―」（2010年11月）　キーワード：方言, Normalized Compression Distance（正規化圧縮距離）, GIS, 岐阜県</li>
+            <li>分析対象データ：奥村三雄 (1976)『岐阜県方言の研究』大衆書房　所収の分布図10枚（125調査地点）</li>
+            <li>使用ソフトウェア：NCD 算出「百花壱式 Ver1.0」（藤本悠 開発、GZIP 圧縮のみ対応）、地図描画に R のパッケージ <code>maptools</code>、地形の傾斜角度とコスト・アロケーション領域の構築に ArcGIS</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <p style="margin-bottom:6px">下の4件は、NCD の理論的な位置づけを説明するために本ページで補ったもので、論文の参考文献には含まれていない。Huson &amp; Bryant のみ論文が引用している。</p>
+            <ul class="refs">
+                <li>Kolmogorov, A. N. (1965) Three approaches to the quantitative definition of information. <i>Problems of Information Transmission</i>, 1(1).</li>
+                <li>Li, M., Chen, X., Li, X., Ma, B. &amp; Vitányi, P. M. B. (2004) The similarity metric. <i>IEEE Transactions on Information Theory</i>, 50(12), 3250–3264.</li>
+                <li>Cilibrasi, R. &amp; Vitányi, P. M. B. (2005) Clustering by compression. <i>IEEE Transactions on Information Theory</i>, 51(4), 1523–1545. <a href="https://doi.org/10.1109/TIT.2005.844059" target="_blank" rel="noopener noreferrer">doi:10.1109/TIT.2005.844059</a></li>
+                <li>Cebrián, M., Alfonseca, M. &amp; Ortega, A. (2005) Common pitfalls using the normalized compression distance: What to watch out for in a compressor. <i>Communications in Information and Systems</i>, 5(4), 367–384.</li>
+                <li>Huson, D. H. &amp; Bryant, D. (2006) Application of phylogenetic networks in evolutionary studies. <i>Molecular Biology and Evolution</i>, 23(2), 254–267.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>照合した先行研究（論文の引用による）</h3>
+            <ul class="refs">
+                <li>服部四郎 (1930)「近畿アクセントと東方アクセントとの境界線」『音聲の研究』第三輯, 文學社, pp.131–144.</li>
+                <li>柴田武 (1950)「揖斐川上流のアクセント」『文字と言葉』刀江書院.</li>
+                <li>山田達也 (1978)「揖斐川上流域における基礎語彙について」『名古屋市立大学教養部紀要 人文社会研究』22, pp.33–66.</li>
+                <li>徳山村の歴史を語る会 (1984)『徳山村のあけぼのを求めて ―岐阜県揖斐郡徳山村遺跡分布調査中間報告―』</li>
+                <li>藤本悠 (2010)『文化情報学および理念型モデル化分析法に関する基礎的研究 ―文化情報学における諸概念と方法について―』同志社大学大学院文化情報学研究科 博士論文.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>NCD は、対象の良さや近さを<b>符号長で測る</b>という原理に立っている。短く書けるなら、そこには規則性があるとみなす。<a href="../">7つの観点を式で読む</a>の<b>観点5（情報理論）</b>が扱うエントロピーや AIC と同じ原理を共有しているが、それらが確率分布に対して定義されるのに対し、NCD は<b>個々の対象そのもの</b>に対して定義される点が異なる。確率モデルを立てないため、モデルの当てはまりを問う代わりに、圧縮器の性能を問うことになる。<br>
+        この研究では、得られた距離行列を <a href="../neighbor-net/">Neighbor-Net</a>（観点1）に渡して系譜構造を描いている。観点をまたいで手法が接続する例である。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値と結果はすべて発表資料に記載されたものを引用し、推定値や概算は記載していません。文献の書誌情報は、論文の参考文献欄とは別に実在を確認したうえで記載しています。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

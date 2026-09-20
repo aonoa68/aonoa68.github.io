@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ランダムフォレスト — 小野原彩香 | Teaching</title>
+    <meta name="description" content="決定木を多数束ねるランダムフォレストについて、2つのランダム化がなぜ効くか、Gini係数による変数重要度が情報理論のどこにつながるか、そして評価指標が近くても結果が違いうることを、方言の系統推定・統計教育調査・栽培適地推定の3つの実装に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（学習理論） */
+            --w:      #2f6b57;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bfe0d1; background:rgba(47,107,87,0.42); border:1px solid rgba(191,224,209,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(191,224,209,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f1f8f4; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6faf8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ランダムフォレスト</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 4 ｜ <a href="../">学習理論（リスク最小化）</a></span>
+        <h1>Random <span>Forest</span></h1>
+        <p class="lead">弱い決定木を多数育てて多数決を取る手法です。確率モデルを立てず、<b>まだ見ていないデータでの損失</b>だけを見るという点で学習理論の枠に属します。<br>
+        小野原の研究では、予測そのものよりも<b>「どの変数が集団を分けているか」</b>を読むために使われてきました。方言の系統分類、統計教育の自由記述、ワイン用ブドウの栽培適地という3つの場面に即して、2つのランダム化がなぜ効くのか、変数重要度が何を答えていて何を答えていないのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">分類そのものより、「分けているのは何か」を知りたい。</p>
+        <p class="body">
+        対象が \(n\) 個あり、それぞれに \(p\) 個の説明変数と、1つの所属ラベルが与えられているとする。ラベルを当てる規則を作るのが分類問題だが、小野原の研究でこの手法が呼び出される場面は、<b>当てること自体が目的ではない</b>ことが多い。
+        </p>
+        <p class="body">
+        揖斐川上流域の研究では、まず基礎語彙から集落の系統推定を行い、そこで得られた枝のまとまりを分類ラベルとして与え直している。そのうえで「集落を分けている要因になっている語彙が何であるか」をランダムフォレストによって求めた、と述べられている。分類器の精度ではなく、<b>分類に効いた変数の順位</b>のほうが読みたい出力である。
+        </p>
+        <p class="body">
+        統計教育の調査でも同じ使い方をしている。理系出身とそれ以外の学生の自由記述を分け、両群のあいだで出現頻度に顕著な相違が認められる語を「特徴語」として取り出すために、この手法が用いられた。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― 1本の木から、束へ</h2>
+        <p class="q">CART の決定木を、ブートストラップと変数の無作為選択で束ねたもの。</p>
+        <p class="body">
+        出発点は Breiman, Friedman, Olshen, Stone (1984) の CART（Classification and Regression Trees）である。説明変数の値で対象を2つに割り、割ったことで不純度がどれだけ減るかを基準に分割を選び、これを再帰的に繰り返して木を育てる。
+        </p>
+        <p class="body">
+        1本の木は解釈しやすいが不安定で、データがわずかに変われば木の形が変わる。Breiman (2001) は、この不安定さを欠点ではなく<b>利用できる資源</b>として扱う枠組みを与えた。互いに少しずつ違う木を大量に育て、その多数決を取る。小野原の論文では「ランダムフォレストは CART 法による決定木のアンサンブル学習と言える」と要約されている。
+        </p>
+        <div class="sub">
+            <h3>個々の木は弱くてよい、という設計</h3>
+            <p>揖斐川上流域の2本の論文は、この手法を「決して精度の高くない分類方法を複数組み合わせて精度を向上させ、分析に用いる方法である」と紹介している。素朴には奇妙な説明に見えるが、次節の分散の式を見れば、これが手法の設計思想をそのまま述べたものだと分かる。強い予測器を1つ作るのではなく、<b>弱くて互いに似ていない</b>予測器を多数作ることに賭けている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>観点4「学習理論」との対応</h2>
+        <p class="q">期待リスクと経験リスクの差に、上界でも実測でもない第三の答え方をする。</p>
+        <p class="body">
+        学習理論が扱う問いは、手元で計算できる経験リスク \(\hat{R}(f)\) と、本当に小さくしたい期待リスク \(R(f)\) の差をどう押さえるか、という一点にある。<a href="../">7つの観点</a>の観点4では、この差を複雑さの項で上から押さえる汎化境界の形を挙げた。
+        </p>
+        <div class="eq">
+            <div class="lbl">観点4の基本形（再掲）</div>
+            \[ R(f) \;=\; \mathbb{E}_{(x,y)\sim P}\bigl[\ell(f(x),y)\bigr], \qquad \hat{R}(f) \;=\; \frac{1}{n}\sum_{i=1}^{n} \ell\bigl(f(x_i),y_i\bigr) \]
+            <p class="read"><b>\(P\)</b> … データが従う分布。中身は分からないが存在すると考える<br>
+            <b>\(\ell\)</b> … 損失関数。確率モデルは立てない</p>
+        </div>
+        <p class="body">
+        同じ観点に置いた<a href="../loo/">LOO 感度分析</a>は、この差を<b>実測</b>で埋めにいく。標本を1つずつ抜いて当てはめ直し、抜いた点での損失を平均する。ランダムフォレストの答え方はどちらとも違う。仮説集合を制限するのでも、抜き差しで測るのでもなく、<b>予測器そのものを平均して分散を下げる</b>。
+        </p>
+        <div class="sub">
+            <h3>Breiman が証明したのは収束であって、無敵性ではない</h3>
+            <p>Breiman (2001) の主張は2つある。第一に、木の数を増やしていくと森の汎化誤差はある極限へほとんど確実に収束する。発散しない、という形の主張である。第二に、その極限の上界は、個々の木の<b>強さ</b>と木どうしの<b>相関</b>という2つの量で決まる。次節の分散の式は、この第二の主張の直感的な姿にあたる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>2つのランダム化は、何のためにあるか</h2>
+        <p class="q">相関の低い予測器を平均すると、分散が落ちる。落ち方に上限があることが重要。</p>
+        <p class="body">
+        木を作るときに、2箇所で乱数を使う。1つは<b>ブートストラップ</b>で、木ごとに標本を復元抽出し直して違うデータを見せる。もう1つは<b>各分割での変数の無作為選択</b>で、分割を選ぶ候補を毎回 \(p\) 個すべてではなく一部に絞る。小野原の論文でも「決定木の生成においてはすべての対象を使用せず、ブートストラップ法により対象を選択する。これに加え、変数もランダムに選択し、1本の決定木を生成する」と2段階が明記されている。
+        </p>
+        <p class="body">
+        なぜ2つ要るのか。\(B\) 本の木の予測を \(T_1(x),\dots,T_B(x)\) とし、どれも分散 \(\sigma^2\) を持ち、任意の2本のあいだの相関が \(\rho\) だとする。このとき平均した予測器の分散は次の形になる。
+        </p>
+        <div class="eq">
+            <div class="lbl">相関のある予測器を平均したときの分散</div>
+            \[ \mathrm{Var}\!\left(\frac{1}{B}\sum_{b=1}^{B} T_b(x)\right) \;=\; \rho\,\sigma^{2} \;+\; \frac{1-\rho}{B}\,\sigma^{2} \]
+            <p class="read"><b>第2項</b> … 木を増やせば \(B\) で割られて消える。ここがブートストラップの効き所<br>
+            <b>第1項</b> … \(B\) を含まない。木をいくら増やしても<b>残る</b><br>
+            <b>\(\rho\)</b> … 木どうしの相関。これを下げない限り第1項は下がらない</p>
+        </div>
+        <div class="sub">
+            <h3>第1項が、変数を無作為に選ぶ理由のすべてである</h3>
+            <p>ブートストラップだけで木を育てると、強い説明変数が1つあれば、どの木もその変数を根の近くで使ってしまう。結果として木どうしがよく似る、つまり \(\rho\) が大きくなり、上の式の第1項が高止まりする。木の本数をいくら増やしても、この項は消えない。分割のたびに候補変数を絞るのは、<b>強い変数に全部の木が飛びつくのを禁じて \(\rho\) を下げる</b>ための操作である。Breiman が汎化誤差の上界を「強さと相関」で書いたことと、この式は同じことを別の言い方で述べている。</p>
+        </div>
+        <div class="sub">
+            <h3>剪定しない理由 ―― 偏りと分散の分担</h3>
+            <p>1本の決定木では、深く育てすぎると手元のデータに合いすぎるため、交差検証で木を刈り込む（剪定する）のが普通である。ランダムフォレストはこれを行わない。小野原の論文にも「ランダムフォレストでは未剪定の決定木を生成し組み合わせることで分類精度の向上を図る」とある。分担がはっきりしている。<b>個々の木は深く育てて偏りを小さくし、分散のほうは平均に引き受けさせる</b>。上の式で第2項が \(B\) とともに消えることが、この分担を支えている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>変数重要度と Gini 係数 ―― 観点5への橋</h2>
+        <p class="q">「分けたことで不確かさがどれだけ減ったか」を、木の全体で平均する。</p>
+        <p class="body">
+        節点 \(t\) におけるクラス \(k\) の割合を \(p_{k|t}\) と書く。CART が分割の良し悪しを測るのに使う不純度には、次の2つがよく用いられる。
+        </p>
+        <div class="eq">
+            <div class="lbl">Gini 不純度とエントロピー</div>
+            \[ G(t) \;=\; 1-\sum_{k} p_{k|t}^{2}, \qquad\qquad H(t) \;=\; -\sum_{k} p_{k|t}\log p_{k|t} \]
+            <p class="read">どちらも、節点の中が1つのクラスで占められているとき 0 になり、混ざっているほど大きくなる</p>
+        </div>
+        <p class="body">
+        分割は、これがいちばん減る形を選ぶ。減り方は親と子の加重差で書ける。
+        </p>
+        <div class="eq">
+            <div class="lbl">分割による不純度の減少</div>
+            \[ \Delta G(t) \;=\; G(t) \;-\; \frac{n_L}{n_t}G(t_L) \;-\; \frac{n_R}{n_t}G(t_R) \]
+            <p class="read">左右の子の不純度を、そこへ流れた対象の割合で重み付けして引く。<b>観点5の情報利得 \(\mathrm{IG} = H(\text{親}) - \sum_c \frac{n_c}{n}H(\text{子}_c)\) と、同じ形をしている</b></p>
+        </div>
+        <p class="body">
+        変数 \(x_j\) の重要度は、森のすべての木を通じて、その変数が使われた分割での減少分を足し上げて平均したものになる。R の出力では <code>MeanDecreaseGini</code> という名前で返る。
+        </p>
+        <div class="eq">
+            <div class="lbl">平均 Gini 減少量</div>
+            \[ \mathrm{MDG}(x_j) \;=\; \frac{1}{B}\sum_{b=1}^{B}\ \sum_{t\in\mathcal{T}_b\,:\,v(t)=j} \Delta G(t) \]
+            <p class="read"><b>\(v(t)=j\)</b> … 節点 \(t\) の分割に変数 \(x_j\) が使われたことを表す<br>
+            値が大きい変数ほど、分類に寄与したと読む</p>
+        </div>
+        <div class="cross">
+            <h3>Gini 係数はエントロピーの代用である</h3>
+            <p>小野原の博士論文は、この点を明示して次のように書いている。「Random forest における Gini 係数とはエントロピーの代用であり、特徴量の変数（ここでは語彙）の分類の際の重要度を計算するために用いられる」。Gini 不純度と情報利得は別の指標だが、どちらも<b>分けることで不確かさがどれだけ減るか</b>を測っている点で同じ発想に立つ。<a href="../">7つの観点</a>の<b>観点5（情報理論）</b>に「決定木は情報の増え方で分ける」という節を置いたのは、この対応による。観点4の手法でありながら、変数重要度の部分だけは情報理論の物差しで動いている。</p>
+        </div>
+        <div class="warn">
+            <h3>重要度の定義は、論文によって違う</h3>
+            <p>揖斐川上流域の3つの報告（2012年の研究報告、『揖斐川上流域における語彙の類型と地理的分布』、博士論文）は、いずれも <code>MeanDecreaseGini</code> すなわち上の不純度減少にもとづく重要度を使っている。一方、統計教育の調査（2013年）は「変数の1つにノイズを与え、ノイズによる不純度と正しい不純度の差のすべての決定木による平均を正規化した値が重要度となる」と説明しており、これは変数を撹乱して精度の落ち方を見る<b>別系統の重要度</b>の記述にあたる。同じ手法名でも、どちらの重要度を読んでいるかで結果の意味は変わる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>この研究での使い方</h2>
+        <p class="q">3つの場面。前の2つは変数重要度を読むため、最後の1つは地図を描くため。</p>
+
+        <div class="sub">
+            <h3>（1）方言の系統分類を分けている語彙を探す</h3>
+        </div>
+        <ol class="steps">
+            <li><b>系統推定を先に行う</b>　山田 (1978, 1980) が報告した基礎語彙をもとに、揖斐川上流域 21 地点に東京・京都を加えた集落について NeighborNet で系統推定を行う（<a href="../neighbor-net/">系統ネットワーク</a>を参照）。枝の信頼度はブートストラップ 1000 回で求めている。</li>
+            <li><b>枝のまとまりをラベルにする</b>　得られたまとまりを、典型（東京・京都・木之本）、徳山（門入・戸入・塚・櫨原・山手・上開田・本郷・下開田）、坂内（川上・広瀬・坂本）、藤橋久瀬（東横山・西津汲・東津汲・日坂・外津汲）、小津鶴見（小津・鶴見）、周辺（今庄・池田）の6つにコード分けする。</li>
+            <li><b>列を落とす</b>　東京・京都に対してともに対応する語、および欠損を表す記号が1集落でも含まれる語は、その語の列そのものを削除する。すべて同じ値を示す列は分析に組み込まれないためである。</li>
+            <li><b>森を育てる</b>　各回の決定木の数を 500 とし、それを 100 回繰り返して、Gini 係数減少平均値の分布を求める。図の見出しには <code>rf. 23cases, 37vars, loop=100</code>、乱数の種として <code>seed = 200</code> が記録されている。</li>
+            <li><b>上位語を対応分析の結果と突き合わせる</b>　重要度の上位に挙がったのは grease、good、bite、fish、correct、they、he、sit、lie であった。これらを対応分析で抽出した特徴語と対照し、重複するものを確認している。</li>
+        </ol>
+        <p class="cap">数値・語はいずれも印刷された論文および博士論文の本文から引用。対象は 23 ケース × 37 変数。</p>
+
+        <div class="sub">
+            <h3>（2）理系出身とそれ以外で、自由記述の語が違うかを見る</h3>
+            <p>統計教育の調査では、データサイエンス科目の受講生 303 名に 38 問のアンケートを実施し（2012年度 12月21日、同志社大学京田辺校地 情報メディア館の演習室3教室、自己記入式）、そのうち自由記述の設問について形態素解析を行った。名詞・動詞・形容詞・副詞の4品詞を対象に、unigram と bigram で特徴語を抽出している。外的基準は、高校生のころ何系のクラスだったかという付帯質問による理系・理系以外の別である。決定木は 500 本。結果として「データサイエンス」という語が理系出身の記述に特徴的に現れ、「理解」と「できる」という bigram、「説明」と「ほしい」という bigram が理系以外の出身に多く現れた。</p>
+        </div>
+
+        <div class="warn">
+            <h3>この論文には、500 という数の説明に食い違いがある</h3>
+            <p>統計教育の論文は、手法の説明では「本研究では 500 本の決定木を生成し、ランダムフォレストを行った」と書いている。一方その次ページでは、先行研究（金・村上 2007）がランダムフォレストを 100 回繰り返して平均を取っていることを挙げたうえで、「本研究におけるランダムフォレストの 500 回の繰り返しは妥当な回数であると考えられる」と述べている。<b>同じ 500 が、木の本数とも繰り返し回数とも読める形で書かれている。</b></p>
+            <p>方言研究の側では両者が明確に分かれており、「各回の決定木の数は 500 としてそれを 100 回繰り返し」と書かれている。ここでは印刷された記述をそのまま示すにとどめ、どちらが正しいかの判定はしない。</p>
+        </div>
+
+        <div class="sub">
+            <h3>（3）ワイン用ブドウの栽培適地を推定する</h3>
+            <p>岩崎亘典を筆頭とし、小野原が第3著者として加わった共同研究である。千曲川ワインバレー（東地区）特区の 1104 の3次メッシュを対象に、現地踏査と聞き取りでワイン用ブドウ圃場の位置を把握して目的変数とし、地形・気象・地質・土地利用を説明変数とした。圃場ありのメッシュが 44 しかないため、圃場なしのメッシュをダウンサンプリングしている。機械学習モデルとしてランダムフォレストを、線形回帰モデルとしてロジスティック回帰を当て、推定結果を地図として出力した。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>場面</th><th>ラベル</th><th>変数</th><th class="num">木</th><th>読みたい出力</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>方言の系統分類</td><td>系統推定の枝（6区分）</td><td>語彙 37</td><td class="num">500 × 100回</td><td>Gini 減少の上位語</td></tr>
+                <tr><td>統計教育の自由記述</td><td>理系／理系以外</td><td>unigram・bigram</td><td class="num">500</td><td>特徴語</td></tr>
+                <tr><td>栽培適地の推定</td><td>圃場あり／なし</td><td>地形・気象・地質</td><td class="num">記載なし</td><td>適地の地図</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">「記載なし」は、要旨に木の本数の記述が見当たらないことを示す。推測は記載していない。</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>限界 ―― この手法で言えないこと</h2>
+        <p class="q">よく当たることと、正しい理由で当たっていることは別である。</p>
+
+        <div class="warn">
+            <h3>F1 値が近くても、出てくる地図は違う</h3>
+            <p>栽培適地の研究がそのまま例になっている。学習に用いたデータの F1 値は、ランダムフォレストが 0.67、ロジスティック回帰が 0.62 であった。差は小さい。ところが<b>推定地図は大きく異なった</b>。ロジスティック回帰は高標高の地域まで適地と推定したのに対し、ランダムフォレストによる評価ではこれらの範囲が含まれなかった、と報告されている。</p>
+            <p>評価指標が1つ近いことは、2つの手法が同じことを言っている証拠にはならない。とくに成果物が地図である場合、<b>どこが適地かという空間的な配置こそが結論</b>であって、要約された1つの数値ではない。なお、この F1 値は学習に用いたデータで計算されたものであり、未知のメッシュに対する当たり方を示すものではない点にも注意が要る。</p>
+        </div>
+
+        <div class="warn">
+            <h3>変数重要度は「何が効いているか」ではなく「何が見分けに使えるか」しか言わない</h3>
+            <p>同じ研究の予備的な解析では、ランダムフォレストとロジスティック回帰のいずれでも、国土数値情報の「その他の農地」の寄与が最も高かった。しかしこれは栽培適地の特性を示すものではなく、<b>農地が集積して立地していることを反映している</b>と判断され、土地利用に関する要素を除いて分析がやり直されている。</p>
+            <p>重要度が高い変数は、ラベルをよく予測する変数である。それが対象の性質を説明しているかどうかは、手法の外側で判断するしかない。ここでは分析者がその判断を下し、変数を落とすという形で対処している。</p>
+        </div>
+
+        <div class="warn">
+            <h3>Gini にもとづく重要度には、変数の型による偏りがある</h3>
+            <p>不純度の減少にもとづく重要度は、取りうる値の数が多い変数や、尺度の粗さが異なる変数のあいだで公平ではない。Strobl ら (2007) は、予測変数が測定の尺度や水準の数において異なる状況では、この重要度が信頼できないことを示し、非復元の部分抽出を用いる解決策を与えている。連続変数とカテゴリ変数が混在する設計では、順位そのものが手法の副産物である可能性を疑う必要がある。</p>
+            <p>なお『揖斐川上流域における語彙の類型と地理的分布』では、この点について「Gini 係数だけではなく、別の変数重要度決定法でも random Forest を行ったが特徴語として上位に挙がった単語は Gini 係数による結果と一致した」と、<b>別の重要度で確かめた</b>旨が記されている。変数がすべて同型の2値語彙データであることも、この事例では偏りが出にくい方向に働いている。</p>
+        </div>
+
+        <div class="warn">
+            <h3>「過剰適合しない」と書き切ることはできない</h3>
+            <p>統計教育の論文には「ランダムフォレストは過剰適合しないとされる（Breiman, 2001）」という記述がある。原典が示したのは、より限定された主張である。<b>木の数を増やしていくと汎化誤差はある極限へほとんど確実に収束する</b>、つまり発散しない、という形の結果であり、その極限の上界が個々の木の強さと木どうしの相関で決まる、というものである。</p>
+            <p>したがって「木を増やしすぎたせいで過剰適合する」ことは起きない。だが、その収束先が低いことは保証されていない。ラベルに誤りが多い場合、標本が小さい場合、あるいは有効な変数がごく少ない場合には、収束先そのものが高いままになりうる。木の本数を増やすことと、データに対して適合しすぎないことは、別の問題である。</p>
+        </div>
+
+        <div class="sub">
+            <h3>100 回の繰り返しが消しているのは、乱数の揺れだけである</h3>
+            <p>方言研究では森を 100 回作り直し、Gini 係数減少平均値の分布として重要度を示している。図が点ではなく箱ひげで描かれているのはそのためである。これによって乱数の引き方による順位の揺れは均される。ただしそれは、<b>同じデータを同じ手続きにかけたときのばらつき</b>にすぎない。標本が別の 23 集落だったら何が上位に来たか、という問いには答えていない。繰り返しを増やしても、推定の不確実性そのものが減るわけではない。</p>
+        </div>
+
+        <div class="sub">
+            <h3>ラベルの作り方が、答えを半分決めている</h3>
+            <p>方言研究では、ランダムフォレストに与える分類ラベルが、先立つ系統推定の結果そのものである。したがってこの手続きが答えているのは「系統推定が作った区分を、どの語がよく再現するか」であって、「集落が本当はどう分かれるか」ではない。系統推定の段階で別のまとまりを採っていれば、上位に来る語も変わる。栽培適地の研究にも同じ構造がある。現在圃場がある場所を適地としてモデルを作っているが、論文自身が「現状圃場がない場所が栽培不適とは限らない」と明記している。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>出典とデータ</h2>
+        <p class="body">
+        この手法が使われている小野原の報告は次のとおり。所属はいずれも発表時点の記載による。
+        </p>
+        <ul class="refs">
+            <li>小野原彩香（2012）「揖斐川上流域の語彙に関する系統推定」<i>情報処理学会研究報告</i>, Vol.2012-CH-94, No.4, 2012年5月26日.（同志社大学大学院文化情報学研究科）</li>
+            <li>小野原彩香「揖斐川上流域における語彙の類型と地理的分布」研究論文.（誌名・巻号・発行年は手元の刷りから確認できなかったため記載しない）</li>
+            <li>小野原彩香・谷岡健資・土山玄・大森崇（2013）「統計教育に関する授業内容の傾向と学生の授業評価 ―統計教育質保証に関する分析調査―」<i>Journal of Culture and Information Science</i>, 9(1), 1–11.</li>
+            <li>小野原彩香（2013年度）『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』同志社大学大学院文化情報学研究科 博士論文. 第5章「事例3 基礎語彙に関する系統推定」.</li>
+            <li>岩崎亘典・田中聡久・小野原彩香・林和則・鹿取みゆき・小口高（2023）「P-2-34. 機械学習を用いたワイン用ブドウ栽培適地の推定」<i>GIS ―理論と応用</i>, 31(2), 2023年12月, 2023年度大会優秀発表賞・ポスターセッション賞要旨.（小野原は第3著者・立教大学社会情報教育研究センター。手元の著者校は 72(48) ページ）　JSPS 科研費 基盤(B) 20H03121</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Breiman, L. (2001) Random forests. <i>Machine Learning</i>, 45(1), 5–32. <a href="https://doi.org/10.1023/A:1010933404324" target="_blank" rel="noopener noreferrer">doi:10.1023/A:1010933404324</a></li>
+                <li>Breiman, L., Friedman, J. H., Olshen, R. A. &amp; Stone, C. J. (1984) <i>Classification and Regression Trees</i>. Wadsworth, Belmont, California.</li>
+                <li>Strobl, C., Boulesteix, A.-L., Zeileis, A. &amp; Hothorn, T. (2007) Bias in random forest variable importance measures: Illustrations, sources and a solution. <i>BMC Bioinformatics</i>, 8, 25. <a href="https://doi.org/10.1186/1471-2105-8-25" target="_blank" rel="noopener noreferrer">doi:10.1186/1471-2105-8-25</a></li>
+                <li>金明哲・村上征勝 (2007) ランダムフォレスト法による文章の書き手の同定. <i>統計数理</i>, 55(2), 255–268.</li>
+            </ul>
+            <p class="cap" style="margin-top:12px">Breiman, Friedman, Olshen, Stone の書誌は、統計教育の論文の参考文献欄では Friedman が Freidman と綴られている。ここでは原著の綴りに従った。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>ランダムフォレストは、データが従う分布も誤差の形も仮定しない。損失を小さくすることだけを目標に置き、まだ見ていないデータでの当たり方を、予測器を平均するという形で改善しにいく。確率モデルを立てないまま予測を扱う点で、<a href="../">7つの観点を式で読む</a>の<b>観点4（学習理論・リスク最小化）</b>に属する。同じ観点の<a href="../loo/">LOO 感度分析</a>が期待リスクとの差を実測で埋めにいくのに対し、こちらは分散を下げることで差を詰める。ただし変数重要度の部分だけは、不純度の減少という<b>観点5（情報理論）</b>の物差しで測られている。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて印刷された論文・要旨・博士論文の本文から引用し、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

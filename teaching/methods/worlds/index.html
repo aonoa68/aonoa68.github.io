@@ -280,6 +280,7 @@
 <div class="sub"><h3>SVMは余白を最大にする</h3><div class="eq" style="--w:#2f6b57">\[\min_{w,b}\ \tfrac{1}{2}\lVert w\rVert^2 + C\sum_{i=1}^{n}\xi_i \quad \text{s.t.}\quad y_i(w^{\top}x_i+b) \ge 1-\xi_i,\ \ \xi_i \ge 0\]<p class="read">境界から最も近い点までの距離を広く取る。確率を一切仮定しない分類法。</p></div></div>
 <p class="where">授業で扱う回：<span style="color:var(--muted)">いまのところなし</span></p>
 <p class="where" style="--w:#2f6b57">研究で使う手法：<a href="loo/">LOO 感度分析 ―― 抜く単位を、従属関係のまとまりに合わせる</a></p>
+<p class="where" style="--w:#2f6b57">研究で使う手法：<a href="random-forest/">ランダムフォレスト ―― 相関の低い木を平均して、分散だけを下げる</a></p>
     </section>
     <section class="wblock" style="--w:#96702f">
         <h2><span class="no">5</span>情報理論</h2>
@@ -294,6 +295,7 @@
 <div class="sub"><h3>AICは当てはまりと複雑さの釣り合い</h3><div class="eq" style="--w:#96702f">\[\mathrm{AIC} = -2\,\ell(\hat{\theta}) + 2k\]<p class="read">\(k\) はパラメータ数。当てはめを良くしても、パラメータを増やした分は差し引かれる。</p></div></div>
 <div class="sub"><h3>決定木は情報の増え方で分ける</h3><div class="eq" style="--w:#96702f">\[\mathrm{IG} = H(\text{親}) - \sum_{c}\frac{n_c}{n}H(\text{子}_c)\]<p class="read">分けたことで不確かさがどれだけ減ったかを測り、いちばん減る分割を選ぶ。</p></div></div>
 <p class="where" style="--w:#96702f">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第11回</a></p>
+<p class="where" style="--w:#96702f">研究で使う手法：<a href="ncd/">正規化圧縮距離 ―― 圧縮できた量で、構造の違う対象どうしの近さを測る</a></p>
     </section>
     <section class="wblock" style="--w:#8a5a2f">
         <h2><span class="no">6</span>ゲーム・敵対</h2>
