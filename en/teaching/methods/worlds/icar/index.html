@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICAR Spatial Random Effects — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="ICAR spatial random effects write the structure of neighbouring sites taking similar values as a prior. This page covers impropriety and the sum-to-zero constraint, the adjacency matrix as a design choice, and collapse in small samples, following the implementation used on a dialect vocabulary survey from Maibara to Sekigahara.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (Bayesian) */
+            --w:      #6a4d8a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#d9c8e8; background:rgba(106,77,138,0.42); border:1px solid rgba(217,200,232,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(217,200,232,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box where this method's weaknesses go) */
+        .warn { background:#f7f4fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Reference box (gold, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results table */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f9f7fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Procedure list */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        /* .nav-inner is capped at 1100px, so the bar gains no room on a wider
+           screen. The English breadcrumb at this depth already fills it, and the
+           secondary links would wrap inside a 56px bar, so they are dropped here.
+           Both remain one level up, on the In Equations page. */
+        .nav-logo, .nav-current { white-space: nowrap; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ICAR Spatial Random Effects</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/icar/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 3 ｜ <a href="../">Bayesian</a></span>
+        <h1>ICAR <span>Spatial Effects</span></h1>
+        <p class="lead">A way of writing the structure &ldquo;nearby sites tend to take similar values&rdquo; into a model <b>as a prior</b>. It was built for disease mapping in epidemiology, and expresses &ldquo;resembling one&rsquo;s neighbours&rdquo; through an adjacency relation linking regions.<br>
+        This page follows the implementation Onohara used to check for spatial autocorrelation in a dialect vocabulary survey from Maibara to Sekigahara, setting out what the method assumes and <b>how far the adjacency matrix, a designed object, governs the result</b>.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Handling the rival explanation &mdash; &ldquo;is it not simply that neighbouring settlements resemble one another?&rdquo; &mdash; inside the model.</p>
+        <p class="body">
+        Data from sites laid out across a geography almost always carry spatial structure. Adjacent settlements have people moving between them, belong to the same school district, and share a similar history. So <b>the premise that observations from different settlements are mutually independent does not hold as it stands</b>. A regression that assumes independence counts this overlapping information as if it were new, and underestimates the uncertainty on the coefficients.
+        </p>
+        <p class="body">
+        There are two ways to deal with it. One is to remove the spatial structure before regressing; the other is to <b>estimate the spatial structure explicitly as part of the model</b>. ICAR is the latter. A spatial random effect \(\phi_i\) is placed at each site, and \(\phi\) is given a prior saying that neighbours take nearby values.
+        </p>
+        <p class="body">
+        What this study wanted to ask was whether the association between population growth rate and vocabulary loss <b>could be explained away by spatial proximity</b>. Nearby settlements have similar population dynamics, so the point of the check is whether the coefficient survives once a spatial effect is included.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — a method that came from cancer maps</h2>
+        <p class="q">Epidemiology built it in order to map incidence rates by region.</p>
+        <p class="body">
+        The prototype is the model published in 1991 by Julian Besag (1945–2010, English statistician) with York and Mollié. Its original purpose was <b>to draw maps of cancer incidence by region</b>. Computing a rate naively for each region gives a small denominator wherever the population is small, so that a few extra cases by chance send the rate leaping upward. The map then depicts sampling variation rather than reality.
+        </p>
+        <p class="body">
+        So the knowledge that &ldquo;of course a region resembles its neighbours in incidence&rdquo; is brought in as a prior, pulling each region&rsquo;s estimate towards its neighbours. The smaller the population, the more strongly it is pulled, and the map stabilizes. Rather than removing spatial autocorrelation as a nuisance, this model <b>uses it as information that helps the estimation</b>.
+        </p>
+        <div class="sub">
+            <h3>From epidemiology to language research</h3>
+            <p>The epidemiological picture, in which rural areas near a city show rates resembling the city&rsquo;s, transfers directly to the picture in linguistic geography, in which neighbouring settlements show similar vocabulary change. It is no accident that this study uses rarefaction from ecology and spatial models from epidemiology: <b>the shape of the problem — aggregated data whose sample size differs from site to site — is shared</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">A spatial version of the Markov property, written as a random field on a graph.</p>
+        <p class="body">
+        The mathematical root of ICAR is the same as that of Markov chains (Markov 1906). The Markov property in a chain over time said that once the present is fixed, the past is irrelevant to the future. Moved into space, it becomes <b>&ldquo;once the values at adjacent sites are fixed, sites further away are irrelevant&rdquo;</b>. A random field with this property is called a Markov random field, and the Hammersley–Clifford theorem gives the conditions under which specifying the conditional distributions determines the joint distribution.
+        </p>
+        <p class="body">
+        ICAR is therefore a model that, instead of writing the joint distribution directly, <b>writes only the conditional distribution at each site</b>. Specifying local relations without specifying the whole is its characteristic feature.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Definitions and assumptions</h2>
+        <p class="q">Conditional autoregression (CAR), and ICAR as its limit.</p>
+        <div class="eq">
+            <div class="lbl">CAR — defined by the conditional distribution at each site</div>
+            \[ \phi_i \mid \phi_{-i} \;\sim\; \mathcal{N}\!\left(\alpha\,\frac{\displaystyle\sum_{j} w_{ij}\,\phi_j}{\displaystyle\sum_{j} w_{ij}},\;\; \frac{\sigma^{2}}{\displaystyle\sum_{j} w_{ij}}\right) \]
+            <p class="read"><b>\(w_{ij}\)</b> … an entry of the adjacency matrix; 1 if adjacent, 0 otherwise<br>
+            <b>\(\phi_{-i}\)</b> … the spatial effects at every site other than \(i\)<br>
+            <b>The mean</b> … the average over adjacent sites multiplied by \(\alpha\). A site&rsquo;s own value is pulled towards the average of its neighbours<br>
+            <b>The variance</b> … smaller for sites with more neighbours. The more information, the more firmly the value is pinned down</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">ICAR — the limit at \(\alpha = 1\)</div>
+            \[ \phi_i \mid \phi_{-i} \;\sim\; \mathcal{N}\!\left(\bar{\phi}_{\partial i},\;\; \frac{\sigma^{2}}{n_i}\right), \qquad
+               p(\boldsymbol{\phi}) \;\propto\; \exp\!\left[-\frac{1}{2\sigma^{2}}\sum_{i \sim j}\bigl(\phi_i - \phi_j\bigr)^{2}\right] \]
+            <p class="read"><b>\(\bar{\phi}_{\partial i}\)</b> … the mean of \(\phi\) over the sites adjacent to site \(i\). <b>\(n_i\)</b> … the number of neighbours of site \(i\)<br>
+            <b>\(i \sim j\)</b> … a sum over adjacent pairs. <b>The penalty takes the form of a sum of squared differences between neighbours</b>, so that the further apart adjacent sites are, the lower the probability</p>
+        </div>
+        <div class="warn">
+            <h3>ICAR is improper as a prior</h3>
+            <p>Look closely at the expression on the right: adding the same constant to every element of \(\boldsymbol{\phi}\) leaves the differences \(\phi_i - \phi_j\) unchanged. In other words <b>this density fixes the overall level not at all</b>. Being flat in the constant direction, its integral diverges and it cannot be normalized as a probability distribution. That is what &ldquo;improper&rdquo; means.</p>
+            <p>There are two practical consequences. First, as it stands it is incomplete as a prior. Second, if the model has an intercept, the level of the intercept and the level of the spatial effect cannot be told apart, and <b>identifiability is lost</b>. The standard remedy is to impose a sum-to-zero constraint \(\sum_i \phi_i = 0\), which pushes the level onto the intercept and leaves the spatial effect carrying only the differences between sites. The <code>car(type = "icar")</code> in <code>brms</code> is the implementation with this constraint.</p>
+        </div>
+        <div class="sub">
+            <h3>The adjacency matrix is decided by the analyst, not by the data</h3>
+            <p>The \(w_{ij}\) appearing in the expressions above does not emerge automatically from anywhere. <b>What counts as a neighbour is a design decision.</b> Sites within a fixed distance? The \(k\) nearest? Regions sharing an administrative boundary? A Delaunay triangulation? The choice changes the distribution of neighbour counts, which changes the strength of the pull, which changes the spatial effect that is estimated. The data do not settle this choice.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it is used in this research</h2>
+        <p class="q">Neighbours were defined as sites within 3 km, and models with and without a spatial term were compared.</p>
+        <ol class="steps">
+            <li><b>Computing distances</b>　Great-circle distances (haversine formula, Earth radius 6371 km) are computed from the latitude and longitude of each settlement.</li>
+            <li><b>Building the adjacency matrix</b>　A binary matrix \(W\) is formed, taking pairs at a distance greater than 0 and at most 3 km as adjacent (1) and everything else as 0. The 3 km threshold follows the value used in the earlier 2016 analysis.</li>
+            <li><b>Checking the adjacency structure</b>　The resulting \(W\) is 25×25, with a mean of 4.80 neighbours and no isolated sites. <b>ICAR becomes unstable if isolated sites are present</b>, so this check is essential.</li>
+            <li><b>Entering it into the model</b>　<code>car(W, gr = settlement, type = "icar")</code> is added to the hierarchical beta regression. The estimation framework is the same as on the <a href="../bayesian-estimation/">Bayesian estimation</a> page: four chains, 8,000 draws, <code>adapt_delta = 0.97</code>.</li>
+            <li><b>Judging whether the spatial term is needed</b>　The models with and without the spatial term are compared by approximate leave-one-out cross-validation, to see whether the data support the spatial term.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Comparison</th><th class="num">elpd_loo</th><th class="num">elpd_diff</th><th class="num">se_diff</th><th>Verdict</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Loss rate, no spatial term (base)</td><td class="num">33.8</td><td class="num">0.0</td><td class="num">0.0</td><td>this one is selected</td></tr>
+                <tr><td>Loss rate, with ICAR (sp)</td><td class="num">33.1</td><td class="num">−0.7</td><td class="num">0.3</td><td>the spatial term does not improve fit</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Figures are quoted from the run log of <code>R/12_brms_loss.R</code>. Adding the spatial term barely moved the coefficient on population growth rate: \(\beta = +0.228\), 95% credible interval [+0.04, +0.40], \(P(\beta&gt;0) = 0.992\) (against \(+0.231\) without the spatial term).</p>
+
+        <div class="sub">
+            <h3>The spatial variance collapsed to near zero</h3>
+            <p>In the diversity model of the same study (51 neighbourhood associations) the spatial variance <code>sdcar</code> can be read directly. For the Kansai stratum it is 0.04, 95% credible interval [0.00, 0.16]; for the total trait count, 0.02, [0.00, 0.09]. <b>In both the lower bound touches 0, and no spatial signal is detected.</b> In this situation the posterior takes a funnel shape, in which each individual \(\phi_i\) shrinks as the spatial variance approaches 0, and the sampler struggles. In this model <code>max_treedepth</code> was in fact reached every time, the effective sample sizes were as low as 179 and 57, and \(\hat{R}\) was 1.02 and 1.07.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Conclusion: not in the main model, but used as a robustness check</h3>
+            <p>On this basis the study does not include the spatial term in its main model. <b>ICAR is used not to &ldquo;correct for spatial structure&rdquo; but to confirm that spatial structure does not account for the finding.</b> Loading 25 spatial random effects onto a sample of 25 sites is excessive, and LOO does not support it either.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits — what the method cannot say</h2>
+        <div class="warn">
+            <h3>Change the definition of adjacency and the conclusion can change</h3>
+            <p>This is not a general remark; it is what actually happened within this group of studies. The 2016 analysis defined adjacency at distance thresholds of 1, 2 and 3 km and, using Moran&rsquo;s I and Geary&rsquo;s C, <b>detected no significant spatial autocorrelation either in the loss and gain rates or in the regression residuals</b>. The 2017–2018 analysis, however, redefined adjacency in several ways, including Delaunay triangulation and \(k\) nearest neighbours, and <b>obtained indicators pointing to the presence of spatial autocorrelation</b>.</p>
+            <p>The working record leaves this discrepancy flagged as a point requiring re-examination, and which reading is correct has not been settled. What can be stated here is <b>the fact itself: that for the same data, changing the definition of adjacency produced different indicators as to whether spatial autocorrelation is present</b>. The 3 km used on this page therefore has to be read as one design decision among others. A sensitivity analysis at thresholds of 1 km and 2 km remains an outstanding task in the working record.</p>
+        </div>
+        <div class="warn">
+            <h3>It does not amount to proof that a spatial effect is absent</h3>
+            <p>Even with LOO selecting the non-spatial model and <code>sdcar</code> pinned at 0, what that shows is that <b>no spatial signal could be detected under this definition of adjacency and at this sample size</b>. With a sample of 25 sites the power itself is low. The 2016 analysis also recorded the reservation that &ldquo;Moran says no, but power is low in a small sample&rdquo;, and the Bayesian CAR re-examination was introduced in the first place in order to answer that reservation.</p>
+            <p>In addition, the LOO computation for the spatial model produced one observation (4.0%) with a Pareto \(k\) above 0.7, and relative effective sample sizes as low as 0.1–0.3. <b>The ground on which the comparison stands is not entirely stable either.</b></p>
+        </div>
+        <div class="sub">
+            <h3>Spatial proximity is only one kind of proximity</h3>
+            <p>What ICAR expresses is geographical adjacency alone. Dialect spreads along road networks, school catchments, marriage circles and the barriers of terrain; it is not settled by straight-line distance. A 3 km circle is only a proxy, letting distance stand in for those routes. <b>This is the same situation as the point made on the <a href="/teaching/methods/worlds/mantel/">Mantel test</a> page (in Japanese), that spatial distance is a designed object rather than a measurement.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        The subject is a three-generation dialect vocabulary survey conducted in settlements running from Maibara in Shiga Prefecture to Sekigahara in Gifu Prefecture. The original survey was carried out in 2015 by Habiro Net, a local citizens&rsquo; group, and this research is a secondary analysis of its anonymized data. The construction of the adjacency matrix and the estimation of the spatial models are written in <code>R/03_brms_car_template.R</code>, <code>R/09_brms_diversity.R</code> and <code>R/12_brms_loss.R</code>. <b>The paper is in preparation and was not published at the time of writing.</b>
+        </p>
+        <ul class="refs">
+            <li>Study: analysis of vocabulary loss and gain across 27 settlements from Maibara to Sekigahara (Ayaka Onohara, Yasuo Ihara, Kenichi Aoki). JSPS KAKENHI JP18J00484.</li>
+            <li>Earlier spatial analyses: a 2016 poster at the GIS Association of Japan (tests using Moran&rsquo;s I and Geary&rsquo;s C), and the 2017–2018 re-examination (several definitions of adjacency, with spatial random effects).</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Besag, J., York, J. &amp; Mollié, A. (1991) Bayesian image restoration, with two applications in spatial statistics. <i>Annals of the Institute of Statistical Mathematics</i>, 43(1), 1–20. <a href="https://doi.org/10.1007/BF00116466" target="_blank" rel="noopener noreferrer">doi:10.1007/BF00116466</a></li>
+                <li>Bürkner, P.-C. (2017) brms: An R package for Bayesian multilevel models using Stan. <i>Journal of Statistical Software</i>, 80(1), 1–28. <a href="https://doi.org/10.18637/jss.v080.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v080.i01</a></li>
+                <li>Carpenter, B., Gelman, A., Hoffman, M. D. et al. (2017) Stan: A probabilistic programming language. <i>Journal of Statistical Software</i>, 76(1), 1–32. <a href="https://doi.org/10.18637/jss.v076.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v076.i01</a></li>
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>ICAR writes knowledge about spatial proximity into the model <b>in the form of a prior</b>. The term penalizing differences between neighbours is itself the log density of the prior, and estimation proceeds from the posterior formed by combining the data with it. It belongs to <b>perspective 3 (Bayesian)</b> in <a href="../">Seven Perspectives in Equations</a>. The <a href="../bayesian-estimation/">Bayesian estimation</a> page in the same perspective covers the estimation framework as a whole; this page covers how spatial structure is written within it.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Every figure is quoted from the run logs and output files of the analysis scripts; no estimated or approximate values are given.<br>
+    The whole picture of where each method sits is in <a href="../">Seven Perspectives in Equations</a>, and which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>

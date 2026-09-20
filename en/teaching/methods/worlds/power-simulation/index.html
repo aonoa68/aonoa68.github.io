@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Simulation — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Power simulation as a way of separating absence of effect from smallness of sample: the definition of power, Cohen's warning and the replication problem, and design-based generation for models with no analytical formula, set out against the Maibara dialect survey.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .nav-inner > a, .nav-inner > span.nav-current, .nav-right a { white-space:nowrap; }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Power simulation</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/power-simulation/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Power <span>Simulation</span></h1>
+        <p class="lead">"No effect was found" has two meanings. Either there is no effect, or <b>this design could not find one</b>. Power is the quantity that separates the two, and for designs that cannot be solved analytically it is counted directly by generating data from the actual structure.<br>
+        Set out here against the design-based simulation Onohara used in a dialect vocabulary survey from Maibara to Sekigahara, with what it assumes and what it can claim.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">It settles how a result that did not reach significance should be read.</p>
+        <p class="body">
+        When a test does not reach significance, one must not write that there is no effect. A test answers only whether the null hypothesis can be rejected, and failing to reject it does not mean the null is true. With a small sample, a real effect may still fail to be rejected.
+        </p>
+        <p class="body">
+        Power is the quantity that draws this distinction. It is defined as <b>the probability of detecting an effect when one is genuinely there</b>. If a high-powered design finds nothing significant, one may say the effect is small. If the design was low-powered, nothing has been said at all. Which of the two it is needs to be shown alongside the interpretation of the result, not before the result is seen.
+        </p>
+        <p class="body">
+        In this research the method was used to separate absence of effect from smallness of sample, in response to a reviewer's comment that an effect was "not credible".
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Definition</h2>
+        <p class="q">The complement of the type II error. Determined by three quantities.</p>
+        <div class="eq">
+            <div class="lbl">Definition of power</div>
+            \[ 1-\beta \;=\; \Pr\bigl(\text{reject the null} \;\bigm|\; H_1 \text{ is true}\bigr) \]
+            <p class="read"><b>\(\alpha\)</b> … type I error. The probability of saying there is an effect when there is none<br>
+            <b>\(\beta\)</b> … type II error. The probability of saying there is none when there is one (a miss)<br>
+            <b>\(1-\beta\)</b> … power. The probability of not missing it</p>
+        </div>
+        <p class="body">
+        Power is determined by the sample size \(n\), the true effect size, and the significance level \(\alpha\). For a simple design it can be written analytically. For a one-sample \(z\) test, for instance, it takes the following form.
+        </p>
+        <div class="eq">
+            <div class="lbl">When it can be written analytically (one-sided \(z\) test)</div>
+            \[ 1-\beta \;=\; \Phi\!\left(\frac{|\delta|\sqrt{n}}{\sigma} - z_{1-\alpha}\right) \]
+            <p class="read"><b>\(\delta\)</b> … the size of the true effect<br>
+            <b>\(\sigma\)</b> … the standard deviation<br>
+            <b>\(\Phi\)</b> … the cumulative distribution function of the standard normal<br>
+            <b>How to read it</b> … as \(n\) grows the term inside the bracket grows and power rises. A small effect has to be compensated for with \(n\)</p>
+        </div>
+        <div class="sub">
+            <h3>Fix any three of the four quantities and the fourth follows</h3>
+            <p>Power, sample size, effect size and significance level are bound to one another. In planning a study the convention is to set power at 0.8 and solve backwards for the required \(n\); but in observational research, where the sample size is settled in advance, what is left is to evaluate afterwards <b>what that \(n\) is capable of detecting</b>. This study is of the latter kind.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Origin</h2>
+        <p class="q">Neyman and Pearson built the framework; Cohen carried it into practice.</p>
+        <p class="body">
+        In 1933 Jerzy Neyman and Egon Pearson formulated hypothesis testing as a decision problem balancing two kinds of error (Neyman &amp; Pearson 1933). The most efficient test is the one that minimises the type II error while holding the type I error at a fixed level — and it is here that power was explicitly defined.
+        </p>
+        <p class="body">
+        In practice, however, attention went to the type I error alone for a long time. In 1969 the psychologist Jacob Cohen wrote <i>Statistical Power Analysis for the Behavioral Sciences</i>, bringing power analysis to researchers in the behavioural sciences. Cohen's \(d\), the widely used index of effect size, belongs to the same current.
+        </p>
+        <div class="sub">
+            <h3>Computing changed the method</h3>
+            <p>Analytical power calculations are available only where both the null and the alternative distribution of the test statistic can be written down. For hierarchical and mixed models, often they cannot be written in closed form. As computing became cheap, <b>generating data and counting</b> became a general method. Simulation-based power calculation is the product of that.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Cohen's warning, and the replication problem</h2>
+        <p class="q">Mass-produce low-powered studies and the literature as a whole stops being trustworthy.</p>
+        <p class="body">
+        In 1962 Cohen examined the 78 papers published in the 1960–61 volumes of the <i>Journal of Abnormal and Social Psychology</i> and computed power for the 70 of them that contained tests bearing on a hypothesis. The result was that <b>the probability of obtaining statistical confirmation for a medium effect was on average less than one in two</b> (Cohen 1962). Sample sizes were being fixed by convention, convenience and negotiation, not by any reasoned power analysis.
+        </p>
+        <div class="warn">
+            <h3>Low power is not only a problem of missed effects</h3>
+            <p>In a low-powered design, the results that do reach significance are distorted as well. When an effect is small, only the samples that happen to come out large cross the threshold, so <b>the effect sizes that get reported are larger than the true value</b>. If non-significant results are then harder to publish, what remains in the literature is nothing but inflated estimates. Publication bias combined with low power shifts a field's estimates systematically, without any misconduct in the individual studies.</p>
+            <p>This structure is why power comes up repeatedly in discussions of the replication problem. A failed replication does not necessarily mean the original study was false. Often it is enough to say that the original design was not at a level that could capture the effect reliably.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Design-based simulation</h2>
+        <p class="q">Rather than substituting into a formula, generate data from the actual design and count.</p>
+        <p class="body">
+        The model in this study is a beta-binomial mixed model with random effects at three levels: item, settlement and district. No analytical power formula exists. Data are therefore generated <b>using the actual design as it stands</b>.
+        </p>
+        <ol class="steps">
+            <li><b>Fix the design</b>　Use the real number of middle-school students and older-generation respondents in each settlement, the real standardised population growth rate and size, 102 items and 25 settlements, exactly as they are. The point is to carry the real imbalance across rather than construct a hypothetical balanced design.</li>
+            <li><b>Borrow the variance structure</b>　Take the variance components of the random effects from <code>fit_rawcount</code>, the count-level model fitted to the real data.</li>
+            <li><b>Set a true effect</b>　Fix the true value of the generation-by-growth interaction at \(\beta_{\text{true}} \in \{0,\,-0.15,\,-0.30,\,-0.50\}\).</li>
+            <li><b>Generate</b>　Generate beta-binomial data under that true value. One hundred datasets at each level.</li>
+            <li><b>Re-estimate</b>　Estimate the generated data with a fast generalized linear mixed model (lme4, <code>nAGQ=0</code>, overdispersion approximated by an observation-level random effect).</li>
+            <li><b>Count</b>　Take the proportion of runs in which the 95% confidence interval on the interaction fell below zero as the power. The distribution of the estimates is recorded alongside.</li>
+        </ol>
+        <div class="eq">
+            <div class="lbl">Counting power as a proportion</div>
+            \[ \widehat{1-\beta} \;=\; \frac{1}{S}\sum_{s=1}^{S} \mathbf{1}\bigl\{\,\text{CI}^{(s)}_{\text{upper}} < 0 \,\bigr\},
+               \qquad S=100 \]
+            <p class="read"><b>\(\mathbf{1}\{\cdot\}\)</b> … 1 if the condition holds, 0 otherwise<br>
+            <b>How to read it</b> … the proportion of the hundred generated datasets in which the interaction could be said to be genuinely negative. This is the estimate of the power of this design</p>
+        </div>
+        <div class="sub">
+            <h3>This estimate has error of its own</h3>
+            <p>With a hundred runs per level, the power estimate is itself a sample value following a binomial distribution. If the true power is around 0.12, the standard error over a hundred runs is roughly 0.03. The figures in the table should not be read as settled to two decimal places.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Results in this research</h2>
+        <p class="q">The estimator is sound. What was short was the power.</p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(\beta_{\text{true}}\)</th><th class="num">Mean of estimates</th><th>90% range</th><th class="num">Power</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0</td><td class="num">−0.015</td><td>[−0.284, 0.254]</td><td class="num">0.02</td></tr>
+                <tr><td class="num">−0.15</td><td class="num">−0.147</td><td>[−0.447, 0.179]</td><td class="num">0.12</td></tr>
+                <tr><td class="num">−0.30</td><td class="num">−0.317</td><td>[−0.636, −0.066]</td><td class="num">0.39</td></tr>
+                <tr><td class="num">−0.50</td><td class="num">−0.541</td><td>[−0.876, −0.257]</td><td class="num">0.82</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Figures quoted directly from <code>power_simulation.csv</code>, the output of <code>20_power_simulation.R</code>. One hundred simulations at each level.</p>
+        <div class="sub">
+            <h3>The estimator is unbiased</h3>
+            <p>The mean of the estimates recovers the true value almost exactly (−0.147 against −0.15, −0.317 against −0.30, −0.541 against −0.50). The model is not returning biased estimates. The problem lies in <b>the size of the spread</b>: the 90% range is wide at every level, and at −0.15 and −0.30 it straddles zero.</p>
+        </div>
+        <div class="sub">
+            <h3>At realistic effect sizes, almost nothing can be detected</h3>
+            <p>Over the range of effect sizes anticipated in research on language change — from −0.15 to −0.30 — power stays between 12% and 39%. Repeat this study a hundred times and the effect would be captured in between 12 and 39 of them. Power reached 0.8 only when an effect as large as −0.50 was set.</p>
+        </div>
+        <div class="sub">
+            <h3>Placing the observed value on this distribution</h3>
+            <p>The estimate of the interaction in the real data is −0.165. That is consistent with the distribution obtained when \(\beta_{\text{true}}\) is set somewhere between −0.15 and −0.20, and falls outside the centre of the distribution under no effect (−0.015). The observation is therefore more naturally read as a medium-sized effect for which power was insufficient.</p>
+        </div>
+        <div class="warn">
+            <h3>What this result changed is the wording of the claim</h3>
+            <p>A power simulation does not prove that an effect exists. All it can do is <b>rule out the reading that there was no effect</b>. In this research the main result was rewritten as "the direction is consistent and suggestive, but not decisive given the limits of the design's power", stated alongside both the agreement in direction between the aggregate and individual-level models and the low power of the design.</p>
+            <p>It also became clear that the high precision shown by the aggregate model (posterior probability 0.99) was the result of ignoring the uncertainty arising from the very small number of older-generation respondents (a median of a few people). The power evaluation has knock-on effects on how the other results are read.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        The simulation is implemented in <code>20_power_simulation.R</code>, which runs reconstruction of the real design, generation, re-estimation and tabulation in a single pass. The inputs are the analysis master and the settlement list; the outputs are <code>power_simulation.csv</code> and the figure <code>FigS_power</code>. The analysis is laid out as R scripts, and the original data files are never modified — they are read only through working copies.
+        </p>
+        <ul class="refs">
+            <li>Analysis scripts: <code>19_rawcount_model.R</code> (count-level model), <code>20_power_simulation.R</code> (power simulation), <code>22_loso_sensitivity.R</code> (leave-one-settlement-out sensitivity analysis).</li>
+            <li>Language data: a dialect survey of Maibara City and Sekigahara Town conducted by the citizens' group Habiro-Net, 21 November – 20 December 2015 (Onohara took part in the survey design).</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Neyman, J. &amp; Pearson, E. S. (1933) On the problem of the most efficient tests of statistical hypotheses. <i>Philosophical Transactions of the Royal Society of London, Series A</i>, 231, 289–337. <a href="https://doi.org/10.1098/rsta.1933.0009" target="_blank" rel="noopener noreferrer">doi:10.1098/rsta.1933.0009</a></li>
+                <li>Cohen, J. (1962) The statistical power of abnormal-social psychological research: a review. <i>Journal of Abnormal and Social Psychology</i>, 65(3), 145–153. <a href="https://doi.org/10.1037/h0045186" target="_blank" rel="noopener noreferrer">doi:10.1037/h0045186</a></li>
+                <li>Cohen, J. (1969) <i>Statistical Power Analysis for the Behavioral Sciences</i>.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>Power measures <b>how often a procedure comes out right when the sample is drawn again</b>, with the true value held fixed. Like the type I error, it is defined as a proportion across repetitions. What this simulation does is count that proportion directly by generation, for a design whose analytical formula cannot be written. The picture set out under <b>perspective 2 (frequentist)</b> in <a href="../">Read the seven perspectives in equations</a> — that the probability attaches to the interval while the parameter does not move — applies here as it stands.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the output of analysis scripts; no estimates or approximations are given.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the seven perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to Read the seven perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>

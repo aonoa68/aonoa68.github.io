@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adversarial Cultural Dynamics — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="λ-scheduling, which apportions a theory-driven feature reward against the contest between generator and discriminator as a function of time. The implementation reported in the WCTP2025 paper and the one in the published package differ, so the two are set out separately.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (games and adversaries) */
+            --w:      #8a5a2f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e6c9a8; background:rgba(138,90,47,0.42); border:1px solid rgba(230,201,168,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(230,201,168,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box for a method's weak points) */
+        .warn { background:#fdf7f2; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Cross-reference (gold box, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results tables */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf8f6; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Step lists */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Adversarial Networks</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/gan/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 6 ｜ <a href="../">Games and adversaries</a></span>
+        <h1>Adversarial <span>Cultural Dynamics</span></h1>
+        <p class="lead">Into the <b>contest</b> between the side that generates and the side that tells apart, mix a feature reward handed down from theory. Move the apportionment between them with a function of time \(\lambda(t)\). That is the skeleton of the method.<br>
+        The analysis Onohara reported at WCTP2025 and the published software package <b>differ in their implementation</b>. This page sets them out separately, including what has been published and what has not.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Asking, through a generative model, how the emotions a place calls up change as the reworking of the environment advances.</p>
+        <p class="body">
+        Niche construction theory treats the process by which an organism alters its environment and that alteration bears on the selection pressures of the next generation (Odling-Smee, Laland &amp; Feldman 2003). In humans, the use of fire, agriculture, the building of dwellings, the forming of cities and the design of institutions are taken as forms of it. Onohara's research brings <b>emotion</b> into this frame. The question is whether, as the degree of reworking of the environment advances, the pattern of emotions called up in that place changes.
+        </p>
+        <p class="body">
+        The reason for using a generative adversarial network here is not simply that it can generate. What the method is trying to express is <b>a balance between two pressures</b>. One is the pressure of &ldquo;does this look adapted to that environment&rdquo;, carried by the discriminator. The other is the pressure of &ldquo;is this close to the cultural and emotional features theory holds desirable&rdquo;, carried by an evaluator supplied from outside. The design is motivated by the question of whether the push and pull between exploration and settling that the theory of cultural evolution speaks of can be written down as an apportionment between these two.
+        </p>
+        <p class="body">
+        Whether that design motivation — &ldquo;can it be written down&rdquo; — captures the mechanism behind the empirical data is a separate matter. Section 7 deals with the latter.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — two lineages meeting</h2>
+        <p class="q">The computation comes from machine learning, the question from evolutionary biology.</p>
+
+        <div class="sub">
+            <h3>On the computation side: generative adversarial networks</h3>
+            <p>A generator \(G\) and a discriminator \(D\) are trained together; \(G\) aims to make \(D\) err, and \(D\) aims to tell real from fake. The framework was proposed by Goodfellow et al. (2014) and is formulated as the minimax problem of a two-person zero-sum game. The structure in which one side's improvement is the other's deterioration appears directly in the objective function.</p>
+        </div>
+
+        <div class="sub">
+            <h3>On the question side: niche construction theory and cultural evolution theory</h3>
+            <p>The view that organisms alter their environment and that the alteration changes selection pressures was systematized by Odling-Smee et al. (2003). The framework treating culture as a process with inheritance, variation and selection goes back to Boyd &amp; Richerson (1985), and Henrich (2016) argues that cumulative cultural evolution is the key to human success. The process by which the environment for social learning itself grows richer across generations is what Sterelny (2012) described as the &ldquo;evolved apprentice&rdquo;. Laland et al. (2015) set out the extended evolutionary synthesis that takes these in.</p>
+        </div>
+
+        <div class="sub">
+            <h3>The push and pull between exploration and objective</h3>
+            <p>What the package side explicitly cites is the argument that pressing towards an objective function can itself obstruct arrival at the objective (Lehman &amp; Stanley 2011). Taking the temporal trade-off between goal-directed optimization and open-ended search and putting it outside the model as a parameter is the idea behind λ-scheduling.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Correspondence with Perspective 6, games and adversaries</h2>
+        <p class="q">When one side does better, the other is in trouble. Learning is read as that balance.</p>
+        <div class="eq">
+            <div class="lbl">THE OBJECTIVE FUNCTION OF A GENERATIVE ADVERSARIAL NETWORK</div>
+            \[\min_{G}\ \max_{D}\ V(D,G) \;=\; \mathbb{E}_{x\sim p_{\text{data}}}\big[\log D(x)\big] \;+\; \mathbb{E}_{z\sim p_z}\big[\log\big(1-D(G(z))\big)\big]\]
+            <p class="read"><b>\(G\)</b> … the generating side; it wants to make fakes that pass for real<br>
+            <b>\(D\)</b> … the discriminating side; it wants to tell real from fake<br>
+            <b>\(\min\max\)</b> … each side answers the other's best move with its own best move; the point of balance is the solution</p>
+        </div>
+        <div class="sub">
+            <h3>What this research adds</h3>
+            <p>Perspective 6 of <a href="../">Reading the seven perspectives in equations</a> handles this minimax form itself. What Onohara's research adds is that <b>it does not leave the adversarial pressure as the only pressure</b>. A second reward is prepared, for the features theory defines as &ldquo;desirable&rdquo;, and the apportionment between the two is moved over time. The next section is the formulation of that.</p>
+            <p>Perspective 6 also carries distributionally robust optimization, which prepares for the worst case, and the chase between generation and detection in audio deepfakes. All of them have the same structure, in which one side's improvement is the other's deterioration.</p>
+            <p>The same perspective also carries <a href="../economic-games/">experiments on cooperative behaviour using economic games</a>. There the players are living people, and the payoffs are not zero-sum. What Perspective 6 handles in common is the condition that each party's choice bears on the others' outcomes, not whether their interests are opposed.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>The formulation of λ-scheduling</h2>
+        <p class="q">This is the core. The apportionment of the two pressures is put outside the model, as a function of time.</p>
+        <div class="eq">
+            <div class="lbl">THE APPORTIONED LOSS (AS IMPLEMENTED IN THE PUBLISHED PACKAGE)</div>
+            \[ L(t) \;=\; \bigl(1-\lambda(t)\bigr)\, L_{\mathrm{adv}} \;-\; \lambda(t)\,\beta\,R \]
+            <p class="read"><b>\(L_{\mathrm{adv}}\)</b> … the adversarial loss; treated as better when smaller<br>
+            <b>\(R\)</b> … the theory-driven feature reward; better when larger, which is why it enters with a negative sign<br>
+            <b>\(\beta\)</b> … the scale of the reward term. Default 0.10<br>
+            <b>\(\lambda(t)\)</b> … a value in \([0,1]\). Near 0 it favours adversarial learning; near 1 it favours the feature reward</p>
+        </div>
+        <p class="body">
+        As \(\lambda\) moves from 0 to 1, a temporal switch takes place: early on the weight is on &ldquo;does this look adapted to that environment&rdquo;, later on &ldquo;is this close to the features theory holds desirable&rdquo;. It can be read as writing the cultural-evolution idiom of exploration giving way to settling as an apportionment inside a loss function.
+        </p>
+
+        <div class="sub">
+            <h3>The three shapes of schedule</h3>
+            <p><code>scheduler.py</code> sets \(t^{\ast} = \lfloor pT \rfloor\) from the total number of steps \(T\) and the reach portion \(p\), and uses a window width \(w = \lfloor p_w T \rfloor\) to give three shapes.</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">linear — reaches 1 linearly by \(t^{\ast}\)</div>
+            \[ \lambda(t) \;=\; \min\!\left(1,\; \frac{t}{t^{\ast}}\right) \]
+        </div>
+        <div class="eq">
+            <div class="lbl">logistic — moves smoothly through a sigmoid</div>
+            \[ \lambda(t) \;=\; \frac{1}{1+\exp\!\bigl(-k\,(t-t_0)\bigr)}, \qquad k = \frac{s}{t^{\ast}}, \quad t_0 = t^{\ast} - \frac{w}{2} \]
+            <p class="read"><b>\(s\)</b> … sharpness. Default 12.0; larger makes the transition steeper</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">delayed — stays at 0 for a while, then rises within a short window</div>
+            \[ \lambda(t) \;=\; \begin{cases} 0 & (t &lt; t^{\ast}-w) \\[4pt] \dfrac{t-(t^{\ast}-w)}{w} & (t^{\ast}-w \le t &lt; t^{\ast}) \\[6pt] 1 & (t \ge t^{\ast}) \end{cases} \]
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Parameter</th><th class="num">Default</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>total_steps</code> \(T\)</td><td class="num">400</td><td>Total number of steps</td></tr>
+                <tr><td><code>reach_portion</code> \(p\)</td><td class="num">0.30</td><td>Portion of \(T\) by which \(\lambda\) is to reach 1</td></tr>
+                <tr><td><code>window_portion</code> \(p_w\)</td><td class="num">0.05</td><td>Width of the rise window (delayed / logistic)</td></tr>
+                <tr><td><code>sharpness</code> \(s\)</td><td class="num">12.0</td><td>Sharpness of the logistic</td></tr>
+                <tr><td><code>beta</code> \(\beta\)</td><td class="num">0.10</td><td>Scale of the feature reward</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Defaults of the published package <code>placemotiongan</code>, quoted from the definitions in <code>scheduler.py</code> and <code>losses.py</code>.</p>
+
+        <div class="sub">
+            <h3>Changing the shape of the schedule is the operation this research performs</h3>
+            <p>All three shapes reach \(\lambda=1\) in the end, but the path there differs. <code>analyses/sensitivity.py</code> runs the three conditions under the same random seed and collects the results into one table. What is being measured is <b>whether when the constraint is applied changes the path of learning</b>. Taking the shape along the way, rather than the destination, as the variable operated on is the claim of this package.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The implementation on the paper's side (WCTP2025)</h2>
+        <p class="q">Survey data from 150 respondents, and generation conditioned on a stage label.</p>
+        <p class="body">
+        What the paper reports is the collection of empirical data and an analysis by a conditional generative adversarial network built to match it. The foundation is a framework dividing the progress of niche construction into five stages.
+        </p>
+        <ol class="steps">
+            <li><b>Setting up the stage model</b>　Five stages are posited: the natural stage (an untouched environment), the first stage (simple survival strategies), the second stage (learned and routinized behaviour), the third stage (social cooperation) and the fourth stage (planned, intentional modification of the environment). How this framework should be positioned needs care (section 7).</li>
+            <li><b>The survey</b>　150 adults, men and women, aged 20 to 50; conducted on 2 June 2025. The objects of evaluation are the five stages of cultural evolution × 10 places each = 50 places in all.</li>
+            <li><b>Emotional evaluation</b>　Each of the eight basic emotions of Plutchik's wheel is given three levels of intensity, making 24 categories. Personality traits are measured on the five Big Five factors using the TIPI-J.</li>
+            <li><b>Defining the features</b>　Four cultural features (clarity, cooperation, innovation, transmissibility) and four emotional features (joy response, fear response, trust building, expectation), eight dimensions in all. The evaluator is a weighted sum, set so that the cultural weights total 0.6 and the emotional weights 0.4.</li>
+            <li><b>Conditional generation</b>　A 128-dimensional noise vector is concatenated with a 5-dimensional one-hot for the stage, giving a 133-dimensional input to the generator. The generator is a network with residual connections and batch normalization; the discriminators are prepared <b>one per stage, five in all</b>, with spectral normalization applied.</li>
+            <li><b>Training</b>　400 generations, batch size 64. \(\lambda\) is moved from 0.000 to 1.000, with the transition taking 120 generations. All features are z-score normalized and then passed through tanh.</li>
+        </ol>
+
+        <div class="sub">
+            <h3>The reported results</h3>
+            <p>On the empirical side, the tendency reported is that as the stage advances fear and disgust are suppressed while trust and joy rise. At the fourth stage expectation stands out and the diversity of emotion (entropy) is at its lowest. The paper calls this &ldquo;emotional convergence&rdquo; and positions it as suggesting a new form of stress in a highly managed environment.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Generated cultural feature</th><th class="num">Initial</th><th class="num">Final generation</th><th>As stated in the paper</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>clarity</td><td class="num">0.245</td><td class="num">0.678</td><td>increase</td></tr>
+                <tr><td>cooperation</td><td class="num">0.312</td><td class="num">0.723</td><td>increase</td></tr>
+                <tr><td>innovation</td><td class="num">0.456</td><td class="num">0.534</td><td>slight increase</td></tr>
+                <tr><td>fear_response</td><td class="num">0.634</td><td class="num">0.289</td><td>decrease</td></tr>
+                <tr><td>trust_building</td><td class="num">0.278</td><td class="num">0.687</td><td>increase</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Quoted as they stand from the values given in section 3.4.2 of the paper, &ldquo;evolutionary trajectory of cultural features&rdquo;. These are outputs of the generative model, not observed values from the empirical data.</p>
+
+        <div class="warn">
+            <h3>The discriminator loss figures differ between sources</h3>
+            <p>Section 3.4.3 of the paper's body text gives the discriminator loss by stage (lower is more adapted) as <b>second stage 0.23 (most adapted)</b>, fourth stage 0.31, natural stage 0.45 (least adapted). The architecture diagram <code>gan.html</code> that accompanies the same research, however, records <b>first_stage: 0.2511 (best adapted)</b>, and the two do not agree on which stage is most adapted.</p>
+            <p>Which is the final result cannot be determined from the materials at hand. The wording of the paper's body text is taken here, and the fact of the discrepancy is recorded as it stands.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>What the published package provides</h2>
+        <p class="q">This is not the paper's implementation. It is the λ-scheduling framework taken out on its own.</p>
+
+        <div class="warn">
+            <h3>The package's training loop is not training any network</h3>
+            <p><code>simulate_training</code> in <code>placemotiongan/train.py</code> <b>generates the adversarial loss and the feature reward from formulas for stochastic decay and rise</b>. The adversarial loss starts near 0.80 and decays by 0.35% each step with normal noise added; the feature reward starts near 0.10 and rises with saturation. A comment in the code states plainly that it generates dummy adv_loss and feature_reward with controlled stochasticity.</p>
+            <p><code>model.py</code> does define generator and discriminator classes, but <b>they are never called from this training loop</b>. The curves obtained by running the package therefore show how the λ schedule moves the apportionment of the loss; they are not the result of a model having learned anything.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Then what is the published artefact for</h3>
+            <p>The package's own account is consistent. It states that rather than focusing on large-scale neural network training, it emphasizes the explicit modelling of the trade-off between adversarial pressure and the emergence of structured features, through a controllable λ-scheduling mechanism. What it provides is <b>a framework that treats temporal structure as a first-class component</b>, together with the apparatus for observing that behaviour in a deterministically reproducible form.</p>
+            <p>The package therefore does not reproduce the analysis in the paper. The two share the same idea of λ-scheduling, but the implementations are different things.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The sign of the loss differs between sources</h3>
+            <p>The package's <code>losses.py</code> writes \(L = (1-\lambda)L_{\mathrm{adv}} - \lambda\beta R\), with the reward term <b>subtracted</b>. Since a loss is better when smaller, this is the consistent direction: the larger the reward, the lower the loss. The architecture diagram in <code>gan.html</code>, by contrast, writes <code>Loss = λ×emotion_reward + (1-λ)×adv_loss</code>, with the reward <b>added</b>, and without \(\beta\).</p>
+            <p>The two cannot both hold as equations, so the package's implementation is quoted here. The diagram may be a simplified notation for exposition, or the implementation on the paper's side may follow a different sign convention. Either way, the only one that can be confirmed from published code is the former.</p>
+        </div>
+
+        <div class="sub">
+            <h3>No run results are published</h3>
+            <p>Neither repository stores run results such as CSV logs or figures. This page therefore gives no output figures from the package side at all. What can be written is the default parameter values and the formulas readable from the code, and nothing more.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Limits</h2>
+        <p class="q">What the method cannot say. There are four points.</p>
+
+        <div class="warn">
+            <h3>1. The stage model is a hypothetical framework</h3>
+            <p>Of the division into five stages, the paper itself speaks of a &ldquo;hypothetical five-stage model&rdquo; and states that the stage model as such is not set out explicitly in prior work. Consistency with existing theory — niche construction theory, cultural evolution theory, the evolutionary theory of cooperative behaviour — is claimed, but <b>this is not a stage division confirmed empirically</b>. Both the generation conditioned on stage labels and the differences between stages obtained in the analysis take on meaning only once this framework is granted.</p>
+        </div>
+
+        <div class="warn">
+            <h3>2. Description bias — the respondents were not looking at places</h3>
+            <p>This is the point section 4.3.1 of the paper raises as a methodological limitation. Analysis with BERT is reported to show that <b>65% of the joy emotion depends on the text description, and 43% of the fear emotion is affected by the text</b>.</p>
+            <p>The respondents did not visit the actual places; they read descriptions of places and chose emotions. What was measured is therefore not &ldquo;the emotion a place calls up&rdquo; but, at least in part, &ldquo;the emotion that description calls up&rdquo;. Whether the differences in emotional pattern between stages come from the degree of reworking of the environment or from the style in which the descriptions were written for each stage is something these data cannot separate. That the paper's future directions include comparative validation against real experience using VR and AR is a response to this limitation.</p>
+        </div>
+
+        <div class="warn">
+            <h3>3. Reproducing a pattern does not mean the mechanism agrees</h3>
+            <p>The paper states that the generated emotional patterns showed high agreement with the empirical data. But <b>a generative model's being able to reproduce an observed pattern does not mean that its generative process is the same as the mechanism of real cultural evolution</b>. A model with enough freedom can produce the same distribution from a different mechanism. What has been confirmed here is an existence claim — that under this formulation it is possible to produce this pattern — not the claim that cultural evolution actually proceeds by this mechanism.</p>
+            <p>Still less so, given that the feature weights of the evaluator are values set by the analyst. Once what counts as a &ldquo;desirable cultural feature&rdquo; has been decided in advance and a reward given that moves the output in that direction, the output moving in that direction is not a result but a design.</p>
+        </div>
+
+        <div class="warn">
+            <h3>4. What is published and what is reported are different</h3>
+            <p>As section 6 sets out, the published package is a simulation and does not reproduce the paper's experiment. The implementation code on the paper's side — the per-stage discriminators, the residual generator, the evaluator — is not included in the published repositories. <b>No means is currently provided for a third party to verify the reported figures.</b> That a package flying the flag of reproducibility stands alongside it makes this all the easier to misread.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Sources and data</h2>
+        <p class="body">
+        The paper is collected in the proceedings of WCTP 2025. The software is published in two repositories, of which <code>cultural-dynamics-gan</code> is the version organized as a package.
+        </p>
+        <ul class="refs">
+            <li>Onohara, A. &amp; Ouchi, H. (2026) GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction: An Integrated Empirical Approach. <i>Proceedings of the Workshop on Computation: Theory and Practice (WCTP 2025)</i>, Atlantis Press. DOI: <a href="https://doi.org/10.2991/978-94-6239-638-8_25" target="_blank" rel="noopener noreferrer">10.2991/978-94-6239-638-8_25</a></li>
+            <li>Onohara, A. &ldquo;PlaceEmotion-GAN&rdquo; <a href="https://github.com/aonoa68/cultural-dynamics-gan" target="_blank" rel="noopener noreferrer">github.com/aonoa68/cultural-dynamics-gan</a> (package version, MIT License)</li>
+            <li>Onohara, A. &ldquo;PlaceEmotion-GAN&rdquo; <a href="https://github.com/aonoa68/PlaceEmotionGAN" target="_blank" rel="noopener noreferrer">github.com/aonoa68/PlaceEmotionGAN</a>　DOI: <a href="https://doi.org/10.5281/zenodo.17401003" target="_blank" rel="noopener noreferrer">10.5281/zenodo.17401003</a></li>
+            <li>Survey instrument: <a href="https://github.com/aonoa68/niche_construction_survey" target="_blank" rel="noopener noreferrer">niche_construction_survey</a> (survey items measuring the environmental impact of niche construction and cooperative behaviour)</li>
+            <li>JSPS KAKENHI Grant-in-Aid for Early-Career Scientists, &ldquo;Elucidating the emotional relationship between speech and place using an evolutionary approach&rdquo; (Grant Number JP24K16071, FY2024–FY2026)</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Goodfellow, I., Pouget-Abadie, J., Mirza, M., Xu, B., Warde-Farley, D., Ozair, S., Courville, A. &amp; Bengio, Y. (2014) Generative Adversarial Nets. <i>Advances in Neural Information Processing Systems</i>, 27, 2672–2680.</li>
+                <li>Lehman, J. &amp; Stanley, K. O. (2011) Abandoning Objectives: Evolution Through the Search for Novelty Alone. <i>Evolutionary Computation</i>, 19(2), 189–223. <a href="https://doi.org/10.1162/EVCO_a_00025" target="_blank" rel="noopener noreferrer">doi:10.1162/EVCO_a_00025</a></li>
+                <li>Oshio, A., Abe, S. &amp; Cutrone, P. (2012) Development, reliability and validity of the Japanese version of the Ten Item Personality Inventory (TIPI-J). <i>Japanese Journal of Personality</i>, 21(1), 40–52.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>References for the theory</h3>
+            <ul class="refs">
+                <li>Odling-Smee, F. J., Laland, K. N. &amp; Feldman, M. W. (2003) <i>Niche Construction: The Neglected Process in Evolution</i>. Princeton University Press.</li>
+                <li>Boyd, R. &amp; Richerson, P. J. (1985) <i>Culture and the Evolutionary Process</i>. University of Chicago Press.</li>
+                <li>Sterelny, K. (2012) <i>The Evolved Apprentice: How Evolution Made Humans Unique</i>. MIT Press.</li>
+                <li>Laland, K. N., Uller, T., Feldman, M. W., Sterelny, K., Müller, G. B., Moczek, A., Jablonka, E. &amp; Odling-Smee, J. (2015) The extended evolutionary synthesis: its structure, assumptions and predictions. <i>Proceedings of the Royal Society B</i>, 282(1813), 20151019. <a href="https://doi.org/10.1098/rspb.2015.1019" target="_blank" rel="noopener noreferrer">doi:10.1098/rspb.2015.1019</a></li>
+                <li>Henrich, J. (2016) <i>The Secret of Our Success: How Culture Is Driving Human Evolution, Domesticating Our Species, and Making Us Smarter</i>. Princeton University Press.</li>
+            </ul>
+            <p style="font-size:0.84em;color:var(--muted);line-height:1.85;margin-top:6px">The paper's reference list carries Tomasello (2014) <i>A Natural History of Human Cooperation</i>, MIT Press, but the bibliographic record for a work of that title could not be confirmed. The 2014 work by that author is <i>A Natural History of Human Thinking</i> (Harvard University Press). Since it could not be confirmed, it is not listed here.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>A generative adversarial network formulates learning as <b>the balance between two parties in competition</b>. When the generator improves, the discriminator is in trouble; when the discriminator improves, the generator is. The solution is the point at which neither can improve unilaterally. <b>Perspective 6 (games and adversaries)</b> in <a href="../">Reading the seven perspectives in equations</a> applies directly.<br>
+        This research, however, mixes a theory-driven reward into the adversarial pressure and moves the apportionment over time. It is not a pure minimax but <b>a composition with an objective function supplied from outside the game</b>, and that is where it departs from the textbook setting.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Only values recorded in the paper and in the published code are quoted, and which source each came from is stated in the text. No estimates or approximations are given.<br>
+    The whole layout of where the methods sit is in <a href="../">Reading the seven perspectives in equations</a>; which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

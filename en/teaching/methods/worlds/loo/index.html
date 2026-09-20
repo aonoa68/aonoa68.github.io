@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOO Cross-Validation — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Leave-one-out cross-validation set out through the learning-theory frame of the gap between empirical and expected risk, the PSIS approximation and its Pareto-k diagnostic, and the design decision of matching the unit left out to the units of dependence (LOSO), following the implementation used in the Maibara–Sekigahara dialect vocabulary survey.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (learning theory) */
+            --w:      #2f6b57;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bfe0d1; background:rgba(47,107,87,0.42); border:1px solid rgba(191,224,209,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(191,224,209,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box for a method's weak points) */
+        .warn { background:#f1f8f4; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Cross-reference (gold box, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results tables */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6faf8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Step lists */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">LOO Cross-Validation</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/loo/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 4 ｜ <a href="../">Learning theory (risk minimization)</a></span>
+        <h1>Leave-One-Out <span>Cross-Validation</span></h1>
+        <p class="lead">How well a model fitted on the data at hand predicts <b>data it has not yet seen</b> — estimated from that same data. It sets out to close the gap learning theory is concerned with, the gap between empirical and expected risk, by taking observations out and putting them back.<br>
+        Following the implementation Onohara used in a three-generation dialect vocabulary survey of Maibara and Sekigahara (25 settlements), this page sets out the price paid for working with an approximation, and the design decision of <b>what unit to leave out</b>.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Not how well the model fits, but how well it will land on data not yet seen.</p>
+        <p class="body">
+        What learning theory really wants to make small is the expected risk \(R(f)=\mathbb{E}_{(x,y)\sim P}[\ell(f(x),y)]\). But the distribution \(P\) that the data follow is unknown, so the only thing computable from the data at hand is the empirical risk \(\hat{R}(f)\). Fit on one set of data and measure on the same set, and the fit will always come out good. <b>How to close the gap between these two quantities</b> is the central question of Perspective 4.
+        </p>
+        <p class="body">
+        <a href="../">Reading the seven perspectives in equations</a> gives the generalization bound \(R(f) \le \hat{R}(f) + \mathfrak{C}(\mathcal{F},n,\delta)\) as one tool for holding that gap down from above: the route of evaluating a complexity term theoretically. Cross-validation takes a different route. <b>It actually hides part of the data and measures on the part it hid.</b> Not a theoretical upper bound, but a direct estimate obtained by taking the sample apart and putting it back.
+        </p>
+        <p class="body">
+        Leave-one-out cross-validation is the most extreme form of this. Only one observation is hidden each time, and the fit uses everything else. It leaves as much data as possible available for training, which makes it easy to use on small samples. That the Maibara–Sekigahara study works at a scale of \(n=25\) settlements is a direct reason for choosing this method.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — as sample reuse, for prediction</h2>
+        <p class="q">Built to evaluate prediction, not fit.</p>
+        <p class="body">
+        Cross-validation was formalized in the 1970s by Seymour Geisser and Mervyn Stone, independently and at almost the same time. Geisser (1975) called his own procedure &ldquo;predictive sample reuse&rdquo;, and the name captures the character of the method well. When fresh data cannot be obtained, <b>the sample at hand is used over and over, split between training and evaluation, in order to measure how good the prediction is</b>.
+        </p>
+        <p class="body">
+        After becoming a standard evaluation method in machine learning through the 1990s, the machinery was assembled again in the Bayesian setting. Vehtari, Gelman &amp; Gabry (2017) set out a way of estimating leave-one-out predictive performance without regenerating the posterior draws, and introduced Pareto-smoothed importance sampling (PSIS) to stabilize the importance weights. The <code>loo()</code> function in <code>brms</code> is this implementation, and it is what the Maibara–Sekigahara study uses.
+        </p>
+        <div class="sub">
+            <h3>It plays two roles in the Maibara–Sekigahara study</h3>
+            <p>The first is model comparison: <code>loo()</code> is used to ask which predicts better, the model with a spatial random effect or the model without. The second is <b>influence analysis</b>, looking at how far the result moves when one settlement is removed. The latter is not model selection; it is closer to the sensitivity-analysis tradition of epidemiology and ecology. The same phrase &ldquo;leave one out&rdquo; covers two different purposes, and the computation differs as well. Sections 4 and 5 treat them separately.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">It comes down to one move: replace an expectation with a sample mean.</p>
+        <p class="body">
+        What cross-validation rests on is the operation of replacing the expectation one wants with an average one can compute. The expected risk is an integral over the distribution \(P\), and \(P\) is unknown. So each observation is made to play, once, the role of &ldquo;data not yet seen&rdquo;, and the losses there are averaged.
+        </p>
+        <div class="eq">
+            <div class="lbl">DEFINITION OF LEAVE-ONE-OUT CROSS-VALIDATION</div>
+            \[ \widehat{R}_{\mathrm{LOO}} \;=\; \frac{1}{n}\sum_{i=1}^{n} \ell\Bigl(f^{(-i)}(x_i),\; y_i\Bigr) \]
+            <p class="read"><b>\(f^{(-i)}\)</b> … the model fitted <b>with</b> observation \(i\) <b>removed</b><br>
+            <b>\(\ell\bigl(f^{(-i)}(x_i), y_i\bigr)\)</b> … how well that model landed on the point it was not fitted to<br>
+            <b>\(n\)</b> … the number of observations; the refitting is needed \(n\) times as well</p>
+        </div>
+        <p class="body">
+        In a Bayesian model the loss taken is the log predictive density. What is then evaluated is not a point estimate but the posterior predictive distribution, so predictive quality is measured with the uncertainty left in.
+        </p>
+        <div class="eq">
+            <div class="lbl">THE BAYESIAN FORM (elpd)</div>
+            \[ \mathrm{elpd}_{\mathrm{LOO}} \;=\; \sum_{i=1}^{n} \log \int p\bigl(y_i \mid \theta\bigr)\, p\bigl(\theta \mid y_{-i}\bigr)\, d\theta \]
+            <p class="read"><b>\(p(\theta \mid y_{-i})\)</b> … the posterior with observation \(i\) removed<br>
+            <b>elpd</b> … expected log pointwise predictive density. <b>Larger is better</b><br>
+            For comparing models, what is read is the difference \(\Delta\mathrm{elpd}\) and its standard error</p>
+        </div>
+        <div class="sub">
+            <h3>Relation to information criteria</h3>
+            <p>AIC, treated under Perspective 5 (information theory), estimates predictive quality by adding a complexity penalty to the fit. Leave-one-out cross-validation reaches the same target by actually removing points and measuring, instead of deriving the shape of the penalty theoretically. Both aim at &ldquo;prediction on unseen data&rdquo;; one gets there analytically, the other by operating on the sample. This is the kind of relation meant when <a href="../">Reading the seven perspectives in equations</a> says that the same expression can be read from another perspective.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>The approximation, and what it costs</h2>
+        <p class="q">Implemented literally, it stops being practical for Bayesian models.</p>
+        <p class="body">
+        Implement the definition in section 3 as it stands and the model must be refitted as many times as there are observations. For a light fit such as least squares this is no problem, but for a Bayesian model whose posterior comes from MCMC it would mean running \(n\) separate sampling runs, which is not practical.
+        </p>
+        <p class="body">
+        So <b>the posterior draws obtained once from the full data are reused</b>. The posterior with observation \(i\) removed can be written as a reweighting of the full-data posterior, and the weight is proportional to the reciprocal of that observation's likelihood.
+        </p>
+        <div class="eq">
+            <div class="lbl">IMPORTANCE WEIGHTS — CANCELLING THE REMOVED POINT BY WEIGHT</div>
+            \[ w_i^{(s)} \;\propto\; \frac{1}{p\bigl(y_i \mid \theta^{(s)}\bigr)} \qquad \theta^{(s)} \sim p(\theta \mid y) \]
+            <p class="read"><b>\(\theta^{(s)}\)</b> … the \(s\)-th draw from the full-data posterior<br>
+            The better a \(\theta\) explains observation \(i\), the smaller its weight. This approximates &ldquo;the posterior that has not seen \(i\)&rdquo;</p>
+        </div>
+        <p class="body">
+        The problem is that these weights <b>can take very large values</b>. When an observation is extreme for the model and only a small part of the posterior can explain it, the distribution of weights has a heavy right tail and a handful of draws dominate the sum. The estimate becomes unstable. PSIS fits a generalized Pareto distribution to the upper weights and smooths them, holding that tail down.
+        </p>
+        <div class="warn">
+            <h3>Since it is an approximation, whether it is working has to be checked</h3>
+            <p>The estimated shape parameter \(\hat{k}\) of the generalized Pareto distribution serves directly as the diagnostic. The larger \(\hat{k}\), the heavier the tail and the worse the convergence of the importance sampling. The conventional guide has been that above \(\hat{k} > 0.7\) the approximation cannot be trusted for that observation (a sample-size-dependent threshold has since been proposed).</p>
+            <p>What deserves attention here is that <b>the observation the diagnostic flags is precisely the observation with the largest influence on the model</b>. A large \(\hat{k}\) means nothing other than that removing that single point moves the posterior a great deal. The breakdown of the approximation and the fragility of the result are two sides of the same thing.</p>
+        </div>
+        <div class="sub">
+            <h3>The diagnostics this study actually produced</h3>
+            <p>In the model without a spatial random effect, all 25 observations had \(\hat{k} \le 0.7\). In the model with the ICAR spatial random effect, 24 observations (96.0%) were fine and <b>one observation fell above \(\hat{k} > 0.7\)</b>. The run log still carries the warning recommending moment matching. Since this model was not adopted, no recomputation was carried out. It stands as a case where the approximation is not guaranteed to hold everywhere.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Model</th><th class="num">elpd</th><th class="num">p_loo</th><th class="num">looic</th><th>Pareto \(\hat{k}\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hierarchical beta (no spatial term)</td><td class="num">33.8 ± 2.6</td><td class="num">4.4</td><td class="num">−67.7</td><td>25/25 fine</td></tr>
+                <tr><td>+ ICAR spatial random effect</td><td class="num">33.1 ± 2.4</td><td class="num">4.8</td><td class="num">−66.3</td><td>24/25 fine, 1 above 0.7</td></tr>
+                <tr><td>Difference (with − without)</td><td class="num">−0.7 ± 0.3</td><td class="num">—</td><td class="num">—</td><td>—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Computed from the log-likelihood matrix of 8,000 posterior draws × 25 observations. Adding the spatial term lowers elpd slightly. Since the difference stays at about twice its standard error it cannot be called a strong preference, but it is used as grounds for the claim that <b>the data give no reason to include a spatial term</b>.</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it is used in this research — what unit is left out</h2>
+        <p class="q">Match the unit left out to the units of dependence.</p>
+        <p class="body">
+        The main analysis in this study is an aggregated model with the settlement as its unit. For each of 25 settlements, the response is the proportion of vocabulary used by the grandparent generation and no longer used by the junior-high-school generation (the loss rate), with population growth rate as the explanatory variable. Since the structure is <b>one settlement per row</b>, leave-one-out and &ldquo;leave one settlement out&rdquo; coincide in this model.
+        </p>
+        <p class="body">
+        Onohara calls this LOSO (Leave-One-Settlement-Out) and <b>refits the aggregated beta regression completely</b>, 25 times over. This is the computation as defined, not the importance-sampling approximation of section 4. Fitting a beta regression is light enough that no approximation is needed.
+        </p>
+        <ol class="steps">
+            <li><b>Estimate on the full data</b>　With all 25 settlements, estimate the standardized coefficient on population growth rate. \(b = +0.246\), \(p < .0001\).</li>
+            <li><b>Remove one settlement at a time</b>　Refit the same model on the 24 settlements excluding settlement \(i\), and record the coefficient and the \(p\) value. Repeat 25 times.</li>
+            <li><b>Watch how the coefficient moves</b>　The coefficient moved within \(b \in [0.115,\ 0.267]\). All signs positive; the direction is consistent.</li>
+            <li><b>Count how often significance survives</b>　Of the 25 runs, <b>24 kept \(p<.05\)</b>. Only one broke.</li>
+            <li><b>Check robustness to the specification as well</b>　A version placing school district as a fixed rather than random effect gives \(b = +0.228\), \(p<.0001\), unchanged.</li>
+        </ol>
+
+        <div class="warn">
+            <h3>Significance depended on the single least reliable settlement</h3>
+            <p>The run that broke is the one removing Sugisawa. This settlement has only <b>one</b> respondent in the grandparent generation, the highest population growth rate of the 25 at 1.315, and a high loss rate of 0.5. Remove it and the coefficient becomes \(b = 0.115\), \(p = 0.2501\); significance is lost.</p>
+            <p>So while the positive association itself is consistent across 24 settlements, <b>statistical significance is held up by the settlement with the lowest estimation precision, the one with a single respondent</b>. The main result is driven by a point that is both high-leverage and low-confidence. LOSO showed this as a concrete number.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Why the settlement is the unit — the contrast with the count-level model</h3>
+            <p>In the aggregated model one settlement is one observation, so there is no room to choose a unit. The question arises for the <b>count-level model</b> the same study runs alongside it, which models 5,100 cells of vocabulary item × settlement × generation directly. Naively removing a single cell there lets <b>information leak in from the other cells of the same settlement</b>, because cells within a settlement are dependent on one another through a shared random effect. Hide one cell and the model still knows that settlement almost as well as before.</p>
+            <p>To estimate predictive performance correctly in this situation, the unit removed has to match <b>the units of dependence</b>. Remove a whole settlement and the model genuinely knows nothing about it. If the question is &ldquo;how well can a new settlement be predicted&rdquo;, then the unit removed must be the settlement. The choice of unit in leave-one-out cross-validation is not a matter of computational convenience but <b>a statement of which prediction task is being evaluated</b>.</p>
+        </div>
+
+        <div class="sub">
+            <h3>One of three directions of robustness checking</h3>
+            <p>LOSO is not used on its own; it is one corner of a design that checks the hazards of analysing aggregated values from three directions. The other two are a count-level model that leaves the raw counts unaggregated, and a reanalysis that merges neighbouring settlements to increase the sample. The three results do not point the same way.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Analysis</th><th>Unit</th><th class="num">Population growth → loss</th><th>Reading</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Aggregated beta regression (main)</td><td>25 settlements</td><td class="num">+0.23</td><td>Credible interval excludes 0</td></tr>
+                <tr><td>LOSO (influence analysis)</td><td>24 settlements × 25 runs</td><td class="num">0.115 – 0.267</td><td>Direction consistent, significance 24/25</td></tr>
+                <tr><td>Count-level model</td><td>5,100 cells</td><td class="num">+0.17</td><td>Interval straddles 0</td></tr>
+                <tr><td>Merged settlements (5+ grandparents)</td><td>12 units</td><td class="num">−0.07</td><td>Association disappears</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">As the unit shifts from aggregate to raw data to merged units, the claim weakens. That gradient is itself a result, and it is reported in the paper as grounds for a provisional reading.</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits — what the method cannot say</h2>
+        <p class="q">A tool for measuring predictive quality, not a guarantee of correctness.</p>
+        <div class="sub">
+            <h3>A coefficient that does not move does not mean the model is right</h3>
+            <p>Even if the coefficient is stable under LOSO, all that shows is that the same answer comes out whichever single point is removed. If the form of the model is wrong, a wrong answer will come out stably. What cross-validation measures is predictive performance, not causal structure and not the adequacy of the model.</p>
+        </div>
+        <div class="sub">
+            <h3>A small difference in elpd is hard to interpret</h3>
+            <p>The difference between the models with and without the spatial term in this study is \(-0.7 \pm 0.3\): a little over twice the standard error, not a decisive difference. <b>Not being able to say &ldquo;better&rdquo; outright when the difference is small</b> is in the character of this method, and indeed the study keeps to the weaker conclusion that the spatial term does not improve fit.</p>
+        </div>
+        <div class="sub">
+            <h3>Change the unit removed and the question being evaluated changes too</h3>
+            <p>Removing one cell and removing one settlement will of course give different numbers for predictive performance. It is not that one is correct; <b>the question is different</b>. Whether the task is &ldquo;predict another vocabulary item in the same settlement&rdquo; or &ldquo;predict a new settlement&rdquo; changes which unit should be evaluated. Numbers cannot be compared without making that choice explicit.</p>
+        </div>
+        <div class="sub">
+            <h3>On small samples the diagnostic itself becomes unstable</h3>
+            <p>The aggregated model in this study has \(n=25\). At that scale there is a limit to the precision of both the Pareto \(\hat{k}\) estimate and the standard error of elpd. Good diagnostics show that the approximation has not broken down; they guarantee nothing beyond that.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        The analysis rests on data from a three-generation dialect vocabulary survey covering 25 settlements from Maibara in Shiga Prefecture to Sekigahara in Gifu Prefecture. Bayesian estimation of the aggregated model uses <code>brms</code> and Stan; the LOSO refitting uses <code>betareg</code>. The <code>loo()</code> output for the model comparison and all 25 rows of the LOSO result are stored as run logs and CSV.
+        </p>
+        <ul class="refs">
+            <li>Analysis scripts: <code>12_brms_loss.R</code> (hierarchical beta regression and model comparison), <code>22_loso_sensitivity.R</code> (LOSO influence analysis), <code>19_rawcount_model.R</code> (count-level model), <code>21_merge_settlements.R</code> (merging settlements)</li>
+            <li>Results: <code>output/loso_sensitivity.csv</code> (coefficient and \(p\) value for each excluded settlement, 25 rows), <code>output/run_12.log</code> (the <code>loo()</code> output and Pareto \(\hat{k}\) diagnostics)</li>
+            <li>Every figure on this page is quoted from these run results; no estimates or approximations are included.</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Geisser, S. (1975) The predictive sample reuse method with applications. <i>Journal of the American Statistical Association</i>, 70(350), 320–328. <a href="https://doi.org/10.1080/01621459.1975.10479865" target="_blank" rel="noopener noreferrer">doi:10.1080/01621459.1975.10479865</a></li>
+                <li>Vehtari, A., Gelman, A. &amp; Gabry, J. (2017) Practical Bayesian model evaluation using leave-one-out cross-validation and WAIC. <i>Statistics and Computing</i>, 27, 1413–1432. <a href="https://doi.org/10.1007/s11222-016-9696-4" target="_blank" rel="noopener noreferrer">doi:10.1007/s11222-016-9696-4</a></li>
+                <li>Vehtari, A., Simpson, D., Gelman, A., Yao, Y. &amp; Gabry, J. (2024) Pareto smoothed importance sampling. <i>Journal of Machine Learning Research</i>, 25. <a href="https://jmlr.org/papers/volume25/19-556/19-556.pdf" target="_blank" rel="noopener noreferrer">jmlr.org</a> (first appeared as arXiv:1507.02646, 2015)</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Leave-one-out cross-validation does not ask whether a probability model is right; it looks only at <b>the loss on data not yet seen</b>. It is a tool for estimating, directly and by taking the sample apart, the gap between the empirical risk that can be computed at hand and the expected risk that is actually wanted. Where a generalization bound holds that gap down from above with a complexity term, this closes it by measurement. It falls under <b>Perspective 4 (learning theory, risk minimization)</b> in <a href="../">Reading the seven perspectives in equations</a>. The same target — prediction on unseen data — seen from the side of information criteria is the AIC of Perspective 5.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Every figure is quoted from the output of the analysis scripts; no estimates or approximations are given.<br>
+    The whole layout of where the methods sit is in <a href="../">Reading the seven perspectives in equations</a>; which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

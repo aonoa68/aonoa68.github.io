@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantel Test — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="The Mantel test for correspondence between two distance matrices: the definition of the statistic, why permutation is required, the floor on the p-value, and the limits of the partial Mantel test, set out against the implementation used in the GISA2025 analysis of emotion, space and text.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (frequentist) */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* cautions and limits (the box where the weaknesses go) */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* gold box, same role as .cross in worlds/ */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* results table */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* procedure list */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* references */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Mantel Test</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/mantel/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Mantel <span>Test</span></h1>
+        <p class="lead">A test for correspondence between two <b>distance matrices</b>. The entries of such a matrix are not independent of one another, so the ordinary test of correlation — which treats the entries as a sample — cannot be used. The frequentist move of rebuilding the sample to obtain a null distribution is implemented here by permuting rows and columns together.<br>
+        What follows is set out against the implementation Onohara used for the GISA2025 presentation on the geographical correlation of place and emotion, with attention to what is assumed and what may be claimed.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Asking whether nearby places evoke similar emotions, as a correspondence between two distance matrices.</p>
+        <p class="body">
+        Suppose there are \(n\) objects, and that for every pair two kinds of "separation" have been measured. Write one as \(D^{(1)}\) and the other as \(D^{(2)}\). Both are \(n \times n\) symmetric matrices with zeros on the diagonal. The question is a single one: <b>are pairs that are close in one also close in the other?</b>
+        </p>
+        <p class="body">
+        The naive move is to extract the upper-triangular entries into two vectors and take their correlation. As a statistic, that is in fact correct. The difficulty lies in <b>the test</b>. The \(n\) objects yield \(n(n-1)/2\) pairs, but these are not independent observations: the same object \(i\) recurs in \(n-1\) of the pairs. Applying a test of correlation that presumes an independent sample — the test based on the \(t\) distribution — overstates the effective degrees of freedom, and the type I error rate climbs well above the nominal level.
+        </p>
+        <p class="body">
+        The Mantel test is a procedure for building a null distribution without destroying this dependence structure. It was originally proposed for detecting space–time clustering of disease (Mantel 1967).
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Definition of the statistic</h2>
+        <p class="q">A Pearson correlation between upper-triangular entries. Nothing more than that.</p>
+        <div class="eq">
+            <div class="lbl">MANTEL STATISTIC</div>
+            \[ r_M \;=\; \frac{\displaystyle\sum_{i&lt;j}\bigl(d^{(1)}_{ij}-\bar{d}^{(1)}\bigr)\bigl(d^{(2)}_{ij}-\bar{d}^{(2)}\bigr)}{\sqrt{\displaystyle\sum_{i&lt;j}\bigl(d^{(1)}_{ij}-\bar{d}^{(1)}\bigr)^{2}}\;\sqrt{\displaystyle\sum_{i&lt;j}\bigl(d^{(2)}_{ij}-\bar{d}^{(2)}\bigr)^{2}}} \]
+            <p class="read"><b>\(i&lt;j\)</b> … the upper triangle only. The matrix is symmetric, so the lower triangle repeats the same information and the diagonal is the constant 0<br>
+            <b>\(\bar{d}^{(k)}\)</b> … the mean of the upper-triangular entries<br>
+            <b>\(r_M\)</b> … takes values in \([-1,\,1]\), and does not depend on the units</p>
+        </div>
+        <div class="sub">
+            <h3>There is nothing new in the statistic itself</h3>
+            <p>The expression above is the definition of the Pearson correlation between two vectors. What the Mantel test contributes is not the statistic but the choice of distribution against which \(r_M\) is compared. In practice it is enough to pull out the upper triangle with <code>np.triu_indices_from(D, k=1)</code> and hand it to <code>pearsonr</code>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Why permute</h2>
+        <p class="q">The entries must not be permuted. What is permuted is the labels on the objects.</p>
+        <p class="body">
+        The null hypothesis is that there is no correspondence between the two distance matrices. It is expressed in the form: <b>the labels attached to the objects may be interchanged</b>. Choose a permutation \(\pi\) and apply the same \(\pi\) to <b>both</b> the rows and the columns of one matrix.
+        </p>
+        <div class="eq">
+            <div class="lbl">THE SAME PERMUTATION ON ROWS AND COLUMNS</div>
+            \[ \bigl(D^{(2)\pi}\bigr)_{ij} \;=\; d^{(2)}_{\pi(i)\,\pi(j)} \qquad \pi \in \mathfrak{S}_n \]
+            <p class="read">There are \(n!\) permutations, too many to enumerate, so \(B\) of them are drawn at random as an approximation. For each draw, \(r_M^{(b)} = r_M\bigl(D^{(1)},\,D^{(2)\pi_b}\bigr)\) is computed, and the resulting distribution serves as the null distribution.</p>
+        </div>
+        <div class="sub">
+            <h3>This is the heart of the method</h3>
+            <p>Permuting only the rows, or only the upper-triangular entries, achieves nothing. Shuffling entries individually destroys what makes the object a distance matrix — the recurrence of the same object across many pairs, and the constraints that follow from the triangle inequality — and leaves one no better off than assuming an independent sample. Applying the same permutation to rows and columns <b>breaks only the correspondence of which object is which, while preserving the internal structure of the matrix</b>. That is precisely why the resulting null distribution carries the dependence structure with it.</p>
+        </div>
+        <div class="sub">
+            <h3>One-sided or two-sided</h3>
+            <p>If the question is only whether near things resemble one another, one side suffices. Onohara's implementation counts \(|r_M^{(b)}| \ge |r_M^{\mathrm{obs}}|\) and is therefore two-sided: negative correspondence — the farther apart, the more alike — is admitted as a detectable outcome. On the same data a one-sided test would roughly halve the p-value, so which was used has to be stated when reporting.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>The p-value and its floor</h2>
+        <p class="q">Fixing the number of permutations also fixes the smallest p-value that can be reached.</p>
+        <div class="eq">
+            <div class="lbl">COUNT THE OBSERVED VALUE AS ONE DRAW FROM THE NULL</div>
+            \[ \hat{p} \;=\; \frac{1+\#\bigl\{\,b \;:\; \bigl|r_M^{(b)}\bigr| \ge \bigl|r_M^{\mathrm{obs}}\bigr|\,\bigr\}}{1+B} \]
+            <p class="read"><b>the \(+1\) in numerator and denominator</b> … counts the observed value itself as one draw from the null distribution. Without it the p-value could come out as 0<br>
+            <b>\(B\)</b> … the number of permutations</p>
+        </div>
+        <div class="sub">
+            <h3>The floor is \(1/(B+1)\)</h3>
+            <p>The numerator is at least 1, so \(\hat{p}\) can never fall below \(1/(B+1)\): with \(B=1999\) the floor is 0.0005, with \(B=9999\) it is 0.0001. <b>A p-value resting on the floor must not be read as a point estimate.</b> It says no more than that none of the permutations exceeded the observed value, and it does not distinguish a true p of 0.0004 from one of \(10^{-8}\). Claiming a smaller p requires increasing \(B\); there is no other route.</p>
+        </div>
+        <div class="sub">
+            <h3>The default in the code, and the value actually used</h3>
+            <p>Onohara's <code>mantel_test</code> takes \(B=9999\) as its default, but every reported run was called with <code>perms=1999</code>. The random seed is fixed at <code>seed=42</code>, so the same input reproduces the same p-value. The 0.0005 in the table below is exactly the floor for \(B=1999\).</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The partial Mantel test, and its limits</h2>
+        <p class="q">Removing the influence of a third matrix — though the validity of this extension has been questioned.</p>
+        <p class="body">
+        When a third distance matrix \(D^{(3)}\) is available, it is tempting to measure the correspondence with its effect removed. The idea is that of partial correlation: for the upper-triangular vectors \(v_1, v_2, v_3\), compute
+        </p>
+        <div class="eq">
+            <div class="lbl">A PARTIAL CORRELATION AS THE STATISTIC</div>
+            \[ r_{12\cdot 3} \;=\; \frac{r_{12} - r_{13}\,r_{23}}{\sqrt{\bigl(1-r_{13}^{2}\bigr)\bigl(1-r_{23}^{2}\bigr)}} \]
+            <p class="read">The null distribution is built by holding \(D^{(1)}\) and \(D^{(3)}\) fixed and permuting only \(D^{(2)}\), rows and columns together. The p-value is counted as in the simple Mantel test.</p>
+        </div>
+        <div class="warn">
+            <h3>This extension is reported not to hold the nominal level</h3>
+            <p>The partial Mantel test exceeds the nominal type I error rate, particularly <b>when the matrices carry spatial autocorrelation</b>. Raufaste &amp; Rousset (2001) exhibit cases in which the p-value does not represent the type I error rate; Guillot &amp; Rousset (2013) demonstrate inflated error rates for both the simple and the partial test, and argue that the partial Mantel test fails to correct for the effect of spatial autocorrelation. The same point has been raised in the phylogenetic comparative setting (Harmon &amp; Glor 2010).</p>
+            <p>A partial Mantel result therefore <b>cannot be read as evidence that confounding has been controlled</b>. The premise behind the partial-correlation expression above — that subtracting \(v_3\) linearly removes its influence — does not hold when the entries of the distance matrices are spatially correlated. Onohara's analysis runs this test alongside the others, but its standing is that of a supplementary check.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>How the method is used in this research</h2>
+        <p class="q">Three distance matrices — emotion, space and text — are built and their correspondences compared.</p>
+        <ol class="steps">
+            <li><b>Aggregating the emotion data</b>　Responses to a survey on niche construction and environmental choice (4,424 rows) are aggregated into a table of place ID × 24 emotion categories. The categories are the eight basic emotions at three intensity levels each.</li>
+            <li><b>Normalisation</b>　Because respondents could select more than one option, the totals differ from place to place. Each row is converted to proportions summing to 1, so that the sheer number of responses does not enter the distance.</li>
+            <li><b>Emotion distance</b>　Cosine distance is taken on the 50 × 24 matrix of proportions, giving \(D_{\text{emotion}}\) (50 × 50).</li>
+            <li><b>Spatial distance</b>　Adjacency among subcategories is defined as a graph, and its <b>shortest-path distance</b> is taken as \(D_{\text{space}}\). This is a designed proximity structure, not a geographical distance computed from latitude and longitude.</li>
+            <li><b>Text distance</b>　The descriptive text for each place is passed through a Japanese BERT model (<code>cl-tohoku/bert-base-japanese-v2</code>, maximum length 128); the CLS vector is L2-normalised and cosine distance is taken, giving \(D_{\text{text}}\).</li>
+            <li><b>Testing</b>　Simple Mantel tests are run on the three pairings, followed by partial Mantel tests conditioning on the third matrix.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Comparison</th><th class="num">\(r\)</th><th class="num">\(p\)</th><th>Reading</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Emotion × space</td><td class="num">0.3595</td><td class="num">0.0005</td><td>p sits on the floor (\(B=1999\))</td></tr>
+                <tr><td>Emotion × text</td><td class="num">0.0600</td><td class="num">0.4775</td><td>no correspondence found</td></tr>
+                <tr><td>Text × space</td><td class="num">0.1685</td><td class="num">0.0800</td><td>not significant at the 5% level</td></tr>
+                <tr><td>Emotion × space ｜ text</td><td class="num">0.3551</td><td class="num">0.0005</td><td>partial Mantel; limits as in the previous section</td></tr>
+                <tr><td>Emotion × text ｜ space</td><td class="num">−0.0007</td><td class="num">0.9940</td><td>partial Mantel</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">The figures are quoted as they stand in the saved output of the notebook in the repository. All runs used \(B=1999\), <code>seed=42</code>, two-sided.</p>
+
+        <div class="sub">
+            <h3>How the distance matrices are built determines the result</h3>
+            <p>What deserves attention here is that \(D_{\text{space}}\) is not a measurement but a <b>construct</b>. How the adjacency among subcategories is drawn changes the distance, and with it the correspondence with emotion. A distance based on geographical coordinates would give different values. What the Mantel test answers is whether <i>this</i> definition of nearness corresponds to <i>this</i> definition of emotional similarity, and nothing beyond that.</p>
+        </div>
+        <div class="sub">
+            <h3>The text is the stimulus that elicited the emotion</h3>
+            <p>Respondents chose their emotions after reading the descriptive text for a place. \(D_{\text{text}}\) and \(D_{\text{emotion}}\) are therefore not two independent measurements: the latter was generated with the former as stimulus. Running a partial Mantel test conditioned on text is best understood as a check made in light of that structure.</p>
+        </div>
+
+        <div class="warn">
+            <h3>A case in which the implementation silently returned a wrong value</h3>
+            <p>In the first attempt at testing phase by phase, splitting the data into ten points per phase, the \(p\) for some phases was displayed as the floor value 0.0005. In fact the submatrices of \(D_{\text{space}}\) were <b>constant throughout</b>, the denominator of the Pearson correlation was 0, and \(r\) was undefined. <code>pearsonr</code> issued a <code>ConstantInputWarning</code> and returned <code>NaN</code>, but <code>mantel_test</code> did not detect it; the comparison <code>abs(r) >= abs(r_obs)</code> was therefore always false, the counter stayed at zero, and the floor p-value was printed.</p>
+            <p>Onohara found this and rebuilt the distances as shortest-path distances on the subcategory adjacency graph so that the submatrices would not be constant, then reran the phase-wise tests. <b>A p-value resting on the floor is as much a sign of broken arithmetic as of strong evidence.</b> In a permutation test one has to establish first that the statistic is defined at all.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        The analysis scripts and the data are public. The notebook runs from preprocessing through testing and visualisation in one pass, taking <code>pivot_table_id.csv</code> (place ID × emotion counts) and <code>place_subcategory_neighbors.csv</code> (the subcategory adjacency definition) as input.
+        </p>
+        <ul class="refs">
+            <li>Ayaka Onohara, "GISA2025 Mantel Proximity Analysis", <a href="https://github.com/aonoa68/GISA2025_mantel_analysis" target="_blank" rel="noopener noreferrer">github.com/aonoa68/GISA2025_mantel_analysis</a> (released 2025-10-24). DOI: <a href="https://doi.org/10.5281/zenodo.17432950" target="_blank" rel="noopener noreferrer">10.5281/zenodo.17432950</a></li>
+            <li>Licence: MIT License for the code; <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> for the data and documentation.</li>
+            <li>Related presentation: Geographic Information Systems Association of Japan (GISA 2025), "A geographical correlation analysis of place and emotion".</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Mantel, N. (1967) The detection of disease clustering and a generalized regression approach. <i>Cancer Research</i>, 27(2), 209–220.</li>
+                <li>Raufaste, N. &amp; Rousset, F. (2001) Are partial Mantel tests adequate? <i>Evolution</i>, 55(8), 1703–1705. <a href="https://doi.org/10.1111/j.0014-3820.2001.tb00689.x" target="_blank" rel="noopener noreferrer">doi:10.1111/j.0014-3820.2001.tb00689.x</a></li>
+                <li>Harmon, L. J. &amp; Glor, R. E. (2010) Poor statistical performance of the Mantel test in phylogenetic comparative analyses. <i>Evolution</i>.</li>
+                <li>Guillot, G. &amp; Rousset, F. (2013) Dismantling the Mantel tests. <i>Methods in Ecology and Evolution</i>. <a href="https://doi.org/10.1111/2041-210x.12018" target="_blank" rel="noopener noreferrer">doi:10.1111/2041-210x.12018</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>The Mantel test treats the parameter as a fixed value and judges by <b>how the statistic varies when the sample is rebuilt</b>. It assumes no shape for the distribution, constructing the null directly by permutation rather than invoking a normal or \(t\) distribution. What it evaluates is the hit rate of a procedure under repetition, which places it squarely in <b>Perspective 2 (frequentist)</b> of <a href="../">the seven perspectives in equations</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in her own research, written for readers in the same field. Every figure is quoted from the output of the public repository; no estimates or approximations have been supplied.<br>
+    For how the methods sit relative to one another see <a href="../">the seven perspectives in equations</a>; for which course session falls under which perspective see <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beta Regression — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Beta regression as a regression whose response is a proportion closed inside 0 and 1: the formulation, the lineage from the exponential family through generalized linear models, the handling of endpoints, and the distinction between origin and estimation framework, set out against the hierarchical Bayesian beta model fitted to the Maibara dialect survey.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .nav-inner > a, .nav-inner > span.nav-current, .nav-right a { white-space:nowrap; }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Beta regression</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/beta-regression/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Beta <span>Regression</span></h1>
+        <p class="lead">When the response is a <b>proportion closed inside 0 and 1</b>, a linear regression that assumes a normal distribution predicts values outside the interval. Beta regression puts a distribution on the open interval \((0,1)\) under the response and connects its mean to the linear predictor through a logit link.<br>
+        Set out here against the hierarchical Bayesian beta model Onohara fitted to a three-generation dialect vocabulary survey from Maibara to Sekigahara — rates of vocabulary loss and gain — with what it assumes and what it can claim.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">When the response is a proportion, keep the fitted values from leaving the interval by construction.</p>
+        <p class="body">
+        Let the response \(y_s\) be closed inside \((0,1)\) — say, the proportion of vocabulary lost in settlement \(s\). Fit a linear regression \(y_s = \mathbf{x}_s^\top \boldsymbol{\beta} + \varepsilon_s\) with a normal distribution and the linear predictor ranges over the whole real line, so <b>fitted values fall below 0 or rise above 1</b>. The moment a value appears that cannot be read as a proportion, the model contradicts the domain of its own response.
+        </p>
+        <p class="body">
+        Two workarounds are commonly reached for, and neither is adequate. One is to dichotomise at a threshold — everything at or above 0.5 counts as 1 — and hand the result to logistic regression, which throws away a quantity that was measured on a continuum. The other is to apply logistic regression directly, but the binomial distribution counts trials that come out 0 or 1; it is not a distribution for a continuous proportion.
+        </p>
+        <p class="body">
+        Beta regression puts the beta distribution, continuous on \((0,1)\), under the response, and connects its mean to the linear predictor through a link function. The problem of the domain is dissolved by the choice of distribution itself (Ferrari &amp; Cribari-Neto 2004).
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — who made it, and in which field</h2>
+        <p class="q">It came out of a gap: there was no framework for regressing on proportion data.</p>
+        <p class="body">
+        The formulation is due to Silvia Ferrari and Francisco Cribari-Neto, published in the <i>Journal of Applied Statistics</i> in 2004. The work of two Brazilian statisticians, and the motivation was plain. Rates and proportions turn up in every field, yet no standard regression framework took them as the response. The inadequacy of the two workarounds above is exactly where the paper starts.
+        </p>
+        <p class="body">
+        It spread quickly, into every area where proportion data are handled. What deserves notice, though, is that the paper <b>invented neither a new distribution nor a new principle of estimation</b>. The beta distribution had long been known, and the generalized linear model framework had been in place since 1972. What Ferrari and Cribari-Neto contributed was assembling existing parts into something usable as a regression model. The lineage in the next section shows this.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">Exponential family → generalized linear models → beta regression: a chain of three.</p>
+        <p class="body">
+        The starting point is the discovery that distributions which look unrelated share a common form. The exponential family, formulated independently by Fisher (1934) and others, is the name for those whose density can be written as follows.
+        </p>
+        <div class="eq">
+            <div class="lbl">General form of the exponential family</div>
+            \[ f(y \mid \theta) \;=\; h(y)\,\exp\bigl[\,\eta(\theta)\,T(y) - A(\theta)\,\bigr] \]
+            <p class="read">The normal, the binomial, the Poisson — and <b>the beta distribution</b> — all belong to this family. The differences between distributions reduce to differences in \(h,\eta,T,A\).</p>
+        </div>
+        <p class="body">
+        Nelder &amp; Wedderburn (1972) gave a framework in which any distribution from this family can serve as the response under the same fitting procedure. The linear predictor \(\mathbf{x}^\top\boldsymbol{\beta}\) and the mean \(\mu\) of the response distribution are joined by a link function \(g\).
+        </p>
+        <div class="eq">
+            <div class="lbl">The connection made by the generalized linear model</div>
+            \[ g(\mu_i) \;=\; \mathbf{x}_i^\top \boldsymbol{\beta} \]
+            <p class="read">Take the normal with an identity link and you have linear regression; the binomial with a logit, logistic regression; the Poisson with a log, Poisson regression. <b>The beta with a logit gives beta regression.</b></p>
+        </div>
+        <div class="sub">
+            <h3>Beta regression filled a vacant seat in this framework</h3>
+            <p>Read down the correspondence above and the row for the beta distribution had stood empty for a long time. Ferrari &amp; Cribari-Neto (2004) reparameterised the beta distribution in terms of a mean and a precision, set it into the generalized linear model form, and filled that seat. The lineage of the method is therefore closed within statistics itself. Nothing was borrowed from another field.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Definition and assumptions</h2>
+        <p class="q">Rewrite the beta distribution with a mean and a precision, then attach the predictor through a logit link.</p>
+        <p class="body">
+        The beta distribution is usually written \(\mathrm{Beta}(a,b)\) with two shape parameters, but for regression it helps to handle the mean directly. Setting \(\mu = a/(a+b)\) and \(\phi = a+b\) gives the following form.
+        </p>
+        <div class="eq">
+            <div class="lbl">Reparameterisation by mean \(\mu\) and precision \(\phi\)</div>
+            \[ f(y \mid \mu,\phi) \;=\; \frac{\Gamma(\phi)}{\Gamma(\mu\phi)\,\Gamma\bigl((1-\mu)\phi\bigr)}\; y^{\mu\phi-1}\,(1-y)^{(1-\mu)\phi-1} \]
+            <p class="read"><b>\(\mu \in (0,1)\)</b> … the mean of the distribution; this is what attaches to the linear predictor<br>
+            <b>\(\phi &gt; 0\)</b> … the precision; the larger it is, the tighter the concentration around the mean<br>
+            <b>Variance</b> … \(\mathrm{Var}[y] = \mu(1-\mu)/(1+\phi)\). It changes with the mean. Equal variance is not assumed</p>
+        </div>
+        <p class="body">
+        That \(\mu\) is attached to the linear predictor through a logit. For the rate of vocabulary loss in settlement \(s\), the main model of the Maibara survey takes the following form.
+        </p>
+        <div class="eq">
+            <div class="lbl">The main model of this study</div>
+            \[ \operatorname{logit}\bigl(\mathrm{loss}_s\bigr) \;=\; \beta_0 + \beta_1\,\mathrm{growth}_s + \beta_2\,\log N^{\text{ms}}_s + \beta_3\,\log N^{\text{gp}}_s + u_{\text{district}[s]} \]
+            <p class="read"><b>\(\mathrm{growth}_s\)</b> … the population growth rate (2010 population / 2005 population), standardised<br>
+            <b>\(\log N^{\text{ms}}_s,\ \log N^{\text{gp}}_s\)</b> … logs of the number surveyed among middle-school students and among the older generation. Control terms for sampling effort<br>
+            <b>\(u_{\text{district}[s]}\)</b> … a random intercept for the middle-school district (five districts)</p>
+        </div>
+        <div class="sub">
+            <h3>That the variance depends on the mean is a consequence, not an assumption</h3>
+            <p>As the variance formula above shows, under a beta distribution the variance shrinks as the mean approaches 0 or 1. The property actually observed in proportion data — less spread the closer to an edge — falls out of the distribution on its own. Fitting a normal distribution would require an extra structure for unequal variance to express the same thing; in beta regression it is built in the moment the distribution is chosen.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Handling the endpoints — when 0 and 1 occur exactly</h2>
+        <p class="q">The beta distribution lives on an open interval. The endpoints carry no density.</p>
+        <p class="body">
+        The domain is \((0,1)\), not \([0,1]\). If \(y=0\) or \(y=1\) appears in the data the likelihood is undefined and the fit fails. Endpoints are not rare in proportion data, so in practice some treatment is required.
+        </p>
+        <p class="body">
+        The standard remedy is the linear squeeze given by Smithson &amp; Verkuilen (2006), which pushes values inside the interval relative to the sample size \(n\).
+        </p>
+        <div class="eq">
+            <div class="lbl">Squeezing the endpoints inward (not used in this study)</div>
+            \[ y' \;=\; \frac{y\,(n-1) + 1/2}{n} \]
+            <p class="read">The larger \(n\) is, the smaller the shift. But this is <b>an operation that moves the data</b>, and with many endpoints the result can depend on the transformation. Where the endpoints themselves carry meaning, a zero-one inflated formulation placing probability mass at 0 and 1 is the thing to consider.</p>
+        </div>
+        <div class="sub">
+            <h3>This study did not need the transformation</h3>
+            <p>The loss and gain rates in the Maibara survey were recorded as percentages from 0 to 100 and divided by 100 to sit in \([0,1]\). The resulting values for 25 neighbourhood associations <b>contained no endpoints at all</b>, so no squeeze was applied. This is not a general property of the method but a condition this particular dataset happened to satisfy. Fitting the same model to data that do contain endpoints would require the treatment above, or a different formulation.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Maximum likelihood in origin, Bayesian in implementation</h2>
+        <p class="q">The distinction changes how the results are read.</p>
+        <p class="body">
+        The formulation of Ferrari &amp; Cribari-Neto (2004) is maximum likelihood estimation. The generalized linear model framework itself was assembled as a procedure for obtaining maximum likelihood estimates by iteratively reweighted least squares (Nelder &amp; Wedderburn 1972). In this lineage, a parameter is a fixed unknown value and it is the sample that varies at random.
+        </p>
+        <p class="body">
+        The settled model of this study, however, is fitted by <b>Bayesian estimation in Stan through brms</b>. Priors are placed on the parameters and the posterior is obtained by MCMC. The intervals reported are credible intervals, not confidence intervals, and \(P(\beta &gt; 0)\) can be read as a probability about the parameter.
+        </p>
+        <div class="warn">
+            <h3>It sits under perspective 2 because of the lineage of the formulation</h3>
+            <p>This page is placed under <b>perspective 2 (frequentist)</b> because beta regression as a method grew out of the exponential family and the generalized linear model, a maximum likelihood lineage. <b>The estimation framework itself is Bayesian.</b> A prior is multiplied into the same likelihood to obtain a posterior; the judgement is not being made from the variation of the sample.</p>
+            <p>The distinction is not nominal. In the table below, the 0.993 attached to the coefficient of <code>base</code> is <b>the probability that \(\beta&gt;0\) under the posterior distribution</b>, not a p-value. The same figure cannot be produced within a frequentist framework. Conversely the <code>betareg</code> results, run alongside as a frequentist baseline, carry p-values, and those give no probability about the parameter. As stated in <a href="../">Read the seven perspectives in equations</a>, likelihood is used in Bayesian work as well. Maximum likelihood is one principle of estimation; it is not a synonym for frequentism.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>How it was used in this research</h2>
+        <p class="q">Does population growth push up the rate of vocabulary loss, once sampling effort and spatial structure are controlled?</p>
+        <ol class="steps">
+            <li><b>Constructing the response</b>　For item \(j\) in settlement \(s\), write \(g_{sj}\) for the proportion of the older generation (aged 60 and over) using it and \(m_{sj}\) for the proportion among middle-school students, and define the loss rate as \(\mathrm{loss}_s = (1/J)\sum_j \max(g_{sj}-m_{sj},\,0)\). The gain rate \(\mathrm{gain}_s\) reverses the direction of the difference.</li>
+            <li><b>Frequentist baseline</b>　Fit a beta regression with a logit link in <code>betareg</code>, with standardised population size, population growth rate and area as predictors. A first sketch taken on a small sample (n=25).</li>
+            <li><b>Moving to the hierarchical Bayesian model</b>　Fit a hierarchical beta regression with a random intercept for middle-school district in <code>brms</code> with cmdstanr/Stan. The logs of the numbers surveyed in each generation enter as control terms for sampling effort.</li>
+            <li><b>Priors</b>　Weakly informative: \(\mathrm{Normal}(0,1)\) on the slopes, \(\mathrm{Normal}(0,2)\) on the intercept, \(\mathrm{Gamma}(0.1,0.1)\) on the precision \(\phi\).</li>
+            <li><b>Sampling</b>　Four chains, 4,000 iterations each (2,000 as warm-up), <code>adapt_delta = 0.97</code>, <code>max_treedepth = 12</code>. The adopted model has \(\hat{R}=1.00\), bulk-ESS &gt; 3,000, and at most one divergent transition.</li>
+            <li><b>Checking the spatial term</b>　Build a binary adjacency matrix treating settlements within 3 km as neighbours, and compare models with and without an ICAR spatial random effect by approximate leave-one-out cross-validation.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Model</th><th class="num">Coefficient on population growth</th><th class="num">95% credible interval</th><th class="num">\(P(\beta&gt;0)\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>base (sampling effort controlled)</td><td class="num">+0.231</td><td class="num">[+0.059, +0.397]</td><td class="num">0.993</td></tr>
+                <tr><td>+ covariates (area, elevation, built-up land)</td><td class="num">+0.229</td><td class="num">[+0.032, +0.422]</td><td class="num">0.987</td></tr>
+                <tr><td>+ spatial (ICAR, 3 km adjacency)</td><td class="num">+0.228</td><td class="num">[+0.045, +0.402]</td><td class="num">0.992</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Hierarchical Bayesian beta regression (n=25, random intercept for middle-school district). Coefficients are on the logit scale and predictors are standardised. Figures are quoted from <code>loss_growth_coefs.csv</code> in the repository and from run results recorded in the working log.</p>
+
+        <div class="sub">
+            <h3>Against the frequentist baseline</h3>
+            <p>The <code>betareg</code> fit gives a standardised coefficient on population growth of <b>+0.2522</b> (standard error 0.0582, \(z=4.334\), \(p=1.5\times10^{-5}\)). Population size in the same model is \(-0.1274\) (\(p=0.101\)) and area \(+0.0295\) (\(p=0.690\)); neither reaches the 5% level. Take the gain rate as the response and the coefficient on population growth becomes \(-0.139\) (\(p=0.267\)) — the sign flips and significance disappears. <b>Only the loss side holds up robustly.</b></p>
+            <p>The \(+0.231\) from the Bayesian hierarchical model and the \(+0.2522\) from the frequentist fit are close. On a small sample with weakly informative priors that is what one expects, and it confirms that the priors are not manufacturing the result.</p>
+        </div>
+
+        <div class="sub">
+            <h3>The spatial random effect was not adopted</h3>
+            <p>In the leave-one-out comparison the model with ICAR is slightly worse than the one without (elpd difference \(-0.7 \pm 0.3\)). Placing 25 spatial random effects on n=25 is excessive besides, and sampling ran into treedepth problems. <b>The adopted model is the non-spatial hierarchical beta.</b> The spatial term was included to check against the data whether it was needed, not inserted as a correction.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Limits — what the method cannot say</h2>
+        <p class="q">What the choice of distribution resolves is the problem of the domain, and nothing else.</p>
+        <div class="warn">
+            <h3>Getting the domain of the response right does not produce causation</h3>
+            <p>What beta regression guarantees is that fitted values stay inside \((0,1)\) and that the variance is handled as depending on the mean. That the association between population growth and loss holds steady at \(+0.23\) is <b>not evidence that population growth causes loss</b>. These are observational data with no assignment of treatment. Sampling effort, area, elevation, built-up land and spatial structure, controlled here, are no more than the confounder candidates that could be measured.</p>
+        </div>
+        <div class="warn">
+            <h3>A small sample is not resolved by the choice of model</h3>
+            <p>Loss rates could be computed for 25 neighbourhood associations. There are only five middle-school districts, so there is thin material for estimating the variance of the random intercept. Weakly informative priors are a device for representing uncertainty properly; <b>they are not a substitute for more data</b>. In a leave-one-settlement-out sensitivity analysis, removing the settlement with a single respondent in the older generation drops the coefficient to \(+0.12\) (\(p=0.25\)). The association is at its strongest when the least informative observation is retained.</p>
+        </div>
+        <div class="sub">
+            <h3>How the response is constructed steers the result</h3>
+            <p>\(\mathrm{loss}_s\) averages the between-generation difference in usage over items, but the difference is truncated by \(\max(\cdot,0)\). That definition keeps loss and gain as separate quantities, and the truncation is also an operation that discards the information on the negative side. Each settlement's proportion, moreover, is estimated from a small number of respondents, and that uncertainty disappears at the point of aggregation. This was checked separately with a count-level beta-binomial model that models the number of users by item, settlement and generation directly, where the generation-by-growth interaction is \(-0.17\) with a 95% credible interval of \([-0.50,\,0.18]\), straddling zero. <b>That the association only emerges clearly once aggregation is assumed</b> is a property the reader should be told about.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources and data</h2>
+        <p class="body">
+        A secondary analysis of a three-generation dialect vocabulary survey covering five middle-school districts from Maibara in Shiga Prefecture to Sekigahara in Gifu Prefecture. The questionnaire elicited 106 dialect vocabulary variants across 40 question concepts, classified in advance into 45 Kansai/Ōmi forms, 31 Tokyo/standard forms and 26 Mino/Owari forms, with four items of youth speech and new dialect. The original survey was conducted in 2015 by Habiro-Net, and this research analyses the anonymised data. Every stage of the analysis is scripted.
+        </p>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815. <a href="https://doi.org/10.1080/0266476042000214501" target="_blank" rel="noopener noreferrer">doi:10.1080/0266476042000214501</a></li>
+                <li>Nelder, J. A. &amp; Wedderburn, R. W. M. (1972) Generalized linear models. <i>Journal of the Royal Statistical Society, Series A</i>, 135(3), 370–384. <a href="https://doi.org/10.2307/2344614" target="_blank" rel="noopener noreferrer">doi:10.2307/2344614</a></li>
+                <li>Smithson, M. &amp; Verkuilen, J. (2006) A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. <i>Psychological Methods</i>, 11(1), 54–71. <a href="https://doi.org/10.1037/1082-989X.11.1.54" target="_blank" rel="noopener noreferrer">doi:10.1037/1082-989X.11.1.54</a></li>
+                <li>Bürkner, P.-C. (2017) brms: An R package for Bayesian multilevel models using Stan. <i>Journal of Statistical Software</i>, 80(1), 1–28. <a href="https://doi.org/10.18637/jss.v080.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v080.i01</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>Beta regression is derived from the exponential family as a common form and from the generalized linear model as a framework of link functions. That lineage belongs to <b>perspective 2 (frequentist)</b>, with maximum likelihood at its centre — but as stated in <a href="../">Read the seven perspectives in equations</a>, <b>likelihood is used in Bayesian work as well</b>. The implementation in this study is posterior estimation with priors in place, and the same likelihood is being read from the side of <b>perspective 3 (Bayesian)</b>. It is a worked instance of one equation readable from more than one perspective.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the output of analysis scripts and from working records; no estimates or approximations are given.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the seven perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to Read the seven perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>

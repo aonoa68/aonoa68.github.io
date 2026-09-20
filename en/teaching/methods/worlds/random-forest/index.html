@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Forest — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Random forest set out through why its two randomizations work, where Gini-based variable importance connects to information theory, and the fact that two methods can post similar evaluation scores and still produce different results — following three implementations: dialect phylogeny, a survey on statistics education, and the estimation of land suitable for viticulture.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (learning theory) */
+            --w:      #2f6b57;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bfe0d1; background:rgba(47,107,87,0.42); border:1px solid rgba(191,224,209,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(191,224,209,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box for a method's weak points) */
+        .warn { background:#f1f8f4; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Cross-reference (gold box, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results tables */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6faf8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Step lists */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Random Forest</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/random-forest/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 4 ｜ <a href="../">Learning theory (risk minimization)</a></span>
+        <h1>Random <span>Forest</span></h1>
+        <p class="lead">A method that grows many weak decision trees and takes their vote. It belongs in the learning-theory frame because it sets up no probability model and looks only at <b>the loss on data not yet seen</b>.<br>
+        In Onohara's research it has been used less for prediction itself than to read <b>which variables are dividing the groups</b>. Following three settings — the phylogenetic classification of dialects, free-text answers in a survey on statistics education, and land suitable for wine grape growing — this page sets out why the two randomizations work, and what variable importance does and does not answer.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Not the classification itself, but what is doing the dividing.</p>
+        <p class="body">
+        Suppose there are \(n\) objects, each with \(p\) explanatory variables and one group label. Building a rule that assigns the label is a classification problem, but in the places where Onohara's research calls on this method, <b>getting the label right is usually not the point</b>.
+        </p>
+        <p class="body">
+        In the work on the upper Ibi River basin, a phylogenetic estimate of the settlements is made first from basic vocabulary, and the groupings of branches obtained there are then handed back as classification labels. On that footing, random forest is used to ask which vocabulary items are the factors dividing the settlements. It is not the accuracy of the classifier but <b>the ranking of the variables that contributed to the classification</b> that is the output worth reading.
+        </p>
+        <p class="body">
+        The survey on statistics education uses it the same way. It was applied in order to separate the free-text answers of students from a science background from those of the rest, and to pull out, as &ldquo;characteristic words&rdquo;, the words whose frequency of occurrence differed markedly between the two groups.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — from a single tree to a stand</h2>
+        <p class="q">CART decision trees, bundled by bootstrapping and random variable selection.</p>
+        <p class="body">
+        The starting point is CART (Classification and Regression Trees) of Breiman, Friedman, Olshen and Stone (1984). Split the objects in two on the value of an explanatory variable, choose the split by how far the impurity falls, and repeat recursively to grow a tree.
+        </p>
+        <p class="body">
+        A single tree is easy to interpret but unstable: change the data slightly and the shape of the tree changes. Breiman (2001) gave a framework that treats this instability not as a defect but as <b>a resource to be used</b>. Grow a great many trees that differ a little from one another, and take their vote. Onohara's paper summarizes it as: random forest can be called ensemble learning over CART decision trees.
+        </p>
+        <div class="sub">
+            <h3>The design says that each individual tree may be weak</h3>
+            <p>The two papers on the upper Ibi River basin introduce the method as one that combines several classification methods that are by no means accurate, thereby improving accuracy for the analysis. Naively this reads as an odd description, but the variance formula in the next section shows it to be a plain statement of the design principle. The bet is not on building one strong predictor but on building many that are <b>weak and unlike one another</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Correspondence with Perspective 4, learning theory</h2>
+        <p class="q">A third answer to the gap between expected and empirical risk — neither a bound nor a measurement.</p>
+        <p class="body">
+        The question learning theory deals with comes down to one thing: how to hold down the gap between the empirical risk \(\hat{R}(f)\) that can be computed at hand and the expected risk \(R(f)\) that one actually wants small. Perspective 4 of <a href="../">the seven perspectives</a> gives the form of a generalization bound, which holds that gap down from above with a complexity term.
+        </p>
+        <div class="eq">
+            <div class="lbl">THE BASIC FORM OF PERSPECTIVE 4 (RESTATED)</div>
+            \[ R(f) \;=\; \mathbb{E}_{(x,y)\sim P}\bigl[\ell(f(x),y)\bigr], \qquad \hat{R}(f) \;=\; \frac{1}{n}\sum_{i=1}^{n} \ell\bigl(f(x_i),y_i\bigr) \]
+            <p class="read"><b>\(P\)</b> … the distribution the data follow; its contents are unknown, but it is taken to exist<br>
+            <b>\(\ell\)</b> … the loss function; no probability model is set up</p>
+        </div>
+        <p class="body">
+        <a href="../loo/">LOO cross-validation</a>, placed under the same perspective, closes that gap <b>by measurement</b>: take the sample apart one point at a time, refit, and average the loss at the removed point. Random forest answers differently from either. It neither restricts the hypothesis set nor measures by removal; it <b>averages the predictors themselves and brings the variance down</b>.
+        </p>
+        <div class="sub">
+            <h3>What Breiman proved was convergence, not invincibility</h3>
+            <p>Breiman (2001) makes two claims. First, as the number of trees increases, the generalization error of the forest converges almost surely to some limit — a claim of the form &ldquo;it does not diverge&rdquo;. Second, the upper bound on that limit is set by two quantities: the <b>strength</b> of the individual trees and the <b>correlation</b> between them. The variance formula in the next section is the intuitive face of this second claim.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>What the two randomizations are for</h2>
+        <p class="q">Averaging predictors with low correlation lowers the variance. That the fall has a floor is what matters.</p>
+        <p class="body">
+        Randomness enters in two places when a tree is built. One is <b>bootstrapping</b>: resample with replacement for each tree, so that each sees different data. The other is <b>random selection of variables at each split</b>, narrowing the candidates for the split from all \(p\) to a subset each time. Onohara's paper states both stages explicitly: in generating a decision tree, not all objects are used — the objects are selected by the bootstrap method — and in addition the variables are selected at random, and one decision tree is generated.
+        </p>
+        <p class="body">
+        Why are two needed? Write the predictions of \(B\) trees as \(T_1(x),\dots,T_B(x)\), let each have variance \(\sigma^2\), and let the correlation between any two be \(\rho\). The variance of the averaged predictor then takes this form.
+        </p>
+        <div class="eq">
+            <div class="lbl">VARIANCE OF AN AVERAGE OF CORRELATED PREDICTORS</div>
+            \[ \mathrm{Var}\!\left(\frac{1}{B}\sum_{b=1}^{B} T_b(x)\right) \;=\; \rho\,\sigma^{2} \;+\; \frac{1-\rho}{B}\,\sigma^{2} \]
+            <p class="read"><b>The second term</b> … divided by \(B\), it vanishes as trees are added. This is where bootstrapping works<br>
+            <b>The first term</b> … contains no \(B\). However many trees are added, it <b>remains</b><br>
+            <b>\(\rho\)</b> … the correlation between trees. Unless it falls, the first term does not</p>
+        </div>
+        <div class="sub">
+            <h3>The first term is the whole reason for drawing variables at random</h3>
+            <p>Grow trees by bootstrapping alone and, if there is one strong explanatory variable, every tree will use it near the root. The trees end up resembling one another — that is, \(\rho\) grows — and the first term above stays high. No number of trees will remove it. Narrowing the candidate variables at every split is the operation that <b>forbids every tree from jumping at the strong variable, and so lowers \(\rho\)</b>. That Breiman wrote the bound on generalization error in terms of strength and correlation, and this formula, are the same statement in different words.</p>
+        </div>
+        <div class="sub">
+            <h3>Why there is no pruning — a division of labour between bias and variance</h3>
+            <p>With a single decision tree, growing it too deep fits the data at hand too closely, so it is usual to prune the tree back using cross-validation. Random forest does not do this. Onohara's paper says that in random forest, unpruned decision trees are generated and combined in order to improve classification accuracy. The division of labour is clear: <b>each tree is grown deep so that bias is small, and the variance is handed over to the averaging</b>. That the second term in the formula above vanishes with \(B\) is what supports this arrangement.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Variable importance and the Gini coefficient — a bridge to Perspective 5</h2>
+        <p class="q">Average over the whole forest &ldquo;how far the uncertainty fell by splitting&rdquo;.</p>
+        <p class="body">
+        Write the proportion of class \(k\) at node \(t\) as \(p_{k|t}\). Two impurity measures are in common use for judging how good a split is in CART.
+        </p>
+        <div class="eq">
+            <div class="lbl">GINI IMPURITY AND ENTROPY</div>
+            \[ G(t) \;=\; 1-\sum_{k} p_{k|t}^{2}, \qquad\qquad H(t) \;=\; -\sum_{k} p_{k|t}\log p_{k|t} \]
+            <p class="read">Both are 0 when a node is occupied by a single class, and grow as the node becomes more mixed</p>
+        </div>
+        <p class="body">
+        The split chosen is the one that makes this fall the most. The fall can be written as the weighted difference between parent and children.
+        </p>
+        <div class="eq">
+            <div class="lbl">DECREASE IN IMPURITY FROM A SPLIT</div>
+            \[ \Delta G(t) \;=\; G(t) \;-\; \frac{n_L}{n_t}G(t_L) \;-\; \frac{n_R}{n_t}G(t_R) \]
+            <p class="read">Subtract the impurity of the left and right children, weighted by the proportion of objects that flowed into each. <b>It has the same shape as the information gain of Perspective 5, \(\mathrm{IG} = H(\text{parent}) - \sum_c \frac{n_c}{n}H(\text{child}_c)\)</b></p>
+        </div>
+        <p class="body">
+        The importance of a variable \(x_j\) is the sum of these decreases at every split where that variable was used, across all trees in the forest, averaged. R returns it under the name <code>MeanDecreaseGini</code>.
+        </p>
+        <div class="eq">
+            <div class="lbl">MEAN DECREASE IN GINI</div>
+            \[ \mathrm{MDG}(x_j) \;=\; \frac{1}{B}\sum_{b=1}^{B}\ \sum_{t\in\mathcal{T}_b\,:\,v(t)=j} \Delta G(t) \]
+            <p class="read"><b>\(v(t)=j\)</b> … indicates that variable \(x_j\) was used for the split at node \(t\)<br>
+            The larger the value, the more the variable is read as having contributed to the classification</p>
+        </div>
+        <div class="cross">
+            <h3>The Gini coefficient stands in for entropy</h3>
+            <p>Onohara's doctoral thesis makes this explicit, writing that the Gini coefficient in random forest is a substitute for entropy, used to compute the importance of feature variables — here, vocabulary items — in classification. Gini impurity and information gain are different measures, but both sit on the same idea: measuring <b>how far the uncertainty falls by splitting</b>. That is why <b>Perspective 5 (information theory)</b> in <a href="../">the seven perspectives</a> carries a section headed &ldquo;a decision tree splits on how much information is gained&rdquo;. Though the method belongs to Perspective 4, the variable-importance part of it runs on the ruler of information theory.</p>
+        </div>
+        <div class="warn">
+            <h3>The definition of importance differs from paper to paper</h3>
+            <p>The three reports on the upper Ibi River basin (the 2012 research report, &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo;, and the doctoral thesis) all use <code>MeanDecreaseGini</code>, that is, importance based on the decrease in impurity above. The survey on statistics education (2013), by contrast, explains it as noise being given to one of the variables, with the importance being the normalized average, over all decision trees, of the difference between the impurity under noise and the correct impurity — which is a description of <b>a different family of importance measure</b>, one that perturbs a variable and watches how far accuracy falls. Under the same method name, which importance is being read changes the meaning of the result.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>How it is used in this research</h2>
+        <p class="q">Three settings. The first two to read variable importance, the last to draw a map.</p>
+
+        <div class="sub">
+            <h3>(1) Finding the vocabulary that divides the dialect phylogeny</h3>
+        </div>
+        <ol class="steps">
+            <li><b>Do the phylogenetic estimation first</b>　On the basis of the basic vocabulary reported by Yamada (1978, 1980), phylogenetic estimation is carried out with NeighborNet over the 21 sites of the upper Ibi River basin plus Tokyo and Kyoto (see <a href="/teaching/methods/worlds/neighbor-net/">Phylogenetic networks</a>, in Japanese). Branch support is obtained from 1000 bootstrap replicates.</li>
+            <li><b>Turn the branch groupings into labels</b>　The groupings obtained are coded into six: reference type (Tokyo, Kyoto, Kinomoto), Tokuyama (Kadonyū, Tonyū, Tsuka, Hazehara, Yamate, Kami-Kaiden, Hongō, Shimo-Kaiden), Sakauchi (Kawakami, Hirose, Sakamoto), Fujihashi-Kuze (Higashi-Yokoyama, Nishi-Tsugumi, Higashi-Tsugumi, Hisaka, Soto-Tsugumi), Ozu-Tsurumi (Ozu, Tsurumi), and periphery (Imajō, Ikeda).</li>
+            <li><b>Drop columns</b>　Words that correspond to both Tokyo and Kyoto, and words containing a missing-data symbol at even one settlement, have the column itself deleted, since a column showing the same value throughout is not taken into the analysis.</li>
+            <li><b>Grow the forest</b>　The number of decision trees per run is 500, and this is repeated 100 times to obtain the distribution of mean decrease in Gini. The figure caption records <code>rf. 23cases, 37vars, loop=100</code> and the random seed <code>seed = 200</code>.</li>
+            <li><b>Set the top words against the correspondence analysis</b>　The items that came out high in importance were grease, good, bite, fish, correct, they, he, sit and lie. These are set against the characteristic words extracted by correspondence analysis, and the overlaps confirmed.</li>
+        </ol>
+        <p class="cap">Figures and words are quoted from the body text of the printed paper and the doctoral thesis. The target is 23 cases × 37 variables.</p>
+
+        <div class="sub">
+            <h3>(2) Seeing whether the words in free-text answers differ by background</h3>
+            <p>In the survey on statistics education, a 38-question questionnaire was administered to 303 students taking a data science course (21 December 2012, three seminar rooms in the Information Media Building of the Kyotanabe campus, Doshisha University, self-administered), and the free-text questions were put through morphological analysis. Characteristic words were extracted as unigrams and bigrams over four parts of speech: nouns, verbs, adjectives and adverbs. The external criterion is a supplementary question on which stream of class the respondent was in at high school, splitting science from non-science. The number of decision trees is 500. The result was that the word &ldquo;データサイエンス&rdquo; (data science) appeared characteristically in the answers of students from a science background, while the bigrams &ldquo;理解&rdquo;–&ldquo;できる&rdquo; (understand – be able to) and &ldquo;説明&rdquo;–&ldquo;ほしい&rdquo; (explain – would like) appeared more often among those from other backgrounds.</p>
+        </div>
+
+        <div class="warn">
+            <h3>This paper is inconsistent about what the number 500 refers to</h3>
+            <p>In its description of the method, the paper on statistics education writes that 500 decision trees were generated and random forest carried out. On the following page, however, having cited earlier work (Kin &amp; Murakami 2007) that repeated random forest 100 times and took the average, it states that the 500 repetitions of random forest in the present study are a reasonable number. <b>The same 500 is written in a way that reads both as the number of trees and as the number of repetitions.</b></p>
+            <p>On the dialect side the two are kept clearly apart: the number of decision trees per run is 500 and this is repeated 100 times. Here the printed wording is simply presented as it stands; no judgment is made as to which is correct.</p>
+        </div>
+
+        <div class="sub">
+            <h3>(3) Estimating land suitable for growing wine grapes</h3>
+            <p>A collaborative study led by Nobusuke Iwasaki, with Onohara as third author. Over the 1104 tertiary mesh cells of the Chikuma River Wine Valley (eastern district) special zone, the locations of wine grape plots were established by field survey and interview and used as the response variable, with terrain, climate, geology and land use as explanatory variables. Since only 44 mesh cells contain a plot, the cells without one are downsampled. Random forest was applied as the machine learning model and logistic regression as the linear regression model, and the estimates were output as maps.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Setting</th><th>Labels</th><th>Variables</th><th class="num">Trees</th><th>Output wanted</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Dialect phylogenetic classification</td><td>Phylogenetic branches (6 groups)</td><td>37 vocabulary items</td><td class="num">500 × 100 runs</td><td>Top words by Gini decrease</td></tr>
+                <tr><td>Free-text answers on statistics education</td><td>Science / non-science</td><td>unigrams, bigrams</td><td class="num">500</td><td>Characteristic words</td></tr>
+                <tr><td>Estimating suitable land</td><td>Plot present / absent</td><td>Terrain, climate, geology</td><td class="num">not stated</td><td>Map of suitable land</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">&ldquo;Not stated&rdquo; indicates that no mention of the number of trees could be found in the abstract. Nothing is supplied by guesswork.</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Limits — what the method cannot say</h2>
+        <p class="q">Landing often and landing for the right reason are different things.</p>
+
+        <div class="warn">
+            <h3>Similar F1 scores, different maps</h3>
+            <p>The study on suitable land is itself the example. On the data used for training, the F1 score was 0.67 for random forest and 0.62 for logistic regression. The difference is small. Yet <b>the estimated maps differed greatly</b>. Logistic regression estimated land at high elevations as suitable, whereas the evaluation by random forest did not include those areas, as the study reports.</p>
+            <p>That one evaluation score is close is no evidence that two methods are saying the same thing. Where the deliverable is a map in particular, <b>the conclusion is the spatial arrangement of where the suitable land lies</b>, not a single summarized number. Note too that this F1 score was computed on the data used for training, and does not show how either method lands on unseen mesh cells.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Variable importance says only what can be used to tell groups apart, not what is at work</h3>
+            <p>In a preliminary analysis in the same study, the contribution of the &ldquo;other agricultural land&rdquo; category from the National Land Numerical Information was highest under both random forest and logistic regression. This was judged not to indicate a property of land suitable for cultivation but <b>to reflect the clustered siting of agricultural land</b>, and the analysis was redone with the land-use variables removed.</p>
+            <p>A variable with high importance is a variable that predicts the label well. Whether it explains a property of the subject has to be judged outside the method. Here the analyst made that judgment and acted on it by dropping the variables.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Gini-based importance is biased by the type of the variable</h3>
+            <p>Importance based on the decrease in impurity is not even-handed between variables that can take many values and variables that differ in the coarseness of their scale. Strobl et al. (2007) showed that this importance is unreliable in situations where the predictor variables vary in their scale of measurement or their number of categories, and offered a solution using subsampling without replacement. In a design that mixes continuous and categorical variables, the ranking itself has to be suspected of being a by-product of the method.</p>
+            <p>On this point, &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo; records that <b>the check was made with another importance measure</b>: random forest was run not only with the Gini coefficient but with a different method of determining variable importance, and the words that came out high as characteristic words agreed with the result from the Gini coefficient. That all the variables are binary vocabulary data of the same type also works, in this case, in the direction of making bias less likely.</p>
+        </div>
+
+        <div class="warn">
+            <h3>&ldquo;Does not overfit&rdquo; cannot be written as a flat statement</h3>
+            <p>The paper on statistics education contains the sentence that random forest is said not to overfit (Breiman, 2001). What the original showed is a more limited claim: <b>as the number of trees increases, the generalization error converges almost surely to some limit</b> — that is, it does not diverge — and the upper bound on that limit is set by the strength of the individual trees and the correlation between them.</p>
+            <p>So overfitting caused by adding too many trees does not occur. But there is no guarantee that the limit converged to is low. Where labels carry much error, where the sample is small, or where only a very few variables are informative, the limit itself can remain high. Adding trees and not fitting the data too closely are separate matters.</p>
+        </div>
+
+        <div class="sub">
+            <h3>What 100 repetitions removes is only the jitter of the random draws</h3>
+            <p>In the dialect work the forest is rebuilt 100 times and importance is shown as the distribution of the mean decrease in Gini. That is why the figures are drawn as box plots rather than points. This evens out the fluctuation in ranking that comes from how the random numbers fall. But that is only <b>the spread obtained when the same data are put through the same procedure</b>. It says nothing about what would have come out on top had the sample been a different 23 settlements. Increasing the repetitions does not reduce the uncertainty of the estimate itself.</p>
+        </div>
+
+        <div class="sub">
+            <h3>How the labels are made decides half the answer</h3>
+            <p>In the dialect work, the classification labels given to random forest are themselves the result of the preceding phylogenetic estimation. What the procedure answers is therefore &ldquo;which words best reproduce the divisions the phylogenetic estimate created&rdquo;, not &ldquo;how the settlements really divide&rdquo;. Had a different grouping been taken at the phylogeny stage, the words coming out on top would change too. The study on suitable land has the same structure: the model is built taking places that currently hold plots as suitable, while the paper itself states that a place without a plot at present is not necessarily unsuitable for cultivation.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Sources and data</h2>
+        <p class="body">
+        Onohara's reports in which this method is used are as follows. Affiliations are as recorded at the time of publication in each case.
+        </p>
+        <ul class="refs">
+            <li>Onohara, A. (2012) Phylogenetic estimation of the vocabulary of the upper Ibi River basin. <i>IPSJ SIG Technical Report</i>, Vol.2012-CH-94, No.4, 26 May 2012. (Graduate School of Culture and Information Science, Doshisha University)</li>
+            <li>Onohara, A. Types and geographical distribution of vocabulary in the upper Ibi River basin. Research paper. (The journal title, volume and year of publication could not be confirmed from the copy at hand, and are therefore not given.)</li>
+            <li>Onohara, A., Tanioka, K., Tsuchiyama, G. &amp; Omori, T. (2013) Trends in the content of classes on statistics education and student course evaluations: an analytical survey on quality assurance in statistics education. <i>Journal of Culture and Information Science</i>, 9(1), 1–11.</li>
+            <li>Onohara, A. (2013) <i>A mathematical approach to language change and its relation to extralinguistic factors</i>. Doctoral thesis, Graduate School of Culture and Information Science, Doshisha University. Chapter 5, &ldquo;Case 3: phylogenetic estimation of basic vocabulary&rdquo;.</li>
+            <li>Iwasaki, N., Tanaka, T., Onohara, A., Hayashi, K., Katori, M. &amp; Oguchi, T. (2023) P-2-34. Estimating land suitable for wine grape cultivation using machine learning. <i>Theory and Applications of GIS</i>, 31(2), December 2023; abstract for the 2023 conference Outstanding Presentation Award and Poster Session Award. (Onohara is third author, Center for Statistics and Information, Rikkyo University. The author's proof at hand is page 72(48).)　JSPS KAKENHI Grant-in-Aid for Scientific Research (B) 20H03121</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Breiman, L. (2001) Random forests. <i>Machine Learning</i>, 45(1), 5–32. <a href="https://doi.org/10.1023/A:1010933404324" target="_blank" rel="noopener noreferrer">doi:10.1023/A:1010933404324</a></li>
+                <li>Breiman, L., Friedman, J. H., Olshen, R. A. &amp; Stone, C. J. (1984) <i>Classification and Regression Trees</i>. Wadsworth, Belmont, California.</li>
+                <li>Strobl, C., Boulesteix, A.-L., Zeileis, A. &amp; Hothorn, T. (2007) Bias in random forest variable importance measures: Illustrations, sources and a solution. <i>BMC Bioinformatics</i>, 8, 25. <a href="https://doi.org/10.1186/1471-2105-8-25" target="_blank" rel="noopener noreferrer">doi:10.1186/1471-2105-8-25</a></li>
+                <li>Kin, M. &amp; Murakami, M. (2007) Identifying the writer of a text by the random forest method. <i>Proceedings of the Institute of Statistical Mathematics</i>, 55(2), 255–268.</li>
+            </ul>
+            <p class="cap" style="margin-top:12px">In the reference list of the paper on statistics education, the bibliographic entry for Breiman, Friedman, Olshen and Stone spells Friedman as &ldquo;Freidman&rdquo;. The spelling of the original work is used here.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Random forest assumes neither the distribution the data follow nor the form of the error. It takes making the loss small as its only goal, and improves how it lands on data not yet seen by averaging predictors. In handling prediction without setting up a probability model, it belongs to <b>Perspective 4 (learning theory, risk minimization)</b> in <a href="../">Reading the seven perspectives in equations</a>. Where <a href="../loo/">LOO cross-validation</a>, under the same perspective, closes the gap with expected risk by measurement, this one narrows it by lowering the variance. The variable-importance part alone, however, is measured on the ruler of <b>Perspective 5 (information theory)</b>, the decrease in impurity.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Every figure is quoted from the body text of printed papers, abstracts and the doctoral thesis; no estimates or approximations are given.<br>
+    The whole layout of where the methods sit is in <a href="../">Reading the seven perspectives in equations</a>; which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

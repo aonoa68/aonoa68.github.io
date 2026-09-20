@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rarefaction — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Rarefaction as a procedure for levelling sample size before comparing richness: the hypergeometric derivation of Hurlbert's expected number of species, the transfer from ecology to vocabulary survey data, and the ceiling imposed by a fixed checklist, set out against the Maibara dialect survey.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .nav-inner > a, .nav-inner > span.nav-current, .nav-right a { white-space:nowrap; }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Rarefaction</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/rarefaction/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Rarefaction <span>of richness</span></h1>
+        <p class="lead">The <b>number of kinds observed grows with the amount surveyed</b>. Compare counts of kinds directly between groups of different sample size and what gets measured is the difference in survey effort, not in richness. Rarefaction is the procedure that levels the comparison to "how many kinds would appear if the same number were surveyed".<br>
+        Set out here against the implementation Onohara used in a three-generation dialect vocabulary survey from Maibara to Sekigahara: what this transfer assumes, and where it stops holding.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">A comparison of richness does not hold unless sample sizes are levelled.</p>
+        <p class="body">
+        Write \(S_s\) for the number of kinds observed in group \(s\). \(S_s\) depends far less on "how many kinds are there" than on <b>how much was surveyed</b>. Survey more individuals and the chance of meeting a kind not met before rises, so \(S_s\) increases monotonically with the sample size \(N_s\). An observation that \(S_A > S_B\) is therefore no evidence of a difference in richness so long as \(N_A > N_B\).
+        </p>
+        <p class="body">
+        This relation is a probabilistic necessity, not a defect of measurement. The rarer kind \(i\) is in the population, the more easily it is missed in a small sample. Increase the sample size and fewer are missed. \(S_s\) rises by exactly that much. The observed number of kinds appears as a product of richness and survey effort.
+        </p>
+        <p class="body">
+        Rarefaction removes this confounding <b>by calculation</b>. For every group it asks what number of kinds would be expected to appear had only \(m\) individuals been drawn at random, and compares under a common \(m\). Nothing is actually discarded from the sample; the expectation is computed analytically.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — who made it, and in which field</h2>
+        <p class="q">From research that set out to compare biodiversity on the deep-sea floor and found it could not be compared.</p>
+        <p class="body">
+        Howard Sanders proposed it in <i>The American Naturalist</i> in 1968. Working on deep-sea benthic communities at the Woods Hole Oceanographic Institution, he was trying to compare the diversity of samples taken from environments differing in latitude, depth, temperature and salinity, and ran into the problem of the previous section. <b>If the number of individuals collected differs by location, species counts cannot be compared as they stand.</b> Sanders brought in the idea of thinning samples down to a common size, and called it rarefaction.
+        </p>
+        <p class="body">
+        Sanders's first formulation carried a computational bias and was found to overestimate species numbers. Stuart Hurlbert corrected it (1971, <i>Ecology</i>). The title of that paper is "The nonconcept of species diversity", and its subject was a critique: the debate around diversity indices was confused both semantically and technically. As an alternative Hurlbert offered several quantities with settled biological interpretations, one of which is the <b>expected number of species</b>. The formula used as rarefaction today is Hurlbert's.
+        </p>
+        <div class="sub">
+            <h3>The method was born as a critique of diversity indices</h3>
+            <p>This provenance bears on how it should be read. What Hurlbert offered was not an index for collapsing diversity into a single number but a plainer quantity with a settled interpretation: <b>count the species after levelling the sample size</b>. To use rarefaction is also to take the position of avoiding the abstraction "diversity" and building comparable conditions before counting anything.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">The hypergeometric distribution. Seventeenth- and eighteenth-century combinatorics, used as it stands.</p>
+        <p class="body">
+        Suppose that of \(N\) individuals, \(N_i\) belong to kind \(i\). Draw \(m\) individuals at random without replacement: when does the drawn sample contain <b>not one individual</b> of kind \(i\)? Exactly when all \(m\) were chosen from the \(N-N_i\) individuals that are not of kind \(i\).
+        </p>
+        <div class="eq">
+            <div class="lbl">Probability of drawing no individual of kind \(i\)</div>
+            \[ \Pr\bigl(\text{kind } i \text{ does not appear in the sample}\bigr) \;=\; \frac{\dbinom{N-N_i}{m}}{\dbinom{N}{m}} \]
+            <p class="read">The denominator is the total number of ways to choose \(m\) from \(N\); the numerator counts those that avoid kind \(i\). This is the probability of drawing zero under a <b>hypergeometric distribution</b> — the same structure as the classical question of how many red balls come out when \(m\) are drawn from a bag of red and white.</p>
+        </div>
+        <p class="body">
+        Take the complement and it becomes the probability that kind \(i\) appears <b>at least once</b> in the sample. What is wanted is the expected total number of kinds observed, so write it as a sum of indicator variables and add them up by linearity of expectation.
+        </p>
+        <div class="eq">
+            <div class="lbl">Hurlbert's (1971) expected number of species</div>
+            \[ \mathbb{E}\bigl[S_m\bigr] \;=\; \sum_{i=1}^{S} \left[\, 1 - \frac{\dbinom{N-N_i}{m}}{\dbinom{N}{m}} \,\right] \]
+            <p class="read"><b>\(S\)</b> … total number of kinds observed across the whole sample<br>
+            <b>\(N\)</b> … the sample size of that group, <b>\(N_i\)</b> … number of individuals of kind \(i\), <b>\(m\)</b> … the depth to level at<br>
+            <b>Linearity of expectation</b> … the per-kind appearance probabilities are simply added. Independence between kinds is not assumed</p>
+        </div>
+        <div class="sub">
+            <h3>It is a closed formula, not a simulation</h3>
+            <p>Repeatedly thinning the sample at random and counting would converge to the same value, but there is no need. The formula above gives the expectation itself. In implementation it is stable to compute \(\binom{N-N_i}{m}\big/\binom{N}{m}\) in logarithms and exponentiate (<code>exp(lchoose(N-k, m) - lchoose(N, m))</code>); when \(N-N_i &lt; m\) this automatically becomes 0 and that kind contributes 1.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Transfer to language research — what is being read across</h2>
+        <p class="q">An operation replacing the ecologist's "individual" and "species" with the survey's "speaker" and "vocabulary item".</p>
+        <p class="body">
+        Research on cultural evolution often takes the relation between population size and cultural diversity as its theme. For vocabulary the question becomes whether larger settlements have richer vocabulary. The number of vocabulary items observed here carries a problem of exactly the same structure as species counts in ecology. <b>The larger the settlement, the more speakers can be surveyed, so the more items are observed.</b>
+        </p>
+        <div class="eq">
+            <div class="lbl">The correspondence being read across</div>
+            <p class="read"><b>Number of individuals collected \(N\)</b> → number of speakers surveyed<br>
+            <b>Number of individuals of kind \(i\), \(N_i\)</b> → number of speakers \(k_i\) answering that they use vocabulary item \(i\)<br>
+            <b>Observed species count \(S_m\)</b> → number of vocabulary items expected to appear when \(m\) speakers are surveyed<br>
+            The form of the equation does not change. Only \(N_i\) is read as \(k_i\).</p>
+        </div>
+        <div class="warn">
+            <h3>One point where the structure differs</h3>
+            <p>In the ecological setting, <b>one individual belongs to only one species</b>, so \(\sum_i N_i = N\) holds. In a language survey, however, <b>one speaker uses many vocabulary items</b>. In this study, with 106 items, a single person answers "use" for dozens of them, so \(\sum_i k_i \gg N\).</p>
+            <p>The formula itself does not break down. All the derivation above uses is the probability that no user of item \(i\) is among the \(m\) speakers, and that does not depend on whether a speaker uses other items as well. It corresponds to an established usage in ecology too, where presence and absence are counted per sampling unit rather than per individual (incidence-based / sample-based rarefaction).</p>
+            <p>But <b>the interpretation changes</b>. The quantity obtained is not "the expected number of species when \(m\) individuals are collected" but "the expected number of items that at least one person answers they use when \(m\) people are asked". Carry the intuition of individual-based rarefaction across unaltered and this difference goes unnoticed.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it was used in this research</h2>
+        <p class="q">Checking whether the correlation between population size and vocabulary richness is an artefact of survey effort.</p>
+        <ol class="steps">
+            <li><b>Reconstructing individual-level data</b>　Rarefaction needs responses per person rather than a summary table, so individual records for middle-school students were reconstructed from the master sheet of the original data. Extracting on the conditions that the school name be real, the year be 1 to 3, and every vocabulary response be 0, 1 or 2 gave 510 people across 49 settlements, with a value of 2 ("use") counted as usage.</li>
+            <li><b>Building the usage matrix</b>　For each of the 106 vocabulary items, count the number surveyed \(N\) per settlement and the number of users \(k_i\) of item \(i\). The same tabulation is built by lineage as well (Kansai/Ōmi, Tokyo/standard, Mino/Owari).</li>
+            <li><b>Raw richness</b>　Count the items for which \(k_i &gt; 0\). This is richness before correction.</li>
+            <li><b>Rarefied richness</b>　Compute \(\mathbb{E}[S_m]\) by Hurlbert's formula. Three depths are tried, \(m = 3,\,5,\,8\). <b>Settlements with \(N &lt; m\) cannot be computed and are excluded</b> (37 settlements remain at \(m=3\), 29 at \(m=5\)).</li>
+            <li><b>Regression on population</b>　Regress raw richness and rarefied richness each on the common logarithm of settlement population, and compare the slopes.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Lineage</th><th class="num">Raw richness</th><th class="num">Rarefied \(m=3\)</th><th class="num">Rarefied \(m=5\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>All items</td><td class="num">+21.0 to +21.5 (p&lt;.001)</td><td class="num">−4.3 (p=.21)</td><td class="num">−2.4 (p=.49)</td></tr>
+                <tr><td>Kansai / Ōmi</td><td class="num">+10.3 to +11.5 (p&lt;.001)</td><td class="num">−2.8 (p=.23)</td><td class="num">−3.3 (p=.22)</td></tr>
+                <tr><td>Mino / Owari</td><td class="num">+8.5 to +13.4 (p&lt;.01)</td><td class="num">−1.3 (p=.55)</td><td class="num">+0.6 (p=.81)</td></tr>
+                <tr><td>Tokyo / standard</td><td class="num">+0.7 to +0.8 (p&lt;.03)</td><td class="num">−0.3 (p=.38)</td><td class="num">+0.1 (p=.68)</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Slopes of the regression on the common logarithm of settlement population. Figures are quoted from run results of the analysis scripts as recorded in the working log. The ranges on the raw side arise because the values shift with the version of the lineage classification.</p>
+
+        <div class="sub">
+            <h3>Once corrected, the association disappears and turns slightly negative</h3>
+            <p>With raw richness the slope against log population is around \(+21\) for the total item count, all with \(p&lt;.001\) — a strong positive association. Level the sample sizes, however, and <b>nothing is significant for any lineage and the sign is not stable</b>. The conclusion agrees at \(m=3\) and \(m=5\). The observation that "settlements with larger populations have richer vocabulary" is almost entirely explained by the difference in survey effort: more middle-school students were surveyed in larger settlements.</p>
+            <p>The same conclusion comes from a second, independent route. Rather than physically levelling samples as rarefaction does, controlling for the log of the number surveyed as a covariate in a hierarchical model drops the population effect for the Kansai lineage to \(-0.07\). <b>That two procedurally different methods converge on a conclusion in the same direction</b> is the basis for this judgement.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits — what the method cannot say</h2>
+        <p class="q">Levelling survey effort does not remove the ceiling of the measurement.</p>
+        <div class="warn">
+            <h3>With a fixed-list survey, the ceiling binds</h3>
+            <p>This is the heaviest constraint. In the ecological setting there is no artificial upper bound on the number of species that can be observed; collect more and there is always room for a new species to appear. This survey, however, was conducted with <b>a checklist of 106 items prepared in advance</b>. The upper bound on richness is 106 and in principle it cannot go higher.</p>
+            <p>The genuinely richer a settlement is in vocabulary variation, the closer it moves to filling the list. <b>Real differences are then compressed against the ceiling of the list.</b> It is the same structure as measuring differences in ability with a hundred-question test: once the top performers are all near full marks, the differences stop being visible. Rarefaction removes the confounding of survey effort; it does nothing about this ceiling.</p>
+            <p>The conclusion of this research is therefore a negative one: <b>under a fixed-list survey, richness cannot be used as an index of vocabulary diversity</b>. It did not show that there is no association between population and diversity; it showed that with this method of measurement the presence or absence of an association cannot be judged. Those are different claims.</p>
+        </div>
+        <div class="warn">
+            <h3>Assumptions carried in by the transfer</h3>
+            <p>As stated in section 4, a speaker, unlike an individual organism, uses many items at once. Ecological rarefaction moreover presupposes that individuals are drawn at random from the population, whereas this survey was conducted by area, so <b>non-independence within households cannot be ruled out</b>. Middle-school students in the same household are likely to share vocabulary. The effective sample size may be smaller than \(N\), in which case the uncertainty on the rarefied values is larger than it appears.</p>
+        </div>
+        <div class="sub">
+            <h3>A reservation about the reconstructed data itself</h3>
+            <p>Because rarefaction requires individual-level data, individual records were reconstructed from already-tabulated source material. Richness obtained from this reconstruction does not match the published values exactly; the correlation is 0.64. The cause of the discrepancy has been confirmed to lie in differences in item classification and in the threshold for judging usage, not in errors in the data. The comparison of raw against rarefied richness is <b>a comparison within a single reconstructed dataset</b>, so the conclusion is internally valid; identifying the original set of individuals themselves would raise the confidence further.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        A secondary analysis of a three-generation dialect vocabulary survey covering five middle-school districts from Maibara in Shiga Prefecture to Sekigahara in Gifu Prefecture. The questionnaire elicited 106 dialect vocabulary variants across 40 question concepts, classified in advance into 45 Kansai/Ōmi forms, 31 Tokyo/standard forms and 26 Mino/Owari forms, with four items of youth speech and new dialect. The original survey was conducted in 2015 by Habiro-Net, and this research analyses the anonymised data. Every stage of the analysis is scripted, and the original data files are never modified — they are read only through working copies.
+        </p>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Sanders, H. L. (1968) Marine benthic diversity: a comparative study. <i>The American Naturalist</i>, 102(925), 243–282. <a href="https://doi.org/10.1086/282541" target="_blank" rel="noopener noreferrer">doi:10.1086/282541</a></li>
+                <li>Hurlbert, S. H. (1971) The nonconcept of species diversity: a critique and alternative parameters. <i>Ecology</i>, 52(4), 577–586. <a href="https://doi.org/10.2307/1934145" target="_blank" rel="noopener noreferrer">doi:10.2307/1934145</a></li>
+                <li>Henrich, J. (2004) Demography and cultural evolution: how adaptive cultural processes can produce maladaptive losses—the Tasmanian case. <i>American Antiquity</i>, 69(2), 197–214. <a href="https://doi.org/10.2307/4128416" target="_blank" rel="noopener noreferrer">doi:10.2307/4128416</a> (a representative instance of the argument linking population size to cultural diversity)</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>What rarefaction addresses is the problem of <b>how a statistic changes with the way the sample is taken</b>. The quantity in the population is treated as fixed, and comparability between observed quantities is restored by levelling the sample size. In computing the expectation directly from combinatorics without assuming a distributional form, it overlaps with <b>perspective 2 (frequentist)</b> in <a href="../">Read the seven perspectives in equations</a>. As with <a href="/teaching/methods/worlds/mantel/">the Mantel test (in Japanese)</a>, which builds a null distribution by permutation, the idea is to operate on the sample side to construct the standard for a judgement.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the output of analysis scripts and from working records; no estimates or approximations are given.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the seven perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to Read the seven perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>

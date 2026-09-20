@@ -107,6 +107,10 @@
         .sub p { font-size:0.9em; color:var(--muted); line-height:1.85; }
         .where { margin-top:14px; font-size:0.87em; color:var(--muted); }
         .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where.method { margin-top:10px; font-size:0.93em; background:#fff; border:1px solid rgba(0,0,0,0.08); border-left:3px solid var(--w); border-radius:8px; padding:10px 14px; }
+        .where.method a { text-decoration:underline; text-underline-offset:3px; }
+        .where.method + .where.method { margin-top:6px; }
+        .methodlead { margin-top:26px; font-size:0.9em; font-weight:600; color:var(--navy2); }
         .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
         .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
         .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
@@ -144,7 +148,7 @@
     <div class="page-header-inner">
         <h1>Seven <span>Perspectives</span></h1>
         <p class="lead">Each of the seven perspectives, explained from the one equation at its centre. They divide not only by the question asked, but by the assumptions placed on the data, the criteria for what counts as good, and the constraints on computation. They are not mutually exclusive.<br>
-        For each one: how to read the symbols, and the equations of the methods that follow from it. Written so that a reader not used to equations can still see what is being made small, or large.</p>
+        For each one: how to read the symbols, and the equations of the methods that follow from it. Written so that a reader not used to equations can still see what is being made small, or large.<br>At the end of each perspective sit <strong>pages on the methods that fall under it</strong> — methods used in actual research, fifteen in all.</p>
     </div>
 </header>
 
@@ -164,6 +168,9 @@
 <div class="sub"><h3>Principal component analysis has the same idea behind it</h3><div class="eq" style="--w:#3d6fa8">\[\max_{\lVert w \rVert = 1} w^{\top}\Sigma w \quad\Longrightarrow\quad \Sigma w = \lambda w\]<p class="read">Look for the direction in which the variance is largest, and you arrive at an eigenvector of the covariance matrix.</p></div></div>
 <div class="sub"><h3>k-means also minimizes a sum of squares</h3><div class="eq" style="--w:#3d6fa8">\[\min_{C,\mu} \sum_{k}\sum_{i \in C_k} \lVert x_i - \mu_k \rVert^2\]<p class="read">Make the total distance from the centre of each grouping small. No probability model is set up.</p></div></div>
 <p class="where" style="--w:#3d6fa8">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer">Statistics I, session 10</a>, <a href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer">Statistics I, session 13</a></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#3d6fa8">In research: <a href="correspondence-analysis/">Correspondence analysis — placing rows and columns on one plane under the chi-square distance</a></p>
+<p class="where method" style="--w:#3d6fa8">In research: <a href="neighbor-net/">Phylogenetic networks (Neighbor-Net) — splitting a distance matrix, allowing the mixing to show</a></p>
     </section>
     <section class="wblock" style="--w:#8a464f">
         <h2><span class="no">2</span>Frequentist (sampling variation, estimation, testing)</h2>
@@ -178,6 +185,12 @@
 <div class="sub"><h3>How much an estimate varies is set by the information</h3><div class="eq" style="--w:#8a464f">\[I(\theta) = -\,\mathbb{E}\!\left[\frac{\partial^2 \ell}{\partial \theta^2}\right], \qquad \sqrt{n}\,(\hat{\theta}-\theta) \;\xrightarrow{d}\; N\!\left(0,\, I(\theta)^{-1}\right)\]<p class="read">The larger the second derivative — the curvature — the steadier the estimate. Confidence intervals come out of here.</p></div></div>
 <div class="sub"><h3>Assume normal errors and it coincides with the geometric view</h3><div class="eq" style="--w:#8a464f">\[p(y \mid X,\beta) \propto \exp\!\left(-\frac{\lVert \mathbf{y}-X\beta \rVert^2}{2\sigma^2}\right)\]<p class="read">Take logarithms and it becomes exactly the minimization of a sum of squares. This is why least squares and maximum likelihood give the same answer.</p></div></div><div class="sub"><h3>What this perspective evaluates is the hit rate of a procedure</h3><div class="eq" style="--w:#8a464f">\[ \Pr\big(\theta \in \mathrm{CI}(X_1,\dots,X_n)\big) = 0.95 \qquad \text{(the proportion over repeated samples)} \]<p class="read">The probability attaches to the interval; \(\theta\) does not move. The type I error rate of a test is defined the same way, as a proportion over repetitions of the procedure.</p></div></div>
 <p class="where" style="--w:#8a464f">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/07_estimation/" target="_blank" rel="noopener noreferrer">Statistics I, session 7</a>, <a href="https://aonoa68.github.io/toukei-2/07_interval/" target="_blank" rel="noopener noreferrer">Statistics II, session 7</a></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#8a464f">In research: <a href="beta-regression/">Beta regression — modelling a proportion without letting predictions leave the interval</a></p>
+<p class="where method" style="--w:#8a464f">In research: <a href="rarefaction/">Rarefaction — levelling sample size before comparing lexical richness</a></p>
+<p class="where method" style="--w:#8a464f">In research: <a href="power-simulation/">Power simulation — could the effect have been detected, had it been there</a></p>
+<p class="where method" style="--w:#8a464f">In research: <a href="mantel/">Mantel test — testing the correspondence of two distance matrices by permuting rows and columns together</a></p>
+<p class="where method" style="--w:#8a464f">In research: <a href="mixed-model/">Linear mixed models and AIC — nested observations by maximum likelihood, and choosing among models</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
         <h2><span class="no">3</span>Bayesian</h2>
@@ -192,6 +205,9 @@
 <div class="sub"><h3>The integral in the denominator is hard, so it is approximated</h3><div class="eq" style="--w:#6a4d8a">\[\log p(D) \;\ge\; \mathbb{E}_{q}\!\left[\log p(D,\theta) - \log q(\theta)\right] \;=\; \mathrm{ELBO}(q)\]<p class="read">Variational inference looks for the \(q\) that makes this lower bound largest. MCMC replaces the integral with samples.</p></div></div>
 <div class="sub"><h3>With finitely many hypotheses, addition and division are enough</h3><div class="eq" style="--w:#6a4d8a">\[ P\!\left(p=\tfrac34 \,\middle|\, \text{H, H, H}\right) = \frac{(3/4)^3}{(1/4)^3+(3/4)^3} = \frac{27}{28} \]<p class="read">Taking the probability of heads to be either \(1/4\) or \(3/4\), with a prior of \(1/2\) on each. The denominator is not an integral but a <b>sum over finitely many terms</b>. At this stage the update from prior through likelihood to posterior can be carried out before any calculus has been studied. Move to a continuous parameter and the integral returns, and with it the need to approximate.</p></div></div><div class="sub"><h3>Ridge regression is a Bayesian MAP estimate</h3><div class="eq" style="--w:#6a4d8a">\[\arg\max_{\beta} \left[\log p(\mathbf{y}\mid\beta) + \log p(\beta)\right] \;=\; \arg\min_{\beta}\left[\lVert \mathbf{y}-X\beta\rVert^2 + \lambda\lVert\beta\rVert^2\right]\]<p class="read">Place a normal distribution as the prior and the expression becomes penalized least squares (\(\lambda = \sigma^2/\tau^2\)).</p></div></div>
 <p class="where" style="--w:#6a4d8a">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/12_bayes/" target="_blank" rel="noopener noreferrer">Statistics I, session 12</a>, <a href="https://aonoa68.github.io/toukei-2/03_bayes/" target="_blank" rel="noopener noreferrer">Statistics II, session 3</a></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#6a4d8a">In research: <a href="bayesian-estimation/">Bayesian estimation (Stan / brms) — priors, convergence diagnostics, and reading a posterior</a></p>
+<p class="where method" style="--w:#6a4d8a">In research: <a href="icar/">ICAR spatial random effects — putting adjacency into the prior</a></p>
     </section>
     <section class="wblock" style="--w:#2f6b57">
         <h2><span class="no">4</span>Learning theory (risk minimization)</h2>
@@ -206,6 +222,9 @@
 <div class="sub"><h3>A generalization bound holds down the gap</h3><div class="eq" style="--w:#2f6b57">\[R(f) \;\le\; \hat{R}(f) \;+\; \underbrace{\mathfrak{C}(\mathcal{F},\,n,\,\delta)}_{\text{model complexity term}}\]<p class="read">The more freedom the model has, the larger the term on the right becomes. Regularization is the act of holding that term down.</p></div></div>
 <div class="sub"><h3>The SVM makes the margin as wide as possible</h3><div class="eq" style="--w:#2f6b57">\[\min_{w,b}\ \tfrac{1}{2}\lVert w\rVert^2 + C\sum_{i=1}^{n}\xi_i \quad \text{s.t.}\quad y_i(w^{\top}x_i+b) \ge 1-\xi_i,\ \ \xi_i \ge 0\]<p class="read">Take the distance from the boundary to the nearest point as wide as it will go. A classifier that assumes nothing about probability.</p></div></div>
 <p class="where">Sessions that cover this: <span style="color:var(--muted)">none at present</span></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#2f6b57">In research: <a href="loo/">Leave-one-out sensitivity — matching the unit left out to the unit of dependence</a></p>
+<p class="where method" style="--w:#2f6b57">In research: <a href="random-forest/">Random forests — averaging weakly correlated trees to cut variance alone</a></p>
     </section>
     <section class="wblock" style="--w:#96702f">
         <h2><span class="no">5</span>Information theory</h2>
@@ -220,6 +239,8 @@
 <div class="sub"><h3>AIC balances fit against complexity</h3><div class="eq" style="--w:#96702f">\[\mathrm{AIC} = -2\,\ell(\hat{\theta}) + 2k\]<p class="read">\(k\) is the number of parameters. A better fit counts in a model's favour, but the parameters it took are subtracted back out.</p></div></div>
 <div class="sub"><h3>A decision tree splits on how much information is gained</h3><div class="eq" style="--w:#96702f">\[\mathrm{IG} = H(\text{parent}) - \sum_{c}\frac{n_c}{n}H(\text{child}_c)\]<p class="read">Measure how far the uncertainty fell by splitting, and take the split that lowers it most.</p></div></div>
 <p class="where" style="--w:#96702f">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer">Statistics I, session 11</a></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#96702f">In research: <a href="ncd/">Normalized compression distance — measuring closeness by how much compresses away</a></p>
     </section>
     <section class="wblock" style="--w:#8a5a2f">
         <h2><span class="no">6</span>Games and adversaries</h2>
@@ -233,6 +254,9 @@
 <div class="sub"><h3>Preparing for the worst case has the same structure</h3><div class="eq" style="--w:#8a5a2f">\[\min_{\theta}\ \max_{Q \in \mathcal{U}}\ \mathbb{E}_{Q}\big[\ell(\theta)\big]\]<p class="read">Make small the loss under the least convenient of the distributions one is willing to entertain (distributionally robust optimization).</p></div></div>
 <div class="sub"><h3>Audio deepfakes have the same shape</h3><div class="eq" style="--w:#8a5a2f">\[\text{generator improves} \;\longrightarrow\; \text{detector weakens} \;\longrightarrow\; \text{detector improves}\]<p class="read">Forgery and detection become a chase that does not end. Evaluating either side on its own means nothing.</p></div></div>
 <p class="where" style="--w:#8a5a2f">Sessions that cover this: <span style="color:var(--muted)">Speech Processing, session 13 (in preparation)</span></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#8a5a2f">In research: <a href="gan/">Modelling cultural dynamics with a GAN — shifting the balance of adversarial loss and feature reward over time</a></p>
+<p class="where method" style="--w:#8a5a2f">In research: <a href="economic-games/">Economic games and cooperative behaviour — reading accent as a social tag to see whom people cooperate with</a></p>
     </section>
     <section class="wblock" style="--w:#22456d">
         <h2><span class="no">7</span>Causality</h2>
@@ -247,6 +271,8 @@
 <div class="sub"><h3>The adjustment formula</h3><div class="eq" style="--w:#22456d">\[\mathbb{E}\big[Y \mid do(T=t)\big] \;=\; \sum_{x} \mathbb{E}\big[Y \mid T=t,\, X=x\big]\, P(X=x)\]<p class="read">Look at the effect within each stratum, then add them up weighted by the size of the stratum. Simpson's paradox is a problem of this weighting.</p></div></div>
 <div class="sub"><h3>Adjustment by regression is a projection</h3><div class="eq" style="--w:#22456d">\[\hat{\tau} = \big(Z^{\top}X\big)^{-1}Z^{\top}\mathbf{y} \quad \text{(instrumental variables, 2SLS)}\]<p class="read">Another variable \(Z\) is brought in to avoid confounding. The computation comes down, in the end, to linear algebra.</p></div></div>
 <p class="where" style="--w:#22456d">Sessions that cover this: <a href="https://aonoa68.github.io/toukei-2/10_causal/" target="_blank" rel="noopener noreferrer">Statistics II, session 10</a>, <a href="https://aonoa68.github.io/toukei-2/11_confounding/" target="_blank" rel="noopener noreferrer">Statistics II, session 11</a></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#22456d">In research: <a href="apparent-time/">The apparent-time method — reading generational difference as a proxy for change over time</a></p>
     </section>
 
     <div class="cross">

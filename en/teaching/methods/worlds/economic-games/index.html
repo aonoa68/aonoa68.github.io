@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economic Games — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Dictator, trust and coordination games, used to measure whether accent moves whom a person pairs up with. The matched-guise technique and DTW tag distance, Bradley–Terry utilities, and the dissociation between production, perception and choice, set out as they appear in an experiment run at a dialect boundary.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (games and adversaries) */
+            --w:      #8a5a2f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e6c9a8; background:rgba(138,90,47,0.42); border:1px solid rgba(230,201,168,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(230,201,168,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box for a method's weak points) */
+        .warn { background:#fdf7f2; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Cross-reference (gold box, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results tables */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf8f6; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Step lists */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Economic Games</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/economic-games/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 6 ｜ <a href="../">Games and adversaries</a></span>
+        <h1>Economic <span>Games</span></h1>
+        <p class="lead">Design the payoff structure yourself, and measure cooperation as a <b>decision</b> the participant makes. The three games — dictator, trust and coordination — each measure a different quantity.<br>
+        Following an experiment Onohara ran with 108 residents of a dialect boundary, this page sets out whether accent, taken as a &ldquo;tag&rdquo;, moves <b>whom one pairs up with</b> or <b>how much one hands over</b>, starting from what was used to measure it.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Asking whether one picks a partner who speaks alike, as a choice with a payoff attached.</p>
+        <p class="body">
+        Cooperation among the unrelated can evolve when cooperators are able to <b>find one another</b>. One piece of apparatus for this is the &ldquo;tag&rdquo;: a strategy of directing cooperation towards partners whose observable mark resembles one's own (Riolo, Cohen &amp; Axelrod 2001; Nettle &amp; Dunbar 1997). The difficulty is that the strategy is <b>open to invasion by those who can fake the tag</b>. If merely imitating the mark draws cooperation out, the imitator profits and the strategy collapses. What the theory therefore requires is a <b>tag that is hard to fake</b>.
+        </p>
+        <p class="body">
+        Accent has been treated as a leading candidate. The phonological patterns of a native variety are acquired early, produced largely automatically, and hard for an outsider to imitate convincingly (Cohen 2012). Running alongside is a lineage that reads dialectal difference as a marker of <b>group membership</b> or of <b>shared norms</b> (McElreath, Boyd &amp; Richerson 2003).
+        </p>
+        <p class="body">
+        The reason economic games are needed here is <b>to measure choices rather than attitudes</b>. Asking on a questionnaire which speaker one warms to, and putting a person in a situation with money at stake and having them decide which speaker to hand it to, measure different things. The experimenter designs the payoff structure and observes what people choose under it. This has become the standard frame for testing theories of the evolution of cooperation against evidence.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — the theory of tag-based cooperation, and the lineage of economic games</h2>
+        <p class="q">The theory side comes from evolutionary biology, the measurement side from experimental economics.</p>
+
+        <div class="sub">
+            <h3>Tag-based cooperation — why &ldquo;hard to fake&rdquo; is the heart of it</h3>
+            <p>Riolo, Cohen &amp; Axelrod (2001) showed by simulation that cooperation can be sustained without reciprocity, through a strategy of giving to partners whose arbitrary mark is sufficiently similar. Nettle &amp; Dunbar (1997) discuss the part social markers play in the evolution of reciprocal exchange. In either model there is an attendant fragility: <b>the strategy is invaded once those who fake the mark appear</b>. Hence the question of what marks are hard to fake.</p>
+            <p>Cohen (2012) took up accent as a candidate meeting this condition and examined it by drawing evidence together across fields. The grounds are three: it is acquired early, it resists conscious control, and the variation between groups is large enough.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Dialect as a marker — cooperation, or coordination?</h3>
+            <p>McElreath, Boyd &amp; Richerson (2003) showed that ethnic markers can evolve as signals of <b>shared norms</b>. Within that frame, the possibility arises that what a marker helps is not cooperation itself but <b>coordination</b>, the aligning of mutual expectations. The opposition between cooperation and coordination comes from here.</p>
+        </div>
+
+        <div class="sub">
+            <h3>What has accumulated empirically — and where it is coarse</h3>
+            <p>Infants prefer speakers of their native accent as partners for interaction (Kinzler, Dupoux &amp; Spelke 2007). Adults allocate resources more generously to speakers of their own dialect, and the tendency is stronger where dialect diversity is locally salient (Cohen &amp; Haun 2013). The largest test so far is Jensen et al. (2015), in which 4,603 Danish participants played hypothetical games with speakers of local and non-local accents. The result was that <b>there was an effect in the coordination game and none in generosity or trust</b>, from which the authors concluded that an ingroup accent facilitates coordination, not cooperation.</p>
+            <p>This lineage carries a shared coarseness, however: accent has been treated as a <b>binary, local or not</b>. The central quantitative prediction of tag models is that discrimination varies <b>continuously with similarity</b>, and a binary contrast cannot test it. This is the point Onohara's research takes up.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Correspondence with Perspective 6, games and adversaries</h2>
+        <p class="q">Several parties each decide, while watching what the others do. Behaviour is read as that structure.</p>
+        <p class="body">
+        Perspective 6 of <a href="../">Reading the seven perspectives in equations</a> is the view that reads learning and behaviour as the interaction of several parties in competition. Economic games are <b>the original sense</b> of that perspective. They take the framework of game theory itself — lay out a payoff matrix, have each player choose with an eye on their own payoff — and carry it into the laboratory.
+        </p>
+
+        <div class="warn">
+            <h3>Two kinds of &ldquo;game&rdquo; sit under the same perspective</h3>
+            <p>This perspective already carries <a href="../gan/">modelling cultural dynamics with a generative adversarial network</a>. The two belong to the same perspective in that both involve the interaction of several parties, but <b>the structure of interests they assume differs</b>.</p>
+            <p>The objective function of a generative adversarial network, \(\min_G \max_D V(D,G)\), is <b>zero-sum</b>. The generator getting better means, directly, the discriminator being in trouble. The players are two networks, and the point of balance is the solution.</p>
+            <p>The three games treated here are all <b>non-zero-sum</b>. In the trust game the amount invested is tripled before it reaches the other party, so if trust holds, both sides gain. In the coordination game the matching of expectations itself produces the payoff. The dictator game is a one-way allocation and so has no strategic interaction, yet the structure of the choice — whom to hand it to — remains. The players are living people, and the solution is not a mathematical balance but the observed distribution of choices.</p>
+            <p>This also says that Perspective 6 handles more than the structure in which one side's gain is the other's trouble. Where the condition holds that <b>there are several parties, and each one's choice bears on the others' outcomes</b>, the cooperative side belongs to this perspective as much as the adversarial one.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>What the three games measure</h2>
+        <p class="q">Generosity, trust, the matching of expectations. All called &ldquo;cooperation&rdquo;, but distinct quantities.</p>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Game</th><th>Structure</th><th>Quantity measured</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><b>Dictator game</b></td><td>One side allocates a sum; the other only receives, and cannot refuse</td><td>Generosity in the pure sense. No need to reckon with the other's response</td></tr>
+                <tr><td><b>Trust game</b></td><td>The amount invested is tripled before it reaches the other party, who returns whatever they choose</td><td>The expectation that the other will reciprocate. The investment is a wager on their good faith</td></tr>
+                <tr><td><b>Coordination game</b></td><td>Both gain if they make the same choice (here, meeting at the same restaurant)</td><td>The matching of expectations. What one thinks the other will choose</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">The three designs are aligned with Jensen et al. (2015). The same participant plays all three against the same candidate partners.</p>
+
+        <div class="sub">
+            <h3>Why all three are needed</h3>
+            <p>Because the theoretical opposition maps onto them. If what a marker helps is <b>coordination through shared norms</b> (McElreath et al. 2003), the effect should appear in the coordination game and not in generosity or trust. If instead it helps <b>cooperators assort with one another</b> (Riolo et al. 2001; Cohen 2012), it should appear in the dictator and trust games as well. Setting the three side by side allows the two predictions to be compared within the same participants.</p>
+        </div>
+
+        <div class="warn">
+            <h3>How this research answered the earlier conclusion</h3>
+            <p>Jensen et al. (2015) measured generosity and trust as <b>graded amounts</b> given to a single partner, and found no effect on either. From this they concluded that what accent facilitates is coordination, not cooperation.</p>
+            <p>Onohara's research added one step to that way of measuring. It <b>measured &ldquo;whom to choose&rdquo; and &ldquo;how much to hand over&rdquo; separately</b>. The result was that the amounts showed no effect, as in the earlier study, while <b>the choices showed strong discrimination in the dictator and trust games alike</b>. Accent-based discrimination in cooperation exists, then, but it <b>lodges in the stage of choosing a partner, not in the stake placed after the choice</b>. It sat where a design that measures only amounts cannot see it.</p>
+            <p>This distinction coincides with where the biological-markets argument on the force partner choice carries for sustaining cooperation places it (Barclay 2013).</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The matched-guise technique, and quantifying tag distance</h2>
+        <p class="q">Hold everything but accent constant. Then turn the difference in accent into a continuous quantity.</p>
+
+        <div class="sub">
+            <h3>The matched-guise technique — one speaker performs four accents</h3>
+            <p>The technique was introduced by Lambert et al. (1960) for research on language attitudes. The same speaker reads the same passage in several varieties, and listeners evaluate them believing each to be a different person. Speaker, voice quality, vocabulary and speaking style are held constant, so differences in evaluation <b>can be attributed to the performed variety alone</b>.</p>
+            <p>In this experiment a single female speaker read a six-sentence self-introduction passage — a greeting and a short travel anecdote — in four accent systems: Tokyo-type at 25.2 s, Keihan (Kansai)-type at 22.9 s, the local Tarui type at 24.5 s, and, as an out-of-region control, Kagoshima two-pattern type at 24.3 s.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Tag distance — continuous, not binary</h3>
+            <p>The central prediction of tag models is that discrimination varies with similarity, and testing it requires similarity to be a continuous quantity. The measurement pipeline of a companion study (S1) is therefore used to place the four stimuli in a <b>continuous space of accent distance</b>. The procedure matches speaker-normalized fundamental-frequency contours by constrained dynamic time warping.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>DTW distance</th><th class="num">Tokyo</th><th class="num">Kansai</th><th class="num">Tarui</th><th class="num">Kagoshima</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><b>Tokyo</b></td><td class="num">—</td><td class="num">.260</td><td class="num">.383</td><td class="num">.243</td></tr>
+                <tr><td><b>Kansai</b></td><td class="num">.260</td><td class="num">—</td><td class="num">.337</td><td class="num">.261</td></tr>
+                <tr><td><b>Tarui</b></td><td class="num">.383</td><td class="num">.337</td><td class="num">—</td><td class="num">.396</td></tr>
+                <tr><td><b>Kagoshima</b></td><td class="num">.243</td><td class="num">.261</td><td class="num">.396</td><td class="num">—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Values as recorded in section 2.3 and Figure 1 of the paper. Nearest to the local Tarui variety is Kansai (.337), then Tokyo (.383), with Kagoshima farthest (.396) — consistent with the dialectological description of Tarui-type as belonging to the Keihan lineage.</p>
+
+        <div class="eq">
+            <div class="lbl">TAG SIMILARITY, PER TRIAL</div>
+            \[ \Delta d \;=\; d(\text{Tarui},\,B) \;-\; d(\text{Tarui},\,A) \]
+            <p class="read"><b>\(\Delta d &gt; 0\)</b> … voice A is acoustically closer to the local variety<br>
+            <b>Range</b> … six values across the six pairs, from \(-.383\) to \(+.396\); standardized for analysis</p>
+        </div>
+
+        <div class="sub">
+            <h3>The model of choice</h3>
+            <p>The binary choice is handled by a mixed logistic model with a random intercept per participant. The effect of tag similarity and the effect of being the standard variety are put into the same equation and separated there.</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">THE TAG-SIMILARITY MODEL</div>
+            \[ \operatorname{logit}\Pr(\text{choose A}) \;=\; \beta\,\Delta d \;+\; \gamma\,u^{\text{Tokyo}} \;+\; b_i, \qquad b_i \sim N(0,\sigma^2) \]
+            <p class="read"><b>\(u^{\text{Tokyo}}\)</b> … \(\mathbb{1}[A\text{ is Tokyo}] - \mathbb{1}[B\text{ is Tokyo}]\). An indicator that extracts the preference for the standard which acoustic distance cannot explain<br>
+            <b>\(b_i\)</b> … the random intercept for participant \(i\). It takes in that the six trials × three games from one person are not independent</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">THE BRADLEY&ndash;TERRY UTILITY MODEL</div>
+            \[ \operatorname{logit}\Pr(\text{choose A}) \;=\; u_A - u_B, \qquad u_{\text{Kagoshima}} \equiv 0 \]
+            <p class="read">Each accent is given a utility of &ldquo;being chosen&rdquo;, with the control stimulus fixed at the baseline 0. The ordering and the spacing of the varieties are estimated together from the table of pairings</p>
+        </div>
+
+        <div class="sub">
+            <h3>Where the mixed-effects model sits</h3>
+            <p>Because the same participant repeats six pairs × three games, the observations are nested. Why participants are placed as a random effect, and what properties that estimation has, are treated in <a href="../mixed-model/">linear mixed models and model selection by AIC</a>. This research uses a binomial generalized linear mixed model via <code>lme4</code>, and tests whether random slopes are needed by likelihood-ratio test.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>How it is used in this research, and the results</h2>
+        <p class="q">108 residents of a dialect boundary. Three generations. Six pairs × three games.</p>
+
+        <ol class="steps">
+            <li><b>The area</b>　The Kashiwabara and Imasu districts of Maibara City, Shiga Prefecture. This is the historical boundary at which the eastern (Tokyo-type) and western (Keihan-type) accent systems meet, and the local variety is the Tarui type, which carries properties of both. It suits the prediction that marker-based discrimination is <b>sharpest where groups meet</b> (McElreath et al. 2003).</li>
+            <li><b>Participants</b>　108 people, September to November 2018. Three cohorts: young (13–33 years, 38 people, 17 female, mean 18.5), middle (35–57 years, 35 people, 21 female, mean 47.9) and older (58–89 years, 35 people, 15 female, mean 69.5). The honorarium was a <b>fixed ¥1,000, not contingent on decisions</b>.</li>
+            <li><b>Presentation</b>　The four accents are presented in all six pairwise combinations. Two faces labelled &ldquo;A&rdquo; and &ldquo;B&rdquo; appear on screen, and clicking a mouth plays that voice. There is no limit on replays. The order of the pairs is randomized per participant.</li>
+            <li><b>Perception questions</b>　For each pair: which voice is closer to your own pronunciation, which is more different, and which do you not hear in this area.</li>
+            <li><b>The three games</b>　With a hypothetical stake of ¥10,000, the dictator, trust and coordination games are played. In each, the participant answers which of the two to take as a partner, together with an amount or a confidence rating.</li>
+            <li><b>Egocentric distance</b>　68 participants read the same passage themselves, and the distances between those recordings and the four stimuli were computed. This gives a fourth quantity: how close each stimulus is to the participant's own actual pronunciation.</li>
+        </ol>
+        <p class="cap">Of 1,944 responses, two in the games and one in perception were unusable, leaving 1,942 choices for analysis.</p>
+
+        <div class="sub">
+            <h3>Result 1 — the ordering was identical across the three games</h3>
+            <p>The proportions of choice showed a transitive hierarchy, <b>Tokyo &gt; Tarui &gt; Kansai &gt; Kagoshima (control)</b>, and <b>the same ordering in all three games</b>. Bradley–Terry utilities (control = 0, pooled across the three games) were Tokyo 1.57 (SE .10), Tarui 1.01 (.09) and Kansai 0.39 (.09), all with \(p &lt; .001\). By game: dictator 1.76 / 1.14 / 0.42, trust 1.23 / 0.64 / 0.21, coordination 1.45 / 1.19 / 0.56. The interaction between tag similarity and game was not significant (\(|z| \le 1.56\), \(p \ge .12\)).</p>
+        </div>
+
+        <div class="sub">
+            <h3>Result 2 — a distance gradient, and a standard-language premium it cannot explain</h3>
+            <p>Standardized tag similarity \(\Delta d\) predicted choice in the dictator game (\(\beta = 0.26\), \(p = .001\)) and the coordination game (\(\beta = 0.31\), \(p &lt; .001\)); in the trust game the effect was weak and not significant (\(\beta = 0.09\), \(p = .28\)). Pooled across the three games, \(\beta = 0.27\) (\(p = .001\)). Allowing participant-specific slopes improved the fit strongly (likelihood-ratio test \(\chi^2(2) = 43.2\), \(p &lt; .001\); random-slope SD 0.58 against a fixed effect of 0.31).</p>
+            <p>Yet the variety <b>acoustically farthest</b> from the local one, Tokyo (\(d = .383\)), was <b>the most chosen</b> overall. Entering an indicator for the standard alongside \(\Delta d\), both terms were strong (\(\Delta d\): \(\beta = 0.54\); standard-language premium: \(\beta = 1.41\); both \(p &lt; .001\)). Among the non-standard varieties choice follows acoustic closeness, while <b>the national standard carries a large surcharge that acoustic distance cannot explain</b>.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Result 3 — perceived self-similarity dominates choice</h3>
+            <p>The judgement of which voice was closer to one's own pronunciation agreed with the choice in 86% of dictator trials, 78% of trust and 79% of coordination. In a model with pair fixed effects and participant-specific random slopes, that judgement carried \(\beta = 4.05\) (SE .39), overwhelmingly; controlling for the accent-utility structure it remained at \(\beta = 2.60\) (SE .18), with the residual utilities shrinking to Tokyo 0.57, Tarui 0.31 and Kansai 0.13. Perception itself has the same two-layer structure as choice, with acoustic distance (\(\beta = 0.98\)) and the standard-language premium (\(\beta = 2.24\)) side by side.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Result 4 — accent moves &ldquo;with whom&rdquo;, not &ldquo;how much&rdquo;</h3>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Intensive margin (the amount after choosing)</th><th class="num">Estimate</th><th class="num">\(t\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Dictator game transfer</td><td class="num">−32 yen</td><td class="num">−0.17</td></tr>
+                <tr><td>Expected return</td><td class="num">−13 yen</td><td class="num">−0.07</td></tr>
+                <tr><td>Trust game investment</td><td class="num">+79 yen</td><td class="num">0.42</td></tr>
+                <tr><td>Expected reciprocity (rating)</td><td class="num">−0.02</td><td class="num">−0.20</td></tr>
+                <tr><td>Coordination confidence (rating)</td><td class="num">+0.03</td><td class="num">0.46</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">The effect when the explanatory variable is whether the chosen partner was the voice judged self-similar. Values quoted as recorded in section 3.4 of the paper. None is distinguishable from 0.</p>
+
+        <div class="sub">
+            <h3>Result 5 — the hierarchy is steepest in the older cohort and flattest in the young</h3>
+            <p>Accent utilities differed by cohort (likelihood-ratio test \(\chi^2(6) = 17.7\), \(p = .007\)). The utility of the local Tarui variety rose monotonically with age: young 0.62, middle 1.10, older 1.36 (older versus young contrast \(b = 0.69\), \(p = .003\)). The utility of Tokyo was likewise elevated in the older cohort (\(b = 0.56\), \(p = .017\)). <b>The youngest cohort has the flattest hierarchy and the weakest preference for the local variety.</b></p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">EGOCENTRIC DISTANCE, AND ITS DECOMPOSITION</div>
+            \[ \Delta d^{\text{ego}}_{ip} \;=\; \underbrace{\overline{\Delta d^{\text{ego}}_{\bullet p}}}_{\text{between pairs (the community's average position)}} \;+\; \underbrace{\Bigl(\Delta d^{\text{ego}}_{ip}-\overline{\Delta d^{\text{ego}}_{\bullet p}}\Bigr)}_{\text{within pairs (the individual's deviation)}} \]
+            <p class="read">\(\Delta d^{\text{ego}}_{ip} = d(\text{recording of participant } i,\,B) - d(\text{recording of participant } i,\,A)\). Without separating the two sources of variation, the structure of the community and the idiosyncrasy of the individual are confounded</p>
+        </div>
+
+        <div class="warn">
+            <h3>Result 6 — production, perception and choice are at odds</h3>
+            <p>Participants' own recordings were on average closest to the local Tarui stimulus (.350), then Kansai (.358), then Tokyo (.393), with the control farthest (.407). For 44 of 68 participants Tarui was nearest, and among the young 25 of 28. In the older cohort Kansai was nearest for many (10 of 16). <b>Only six participants were nearest to Tokyo.</b></p>
+            <p>Despite that, egocentric distance did not predict behaviour. The effect of \(\Delta d^{\text{ego}}\) pooled across the three games was \(\beta = -0.01\) (\(p = .91\)), and neither the between-pair component (\(\beta = 0.04\), \(p = .50\)) nor the within-pair component (\(\beta = -0.04\), \(p = .49\)) was significant. Perception too tracked only the between-pair component (\(\beta = 0.29\), \(p = .005\)), not the individual deviation (\(\beta = -0.06\), \(p = .54\)).</p>
+            <p>That is, <b>people who in fact speak closer to the local and Kansai varieties judge the Tokyo voice as &ldquo;close to my own&rdquo; and choose it most often</b>. Further, an individual's departure from the community's average position bears on neither perception nor choice. The tag is being <b>read at the grain of socially shared categories, not of individual phenotypes</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Limits</h2>
+        <p class="q">The points the paper's Limitations section raises, and the constraints that come with the method itself.</p>
+
+        <div class="warn">
+            <h3>1. The stakes are hypothetical</h3>
+            <p>The ¥10,000 at stake is a hypothetical sum, and the honorarium is a fixed ¥1,000 not contingent on decisions. The paper itself raises this as a limitation. That behaviour may differ when a payoff genuinely rides on it is the standing point about the design of economic games, and it is no exception here. Jensen et al. (2015) also used a hypothetical design, so the conditions are matched for the purpose of comparison, but <b>extrapolation to situations with real money at stake requires separate testing</b>.</p>
+        </div>
+
+        <div class="warn">
+            <h3>2. The matched-guise technique depends on the accuracy of the performance</h3>
+            <p>Each accent system is represented by <b>a single performed reading by one speaker</b>, not by a native speaker's natural production of that variety. The authenticity of the performance may vary by variety. In fact the Kagoshima reading has a slightly higher median fundamental frequency than the other three (185 Hz against 161–165 Hz). The paper states that replication with several native speakers of each variety is desirable.</p>
+            <p>The paper goes further. The very fact that <b>one speaker was able to perform all four systems well enough to drive strong behavioural discrimination</b> is itself a reservation about the premise of a &ldquo;hard-to-fake tag&rdquo;. What this experiment can speak to, therefore, is <b>how receivers read</b> the accent tag, not the honesty of the signal in spontaneous production.</p>
+        </div>
+
+        <div class="warn">
+            <h3>3. The dissociation between production, perception and choice is a finding, not a failure of measurement</h3>
+            <p>Participants' actual pronunciation is close to the local and Kansai varieties, while their perception and choice face the standard. This is not an inconsistency of instruments but <b>the content reported as the result</b>. The paper reads it as self-perception having moved to the standard ahead of production, and argues it is a sign of language ideology operating inside the tag system.</p>
+            <p>What the variable &ldquo;perceived self-similarity&rdquo; is capturing, in that case, is a separate question. If it is not an acoustic matching against one's own pronunciation, then it is closer to <b>a judgement of belonging to a shared category, &ldquo;this is how we speak&rdquo;</b>. Since this variable is the strongest predictor of choice, establishing what it measures remains the next task. The paper raises the problem in the form of asking whether tag models need not only distance but also <b>the value attached to a category</b>.</p>
+        </div>
+
+        <div class="warn">
+            <h3>4. How to place the standard-language premium is unresolved</h3>
+            <p>How to treat, within tag theory, a preference for Tokyo that acoustic distance cannot explain (\(\beta = 1.41\) in choice, \(2.24\) in perception) is not settled. The paper states plainly that whether this is <b>prestige as such</b> or <b>the result of the ingroup definition having been rewritten entirely towards the standard</b> cannot be decided in this one community, because there prestige and orientation to the standard coincide.</p>
+            <p>The comparison the paper names is a core Kansai-speaking area such as Osaka, where a vital regional variety coexists with the same national standard. If Tokyo is still chosen over a robust local variety there, prestige is at work; if not, a categorical ingroup tag is. <b>At present neither can be said.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>5. Other constraints of design and measurement</h3>
+            <p>The assignment of A and B to left and right was <b>fixed within each pair and not counterbalanced</b> (the paper states that position preferences were near .5 and that pair fixed effects did not alter the conclusions). The egocentric analysis is limited to the 68 participants whose own recordings were usable. Because individual deviations are measured with limited reliability, <b>their null effects should be read as &ldquo;not detected&rdquo; rather than &ldquo;shown absent&rdquo;</b>, as the paper itself cautions.</p>
+            <p>Perceived similarity and choice were also <b>measured in the same session</b>, so demand characteristics cannot be fully excluded. Models with pair fixed effects only mitigate the shared method variance.</p>
+            <p>As for the differences between cohorts, cross-sectional data <b>cannot separate generational effects from lifespan effects</b>. On either reading the implication stands that tag-based assortment is tracking a language change in progress, but the mechanism has not been identified.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Sources and data</h2>
+
+        <div class="warn">
+            <h3>This research is unpublished</h3>
+            <p>The paper is at draft stage (v0.3, 11 July 2026) and has not been through peer review. The venue is under consideration; candidates are listed in the planning document but none is settled. <b>The authorship is also undecided.</b> Every value quoted here is as recorded in that draft, and may change through review.</p>
+            <p>Where the trial-level data and analysis code will be made available is recorded as undecided at the time of the draft. What is published is <b>the stimulus-presentation program alone</b>. The companion study (S1, automatic accent classification) is also under submission, and its bibliographic record is not settled.</p>
+        </div>
+
+        <ul class="refs">
+            <li>Stimulus-presentation program: <a href="https://github.com/aonoa68/audio-coop-behavior" target="_blank" rel="noopener noreferrer">github.com/aonoa68/audio-coop-behavior</a>　Scripts for psychological experiments on cooperative behaviour and economic games using audio stimuli (MIT License)</li>
+            <li>Ethics: approved by the Ethics Review Committee of the University of Tokyo Life Science Committee, approval no. 18-70. Informed consent was obtained from all participants, and additionally from guardians for those under 18.</li>
+            <li>Funding: Japan Society for the Promotion of Science, Grant-in-Aid for JSPS Fellows (the grant number is left blank in the draft).</li>
+            <li>Reproduction of the analysis: <code>01_build_long.py</code> → <code>02_models.R</code> → <code>03_models2.R</code> → <code>04_individual_distance.py</code> → <code>05_individual_models.R</code></li>
+        </ul>
+
+        <div class="warn">
+            <h3>Discrepancies between the published program and the paper</h3>
+            <p>Reading the published <code>voice_perception_experiment.py</code> (239 lines) confirms that four voices and face images are presented in six combinations, that the order is randomized per participant (<code>shuffle</code>), that A is fixed on the left and B on the right, that clicking a mouth plays the voice with no limit on replays, and that clicks and timestamps are logged to <code>list.txt</code>. These agree with sections 2.2 and 2.4 of the paper.</p>
+            <p>The <b>amounts shown on screen differ</b>, however. The investment question in the published version reads &ldquo;how much of ¥20,000 would you like to invest in which voice&rdquo; and &ldquo;how much of the ¥20,000 will you invest in that person&rdquo;, with ¥20,000, whereas the paper gives a hypothetical stake of ¥10,000 for all three games. What the published version implements is also <b>the single investment screen only</b>, and does not contain the three games and the perception questions the paper describes. According to internal notes accompanying the paper, several versions were used in the experiment (<code>test07</code>, <code>test08</code>, <code>test09</code>), and which version the published file corresponds to cannot be determined from the materials to hand. Both statements are recorded here as they stand.</p>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on tag-based cooperation</h3>
+            <ul class="refs">
+                <li>Riolo, R. L., Cohen, M. D. &amp; Axelrod, R. (2001) Evolution of cooperation without reciprocity. <i>Nature</i>, 414(6862), 441–443. <a href="https://www.nature.com/articles/35106555" target="_blank" rel="noopener noreferrer">nature.com/articles/35106555</a></li>
+                <li>Nettle, D. &amp; Dunbar, R. I. M. (1997) Social markers and the evolution of reciprocal exchange. <i>Current Anthropology</i>, 38(1), 93–99. <a href="https://doi.org/10.1086/204588" target="_blank" rel="noopener noreferrer">doi:10.1086/204588</a></li>
+                <li>McElreath, R., Boyd, R. &amp; Richerson, P. J. (2003) Shared norms and the evolution of ethnic markers. <i>Current Anthropology</i>, 44(1), 122–129. <a href="https://doi.org/10.1086/345689" target="_blank" rel="noopener noreferrer">doi:10.1086/345689</a></li>
+                <li>Cohen, E. (2012) The evolution of tag-based cooperation in humans: The case for accent. <i>Current Anthropology</i>, 53(5), 588–616. <a href="https://doi.org/10.1086/667654" target="_blank" rel="noopener noreferrer">doi:10.1086/667654</a></li>
+                <li>Cohen, E. &amp; Haun, D. (2013) The development of tag-based cooperation via a socially acquired trait. <i>Evolution and Human Behavior</i>, 34(3), 230–235. <a href="https://www.sciencedirect.com/science/article/abs/pii/S1090513813000147" target="_blank" rel="noopener noreferrer">sciencedirect.com</a></li>
+                <li>Kinzler, K. D., Dupoux, E. &amp; Spelke, E. S. (2007) The native language of social cognition. <i>Proceedings of the National Academy of Sciences</i>, 104(30), 12577–12580. <a href="https://doi.org/10.1073/pnas.0705345104" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.0705345104</a></li>
+                <li>Jensen, N. H., Petersen, M. B., Høgh-Olesen, H. &amp; Ejstrup, M. (2015) Testing theories about ethnic markers: Ingroup accent facilitates coordination, not cooperation. <i>Human Nature</i>, 26(2), 210–234. <a href="https://doi.org/10.1007/s12110-015-9229-4" target="_blank" rel="noopener noreferrer">doi:10.1007/s12110-015-9229-4</a></li>
+                <li>Barclay, P. (2013) Strategies for cooperation in biological markets, especially for humans. <i>Evolution and Human Behavior</i>, 34(3), 164–175. <a href="https://www.sciencedirect.com/science/article/abs/pii/S1090513813000214" target="_blank" rel="noopener noreferrer">sciencedirect.com</a></li>
+            </ul>
+            <p style="font-size:0.84em;color:var(--muted);line-height:1.85;margin-top:6px">The pages for McElreath et al. (2003) are given as 122–130 in the paper's reference list, but what could be confirmed in bibliographic databases is 122–129. The confirmed form is used here.</p>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>References on the methods</h3>
+            <ul class="refs">
+                <li>Lambert, W. E., Hodgson, R. C., Gardner, R. C. &amp; Fillenbaum, S. (1960) Evaluational reactions to spoken languages. <i>Journal of Abnormal and Social Psychology</i>, 60(1), 44–51. <a href="https://pubmed.ncbi.nlm.nih.gov/14413611/" target="_blank" rel="noopener noreferrer">PMID: 14413611</a>　The original source for the matched-guise technique</li>
+                <li>Kubozono, H. (2012) Varieties of pitch accent systems in Japanese. <i>Lingua</i>, 122(13), 1395–1414. <a href="https://doi.org/10.1016/j.lingua.2012.08.001" target="_blank" rel="noopener noreferrer">doi:10.1016/j.lingua.2012.08.001</a>　The typology of Japanese accent systems</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Economic games <b>design the payoff structure and then observe what several parties choose under it</b>. They carry the framework of game theory straight into the laboratory, and are the original sense of <b>Perspective 6 (games and adversaries)</b> in <a href="../">Reading the seven perspectives in equations</a>.<br>
+        Where the <a href="../gan/">generative adversarial network</a> under the same perspective handles a zero-sum contest, the three games here are non-zero-sum: if cooperation holds, both sides gain. What Perspective 6 handles in common is <b>the condition that each party's choice bears on the others' outcomes</b>, not whether their interests are opposed.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Only values recorded in the draft and in the published code are quoted; no estimates or approximations are given. Note that this research is unpublished and the values may change through review.<br>
+    The whole layout of where the methods sit is in <a href="../">Reading the seven perspectives in equations</a>; which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

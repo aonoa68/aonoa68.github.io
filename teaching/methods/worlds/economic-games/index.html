@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>経済ゲームによる協力行動の実験 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="独裁者ゲーム・信頼ゲーム・調整ゲームで、アクセントが「誰と組むか」を動かすかを測る。マッチトガイズ法とDTWによるタグ距離、Bradley–Terry型の効用推定、そして産出・知覚・選択の乖離を、方言境界での実験に即して整理したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（ゲーム・敵対） */
+            --w:      #8a5a2f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e6c9a8; background:rgba(138,90,47,0.42); border:1px solid rgba(230,201,168,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(230,201,168,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf7f2; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf8f6; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">経済ゲーム</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/economic-games/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 6 ｜ <a href="../">ゲーム・敵対</a></span>
+        <h1>Economic <span>Games</span></h1>
+        <p class="lead">利得の構造をこちらで設計し、参加者の<b>意思決定</b>として協力を測る。独裁者・信頼・調整の3つのゲームは、それぞれ別の量を測っています。<br>
+        小野原が方言境界の住民108名に対して行った実験に即して、アクセントという「タグ」が<b>誰と組むか</b>を動かすのか、<b>どれだけ渡すか</b>を動かすのかを、何をもって測ったのかから整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「似た話し方の相手を選ぶか」を、利得のかかった選択として問う。</p>
+        <p class="body">
+        血縁でない者どうしの協力が進化しうるのは、協力する者どうしが<b>互いを見つけられる</b>ときである。その道具立てのひとつが「タグ」で、観察できる目印が似ている相手に協力を向ける、という戦略を考える（Riolo, Cohen &amp; Axelrod 2001、Nettle &amp; Dunbar 1997）。問題は、この戦略が<b>タグを偽れる者に侵食される</b>点にある。目印を真似るだけで協力を引き出せるなら、真似る者が得をして戦略は崩れる。したがって理論が要求するのは、<b>偽装しにくいタグ</b>である。
+        </p>
+        <p class="body">
+        アクセントはその有力な候補とされてきた。母方言の音韻の型は幼いうちに獲得され、ほぼ自動的に産出され、外部の者が説得力をもって真似るのが難しい（Cohen 2012）。並行して、方言差を「集団の成員であること」や「規範を共有していること」の標識と見る系譜もある（McElreath, Boyd &amp; Richerson 2003）。
+        </p>
+        <p class="body">
+        ここで経済ゲームが要る理由は、<b>態度ではなく選択を測るため</b>である。質問紙で「どちらに好感を持つか」を聞くのと、金額のかかった場面で「どちらに渡すか」を決めさせるのとでは、測っているものが違う。利得の構造を実験者が設計し、その構造のもとで人が何を選ぶかを観察する。これが、協力の進化に関する理論を経験的に検証するための標準的な枠組みになっている。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>起源 ―― タグ依拠協力の理論と、経済ゲームの系譜</h2>
+        <p class="q">理論の側は進化生物学から、測定の側は実験経済学から来ている。</p>
+
+        <div class="sub">
+            <h3>タグ依拠協力 ―― なぜ「偽装しにくさ」が核心なのか</h3>
+            <p>Riolo, Cohen &amp; Axelrod (2001) は、互恵性がなくても、任意の目印が十分に似ている相手へ贈与する戦略によって協力が維持されうることを計算機実験で示した。Nettle &amp; Dunbar (1997) は、社会的標識が互恵的交換の進化に果たす役割を論じている。いずれのモデルでも、<b>目印を偽る者が現れれば戦略は侵食される</b>という脆さが伴う。だから「偽りにくい目印は何か」という問いが立つ。</p>
+            <p>Cohen (2012) は、この条件を満たす候補としてアクセントを取り上げ、複数分野の証拠を統合して検討した。獲得の時期が早く、意識的な統制が効きにくく、集団間の変異が十分に大きい、という3点が論拠である。</p>
+        </div>
+
+        <div class="sub">
+            <h3>標識としての方言 ―― 協力か、調整か</h3>
+            <p>McElreath, Boyd &amp; Richerson (2003) は、民族標識が<b>規範の共有</b>を示す信号として進化しうることを示した。この枠組みでは、標識が助けるのは協力そのものではなく、互いの期待を揃える<b>調整</b>である可能性が出てくる。協力なのか調整なのか、という対立軸はここから来ている。</p>
+        </div>
+
+        <div class="sub">
+            <h3>経験的な蓄積 ―― そして粗さ</h3>
+            <p>幼児は母語アクセントの話者を相互作用の相手として好む（Kinzler, Dupoux &amp; Spelke 2007）。成人は同じ方言の話者に対してより寛大に資源を配分し、その傾向は方言の多様性が地域的に顕著なところで強い（Cohen &amp; Haun 2013）。これまでで最大規模の検証は Jensen ら (2015) で、デンマークの参加者4,603名が地元・非地元のアクセント話者と仮想的なゲームを行った。結果は<b>調整ゲームでは効果があり、寛大さと信頼では効果がない</b>というもので、著者らは「内集団のアクセントが促すのは調整であって協力ではない」と結論した。</p>
+            <p>ただしこの系譜には、アクセントを<b>地元か否かの二値</b>として扱ってきたという共通の粗さがある。タグ・モデルの中心的な量的予測は「識別は<b>類似度に応じて</b>連続的に変わる」というものだが、二値の対比ではこれを検証できない。小野原の研究が取り組んだのはこの点である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>観点6「ゲーム・敵対」との対応</h2>
+        <p class="q">複数の主体が、互いの選択を見ながら自分の選択を決める。その構造として行動を捉える。</p>
+        <p class="body">
+        <a href="../">7つの観点を式で読む</a>の観点6は、競い合う複数の主体の相互作用として学習や行動を捉える見方である。経済ゲームは、この観点の<b>原義にあたる</b>。利得行列を設計し、各プレイヤーが自分の利得を睨んで選択する、というゲーム理論そのものの枠組みを、実験室に持ち込んだものだからである。
+        </p>
+
+        <div class="warn">
+            <h3>同じ観点に、2種類の「ゲーム」が並ぶ</h3>
+            <p>この観点にはすでに<a href="../gan/">敵対的生成ネットワークによる文化動態のモデリング</a>が置かれている。両者は「複数主体の相互作用」という点で同じ観点に属するが、<b>想定している利害構造が違う</b>。</p>
+            <p>敵対的生成ネットワークの目的関数 \(\min_G \max_D V(D,G)\) は<b>零和</b>である。生成器が良くなることは、そのまま識別器が困ることを意味する。プレイヤーは2つのネットワークであり、釣り合った点が解になる。</p>
+            <p>一方、ここで扱う3つのゲームはいずれも<b>非零和</b>である。信頼ゲームでは投資額が3倍になって相手に渡るので、信頼が成立すれば双方が得をする。調整ゲームでは期待が一致すること自体が利得を生む。独裁者ゲームは一方的な分配なので戦略的相互作用はないが、それでも「誰に渡すか」という選択の構造は残る。プレイヤーは生身の人間であり、解は数学的な釣り合いではなく、観察された選択の分布である。</p>
+            <p>観点6が扱うのは「片方が良くなると他方が困る」構造だけではない、ということでもある。<b>複数の主体がいて、各自の選択が他者の結果を左右する</b>という条件が共通していれば、協力の側も敵対の側もこの観点に入る。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>3つのゲームは何を測っているか</h2>
+        <p class="q">寛大さ、信頼、期待の一致。同じ「協力」という言葉で呼ばれるが、別の量である。</p>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>ゲーム</th><th>構造</th><th>測っている量</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><b>独裁者ゲーム</b></td><td>一方が金額を分配し、他方は受け取るだけ。拒否できない</td><td>純粋な寛大さ。相手の反応を計算に入れる必要がない</td></tr>
+                <tr><td><b>信頼ゲーム</b></td><td>投資した額が3倍になって相手に渡り、相手が任意の額を返す</td><td>相手が返報するという期待。投資は相手の善意への賭けになる</td></tr>
+                <tr><td><b>調整ゲーム</b></td><td>互いに同じ選択をすれば双方が得をする（この実験では「同じ店で落ち合う」）</td><td>期待の一致。相手が何を選ぶと思うか</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">3つの設計は Jensen ら (2015) と揃えてある。同じ参加者が同じ相手候補に対して3つとも行う。</p>
+
+        <div class="sub">
+            <h3>なぜ3つとも必要なのか</h3>
+            <p>理論の対立軸がここに対応しているからである。標識が助けるのが<b>規範の共有による調整</b>なら（McElreath ら 2003）、効果は調整ゲームに出て、寛大さや信頼には出ないはずである。逆に<b>協力する者どうしの寄り集まり</b>を助けているのなら（Riolo ら 2001、Cohen 2012）、独裁者ゲームと信頼ゲームにも出るはずである。3つを並べることで、どちらの予測が当たるかを同じ参加者の中で比べられる。</p>
+        </div>
+
+        <div class="warn">
+            <h3>先行研究の結論に、この研究がどう応答したか</h3>
+            <p>Jensen ら (2015) は、単一の話者に対する<b>段階的な金額</b>で寛大さと信頼を測り、いずれにも効果を見いださなかった。そこから「アクセントが促すのは調整であって協力ではない」と結論している。</p>
+            <p>小野原の研究は、この測り方に一段階を加えた。<b>「誰を選ぶか」と「いくら渡すか」を分けて測った</b>のである。結果として、金額のほうは先行研究と同じく効果がなかった一方、<b>選択のほうには独裁者ゲームでも信頼ゲームでも強い識別が現れた</b>。つまりアクセントによる協力の識別は存在するが、それは<b>相手を選ぶ段階に宿っていて、選んだあとの掛け金には宿っていない</b>。金額だけを測る設計では見えない場所にあった、という応答になる。</p>
+            <p>この区別は、パートナー選択が協力の維持に持つ力を論じる生物学的市場の議論（Barclay 2013）が置いている場所と一致する。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>マッチトガイズ法と、タグ距離の定量化</h2>
+        <p class="q">アクセント以外をすべて揃える。そのうえで、アクセントの違いを連続量にする。</p>
+
+        <div class="sub">
+            <h3>マッチトガイズ法 ―― 1人の話者が、4つのアクセントを演じる</h3>
+            <p>Lambert ら (1960) が言語態度の研究のために導入した手法である。同一の話者が同じ文章を複数の言語変種で読み上げ、聞き手はそれを別人の発話と思って評価する。話者・声質・語彙・話し方が一定に保たれるため、評価の差は<b>演じられた変種の違いだけに帰属できる</b>。</p>
+            <p>この実験では、6文からなる自己紹介の文章（挨拶と短い旅行の話）を、1人の女性話者が4つのアクセント体系で読み分けている。東京式 25.2 秒、京阪（関西）式 22.9 秒、地元の垂井式 24.5 秒、そして地域外の統制として鹿児島二型式 24.3 秒である。</p>
+        </div>
+
+        <div class="sub">
+            <h3>タグ距離 ―― 二値ではなく連続量にする</h3>
+            <p>タグ・モデルの中心的な予測は「識別は類似度に応じて変わる」だが、これを検証するには類似度が連続量でなければならない。そこで姉妹研究（S1）の測定パイプラインを使い、4つの刺激を<b>連続的なアクセント距離の空間</b>に置く。話者ごとに正規化した基本周波数の輪郭を、制約つき動的時間伸縮法で照合する手続きである。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>DTW距離</th><th class="num">東京</th><th class="num">関西</th><th class="num">垂井</th><th class="num">鹿児島</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><b>東京</b></td><td class="num">—</td><td class="num">.260</td><td class="num">.383</td><td class="num">.243</td></tr>
+                <tr><td><b>関西</b></td><td class="num">.260</td><td class="num">—</td><td class="num">.337</td><td class="num">.261</td></tr>
+                <tr><td><b>垂井</b></td><td class="num">.383</td><td class="num">.337</td><td class="num">—</td><td class="num">.396</td></tr>
+                <tr><td><b>鹿児島</b></td><td class="num">.243</td><td class="num">.261</td><td class="num">.396</td><td class="num">—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原稿 2.3 節および図1に記載された値。地元の垂井式に最も近いのは関西（.337）、次いで東京（.383）、最も遠いのが鹿児島（.396）である。垂井式が京阪系の系統に属するという方言学の記述と整合する。</p>
+
+        <div class="eq">
+            <div class="lbl">試行ごとのタグ類似度</div>
+            \[ \Delta d \;=\; d(\text{垂井},\,B) \;-\; d(\text{垂井},\,A) \]
+            <p class="read"><b>\(\Delta d &gt; 0\)</b> … 音声 A のほうが地元の変種に音響的に近い<br>
+            <b>値域</b> … 6つのペアに対して \(-.383\) から \(+.396\) までの6通り。分析では標準化して使う</p>
+        </div>
+
+        <div class="sub">
+            <h3>選択のモデル</h3>
+            <p>二値の選択を、参加者ごとのランダム切片をもつ混合ロジスティックモデルで扱う。タグ類似度の効果と、標準語かどうかの効果を同じ式に入れて分離する。</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">タグ類似度モデル</div>
+            \[ \operatorname{logit}\Pr(\text{A を選ぶ}) \;=\; \beta\,\Delta d \;+\; \gamma\,u^{\text{Tokyo}} \;+\; b_i, \qquad b_i \sim N(0,\sigma^2) \]
+            <p class="read"><b>\(u^{\text{Tokyo}}\)</b> … \(\mathbb{1}[A\text{ が東京}] - \mathbb{1}[B\text{ が東京}]\)。音響距離で説明できない標準語への選好を取り出す指標<br>
+            <b>\(b_i\)</b> … 参加者 \(i\) のランダム切片。同じ人の6試行×3ゲームが独立でないことを織り込む</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">Bradley–Terry 型の効用モデル</div>
+            \[ \operatorname{logit}\Pr(\text{A を選ぶ}) \;=\; u_A - u_B, \qquad u_{\text{鹿児島}} \equiv 0 \]
+            <p class="read">各アクセントに「選ばれやすさ」の効用を与え、統制刺激を基準の 0 に固定する。対戦表から各変種の順位と間隔を同時に推定する形になる</p>
+        </div>
+
+        <div class="sub">
+            <h3>混合効果モデルの位置づけ</h3>
+            <p>同じ参加者が6ペア×3ゲームを繰り返すため、観測は入れ子になっている。参加者をランダム効果に置く理由と、その推定がどういう性質を持つかは<a href="../mixed-model/">線形混合モデルとAICによるモデル選択</a>で扱っている。この研究では <code>lme4</code> による二項の一般化線形混合モデルを用い、ランダム傾きの必要性は尤度比検定で検討している。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>この研究での使い方と結果</h2>
+        <p class="q">方言境界の住民108名。3世代。6ペア×3ゲーム。</p>
+
+        <ol class="steps">
+            <li><b>対象地域</b>　滋賀県米原市の柏原・今須地区。東日本（東京式）と西日本（京阪式）のアクセント体系が接する歴史的な境界にあたり、地元の変種は両者の性質を併せ持つ垂井式である。標識による識別は<b>集団が接するところで最も鋭くなる</b>という予測（McElreath ら 2003）を検証するのに適した場所である。</li>
+            <li><b>参加者</b>　108名。2018年9月から11月。若年（13〜33歳、38名、女性17名、平均18.5歳）、中年（35〜57歳、35名、女性21名、平均47.9歳）、高年（58〜89歳、35名、女性15名、平均69.5歳）の3コホート。謝礼は<b>決定に依存しない固定額1,000円</b>。</li>
+            <li><b>提示</b>　4つのアクセントを6通りすべての組み合わせで提示する。画面には「A」「B」と書かれた2つの顔が並び、口をクリックするとその音声が流れる。再生回数に制限はない。ペアの提示順は参加者ごとに無作為化される。</li>
+            <li><b>知覚の質問</b>　各ペアについて、どちらが自分の発音に近いか、どちらがより違うか、どちらをこの地域で聞かないかを答える。</li>
+            <li><b>3つのゲーム</b>　仮想的な1万円を賭け金として、独裁者・信頼・調整の3つを行う。各ゲームで「どちらを相手に選ぶか」と、金額や確信度を答える。</li>
+            <li><b>自己中心的距離</b>　68名は同じ文章を自分で読み上げており、その録音と4刺激との距離も計算されている。「自分の実際の発音にどれだけ近いか」という第4の量になる。</li>
+        </ol>
+        <p class="cap">1,944件の回答のうちゲームで2件、知覚で1件が使用不能で、1,942件の選択が分析対象になった。</p>
+
+        <div class="sub">
+            <h3>結果1 ―― 順序は3ゲームで同一だった</h3>
+            <p>選択の比率は <b>東京 &gt; 垂井 &gt; 関西 &gt; 鹿児島（統制）</b> という推移的な階層を示し、<b>3つのゲームすべてで同じ順序</b>だった。Bradley–Terry 効用（統制 = 0、3ゲームをまとめたもの）は東京 1.57（SE .10）、垂井 1.01（.09）、関西 0.39（.09）で、いずれも \(p &lt; .001\)。ゲーム別では独裁者 1.76 / 1.14 / 0.42、信頼 1.23 / 0.64 / 0.21、調整 1.45 / 1.19 / 0.56 である。タグ類似度とゲームの交互作用は有意でなかった（\(|z| \le 1.56\)、\(p \ge .12\)）。</p>
+        </div>
+
+        <div class="sub">
+            <h3>結果2 ―― 距離の勾配と、それで説明できない標準語プレミアム</h3>
+            <p>標準化したタグ類似度 \(\Delta d\) は、独裁者ゲーム（\(\beta = 0.26\)、\(p = .001\)）と調整ゲーム（\(\beta = 0.31\)、\(p &lt; .001\)）で選択を予測した。信頼ゲームでは弱く有意でない（\(\beta = 0.09\)、\(p = .28\)）。3ゲームをまとめると \(\beta = 0.27\)（\(p = .001\)）である。参加者ごとの傾きを許すとあてはまりが大きく改善した（尤度比検定 \(\chi^2(2) = 43.2\)、\(p &lt; .001\)、ランダム傾きの標準偏差 0.58 に対し固定効果は 0.31）。</p>
+            <p>ところが、地元の変種から<b>音響的に最も遠い</b>東京式（\(d = .383\)）が、全体として<b>最も選ばれていた</b>。標準語かどうかの指標を \(\Delta d\) と併せて入れると、両方が強く効いた（\(\Delta d\): \(\beta = 0.54\)、標準語プレミアム: \(\beta = 1.41\)、ともに \(p &lt; .001\)）。非標準の変種のあいだでは選択が音響的な近さに従う一方、<b>国家標準には音響距離で説明できない大きな上乗せがある</b>。</p>
+        </div>
+
+        <div class="sub">
+            <h3>結果3 ―― 知覚された自己類似性が、選択を支配する</h3>
+            <p>「どちらが自分の発音に近いか」という判断と選択は、独裁者 86%、信頼 78%、調整 79% で一致した。ペアの固定効果と参加者ごとのランダム傾きを入れたモデルで、この判断は \(\beta = 4.05\)（SE .39）と圧倒的に効き、アクセント効用の構造を統制しても \(\beta = 2.60\)（SE .18）で残った（残差効用は東京 0.57、垂井 0.31、関西 0.13 まで縮む）。知覚そのものも選択と同じ二層構造を持ち、音響距離（\(\beta = 0.98\)）と標準語プレミアム（\(\beta = 2.24\)）が併存する。</p>
+        </div>
+
+        <div class="sub">
+            <h3>結果4 ―― アクセントは「誰と」を動かし、「いくら」を動かさない</h3>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>内包的margin（選んだあとの量）</th><th class="num">推定値</th><th class="num">\(t\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>独裁者ゲームの分配額</td><td class="num">−32 円</td><td class="num">−0.17</td></tr>
+                <tr><td>期待される返礼額</td><td class="num">−13 円</td><td class="num">−0.07</td></tr>
+                <tr><td>信頼ゲームの投資額</td><td class="num">+79 円</td><td class="num">0.42</td></tr>
+                <tr><td>返報の期待（評定）</td><td class="num">−0.02</td><td class="num">−0.20</td></tr>
+                <tr><td>調整の確信度（評定）</td><td class="num">+0.03</td><td class="num">0.46</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">「選ばれた相手が自己類似と判断された声かどうか」を説明変数にしたときの効果。原稿 3.4 節に記載された値をそのまま引用した。いずれも 0 と区別がつかない。</p>
+
+        <div class="sub">
+            <h3>結果5 ―― 階層は高年で最も急で、若年で最も平坦</h3>
+            <p>アクセント効用はコホートによって異なった（尤度比検定 \(\chi^2(6) = 17.7\)、\(p = .007\)）。地元の垂井式の効用は年齢とともに単調に上がり、若年 0.62、中年 1.10、高年 1.36 である（高年と若年の対比 \(b = 0.69\)、\(p = .003\)）。東京式の効用も高年で高い（\(b = 0.56\)、\(p = .017\)）。<b>若年層の階層が最も平坦で、地元の変種への選好が最も弱い</b>。</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">自己中心的距離と、その分解</div>
+            \[ \Delta d^{\text{ego}}_{ip} \;=\; \underbrace{\overline{\Delta d^{\text{ego}}_{\bullet p}}}_{\text{ペア間（共同体の平均的位置）}} \;+\; \underbrace{\Bigl(\Delta d^{\text{ego}}_{ip}-\overline{\Delta d^{\text{ego}}_{\bullet p}}\Bigr)}_{\text{ペア内（個人の逸脱）}} \]
+            <p class="read">\(\Delta d^{\text{ego}}_{ip} = d(\text{参加者 }i\text{ の録音},\,B) - d(\text{参加者 }i\text{ の録音},\,A)\)。2つの変動源を分けないと、共同体の構造と個人の特異性が混ざってしまう</p>
+        </div>
+
+        <div class="warn">
+            <h3>結果6 ―― 産出・知覚・選択が食い違っている</h3>
+            <p>参加者自身の録音は、平均すると地元の垂井式に最も近く（.350）、次いで関西（.358）、東京（.393）、統制（.407）の順だった。68名中44名は垂井が最も近く、若年では28名中25名がそうである。高年では関西が最も近い者が多い（16名中10名）。<b>東京が最も近い者は6名しかいない</b>。</p>
+            <p>それにもかかわらず、自己中心的距離は行動を予測しなかった。\(\Delta d^{\text{ego}}\) の効果は3ゲームをまとめて \(\beta = -0.01\)（\(p = .91\)）で、ペア間成分（\(\beta = 0.04\)、\(p = .50\)）もペア内成分（\(\beta = -0.04\)、\(p = .49\)）も有意でない。知覚もペア間成分だけを追っており（\(\beta = 0.29\)、\(p = .005\)）、個人の逸脱は追っていない（\(\beta = -0.06\)、\(p = .54\)）。</p>
+            <p>つまり、<b>実際には地元と関西に近く話している人々が、東京の声を「自分に近い」と判断し、最も多く選んでいる</b>。さらに、共同体の平均的な位置からの個人のずれは、知覚にも選択にも影響しない。タグは<b>個人の表現型ではなく、社会的に共有されたカテゴリの粒度で読まれている</b>ということになる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>限界</h2>
+        <p class="q">原稿の Limitations 節が挙げている点と、手法そのものに伴う制約。</p>
+
+        <div class="warn">
+            <h3>1. 報酬は仮想的である</h3>
+            <p>賭け金の1万円は仮想の金額であり、謝礼は決定に依存しない固定額1,000円である。原稿自身が限界として挙げている。実際に利得がかかる場合と行動が変わりうる、というのは経済ゲームの設計につきまとう定番の論点で、ここでも例外ではない。先行研究の Jensen ら (2015) も仮想的な設計なので、比較という点では条件が揃っているが、<b>現金がかかった場面への外挿は別の検証を要する</b>。</p>
+        </div>
+
+        <div class="warn">
+            <h3>2. マッチトガイズ法は、演じ分けの正確さに依存する</h3>
+            <p>各アクセント体系は<b>1人の話者による1つの演じられた読み上げ</b>で代表されており、その変種の母語話者による自然な産出ではない。演技の真正さは変種によって差がありうる。実際、鹿児島式の読み上げは基本周波数の中央値が他の3つよりやや高い（185 Hz に対し他は 161〜165 Hz）。原稿は、各変種の母語話者を複数立てた追試が望ましいと述べている。</p>
+            <p>さらに踏み込んだ指摘が原稿にある。<b>1人の話者が4つの体系すべてを、強い行動的識別を引き起こす程度には演じ分けられてしまった</b>という事実そのものが、「偽装しにくいタグ」という前提への留保になる、というものである。したがってこの実験から言えるのは、受け手がアクセントというタグを<b>どう読むか</b>であって、自発的な産出における信号の正直さではない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>3. 産出・知覚・選択の乖離は、発見であって測定の失敗ではない</h3>
+            <p>参加者の実際の発音が地元と関西に近いのに、知覚と選択が標準語に向いている。これは測定器の不整合ではなく、<b>結果として報告されている内容そのもの</b>である。原稿はこれを「自己認識が産出に先んじて標準へ移った」と読み、タグ体系の内側で言語イデオロギーが働いている徴候だと論じている。</p>
+            <p>ただし、その場合に「知覚された自己類似性」という変数が何を捉えているのかは、別途問われる。自分の発音との音響的な照合ではないとすれば、それは<b>「我々はこう話す」という共有されたカテゴリへの帰属判断</b>に近い。この変数が選択を最も強く予測する以上、何を測っているのかの解明は次の課題として残る。原稿は、タグ・モデルには距離だけでなく<b>カテゴリの価値</b>が要るのではないか、という形でこの問題を提起している。</p>
+        </div>
+
+        <div class="warn">
+            <h3>4. 標準語プレミアムの位置づけは未解決である</h3>
+            <p>音響距離では説明できない東京への選好（選択で \(\beta = 1.41\)、知覚で \(2.24\)）を、タグ理論の枠内でどう扱うかは決着していない。原稿は、これが<b>威信そのものによるもの</b>なのか、<b>内集団の定義が完全に標準語側へ書き換わった結果</b>なのかを、この1つの共同体では決められないと明言している。この地域では威信と標準語志向が一致してしまうからである。</p>
+            <p>原稿が挙げている比較対象は、活力のある地域変種が同じ国家標準と共存している核心的な関西圏（大阪など）である。そこでも東京が頑健な地元変種より選ばれるなら威信が効いており、そうでなければカテゴリ的な内集団タグが効いている、という切り分けになる。<b>現時点では、どちらとも言えない</b>。</p>
+        </div>
+
+        <div class="warn">
+            <h3>5. 設計と測定に伴うその他の制約</h3>
+            <p>A と B の左右の割り当ては<b>ペア内で固定されており、相殺されていない</b>（位置選好は .5 付近で、ペアの固定効果を入れても結論は変わらなかったと原稿は述べている）。自己中心的距離の分析は、自分の録音が使える68名に限られる。個人の逸脱は測定の信頼性に限りがあるため、<b>その無効果は「ないと示された」ではなく「検出されなかった」と読むべき</b>だと原稿自身が注意している。</p>
+            <p>また、知覚された類似性と選択が<b>同じセッションで測定されている</b>ため、要求特性を完全には排除できない。ペアの固定効果を入れたモデルが共通方法分散を緩和するにとどまる。</p>
+            <p>コホート間の差についても、横断的なデータは<b>世代効果と生涯効果を分離できない</b>。どちらの読み方を採っても、タグに基づく寄り集まりが進行中の言語変化を追っている、という含意は変わらないが、機構の特定はできていない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>出典とデータ</h2>
+
+        <div class="warn">
+            <h3>この研究は未発表である</h3>
+            <p>原稿は草稿の段階（v0.3、2026年7月11日）にあり、査読を経ていない。投稿先は検討中で、計画文書に候補が挙げられているが確定していない。<b>著者構成も未決</b>である。ここに引用した数値はすべてこの草稿に記載されたものであり、査読の過程で変わりうる。</p>
+            <p>試行水準のデータと分析コードの公開先は、原稿の時点では未定と記されている。公開されているのは<b>刺激提示プログラムのみ</b>である。姉妹研究（S1、アクセントの自動分類）も投稿中であり、そちらの書誌は確定していない。</p>
+        </div>
+
+        <ul class="refs">
+            <li>刺激提示プログラム：<a href="https://github.com/aonoa68/audio-coop-behavior" target="_blank" rel="noopener noreferrer">github.com/aonoa68/audio-coop-behavior</a>　音声刺激を用いた協力行動および経済ゲームの心理実験用スクリプト（MIT License）</li>
+            <li>倫理審査：東京大学ライフサイエンス委員会倫理審査専門委員会 承認番号 18-70。参加者全員からインフォームド・コンセントを取得し、18歳未満については保護者からも取得している。</li>
+            <li>助成：日本学術振興会 特別研究員奨励費（課題番号は原稿の時点で未記入）</li>
+            <li>分析の再現手順：<code>01_build_long.py</code> → <code>02_models.R</code> → <code>03_models2.R</code> → <code>04_individual_distance.py</code> → <code>05_individual_models.R</code></li>
+        </ul>
+
+        <div class="warn">
+            <h3>公開プログラムと原稿のあいだの食い違い</h3>
+            <p>公開されている <code>voice_perception_experiment.py</code>（239行）を読むと、4つの音声と顔画像を6通りの組み合わせで提示すること、提示順が参加者ごとに無作為化されること（<code>shuffle</code>）、A が左・B が右に固定されること、口をクリックすると再生され回数に制限がないこと、クリックと時刻が <code>list.txt</code> に記録されることが確認できる。これらは原稿の 2.2 節・2.4 節の記述と一致する。</p>
+            <p>一方で、<b>画面に表示される金額が異なる</b>。公開版の投資の設問は「どちらの声の人に2万円のうちいくらを投資したいですか」「その人に2万円からいくら投資しますか」と2万円で書かれているが、原稿は3つのゲームすべてについて仮想的な賭け金を1万円としている。また公開版に実装されているのは<b>投資の設問1画面のみ</b>で、原稿が記述する3ゲームと知覚の質問すべてを含んではいない。原稿の内部メモによれば実験には複数の版（<code>test07</code>・<code>test08</code>・<code>test09</code>）が用いられており、公開されているファイルがどの版に対応するかは、手元の資料からは判定できない。ここでは両方の記述をそのまま記す。</p>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>タグ依拠協力の文献</h3>
+            <ul class="refs">
+                <li>Riolo, R. L., Cohen, M. D. &amp; Axelrod, R. (2001) Evolution of cooperation without reciprocity. <i>Nature</i>, 414(6862), 441–443. <a href="https://www.nature.com/articles/35106555" target="_blank" rel="noopener noreferrer">nature.com/articles/35106555</a></li>
+                <li>Nettle, D. &amp; Dunbar, R. I. M. (1997) Social markers and the evolution of reciprocal exchange. <i>Current Anthropology</i>, 38(1), 93–99. <a href="https://doi.org/10.1086/204588" target="_blank" rel="noopener noreferrer">doi:10.1086/204588</a></li>
+                <li>McElreath, R., Boyd, R. &amp; Richerson, P. J. (2003) Shared norms and the evolution of ethnic markers. <i>Current Anthropology</i>, 44(1), 122–129. <a href="https://doi.org/10.1086/345689" target="_blank" rel="noopener noreferrer">doi:10.1086/345689</a></li>
+                <li>Cohen, E. (2012) The evolution of tag-based cooperation in humans: The case for accent. <i>Current Anthropology</i>, 53(5), 588–616. <a href="https://doi.org/10.1086/667654" target="_blank" rel="noopener noreferrer">doi:10.1086/667654</a></li>
+                <li>Cohen, E. &amp; Haun, D. (2013) The development of tag-based cooperation via a socially acquired trait. <i>Evolution and Human Behavior</i>, 34(3), 230–235. <a href="https://www.sciencedirect.com/science/article/abs/pii/S1090513813000147" target="_blank" rel="noopener noreferrer">sciencedirect.com</a></li>
+                <li>Kinzler, K. D., Dupoux, E. &amp; Spelke, E. S. (2007) The native language of social cognition. <i>Proceedings of the National Academy of Sciences</i>, 104(30), 12577–12580. <a href="https://doi.org/10.1073/pnas.0705345104" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.0705345104</a></li>
+                <li>Jensen, N. H., Petersen, M. B., Høgh-Olesen, H. &amp; Ejstrup, M. (2015) Testing theories about ethnic markers: Ingroup accent facilitates coordination, not cooperation. <i>Human Nature</i>, 26(2), 210–234. <a href="https://doi.org/10.1007/s12110-015-9229-4" target="_blank" rel="noopener noreferrer">doi:10.1007/s12110-015-9229-4</a></li>
+                <li>Barclay, P. (2013) Strategies for cooperation in biological markets, especially for humans. <i>Evolution and Human Behavior</i>, 34(3), 164–175. <a href="https://www.sciencedirect.com/science/article/abs/pii/S1090513813000214" target="_blank" rel="noopener noreferrer">sciencedirect.com</a></li>
+            </ul>
+            <p style="font-size:0.84em;color:var(--muted);line-height:1.85;margin-top:6px">McElreath ら (2003) のページは、原稿の参考文献欄では 122–130 と記されているが、書誌データベースで確認できたのは 122–129 である。ここでは確認できた形を採った。</p>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Lambert, W. E., Hodgson, R. C., Gardner, R. C. &amp; Fillenbaum, S. (1960) Evaluational reactions to spoken languages. <i>Journal of Abnormal and Social Psychology</i>, 60(1), 44–51. <a href="https://pubmed.ncbi.nlm.nih.gov/14413611/" target="_blank" rel="noopener noreferrer">PMID: 14413611</a>　マッチトガイズ法の原典</li>
+                <li>Kubozono, H. (2012) Varieties of pitch accent systems in Japanese. <i>Lingua</i>, 122(13), 1395–1414. <a href="https://doi.org/10.1016/j.lingua.2012.08.001" target="_blank" rel="noopener noreferrer">doi:10.1016/j.lingua.2012.08.001</a>　日本語アクセント体系の類型</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>経済ゲームは、<b>利得の構造を設計したうえで、複数の主体がその構造のもとで何を選ぶか</b>を観察する。ゲーム理論の枠組みをそのまま実験室に持ち込んだもので、<a href="../">7つの観点を式で読む</a>の<b>観点6（ゲーム・敵対）</b>の原義にあたる。<br>
+        同じ観点にある<a href="../gan/">敵対的生成ネットワーク</a>が零和の競い合いを扱うのに対し、こちらの3つのゲームは非零和である。協力が成立すれば双方が得をする。観点6が共通して扱っているのは<b>「各自の選択が他者の結果を左右する」という条件</b>であって、利害が対立しているかどうかではない。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて草稿および公開コードに記載された値のみを引用し、推定値や概算は記載していません。この研究は未発表であり、数値は査読の過程で変わりうることに注意してください。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

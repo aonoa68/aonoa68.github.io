@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mixed Models — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Linear mixed models and model selection by AIC: what a random effect puts into the model, what maximum likelihood maximises, how the same structure behaves when estimated in a Bayesian framework, the spatial error model, and the limits — set out against dialect surveys in Maibara–Sekigahara and the upper Ibi River.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (frequentist) */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* cautions and limits (the box where the weaknesses go) */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* gold box, same role as .cross in worlds/ */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* results table */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* procedure list */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* references */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Mixed Models</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/mixed-model/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Mixed <span>Models</span></h1>
+        <p class="lead">When observations are <b>nested</b> within groups, a regression that assumes independence understates the uncertainty. The framework here represents the spread of group-level intercepts with a single variance parameter, estimates it by maximum likelihood, and selects among models by AIC.<br>
+        What follows is set out against the implementations Onohara used for a dialect vocabulary survey in Maibara and Sekigahara and for dialect distribution in the upper Ibi River valley, with attention to what is assumed — and to <b>what changed when the same data were later re-analysed in a Bayesian framework</b>.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">When observations are nested within groups, what breaks in a regression that assumes independence?</p>
+        <p class="body">
+        In the Maibara–Sekigahara survey the response is the rate of vocabulary loss in each settlement, and settlements belong to the catchment area of a lower-secondary <b>school district</b>. Settlements in the same district share a commuting zone; the same cohort exchanges language at the same school. The premise that settlements within a district are mutually independent observations therefore does not hold as it stands.
+        </p>
+        <p class="body">
+        What happens if a regression assuming independence is applied anyway? In the framework of <a href="../">Perspective 2</a>, the variability of an estimate is set by the inverse of the information \(I(\theta)\), and the confidence interval follows from it. When observations carry overlapping information but are counted as independent, there appears to be more information than there is, and \(I(\theta)\) is overstated. The consequence is that <b>standard errors come out too small, confidence intervals too narrow, and tests too ready to declare significance</b>. The frequentist promise — the hit rate of a procedure under repetition — is broken at that point.
+        </p>
+        <p class="body">
+        There are two remedies. One is to estimate a separate intercept for each district as a <b>fixed effect</b>; the other is to represent the spread of the district intercepts with <b>a single variance parameter</b>. The linear mixed model is the second of these.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>What a random effect puts into the model</h2>
+        <p class="q">Not a separate value for each group, but the width of the spread of those values.</p>
+        <div class="eq">
+            <div class="lbl">WRITTEN AS A FIXED EFFECT</div>
+            \[ y_i \;=\; \beta_0 \;+\; \sum_{d=2}^{D} \gamma_d\,\mathbf{1}\!\left[d(i)=d\right] \;+\; \mathbf{x}_i^{\top}\boldsymbol{\beta} \;+\; \varepsilon_i, \qquad \varepsilon_i \sim \mathcal{N}\!\left(0,\sigma_\varepsilon^2\right) \]
+            <p class="read"><b>\(\gamma_d\)</b> … the intercept for district \(d\). Excluding the reference district, \(D-1\) parameters are added<br>
+            <b>\(d(i)\)</b> … the district to which settlement \(i\) belongs. Here \(D=5\)</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">WRITTEN AS A RANDOM EFFECT</div>
+            \[ y_i \;=\; \beta_0 \;+\; u_{d(i)} \;+\; \mathbf{x}_i^{\top}\boldsymbol{\beta} \;+\; \varepsilon_i, \qquad u_d \sim \mathcal{N}\!\left(0,\sigma_u^2\right),\quad \varepsilon_i \sim \mathcal{N}\!\left(0,\sigma_\varepsilon^2\right) \]
+            <p class="read"><b>\(u_d\)</b> … the departure of district \(d\)'s intercept. It is not itself a parameter but a random variable drawn from a normal distribution<br>
+            <b>\(\sigma_u^2\)</b> … this <b>one</b> quantity is what gets estimated. It does not grow whether there are five districts or fifty</p>
+        </div>
+        <p class="body">
+        The difference lies in what is estimated. The fixed-effect version adds a parameter per district, and each district is determined by its own observations alone. The random-effect version estimates a single width \(\sigma_u^2\), and the individual \(u_d\) are pulled towards the overall mean under that width. This pull, stronger for districts with fewer observations, is called <b>shrinkage</b> (partial pooling).
+        </p>
+        <div class="eq">
+            <div class="lbl">WHERE INDEPENDENCE IS USED — THE MARGINAL COVARIANCE</div>
+            \[ \mathrm{Cov}\!\left(y_i,\,y_j\right) \;=\; \begin{cases} \sigma_u^2 & d(i)=d(j),\ i \neq j \\[4pt] 0 & d(i) \neq d(j) \end{cases} \qquad\Longrightarrow\qquad \mathrm{ICC} \;=\; \frac{\sigma_u^2}{\sigma_u^2+\sigma_\varepsilon^2} \]
+            <p class="read">The errors \(\varepsilon_i\) are mutually independent, but <b>observations in the same district share \(u_d\)</b> and are therefore correlated marginally. The size of that correlation is the intraclass correlation. The independence assumption has not vanished; it has been pushed down into the error layer.</p>
+        </div>
+        <div class="sub">
+            <h3>The point is being able to name the line on which independence is used</h3>
+            <p>The independence assumption of an ordinary regression is the claim that observations are unrelated to one another. A mixed model weakens it into <b>independence conditional on district</b>. The assumption has not disappeared; where it sits has changed. Pointing out, in each derivation, the line on which independence is used is a habit cultivated in Statistics II so that this kind of re-reading can be done for oneself. Correlation across districts — neighbouring districts resembling one another, say — is still set to 0 in this expression. Handling that requires a different structure (<a href="#sec5">Section 5</a>).</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Correspondence with Perspective 2 — what maximum likelihood maximises</h2>
+        <p class="q">The random effects are integrated out, and what remains is maximised.</p>
+        <p class="body">
+        Because \(u_d\) is a random variable rather than a parameter, it cannot be left in the likelihood. It is integrated out. What remains is a function of the fixed effects \(\boldsymbol{\beta}\) and the variances \(\sigma_u^2,\sigma_\varepsilon^2\), and that is maximised.
+        </p>
+        <div class="eq">
+            <div class="lbl">MARGINAL LIKELIHOOD — INTEGRATING OUT THE RANDOM EFFECTS</div>
+            \[ L\!\left(\boldsymbol{\beta},\sigma_u^2,\sigma_\varepsilon^2\right) \;=\; \int p\!\left(\mathbf{y}\mid \mathbf{u}\right)\, p\!\left(\mathbf{u}\right)\, d\mathbf{u} \qquad\Longrightarrow\qquad \mathbf{y} \sim \mathcal{N}\!\left(X\boldsymbol{\beta},\; ZGZ^{\top}+R\right) \]
+            <p class="read"><b>\(Z\)</b> … the design matrix indicating which observation belongs to which district<br>
+            <b>\(G=\sigma_u^2 I\)</b>, <b>\(R=\sigma_\varepsilon^2 I\)</b> … the variances of the random effects and of the error<br>
+            Only in the linear, normal case does this integral have a closed form, giving a multivariate normal distribution. For a non-normal response such as <a href="../beta-regression/">beta regression</a> it does not, and numerical integration or MCMC is required.</p>
+        </div>
+        <p class="body">
+        From here the procedure is the standard one of <a href="../">Perspective 2</a>. Differentiate the log-likelihood, set it to zero, solve numerically. The variability of the estimate follows from the information, and standard errors, confidence intervals and tests are assembled from it. The parameter is a fixed unknown value; what varies at random is the sample.
+        </p>
+        <div class="sub">
+            <h3>REML — correcting the bias in the variance estimate, at the cost of what may be compared</h3>
+            <p>Estimating variance components by maximum likelihood produces a downward bias, because the fixed effects are estimated at the same time. Restricted maximum likelihood (REML) corrects for this by using a likelihood from which the influence of the fixed effects has been removed. The REML likelihood, however, depends on the design matrix of the fixed effects, so <b>neither the REML likelihood nor the AIC can be compared between models with different fixed-effect structures</b> (Pinheiro &amp; Bates 2000). Using AIC to select a set of predictors requires refitting by maximum likelihood.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>What changes when the same structure is estimated in a Bayesian framework</h2>
+        <p class="q">The structure is the same. What differs is whether \(\sigma_u\) receives a point or a distribution.</p>
+        <p class="body">
+        In this research the same Maibara–Sekigahara data were later re-analysed with a hierarchical Bayesian model. That is what the <a href="../bayesian-estimation/">Bayesian estimation</a> page covers, and the <code>(1|district)</code> in its model formula is the same object as \(u_{d(i)}\) here. The structure of placing district as a random effect did not change. What changed is the estimation framework and the distribution placed on the response.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>　</th><th>Linear mixed model (this page)</th><th>Hierarchical Bayes (<a href="../bayesian-estimation/">Bayesian estimation</a>)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hierarchical structure</td><td>district as a random effect</td><td>district as a random effect (the same)</td></tr>
+                <tr><td>Distribution of the response</td><td>normal</td><td>beta, with a logit link</td></tr>
+                <tr><td>Treatment of \(\sigma_u\)</td><td>returns a single point estimate</td><td>returns a posterior distribution</td></tr>
+                <tr><td>Uncertainty in the coefficients</td><td>confidence interval (hit rate of a procedure)</td><td>credible interval (probability for the parameter)</td></tr>
+                <tr><td>Quantity that can be reported</td><td>p-value</td><td>\(P(\beta&gt;0)\)</td></tr>
+                <tr><td>Tool for selection</td><td>AIC, BIC</td><td>approximate leave-one-out cross-validation</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Two frameworks applied to the same data and the same hierarchical structure. On the change in the distribution of the response, see the <a href="../beta-regression/">beta regression</a> page.</p>
+
+        <div class="sub">
+            <h3>With few clusters, this difference starts to matter</h3>
+            <p>There are five districts and twenty-five settlements. \(\sigma_u^2\) is therefore estimated from the spread of five values, which is very little information. In this situation maximum likelihood can return \(\hat{\sigma}_u = 0\), a <b>boundary solution</b>: since a variance cannot be negative, the maximum of the likelihood falls at the edge of the parameter space. An estimate of 0 does not mean that no district differences exist — it means only that the data could not determine the width — but the number printed is the same 0 either way.</p>
+            <p>In a Bayesian treatment a prior is placed on \(\sigma_u\), so the posterior does not collapse onto a single point at 0. It is returned as an interval, and one can read that it touches 0 while still having width. Indeed, for the spatial variance in the same research the <a href="../icar/">ICAR page</a> reports <code>sdcar</code> as 0.04 with a 95% credible interval of [0.00, 0.16] — a lower bound touching 0, yet displayed as an interval. Under maximum likelihood this would be a single number, 0, and whether it merely touches or genuinely has width could not be distinguished.</p>
+        </div>
+        <div class="warn">
+            <h3>The figures from the two analyses must not be conflated</h3>
+            <p>The AIC values and coefficients in the table in Section 7 are the output of <b>maximum likelihood estimation under an assumed normal distribution</b>. The \(\beta = +0.231\) and \(P(\beta&gt;0)=0.993\) reported on the <a href="../bayesian-estimation/">Bayesian estimation</a> page are a different quantity, obtained from <b>a posterior distribution under an assumed beta distribution</b>. The response distribution, the link function and the principle of estimation all differ, so the magnitudes of the coefficients cannot be compared directly. They are outputs of different models, even though the research and the data are the same.</p>
+        </div>
+    </section>
+
+    <section class="wblock" id="sec5">
+        <h2><span class="no">5</span>Handling spatial autocorrelation within a frequentist frame — the spatial error model</h2>
+        <p class="q">Resemblance between neighbours, which districts cannot capture, parameterised as a correlation in the errors.</p>
+        <p class="body">
+        The marginal covariance in Section 2 set correlation across districts to 0. But settlements laid out across a landscape resemble one another when they are adjacent, whatever district they belong to. Spatial models address this structure. In the analysis of eighteen points in the upper Ibi River valley, a spatial error model was used.
+        </p>
+        <div class="eq">
+            <div class="lbl">SPATIAL ERROR MODEL — THE ERROR ITSELF IS SPATIALLY CORRELATED</div>
+            \[ \mathbf{y} \;=\; X\boldsymbol{\beta} + \mathbf{u}, \qquad \mathbf{u} \;=\; \lambda W \mathbf{u} + \boldsymbol{\varepsilon} \qquad\Longrightarrow\qquad \mathbf{u} \;=\; \left(I-\lambda W\right)^{-1}\boldsymbol{\varepsilon} \]
+            <p class="read"><b>\(W\)</b> … the neighbourhood matrix, specifying which points count as adjacent<br>
+            <b>\(\lambda\)</b> … the strength of spatial autocorrelation. At \(\lambda=0\) the model reduces to an ordinary regression<br>
+            Unlike a random effect, the spatial structure is written as <b>a correlation in the errors</b>. Estimation is by maximum likelihood.</p>
+        </div>
+        <div class="sub">
+            <h3>Contrast with <a href="../icar/">ICAR</a> — the same problem, written in a different layer</h3>
+            <p>ICAR places a spatial random effect \(\phi_i\) at each point and gives \(\phi\) a <b>prior</b> encoding that neighbours take similar values. The spatial error model does not name \(\phi\) at all; it expresses the covariance structure of the errors through the single parameter \(\lambda\). The former writes the spatial structure as a prior within a Bayesian frame, the latter as a correlation structure within a frequentist one. The problem addressed is the same; what differs is the layer in which the structure is placed.</p>
+        </div>
+        <div class="sub">
+            <h3>The definition of a neighbour is a construct here too</h3>
+            <p>The neighbour list in this analysis is built not from straight-line distance but from <b>walking-cost distance between settlements</b>. For settlements in mountain valleys, two places close in a straight line may be far apart in practice if a ridge has to be crossed. A walking-cost function (Aiken 1977; Langmuir 1984) is used to correct for this. Which function to use, and where to cut off adjacency, are nonetheless decisions made by the analyst. The point made on the <a href="../icar/">ICAR page</a> — that what counts as a neighbour is not determined by the data — applies unchanged on the frequentist side.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Model selection by AIC — a bridge to Perspective 5</h2>
+        <p class="q">Complexity is subtracted from fit. A quantity from information theory rides on top of a frequentist estimate.</p>
+        <div class="eq">
+            <div class="lbl">AKAIKE INFORMATION CRITERION</div>
+            \[ \mathrm{AIC} \;=\; -2\,\ell\!\left(\hat{\theta}\right) + 2k \]
+            <p class="read"><b>\(\ell(\hat{\theta})\)</b> … the maximised log-likelihood, the quantity maximised in Section 3<br>
+            <b>\(k\)</b> … the number of estimated parameters<br>
+            The first term is goodness of fit, the second a penalty on complexity (Akaike 1974).</p>
+        </div>
+        <p class="body">
+        AIC is a quantity of <a href="../">Perspective 5 (information theory)</a>. It estimates, from the data at hand, the wasted code length incurred when the true distribution is represented by the model — the Kullback–Leibler divergence. Fit by maximum likelihood, select by an information-theoretic criterion. The two perspectives are not in conflict; they are combined in a division of labour where <b>estimation is frequentist and selection is information-theoretic</b>. Where <a href="../ncd/">normalised compression distance</a>, also under Perspective 5, measures nearness by how much can be compressed, AIC compares models by code length.
+        </p>
+        <div class="sub">
+            <h3>In Maibara–Sekigahara, selection was by exhaustive search over all subsets</h3>
+            <p>The predictors are numerous: longitude, latitude, area, elevation, land use (built-up land, forest, paddy field), population, population density, population growth rate, ageing rate and the proportion under fifteen. In the GISA2016 analysis, <code>MuMIn::dredge</code> searched all subsets exhaustively, the lowest-AIC models were extracted, and models with \(\Delta\mathrm{AIC} &lt; 4\) were averaged. The same procedure was carried out for gain and loss of the overall set and of the Kansai, Tokyo and Mino types separately. The hazards of this search are discussed in Section 8.</p>
+        </div>
+        <div class="sub">
+            <h3>In the upper Ibi River valley, AIC decided whether a spatial term was needed</h3>
+            <p>The AIC of the spatial error model is reported as \(-52.203\), against \(-50.466\) for a linear model with the same predictors and no spatial term. The difference of roughly 1.7 favours including the spatial term. AIC is a relative criterion, however, and what a difference of that size means is a separate judgement.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>How the method is used in this research</h2>
+        <p class="q">Two regions, two responses, two treatments of space.</p>
+
+        <div class="sub">
+            <h3>(A) Maibara–Sekigahara — rates of vocabulary loss and gain against environmental and social factors</h3>
+        </div>
+        <ol class="steps">
+            <li><b>Constructing the response</b>　For settlements in Maibara (Shiga Prefecture) and Sekigahara (Gifu Prefecture), the mean rates of loss and gain of forms from the cohort aged 60 and over (142 respondents) to the lower-secondary school cohort (544 respondents) are computed per settlement from a survey of 106 words across 40 items. Loss and gain are built separately for each of the three types: Kansai, Mino–Owari and Tokyo.</li>
+            <li><b>Predictors</b>　Land use (the proportions of built-up land, forest and paddy field) is taken from the Land Use Subdivision Mesh of the National Land Numerical Information (Ministry of Land, Infrastructure, Transport and Tourism, FY2006); population, population density, population growth rate, ageing rate, proportion under fifteen and area from the small-area tabulations of the 2010 Population Census on e-Stat (Statistics Bureau, Ministry of Internal Affairs and Communications).</li>
+            <li><b>Standardisation</b>　Predictors are standardised with <code>scale</code> so that the magnitudes of the coefficients can be compared.</li>
+            <li><b>Model</b>　A linear mixed model is fitted with the lower-secondary school district as a random effect.</li>
+            <li><b>Selection</b>　All subsets are searched exhaustively and the model with the lowest AIC is selected for each response.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Response (lowest-AIC model)</th><th class="num">AIC</th><th class="num">BIC</th><th class="num">logLik</th><th class="num">deviance</th><th class="num">df.resid</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Kansai type, loss</td><td class="num">70.05</td><td class="num">76.53</td><td class="num">−30.03</td><td class="num">60.05</td><td class="num">22</td></tr>
+                <tr><td>Tokyo type, loss</td><td class="num">63.30</td><td class="num">74.98</td><td class="num">−22.65</td><td class="num">45.30</td><td class="num">18</td></tr>
+                <tr><td>Mino type, loss</td><td class="num">75.27</td><td class="num">84.35</td><td class="num">−30.64</td><td class="num">61.27</td><td class="num">20</td></tr>
+                <tr><td>Kansai type, gain</td><td class="num">76.03</td><td class="num">81.22</td><td class="num">−34.02</td><td class="num">68.03</td><td class="num">23</td></tr>
+                <tr><td>Tokyo type, gain</td><td class="num">66.12</td><td class="num">75.19</td><td class="num">−28.06</td><td class="num">52.12</td><td class="num">20</td></tr>
+                <tr><td>Mino type, gain</td><td class="num">69.82</td><td class="num">80.19</td><td class="num">−26.91</td><td class="num">53.82</td><td class="num">19</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Fit statistics for the lowest-AIC model for each response, from Table 1 of the GISA2016 abstract. Coefficients for eleven variables appear in the same table; only the findings the text states explicitly are recorded below.</p>
+
+        <p class="body">
+        The abstract states three findings. <b>For every type, settlements with larger populations show lower rates of both loss and gain.</b> The factor specific to loss is the population growth rate, and the factor specific to gain is area: where population is growing, words are more readily lost, and where a settlement covers a wider area, new words are more readily acquired. Further, for Tokyo-type and Mino–Owari-type items, both loss and gain are higher towards the larger longitudes, that is, on the Sekigahara side.
+        </p>
+        <div class="sub">
+            <h3>The abstract says 27 settlements, but the model appears to have taken 25</h3>
+            <p>The <code>df.resid</code> in the table above can be read as the sample size minus the number of fixed effects, the intercept included. Kansai-type gain has one predictor plus an intercept and a <code>df.resid</code> of 23; Tokyo-type loss has six predictors plus an intercept and 18. Both are consistent with \(n=25\). The abstract records the study area as 27 settlements, but it is coherent to take the 25 settlements for which loss and gain rates were obtained as the ones entered into the model. The working record also states <code>n=25</code>, and the later Bayesian re-analysis uses 25 neighbourhood associations.</p>
+        </div>
+
+        <div class="sub" style="margin-top:30px">
+            <h3>(B) The upper Ibi River valley — a composite variable from phylogenetic estimation against settlement conditions</h3>
+        </div>
+        <ol class="steps">
+            <li><b>Study area</b>　Eighteen points in the upper Ibi River valley, north-west Gifu Prefecture: eight in Tokuyama, two in Fujihashi, three in Sakauchi and five in Kuze.</li>
+            <li><b>Language data</b>　The 47 basic-vocabulary items reported by Yamada (1978, 1980).</li>
+            <li><b>Phylogenetic estimation</b>　A phylogeny is estimated from the basic vocabulary. Branch support is assessed by 1000 bootstrap replicates, and the split separating Tokuyama from the rest is reported at 68.3%, that separating Tokuyama and Sakauchi from the rest at 95.2%.</li>
+            <li><b>Building the composite variable</b>　Multidimensional scaling is applied to the distances produced by the phylogenetic estimation, and the first axis (MDS1), which maximises the variance of inter-settlement distance, is taken as the response.</li>
+            <li><b>Predictors</b>　Number of households, population (1875–1920), paddy-field area, upland-field area, <i>kokudaka</i> (assessed rice yield) and elevation, all drawn from the Ibi County gazetteer and the Kadokawa dictionary of Japanese place names.</li>
+            <li><b>Spatial error model</b>　A neighbour list is built from walking-cost distance and a spatial error model is fitted by maximum likelihood.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Term</th><th class="num">Estimate</th><th class="num">Std. error</th><th class="num">z</th><th class="num">p</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Intercept</td><td class="num">0.10843771</td><td class="num">0.03987366</td><td class="num">2.7195</td><td class="num">0.0065374</td></tr>
+                <tr><td>Households</td><td class="num">0.00352194</td><td class="num">0.00106948</td><td class="num">3.2931</td><td class="num">0.0009908</td></tr>
+                <tr><td>Population</td><td class="num">−0.00056370</td><td class="num">0.00017643</td><td class="num">−3.1951</td><td class="num">0.0013979</td></tr>
+                <tr><td>Paddy field</td><td class="num">−0.00134113</td><td class="num">0.00067133</td><td class="num">−1.9977</td><td class="num">0.0457472</td></tr>
+                <tr><td>Upland field</td><td class="num">−0.00115608</td><td class="num">0.00037578</td><td class="num">−3.0765</td><td class="num">0.0020944</td></tr>
+                <tr><td><i>Kokudaka</i></td><td class="num">0.00029381</td><td class="num">0.00018060</td><td class="num">1.6269</td><td class="num">0.1037645</td></tr>
+                <tr><td>Elevation</td><td class="num">−0.00043152</td><td class="num">0.00013314</td><td class="num">−3.2411</td><td class="num">0.0011909</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Partial regression coefficients of the spatial error model, quoted from the <code>errorsarlm</code> output printed in the presentation material. 18 observations, 9 estimated parameters. \(\lambda = -1.2505\); likelihood-ratio statistic 3.7368 (p = 0.053227); Wald statistic 24.445 (p = 7.648e−07); AIC −52.203 (−50.466 for the linear model).</p>
+
+        <p class="body">
+        The material reads this result as a relation in which, as MDS1 increases, households and <i>kokudaka</i> increase while paddy field, upland field and elevation decrease. For <i>kokudaka</i> the p-value of 0.104 somewhat exceeds 0.05, which the material describes as a level that may be regarded as a tendency towards significance.
+        </p>
+        <div class="sub">
+            <h3>\(\lambda\) is negative</h3>
+            <p>The estimated \(\lambda\) is \(-1.2505\), a negative value. What a spatial model ordinarily anticipates is positive spatial autocorrelation — neighbours resembling one another — and a negative \(\lambda\) means the opposite, a structure in which neighbours <b>differ</b>. For settlements strung along a mountain valley, the material does not record what this sign reflects. The p-value of the likelihood-ratio test is also 0.053, so the need for the spatial term itself is not clearly supported. Eighteen observations against nine parameters is a further condition that counsels caution in interpreting this test.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Limits — what cannot be claimed with this method</h2>
+
+        <div class="warn">
+            <h3>"The variance of the random effect is zero" cannot be put to an ordinary test</h3>
+            <p>It is tempting to examine \(H_0:\sigma_u^2=0\) with a likelihood-ratio test, but this null hypothesis lies on the <b>boundary</b> of the parameter space. A variance cannot be negative, so the usual regularity condition — that the parameter is an interior point under the null — is not met. The likelihood-ratio statistic then does not follow a chi-squared distribution with one degree of freedom. Self &amp; Liang (1987) give a general framework, and Stram &amp; Lee (1994) show that for the longitudinal mixed model it is a 50:50 mixture of \(\chi^2_0\) and \(\chi^2_1\). Applying the standard chi-squared distribution errs on the <b>conservative</b> side, that is, in the direction of finding significance less readily.</p>
+        </div>
+
+        <div class="warn">
+            <h3>AIC is a relative criterion and requires the same data and the same response</h3>
+            <p>The absolute value of an AIC means nothing in itself. The 70.05 and the \(-52.203\) above say nothing on their own. What can be compared is only the difference between models fitted to the same data with the same response. If the handling of missing values differs and the number of rows changes, the comparison fails at that point. The same caution is taken up in <a href="https://aonoa68.github.io/toukei-1/11_aic/" target="_blank" rel="noopener noreferrer">Session 11</a> of Statistics I.</p>
+            <p>In addition, as stated in Section 3, <b>the AIC of a model fitted by REML cannot be compared across models with different fixed effects</b>. Using it to select a set of predictors requires fitting by maximum likelihood. Neither of the two sources consulted here records which was used.</p>
+        </div>
+
+        <div class="warn">
+            <h3>An exhaustive search over all subsets grows more hazardous as the sample shrinks</h3>
+            <p>With eleven predictors there are more than two thousand subsets. Computing an AIC for every one and taking the minimum carries a substantial risk of overfitting and false positives at a sample size of \(n=25\). The model selected is the combination that fitted <i>these</i> data best, which is not necessarily the best model in the population. Moreover, coefficients and p-values obtained after a selection step cannot be read as though no selection had taken place.</p>
+            <p>This is not an external criticism: the research's own working record states that "exhaustive search at n=25 carries a large risk of overfitting and false positives". The same record also lists the assumption of a normal distribution for proportion data as a <b>misspecification of the distribution</b>, and sets the move to beta regression as a task to be undertaken.</p>
+        </div>
+
+        <div class="warn">
+            <h3>A normal distribution cannot accommodate a response that is a proportion</h3>
+            <p>Loss and gain rates are proportions confined to \([0,1]\). A linear mixed model assuming a normal distribution has no structural means of preventing predicted values from leaving that interval. Even where the fit is good within the range of the sample, the specification is wrong. Replacing the response distribution with a beta distribution to address this is what <a href="../beta-regression/">beta regression</a> does, and the later analyses in the same research take that form. What this page covers is the analysis that preceded it.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The definition of a neighbour, and the small number of clusters</h3>
+            <p>The neighbourhood matrix of the spatial error model and the clusters of the mixed model (school districts) are alike frameworks chosen by the analyst: which walking-cost function, where to cut the distance, what unit to treat as a group. None of these is determined by the data. The same point is recorded on the <a href="../icar/">ICAR page</a> as the fact that, within this same body of research, changing the definition of adjacency produced different indications as to whether spatial autocorrelation was present.</p>
+            <p>The same holds for the number of clusters. There are five districts and either eighteen or twenty-five points. Estimating a variance component at this scale yields unstable estimates and tests with low power. In such a sample, "no district difference was detected" and "there is no district difference" are hard to tell apart.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources and data</h2>
+        <p class="body">
+        Two analyses are covered. (A) rests on a three-generation dialect vocabulary survey conducted across settlements from Maibara in Shiga Prefecture to Sekigahara in Gifu Prefecture. The original survey was carried out in FY2015 by Habiro Net (Kashiwabara, Maibara, Shiga) under the Maibara collaborative project proposal scheme, with 809 respondents in total. (B) covers eighteen points in the upper Ibi River valley in Gifu Prefecture, using the basic vocabulary reported by Yamada (1978, 1980).
+        </p>
+        <ul class="refs">
+            <li>Ayaka Onohara, "Environmental and social factors associated with the loss and gain of language" (affiliation at the time of presentation: JSPS Research Fellow, the University of Tokyo). JSPS Grant-in-Aid for JSPS Fellows 13J03462 and 16J40096.</li>
+            <li>Ayaka Onohara, "Mathematical analysis of dialect distribution data" (affiliation at the time of presentation: Graduate School of Culture and Information Science, Doshisha University). The venue and volume could not be confirmed from the material to hand and are therefore not recorded.</li>
+            <li>Provision of language data: the Habiro Net secretariat; Yoshihiro Sugisaki, for knowledge, materials and fieldwork on dialect; and the neighbourhood associations of the surveyed districts (per the acknowledgements of (A)).</li>
+            <li>Relation to earlier analyses: the Maibara–Sekigahara data were later re-analysed by hierarchical beta regression (see the pages on <a href="../bayesian-estimation/">Bayesian estimation</a>, <a href="../beta-regression/">beta regression</a> and <a href="../icar/">ICAR spatial random effects</a>).</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Akaike, H. (1974) A new look at the statistical model identification. <i>IEEE Transactions on Automatic Control</i>, 19(6), 716–723. <a href="https://doi.org/10.1109/TAC.1974.1100705" target="_blank" rel="noopener noreferrer">doi:10.1109/TAC.1974.1100705</a></li>
+                <li>Self, S. G. &amp; Liang, K.-Y. (1987) Asymptotic properties of maximum likelihood estimators and likelihood ratio tests under nonstandard conditions. <i>Journal of the American Statistical Association</i>, 82(398), 605–610. <a href="https://doi.org/10.1080/01621459.1987.10478472" target="_blank" rel="noopener noreferrer">doi:10.1080/01621459.1987.10478472</a></li>
+                <li>Stram, D. O. &amp; Lee, J. W. (1994) Variance components testing in the longitudinal mixed effects model. <i>Biometrics</i>, 50(4), 1171–1177.</li>
+                <li>Pinheiro, J. C. &amp; Bates, D. M. (2000) <i>Mixed-Effects Models in S and S-PLUS</i>. Springer.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>References on the research</h3>
+            <ul class="refs">
+                <li>Bromham, L., Hua, X., Fitzpatrick, T. G. &amp; Greenhill, S. J. (2015) Rate of language evolution is affected by population size. <i>Proceedings of the National Academy of Sciences</i>, 112(7), 2097–2102. <a href="https://doi.org/10.1073/pnas.1419704112" target="_blank" rel="noopener noreferrer">doi:10.1073/pnas.1419704112</a></li>
+                <li>Aoki, K., Lehmann, L. &amp; Feldman, M. W. (2011) Rates of cultural change and patterns of cultural accumulation in stochastic models of social transmission. <i>Theoretical Population Biology</i>, 79(4), 192–202.</li>
+                <li>Trudgill, P. (2011) <i>Sociolinguistic Typology: Social Determinants of Linguistic Complexity</i>. Oxford University Press.</li>
+                <li>Tatsuya Yamada (1978) On the basic vocabulary of the upper Ibi River valley. <i>Nagoya City University, Bulletin of the Faculty of Liberal Arts, Studies in Humanities and Social Sciences</i>, 22, 33–66.</li>
+                <li>Tatsuya Yamada (1980) On the basic vocabulary of the Imajō and Ikeda dialects of Fukui Prefecture and the Kinomoto dialect of Shiga Prefecture, in relation to the Tokuyama dialect. <i>Nagoya City University, Bulletin of the Faculty of Liberal Arts, Studies in Humanities and Social Sciences</i>, 24, 23–34.</li>
+                <li>Aiken, R. (1977) <i>Wilderness areas in Scotland</i>. Unpublished Ph.D. thesis, University of Aberdeen.　／　Langmuir, E. (1984) <i>Mountaincraft and leadership</i>. The Scottish Sports Council/MLTB, Cordee.　(Cited by (B) as the source of the walking-cost function. The body text of (B) writes "Aitken" while its reference list writes "Aiken".)</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>The linear mixed model treats the parameter as a fixed unknown value and maximises the marginal likelihood obtained by integrating out the random effects. What it returns is a point estimate and a confidence interval, and the probability attaches to the interval. It belongs to <b>Perspective 2 (frequentist)</b> of <a href="../">the seven perspectives in equations</a>. AIC, used as the tool for selecting a model, is a quantity of <b>Perspective 5 (information theory)</b>, where it sits alongside <a href="../ncd/">normalised compression distance</a>. That the method runs on a combination of frequentist estimation and information-theoretic selection is what fixes its position. For the same data solved again under Perspective 3 (Bayesian), see <a href="../bayesian-estimation/">Bayesian estimation</a> and <a href="../icar/">ICAR spatial random effects</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in her own research, written for readers in the same field. Every figure is quoted from values printed in the presentation materials and from the working records of the analysis; no estimates or approximations have been supplied. Bibliographic details that could not be confirmed are not recorded.<br>
+    For how the methods sit relative to one another see <a href="../">the seven perspectives in equations</a>; for which course session falls under which perspective see <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

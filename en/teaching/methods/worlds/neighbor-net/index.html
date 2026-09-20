@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neighbor-Net &mdash; Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Neighbor-Net draws genealogical relations as a network from a distance matrix. This page sets out the formulation as non-negative least squares over splits, the difference from a phylogenetic tree, and the constraints on reading the figure, following implementations in a comparison of two academic journals and in dialect research on the upper Ibi River basin and Shodoshima.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Neighbor-Net</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/neighbor-net/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 &nbsp;|&nbsp; <a href="../">Geometry (least squares)</a></span>
+        <h1>Neighbor-<span>Net</span></h1>
+        <p class="lead">A method that draws <b>genealogical relations as a network</b> from a distance matrix. Where a phylogenetic tree represents branching alone, a network can keep on the plane the state in which several lineages merge (contamination). Inside, it is <b>non-negative least squares</b>: approximating distances by a superposition of splits.<br>
+        This page follows the implementation Onohara and Yano (2014) used to compare the lineages of papers submitted to two academic journals, and the implementation used for more than a decade in dialect research on the upper Ibi River basin and on Shōdoshima, setting out what is assumed and what may be claimed.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">When the question is &ldquo;what inherited from what&rdquo;, but a tree cannot be assumed.</p>
+        <p class="body">
+        The input is a single distance matrix \(D\). For \(n\) objects, the separation between each pair has been measured. The question is whether <b>there is a genealogical structure among these objects</b>.
+        </p>
+        <p class="body">
+        Onohara and Yano (2014) put this question to academic papers. In writing a paper, an author consults earlier work and, absent special reason, carries over its terminology and phrasing. If so, papers in the same field and on the same theme stand in a lineage to one another. From there one can ask whether <b>the papers submitted to two journals form separate lineages in terms of vocabulary</b>.
+        </p>
+        <p class="body">
+        Fitting a tree here, however, would be too strong. A tree assumes that every object descends from a single parent, and there is no guarantee that papers inherit from one another the way organisms do. A phylogenetic network is the instrument for relaxing that assumption and <b>leaving conflicting signal visible in the figure</b>.
+        </p>
+        <div class="sub">
+            <h3>What contamination means here</h3>
+            <p>The paper defines a phylogenetic network as &ldquo;the result of phylogenetic estimation, shown in the form of a network that permits contamination&rdquo;. Contamination, in the language of biological systematics, is <b>admixture</b>: the state in which several lineages merge (Yano 2012). A tree cannot represent this; a network draws it as a set of parallel edges, a box.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin</h2>
+        <p class="q">Two lines, neighbor-joining and split decomposition, converged into one method.</p>
+        <ol class="steps">
+            <li><b>Neighbor-joining</b> (Saitou &amp; Nei 1987)&emsp;Builds a tree from a distance matrix, at each stage joining the pair that minimizes the total branch length. The most widely used distance-based method of phylogenetic estimation.</li>
+            <li><b>Split decomposition</b> (Bandelt &amp; Dress 1992)&emsp;A theory decomposing a distance into a superposition of <b>splits</b> (bipartitions of the object set). When incompatible splits are supported at the same time, they can be drawn as a network rather than collapsed into a tree. The computation grows heavy as the number of objects rises, and fine structure is hard to resolve.</li>
+            <li><b>Neighbor-Net</b> (Bryant &amp; Moulton 2003)&emsp;Combines the two. Objects are ordered by the same agglomerative procedure as neighbor-joining, and only the splits compatible with the resulting <b>circular ordering</b> are retained. This holds the computation down while yielding a network that can be drawn in the plane even for hundreds of objects.</li>
+        </ol>
+        <div class="sub">
+            <h3>Application to culture</h3>
+            <p>A phylogenetic method does not merely classify a set of events; it <b>posits a genealogical relation behind them</b>, and its mathematics was developed mainly in evolutionary biology (Nakao 2012). Applied to cultural material &mdash; manuscripts, linked verse, language, craft objects &mdash; it is called cultural phylogenetics; Yano (2012) applies it to the lineage of manuscripts of the linked-verse anthology <i>Wakuraba</i>. Onohara and Yano (2014) turn that framework on academic papers.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">Approximate distances by a superposition of splits. Finding the coefficients is non-negative least squares.</p>
+        <p class="body">
+        For a <b>split</b> \(S = \{A, X \setminus A\}\) of the object set \(X\), define the split distance \(\delta_S\) to be 1 when \(i\) and \(j\) lie on opposite sides and 0 when they lie on the same side.
+        </p>
+        <div class="eq">
+            <div class="lbl">Write the distance as a superposition of splits</div>
+            \[ d_{ij} \;=\; \sum_{S \in \mathcal{S}} \alpha_S\, \delta_S(i,j) \;+\; (d_0)_{ij}, \qquad \alpha_S \ge 0 \]
+            <p class="read"><b>\(\alpha_S\)</b> &hellip; the weight of split \(S\); drawn in the network as <b>branch length</b><br>
+            <b>\(\mathcal{S}\)</b> &hellip; the set of splits retained<br>
+            <b>\(d_0\)</b> &hellip; the remainder no split accounts for (the split-prime residue)</p>
+        </div>
+        <div class="sub">
+            <h3>Tree or network is decided by a property of the split set</h3>
+            <p>When every pair of retained splits is <b>compatible</b> (one side of the one is contained in one side of the other), the representation is exactly a tree. When incompatible splits carry positive weight at the same time, drawing them as <b>parallelograms (boxes)</b> instead of collapsing them gives a network. The width of a box is the weight of that split.</p>
+            <p>Neighbor-Net first fixes an ordering of the objects around a circle and admits only <b>the splits that form contiguous intervals in that ordering</b>. Under this restriction the resulting network can always be drawn in the plane.</p>
+        </div>
+        <div class="sub">
+            <h3>What determines the weights is least squares</h3>
+            <div class="eq">
+                \[ \min_{\alpha \ge 0} \;\sum_{i&lt;j}\Bigl(d_{ij} - \sum_{S \in \mathcal{S}} \alpha_S\,\delta_S(i,j)\Bigr)^{2} \]
+                <p class="read">Minimize <b>the sum of squared deviations</b> between the observed distances and those reproduced by the superposition of splits. The only constraint is \(\alpha_S \ge 0\): a branch length cannot be negative.</p>
+            </div>
+            <p>This is the very equation at the centre of <a href="../">Perspective 1 (geometry)</a>. In regression the columns of the design matrix \(X\) were explanatory variables; here <b>each column is the indicator function of one split</b>. What is being minimized has not changed. What differs is only the choice of basis, and a non-negativity constraint on the coefficients.</p>
+            <div class="eq">
+                \[ \underbrace{\min_{\beta}\;\lVert \mathbf{y} - X\beta \rVert^{2}}_{\text{regression}} \qquad\longleftrightarrow\qquad \underbrace{\min_{\alpha \ge 0}\;\lVert \mathbf{d} - \Delta\,\alpha \rVert^{2}}_{\text{split decomposition}} \]
+                <p class="read"><b>\(\mathbf{d}\)</b> &hellip; the upper triangle of the distance matrix, stacked into a vector<br>
+                <b>\(\Delta\)</b> &hellip; a matrix whose columns correspond to the split distances \(\delta_S\)</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Definition and assumptions</h2>
+        <p class="q">The input is distance alone. Which is why how the distance is built decides everything.</p>
+        <ol class="steps">
+            <li><b>The input is a distance matrix only</b>&emsp;The contents of the objects are never seen. Build a distance from word frequencies, and from then on the distance alone determines the result.</li>
+            <li><b>The existence of a lineage is not assumed</b>&emsp;No tree is fitted, so the structure &ldquo;every object has exactly one parent&rdquo; is not required. Conflicting signal remains as a box.</li>
+            <li><b>Planarity is given priority</b>&emsp;Admitting only the splits compatible with a circular ordering is a constraint imposed to make the figure drawable, not something derived from the data.</li>
+            <li><b>Branch lengths carry a scale</b>&emsp;Since the weight of a split becomes the branch length directly, figures come with a scale bar. Figure 8 of Onohara and Yano (2014) carries a scale of 0.01.</li>
+        </ol>
+
+        <div class="sub">
+            <h3>Branch reliability is measured by the bootstrap</h3>
+            <p>The weight of a split says how long a branch is; it does not say <b>whether that branch appears stably at all</b>. To see that, the estimation is repeated on resampled data and the number of times the same branch appears is counted.</p>
+            <p>Onohara (2013) defines the value as follows: &ldquo;this reliability expresses, as a proportion, <b>when \(n\) runs of phylogenetic estimation are performed, how many times out of those \(n\) the branch configuration on the tip side of the branch bearing the figure occurs</b>&rdquo;. Throughout the dialect work \(n = 1000\) is used. The number written above a branch in a figure is this proportion, in per cent.</p>
+            <p>The number <b>attaches to an individual branch</b>. It is not a single figure expressing whether the network as a whole is correct.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it is used in this research</h2>
+        <p class="q">The same method is applied to the lineage of papers and to regional difference in dialect.</p>
+
+        <div class="sub">
+            <h3>(A) Comparing two journals in terms of vocabulary &mdash; Onohara &amp; Yano (2014)</h3>
+            <p>The inputs, however, are built differently on the two sides. That discrepancy is taken up in section 6.</p>
+        </div>
+
+        <ol class="steps">
+            <li><b>The data on the <i>Keiryō Kokugogaku</i> side</b>&emsp;No digitized body text exists, so <b>only the titles and keywords</b> published on the society website were used. The years 1957 to 1987 are distributed in CSV.</li>
+            <li><b>Bundling into one text</b>&emsp;Those titles and keywords were <b>treated collectively as a single text</b>, parsed morphologically, reduced to nouns, and turned into frequency data.</li>
+            <li><b>Selecting words</b>&emsp;The 30 most frequent, down to where the rate of decrease stabilizes, were taken. This <b>differs in procedure</b> from the selection by standard deviation used on the <i>Kōdō Keiryōgaku</i> side, on the grounds that titles and keywords already contain only the important nouns.</li>
+            <li><b>Building the matrix</b>&emsp;For those 30 words, the frequencies across the 30 papers of <i>Kōdō Keiryōgaku</i> were aligned, producing a table of <b>31 texts &times; 30 nouns</b>. The thirty-first is <code>reskk</code>, the bundled <i>Keiryō Kokugogaku</i> material.</li>
+            <li><b>Neighbor-Net</b>&emsp;A distance was built from this table and the phylogenetic network constructed (Fig. 8).</li>
+        </ol>
+
+        <div class="sub">
+            <h3>What was read from it</h3>
+            <p>Branch lengths and branching show that the nouns frequently used in <i>Keiryō Kokugogaku</i> between 1957 and 1987 and those used in <i>Kōdō Keiryōgaku</i> from 1974 onward are <b>comparatively distinct</b>. The reading is that the two journals have handled different themes.</p>
+            <p>Some papers, however, extended from branches near <code>reskk</code>. The paper lists nine: 1974_03, 1978, 1982, 1985_02, 1990, 1995_01, 2003_01, 2003_02 and 2003_04.</p>
+        </div>
+
+        <div class="warn" style="background:#fff8e8; border-color:color-mix(in srgb,var(--gold) 35%,white)">
+            <h3 style="color:var(--navy2)">The configuration is checked against outside information</h3>
+            <p>On <b>checking the authors</b> of the papers positioned nearby, seven of them &mdash; 1974_03, 1978, 1982, 1985_02, 1990, 1995_01 and 2003_01 &mdash; turned out to be authors who had also submitted to <i>Keiryō Kokugogaku</i>.</p>
+            <p>This is an important step. Proximity in the network only means that the distances built from word frequencies are small; that is not in itself evidence of a lineage. Matching it against <b>authorship, information not used in the analysis</b>, supplies grounds for holding that the configuration is not accidental. In a method whose only input is a distance, external checks of this kind are what support the result.</p>
+            <p>Of the nine papers listed, though, authorship was confirmed for seven. No corresponding statement is made for 2003_02 and 2003_04. Not every case of proximity has been accounted for.</p>
+        </div>
+
+        <div class="sub" style="margin-top:34px">
+            <h3>(B) Treating regional difference in dialect as a lineage</h3>
+            <p>Comparing journals is only one application. Onohara has used the method continuously in dialect research, on the vocabulary of the upper Ibi River basin in Gifu Prefecture and on the accent of Shōdoshima in Kagawa Prefecture. Both the construction of the input and the object of reading differ from the case of papers.</p>
+        </div>
+
+        <ol class="steps">
+            <li><b>Borrowing the data of descriptive research</b>&emsp;Of the 200 Japanese dialect items of Hattori (1973), the 21 localities reported by Yamada (1978, 1980) are used. The design is not to collect material oneself but to <b>re-analyse quantitatively a table already in print in descriptive research</b>.</li>
+            <li><b>Recoding to 0 and 1</b>&emsp;A matrix is built with 1 where a locality has the phonetic or lexical form and 0 where it does not.</li>
+            <li><b>Computing Gower distance</b>&emsp;The sequences of two localities are compared and <b>the number of differing elements is divided by the total number of elements</b>. Onohara (2013) works an example in which 6 of 19 elements differ, giving \(6/19 = 0.316\).</li>
+            <li><b>Drawing the Neighbor-Net</b>&emsp;Using SplitsTree4.</li>
+            <li><b>Assessing branches by bootstrap</b>&emsp;With 1000 replicates, Tokuyama Village separated from the rest at 86.1%, Imajō and Ikeda from the rest at 98.1%, and Tokyo, Kyoto and Kinomoto at 98.6% (Onohara 2012; Onohara, research paper).</li>
+        </ol>
+
+        <div class="sub">
+            <h3>What was read from it</h3>
+            <p>Tokuyama Village stands apart from the other settlements on the network, and <b>areas geographically close to one another are close on the network, while areas geographically distant sit apart on it</b>. Some of the groupings on the network correspond directly to village units.</p>
+            <p>Further, the classification obtained is <b>handed on as a class code to the next analysis</b>, and random forest is used to extract the vocabulary that separates the settlements. That part is covered on the <span class="where" style="display:inline"><a href="../random-forest/">random forest</a></span> page.</p>
+        </div>
+
+        <div class="warn" style="background:#fff8e8; border-color:color-mix(in srgb,var(--gold) 35%,white)">
+            <h3 style="color:var(--navy2)">Two points in time, at the same locality, placed in one network</h3>
+            <p>In the Shōdoshima case, the accent of nine localities surveyed by Nakai (1998) between 1993 and 1996, and the results of a survey at the same nine localities in 2012, are entered <b>as separate taxa in a single network</b>. &ldquo;Ieura (1998)&rdquo; and &ldquo;Ieura (2012)&rdquo; stand as separate leaves. This is not branching in a lineage but <b>reading change over time as a phylogeny</b>.</p>
+            <p>What supports the design is that Neighbor-Net is <b>unrooted</b>. Onohara (2013) writes that &ldquo;since Neighbor Net is an unrooted phylogenetic network, it is appropriate for the analysis of Japanese accent, where it is unclear whether one may assume a common ancestral form, that is, a single proto-language&rdquo;. With no root, <b>there is no need to decide which is ancestor and which descendant</b>. Placing two points in time from the same locality side by side raises no contradiction on the method&rsquo;s side.</p>
+            <p>What can be read, however, is the configuration alone. Whether Ieura 1998 and Ieura 2012 are near or far is readable; <b>which changed into which does not come out of the network</b>. The direction of change is supplied from the side of linguistic argument.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Feeding the output of phylogenetic estimation into the next analysis</h3>
+            <p>In &ldquo;A mathematical analysis of dialect distribution data&rdquo;, phylogenetic estimation is not the conclusion in itself but <b>a step for producing a composite variable</b>. Phylogenetic estimation is run on 47 basic vocabulary items across 18 localities; multidimensional scaling is applied to the inter-settlement distances it yields; and the first axis is reduced to a single variable. That variable becomes the response in a spatial error model whose explanatory variables are the number of households, population, paddy area, field area, koku yield and elevation.</p>
+            <p>The order is to compress the linguistic side into one number, then measure its relation to conditions outside language. The second half, the spatial error model, is covered on the <a href="../mixed-model/">linear mixed model and AIC</a> page.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Ten years of files remain</h3>
+            <p>This was not a one-off attempt. The working files hold <b>157 NEXUS files</b>, sorted into directories by year from 2010 to 2019. The blocks break down into taxa, characters, distances, splits and networks &mdash; the procedure described in section 3, splitting a distance into splits and drawing it as a network, appearing directly as the structure of the files.</p>
+            <p>One file from 2010, for instance, holds a distance matrix over 110 taxa, from which 217 splits and a network of 218 vertices and 217 edges have been written out. The same file contains a <code>CYCLE</code> block recording the order in which the 110 taxa are arranged around a circle. The <b>circular ordering</b> described in section 3 is preserved as an intermediate result of the computation.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits</h2>
+        <p class="q">The paper states its own reservation through the choice of method.</p>
+
+        <div class="warn">
+            <h3>Whether a pattern of inheritance exists at all is unknown</h3>
+            <p>The paper states: &ldquo;since this analysis treats papers with two different lineages, those of <i>Kōdō Keiryōgaku</i> and those of <i>Keiryō Kokugogaku</i>, and since <b>it is in any case unknown whether an exact pattern of inheritance such as is seen in organisms exists between earlier and later papers</b>, it is considered desirable to examine them in the form of a network that permits contamination&rdquo;.</p>
+            <p>Choosing a network rather than a tree is itself the statement of that reservation. The choice of method limits in advance the range of what may be claimed, which makes for an honest construction. Put the other way, <b>this network cannot be read as saying that A inherited from B</b>. What is readable is proximity in vocabulary, and the fact that this proximity does not fit into a tree.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Distance and position on the page carry no meaning</h3>
+            <p>Of Figure 8 the paper states explicitly that &ldquo;<b>only the branch lengths and the manner of branching carry meaning</b>&rdquo;. Where a node sits on the page, or how long the straight line between two nodes is, must not be read.</p>
+            <p>The same caution accompanies the co-occurrence networks in the same paper (Figs. 6 and 7), where &ldquo;only the thickness of an edge carries meaning; the length of an edge and the positional relations among nodes carry none&rdquo;. <b>Which quantity carries meaning differs from one network figure to the next.</b> Interpreting apparent proximity without reading the legend leads to error.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The two inputs being compared are not aligned</h3>
+            <p>Thirty of the 31 texts are individual papers, but the thirty-first, <code>reskk</code>, is <b>31 years of titles and keywords bundled into one text</b>. The units do not match.</p>
+            <p>The nature of the data differs as well. The <i>Kōdō Keiryōgaku</i> side is body text (with English abstracts, references, equations and figure text removed); the <i>Keiryō Kokugogaku</i> side is titles and keywords only. Word selection differs too &mdash; by descending standard deviation on the one side, by descending frequency on the other. <b>The procedures are not the same.</b> The periods differ as well: 1957&ndash;1987 for <i>Keiryō Kokugogaku</i>, 1974 to the time of writing for <i>Kōdō Keiryōgaku</i>, overlapping only in part.</p>
+            <p>All of this is stated in the paper; nothing is concealed. But when the distance between <code>reskk</code> and a given paper is read off the network, how much of that distance comes from <b>a difference in content</b> and how much from <b>a difference in how the data were built</b> cannot be separated.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The set of admitted splits is fixed for the convenience of drawing</h3>
+            <p>Neighbor-Net admits as candidates only the splits compatible with the circular ordering fixed beforehand. That restriction exists in order to obtain a network drawable in the plane; it is not derived from the data. <b>Change how the ordering is determined, and the set of admitted splits may change as well.</b> Reading the shape of the network as &ldquo;the structure the data showed&rdquo; requires keeping this design constraint in view.</p>
+        </div>
+
+        <div class="warn">
+            <h3>A network is used because a tree is hard to fit to language</h3>
+            <p>Biological descent is, in the main, <b>vertical inheritance</b> from parent to offspring, which is why a tree fits. In language, however, forms and tone patterns are <b>borrowed</b> from neighbouring areas as a matter of course. An element transmitted horizontally cannot be assigned to one parent or the other on a tree.</p>
+            <p>That is the reason for choosing this method. The capacity to permit contamination, described in section 1, is not an exceptional accommodation where linguistic data are concerned but <b>the premise itself</b>. Because conflicting signal can remain as a box, a distribution mixed by borrowing can be drawn without being collapsed into a tree.</p>
+            <p>Which also means that <b>a large box is itself information</b>. Ignoring it and reading off &ldquo;roughly this tree shape&rdquo; defeats the point of using the method.</p>
+        </div>
+
+        <div class="warn">
+            <h3>A bootstrap value is not the probability of historical correctness</h3>
+            <p>The figure 86.1% on a branch is the proportion of times <b>that branch appeared when the data were resampled</b>. It measures the degree to which the data at hand repeatedly show the same tendency, and no more.</p>
+            <p>It does not mean that the branching occurred historically with probability 86.1%. If the way the data were collected is biased, the biased structure will be reproduced stably and the value will come out high. A high value is evidence that <b>the data are stable</b>, not that <b>the estimate is close to the truth</b>.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The premises of glottochronology are deliberately not taken on</h3>
+            <p>Using basic vocabulary for phylogenetic estimation belongs to the line of <b>glottochronology</b> that begins with Swadesh and was developed by Shirō Hattori. Onohara (2012), however, states explicitly that its premises are not adopted, setting out the problems as follows: &ldquo;because glottochronology <b>took the rate of linguistic change to be constant</b>, and <b>took as a premise that the two languages compared are cognate in the comparative-linguistic sense with no contact between them after divergence</b>, there have been many cases in which observed linguistic phenomena and the theory of glottochronology fail to agree. For this reason, research deriving dates of lexical divergence from basic vocabulary has fallen out of favour&rdquo;.</p>
+            <p>On that basis the use is restricted: &ldquo;basic vocabulary tends to be avoided on the grounds that its use as glottochronology is problematic. Nevertheless, <b>in the restricted use of extracting similarity among the vocabularies spoken in a region</b>, effective results were obtained in the present analysis&rdquo;.</p>
+            <p>In other words, <b>no dates can be read from this network</b>. Branch length is the extent of lexical difference, not elapsed time since divergence. Since the assumption of a constant rate has not been made, a quantity that depends on it must not be read.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Change how the distance is built and the branching changes</h3>
+            <p>The input is a distance matrix alone. Which means that <b>the same set of localities yields a different network under a different definition of distance</b>. Across this body of research, Gower distance is used for nominal-scale data, the Jaccard coefficient for presence&ndash;absence data, and normalized compression distance between XML documents, according to the object.</p>
+            <p>The choice of distance is the analyst&rsquo;s judgement, not something the data fix. The shape of the network is &ldquo;the structure the data showed&rdquo; and at the same time &ldquo;the structure <b>as measured by that distance</b>&rdquo;. The discussion of taking a compression distance as input is on <a href="../ncd/">normalized compression distance</a>; for a different geometry over the same kind of data, see <a href="../correspondence-analysis/">correspondence analysis</a>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <ul class="refs">
+            <li>小野原彩香・矢野環 (2014)「雑誌『行動計量学』における言語に関する投稿論文の傾向——投稿論文の時系列変化と『計量国語学』論文との比較」岸江信介・田畑智司 編『<a href="https://www.hituzi.co.jp/hituzibooks/ISBN978-4-89476-695-2.htm" target="_blank" rel="noopener noreferrer">テキストマイニングによる言語研究</a>』ひつじ研究叢書〈言語編〉第121巻、pp. 1–20、ひつじ書房。ISBN 978-4-89476-695-2 (first printing, 3 December 2014)</li>
+            <li>The <i>Kōdō Keiryōgaku</i> data are the papers published on J-STAGE. The <i>Keiryō Kokugogaku</i> data are the titles and keywords published on the society website (1957–1987, in CSV). Preprocessing used MeCab (morphological analysis) with MTMiner and RMeCab (counting).</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>On the dialect research side</h3>
+            <ul class="refs">
+                <li>小野原彩香 (2012)「揖斐川上流域の語彙に関する系統推定」<i>情報処理学会研究報告</i> IPSJ SIG Technical Report, Vol.2012-CH-94 No.4 (26 May 2012). Affiliation at the time: Graduate School of Culture and Information Science, Doshisha University.</li>
+                <li>小野原彩香「揖斐川上流域における語彙の類型と地理的分布」研究論文。<span style="color:var(--muted)">The copy at hand carries no confirmable journal title, volume or year, so the bibliographic entry stops at the title.</span></li>
+                <li>小野原彩香「方言分布データの数理的分析」. Affiliation: Graduate School of Culture and Information Science, Doshisha University. <span style="color:var(--muted)">Likewise, the venue and volume could not be confirmed from the copy.</span></li>
+                <li>小野原彩香 (2013)『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』同志社大学大学院 文化情報学研究科、2013年度。<span style="color:var(--muted)">Doctoral thesis. Chapter 3 (case 1) covers the accent of Shōdoshima, chapter 5 (case 3) the basic vocabulary of the upper Ibi River basin, and chapter 8 (case 6) a multivariate analysis of basic vocabulary against extralinguistic factors.</span></li>
+                <li>The dialect data derive from the 200 Japanese dialect items of Hattori (1973) and from the reports of Yamada (1978, 1980) on the upper Ibi River basin, on Imajō and Ikeda in Fukui Prefecture, and on Kinomoto in Shiga Prefecture. The Shōdoshima accent data come from Nakai (1998) and from the 2012 survey. Networks were drawn with SplitsTree4.</li>
+            </ul>
+            <p class="cap">The 2012 Shōdoshima survey was conducted in March 2012 as part of JSPS Grant-in-Aid for Scientific Research (A) 23242024, &ldquo;Elucidating change in dialect distribution: grasping the actual state of variation and testing and constructing theory&rdquo; (principal investigator: Takuichiro Onishi), led by Professor Shinsuke Kishie and the Japanese Linguistics Laboratory of Tokushima University.</p>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Saitou, N. &amp; Nei, M. (1987) The neighbor-joining method: a new method for reconstructing phylogenetic trees. <i>Molecular Biology and Evolution</i>, 4(4), 406–425. <a href="https://academic.oup.com/mbe/article/4/4/406/1029664" target="_blank" rel="noopener noreferrer">academic.oup.com</a></li>
+                <li>Bandelt, H.-J. &amp; Dress, A. W. M. (1992) A canonical decomposition theory for metrics on a finite set. <i>Advances in Mathematics</i>, 92(1), 47–105. <a href="https://www.sciencedirect.com/science/article/pii/000187089290061O" target="_blank" rel="noopener noreferrer">sciencedirect.com</a></li>
+                <li>Bryant, D. &amp; Moulton, V. (2003) Neighbor-Net: an agglomerative method for the construction of phylogenetic networks. <i>Molecular Biology and Evolution</i>, 21(2), 255–265. <a href="https://academic.oup.com/mbe/article/21/2/255/1187993" target="_blank" rel="noopener noreferrer">academic.oup.com</a></li>
+                <li>矢野環 (2012)「『老葉』に対する系統学的アプローチ——宗祇による連歌の系譜」中尾央・三中信宏 編『<a href="https://www.keisoshobo.co.jp/book/b100532.html" target="_blank" rel="noopener noreferrer">文化系統学への招待：文化の進化パターンを探る</a>』勁草書房。ISBN 978-4-326-10216-7</li>
+                <li>中尾央 (2012)「文化の過去を復元すること」同書所収。</li>
+                <li>Gower, J. C. (1971) A general coefficient of similarity and some of its properties. <i>Biometrics</i>, 27(4), 857–871. <a href="https://www.jstor.org/stable/2528823" target="_blank" rel="noopener noreferrer">jstor.org</a></li>
+                <li>Huson, D. H. &amp; Bryant, D. (2006) Application of phylogenetic networks in evolutionary studies. <i>Molecular Biology and Evolution</i>, 23(2), 254–267. <a href="https://academic.oup.com/mbe/article/23/2/254/1118872" target="_blank" rel="noopener noreferrer">academic.oup.com</a> (SplitsTree4)</li>
+                <li>Swadesh, M. (1952) Lexico-statistic dating of prehistoric ethnic contacts: with special reference to North American Indians and Eskimos. <i>Proceedings of the American Philosophical Society</i>, 96(4), 452–463. <a href="https://www.jstor.org/stable/3143802" target="_blank" rel="noopener noreferrer">jstor.org</a></li>
+                <li>Hattori, S. (1973) Japanese dialects. In T. A. Sebeok (ed.) <i>Current Trends in Linguistics</i>, vol. 11: <i>Diachronic, Areal and Typological Linguistics</i>, pp. 368–400. The Hague: Mouton. <a href="https://www.degruyterbrill.com/document/doi/10.1515/9783111418797-017/html" target="_blank" rel="noopener noreferrer">degruyterbrill.com</a></li>
+                <li>山田達也 (1980)「福井県今庄、池田方言及び滋賀県木之本方言の基礎語彙について——徳山村方言に関連して」『名古屋市立大学教養部紀要 人文社会研究』24、23–34頁。<a href="https://cir.nii.ac.jp/crid/1520853833808210432" target="_blank" rel="noopener noreferrer">CiNii</a></li>
+                <li>山田達也 (1978)「揖斐川上流域における基礎語彙について」『名古屋市立大学教養部紀要 人文社会研究』22、33–66頁。</li>
+            </ul>
+            <p class="cap">The volume of Hattori (1973) is given as &ldquo;Vol.1, no.11&rdquo; in the reference list of Onohara (2012). The original is volume 11 of <i>Current Trends in Linguistics</i>, and the bibliographic form has been followed here. For Yamada (1978), an identical entry appears in the reference lists of the papers above, but it could not be confirmed in a bibliographic database.</p>
+            <p class="cap">In the reference list of Onohara and Yano (2014), Bryant and Moulton (2003) is given as &ldquo;Molecular Biology and Evolution 21&rdquo;. The paper was published online in 2003 and appeared in print in volume 21, issue 2, pages 255–265.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Neighbor-Net sets up no probability model. It approximates a distance by a superposition of splits and fixes branch lengths by <b>minimizing the sum of squared reproduction error</b>. It is least squares with a non-negativity constraint; the columns of the design matrix have merely become indicator functions of splits, and what is being minimized is no different from regression or principal component analysis. It belongs to <b>Perspective 1 (geometry, least squares)</b> in <a href="../">the seven perspectives in equations</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in her own research. All figures and quotations are taken from what is printed in the sources; no estimates or approximations have been added.<br>
+    For the correspondence analysis used alongside it in the same paper, see <a href="../correspondence-analysis/">correspondence analysis</a>; for the random forest used alongside it in the dialect research, see <a href="../random-forest/">random forest</a>; for a different construction of distance, see <a href="../ncd/">normalized compression distance</a>; and for what receives the output of phylogenetic estimation, see <a href="../mixed-model/">the linear mixed model and AIC</a>. The overall placement of methods is in <a href="../">the seven perspectives in equations</a>, and which course sessions fall under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

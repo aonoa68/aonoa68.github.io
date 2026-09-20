@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correspondence Analysis &mdash; Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Correspondence analysis places the rows and columns of a contingency table on one plane. This page sets out the formulation as a singular value decomposition under chi-square distance, the difference from principal component analysis, and the limits of explained inertia and axis interpretation, following two implementations: a study of submissions to a Japanese academic journal and a dialect survey across the Shiga-Gifu prefectural border.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Correspondence Analysis</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/correspondence-analysis/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 &nbsp;|&nbsp; <a href="../">Geometry (least squares)</a></span>
+        <h1>Correspondence <span>Analysis</span></h1>
+        <p class="lead">A method that puts <b>the rows and the columns of a contingency table on the same plane</b>. It is a singular value decomposition under chi-square distance, and it belongs to the same framework as principal component analysis: minimize the sum of squared deviations. What differs is how distance is measured.<br>
+        This page follows the implementations Onohara used in a study of journal submissions (2014) and in a dialect survey across the Shiga&ndash;Gifu prefectural border (2015), and sets out what the figures can and cannot be read for.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Putting &ldquo;which object goes with which category&rdquo; into a single figure.</p>
+        <p class="body">
+        What is at hand is an \(I \times J\) contingency table \(N\). Rows are objects (papers, respondents), columns are categories (nouns, dialect items), and each cell holds a count. The question is a single one: <b>which rows go with which columns</b>.
+        </p>
+        <p class="body">
+        The naive move is to compute a rate per row and line them up. But with 24 or 30 columns, no one grasps the structure by staring at the table. The dimension has to come down. Principal component analysis could be used here, but it places either the rows or the columns, not both. <b>Correspondence analysis places rows and columns on the same plane at once.</b> &ldquo;This paper uses this word distinctively&rdquo;, &ldquo;this generation uses this dialect form&rdquo; &mdash; such associations become readable as proximity between points.
+        </p>
+        <p class="body">
+        That is why correspondence analysis sits at the centre of two of Onohara&rsquo;s studies. The journal study puts 30 papers and 24 nouns on one figure; the dialect survey puts 809 respondents and the survey items on another.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin</h2>
+        <p class="q">From reading contingency as correlation, to the French school of data analysis.</p>
+        <p class="body">
+        The starting point is Hirschfeld (1935), who posed the problem of assigning numbers to the rows and columns of a contingency table so that their correlation is maximized. In today&rsquo;s terms, a discrete counterpart of canonical correlation.
+        </p>
+        <p class="body">
+        Benzécri (1973) systematized this as <i>L&rsquo;Analyse des Correspondances</i>, and it became a central instrument of the French school of data analysis. Its character is to render the geometric structure of the data directly as a figure, rather than to fit a model and test it; it reached the English-speaking world largely through Greenacre&rsquo;s work. In Japanese, Adachi and Murakami (2011) present it as a continuation of principal component analysis, and Onohara and Yano (2014) cite that book when defining the method.
+        </p>
+        <div class="sub">
+            <h3>The definition given in the paper</h3>
+            <p>Onohara and Yano (2014) describe correspondence analysis as &ldquo;a visualization method that represents, in a low-dimensional space and at the same time, the proximity among objects, the proximity among the categories belonging to each variable, and the proximity between objects and each category, when several variables measured on a nominal scale have been observed on the same set of objects&rdquo;. The weight falls on <b>handling three kinds of proximity simultaneously</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">A singular value decomposition under chi-square distance. A weighted least-squares approximation.</p>
+        <p class="body">
+        With \(n\) the grand total, form the correspondence matrix \(P = N/n\). Write the row sums as \(\mathbf{r}\) and the column sums as \(\mathbf{c}\), with \(D_r = \mathrm{diag}(\mathbf{r})\) and \(D_c = \mathrm{diag}(\mathbf{c})\). What correspondence analysis decomposes is <b>the departure from what independence between rows and columns would give</b>.
+        </p>
+        <div class="eq">
+            <div class="lbl">Decompose the standardized residuals</div>
+            \[ S \;=\; D_r^{-1/2}\bigl(P - \mathbf{r}\mathbf{c}^{\top}\bigr)D_c^{-1/2} \;=\; U\,\Sigma\,V^{\top} \]
+            <p class="read"><b>\(\mathbf{r}\mathbf{c}^{\top}\)</b> &hellip; the proportions expected if rows and columns were independent<br>
+            <b>\(D_r^{-1/2},\,D_c^{-1/2}\)</b> &hellip; weighting by the marginals; rarer rows and columns are treated as larger<br>
+            <b>\(\Sigma\)</b> &hellip; singular values \(\sigma_1 \ge \sigma_2 \ge \cdots\), the square roots of the inertia on each axis</p>
+        </div>
+        <div class="sub">
+            <h3>Total inertia is the chi-square statistic itself</h3>
+            <div class="eq">
+                \[ \sum_{k}\sigma_k^{2} \;=\; \lVert S \rVert_F^{2} \;=\; \frac{\chi^{2}}{n} \]
+                <p class="read">The whole departure from independence is exactly what gets decomposed. The explained proportion of an axis, \(\sigma_k^2 / \sum_l \sigma_l^2\), says what share of that departure the axis picked up.</p>
+            </div>
+        </div>
+        <div class="sub">
+            <h3>The distance in use is not Euclidean</h3>
+            <div class="eq">
+                \[ d_{\chi^2}(i,i&#39;)^{2} \;=\; \sum_{j} \frac{1}{c_j}\left(\frac{p_{ij}}{r_i} - \frac{p_{i&#39;j}}{r_{i&#39;}}\right)^{2} \]
+                <p class="read">Rows are first turned into profiles \(p_{ij}/r_i\) summing to one, then compared. Dividing each term by the column marginal \(c_j\) is what defines chi-square distance, and <b>this is where it parts from principal component analysis</b>.</p>
+            </div>
+        </div>
+        <div class="sub">
+            <h3>The difference from PCA, written side by side</h3>
+            <p>What principal component analysis maximizes is variance under Euclidean distance.</p>
+            <div class="eq">
+                \[ \text{PCA:}\quad \max_{\lVert w \rVert = 1} w^{\top}\Sigma\, w \qquad\Longleftrightarrow\qquad \min_{\mathrm{rank}\le K} \lVert X - \hat{X} \rVert_F^{2} \]
+                \[ \text{CA:}\quad \min_{\mathrm{rank}\le K}\; \bigl\lVert D_r^{-1/2}(P - \mathbf{r}\mathbf{c}^{\top})D_c^{-1/2} - \hat{S} \bigr\rVert_F^{2} \]
+                <p class="read">Both are <b>minimizations of squared error in a low-rank approximation</b>, and both are solved by the singular value decomposition (Eckart&ndash;Young). All that differs is what goes into the matrix and how it is weighted.<br>
+                Principal component analysis decomposes the raw (or standardized) values; correspondence analysis decomposes <b>the departure from independence, weighted by the marginals</b>.</p>
+            </div>
+            <p>Correspondence analysis therefore extends the section &ldquo;principal component analysis has the same idea behind it&rdquo; in <b>Perspective 1 (geometry)</b> of <a href="../">the seven perspectives</a>. Swap the design matrix and the weights; what is being minimized has not changed.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Definition and assumptions</h2>
+        <p class="q">The input is a table of non-negative counts. The size of a row disappears.</p>
+        <ol class="steps">
+            <li><b>Non-negative counts</b>&emsp;The table has to make sense as a contingency table. It cannot be used on negative values, or on a table mixing quantities that mean different things.</li>
+            <li><b>Row profiles</b>&emsp;Each row is rescaled to sum to one before comparison, so <b>differences in the size of a row disappear</b>. The length of a paper, or the number of respondents, does not enter the distance. Which also means it is the wrong tool when the quantity itself is the question.</li>
+            <li><b>Axes come out in order of inertia</b>&emsp;The first axis is fixed as the direction picking up the most departure. What that axis means is not something the method answers.</li>
+            <li><b>Dimension falls off continuously</b>&emsp;The loss from reducing to \(K\) dimensions is \(\sum_{k&gt;K}\sigma_k^2\). To look at a two-dimensional figure is to discard the third axis onward.</li>
+        </ol>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it is used in this research</h2>
+        <p class="q">In two studies, the rows and columns hold entirely different things.</p>
+
+        <div class="sub">
+            <h3>(A) Journal submissions (2014)</h3>
+            <p>Rows are papers, columns are nouns. The study asks which topics an interdisciplinary journal has carried, and how they shifted.</p>
+        </div>
+        <ol class="steps">
+            <li><b>Selecting the corpus</b>&emsp;From the 481 papers of <i>Kōdō Keiryōgaku</i> (The Japanese Journal of Behaviormetrics) available on J-STAGE, 30 were selected in which &ldquo;dialect&rdquo;, &ldquo;language&rdquo;, &ldquo;speech&rdquo; or &ldquo;text mining&rdquo; appears in the title, keywords or body.</li>
+            <li><b>Data cleaning</b>&emsp;English abstracts, end references, in-text reference information, equations, symbols, affiliation fields, text inside figures and tables, and acknowledgements were removed.</li>
+            <li><b>Morphological analysis and counting</b>&emsp;Parsed with MeCab; noun counts alone tallied with MTMiner. The number of distinct words is 6,096.</li>
+            <li><b>Normalizing for length</b>&emsp;Since papers differ in length, the frequency of each word was taken as \(tf_j/n_i\), dividing by the total noun count \(n_i\) of paper \(d_i\).</li>
+            <li><b>Narrowing the word list</b>&emsp;The standard deviation \(s\) of this value was computed per word and sorted in descending order. The first <b>24 words</b>, up to where the rate of decrease stabilizes, were kept.</li>
+            <li><b>Correspondence analysis</b>&emsp;Applied to the 30 papers &times; 24 words table.</li>
+            <li><b>Principal component analysis</b>&emsp;Applied to the same data structure, to look from another angle.</li>
+        </ol>
+        <div class="eq">
+            <div class="lbl">The standard deviation used to select words</div>
+            \[ s \;=\; \sqrt{\frac{1}{30-1}\sum_{i}\left(\frac{tf_j}{n_i} - \overline{\left(\frac{tf_j}{n_i}\right)}\right)^{2}} \]
+            <p class="read">The reasoning is that a word whose use <b>varies widely across papers</b> expresses the differences among them. Put every word in, and words appearing equally everywhere take over the axes.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Method</th><th class="num">Axis 1</th><th class="num">Axis 2</th><th class="num">Axis 3</th><th class="num">Axis 4</th><th>What could be read</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Correspondence analysis</td><td class="num">14.45%</td><td class="num">13.01%</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td>Papers cluster by genre</td></tr>
+                <tr><td>Principal component analysis</td><td class="num">20.54%</td><td class="num">12.1%</td><td class="num">10.27%</td><td class="num">9.38%</td><td>A temporal shift in first-component scores</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Figures quoted from the body of Onohara and Yano (2014). For correspondence analysis the paper does not report the explained proportion beyond the second axis, so those cells are left blank.</p>
+
+        <div class="sub">
+            <h3>Why both were applied</h3>
+            <p>The paper states that principal component analysis was run on the same 30 &times; 24 data &ldquo;in order to consider the data from another angle&rdquo;. The result is that <b>the two methods showed different things</b>.</p>
+            <p>In the correspondence analysis figure, papers appear at first glance to cluster by year. But when the original papers are divided by genre (speech, social survey, education, psychology, text mining, other) and overlaid, they turn out to <b>cluster by genre, not by year</b>. Special issues in 1995, 2003 and 2011 had carried several papers of the same genre, which is what made the clustering look temporal. What correspondence analysis picked up was the structure &ldquo;different fields use different words&rdquo;.</p>
+            <p>Principal component analysis, on the other hand, showed that when first-component scores are re-sorted by year, <b>they turn from negative to positive from the 2000s onward</b>. The positive side of the first-component loadings holds &ldquo;evaluation&rdquo;, &ldquo;nature&rdquo;, &ldquo;scoring&rdquo;, &ldquo;task&rdquo;, &ldquo;person&rdquo;; the negative side holds &ldquo;word&rdquo;, &ldquo;phoneme&rdquo;, &ldquo;vocabulary&rdquo;, &ldquo;speech&rdquo;, &ldquo;language&rdquo; &mdash; readable as a shift toward topics in education. This temporal change did not appear on the second component or below.</p>
+            <p>To be precise, though, the difference is not due to the methods alone. The correspondence analysis result was read <b>with genre information overlaid</b>, and the principal component result was read <b>after re-sorting the scores by year</b>. Which external information the low-dimensional coordinates are matched against changes what becomes visible.</p>
+        </div>
+
+        <div class="sub">
+            <h3>(B) A dialect survey on the prefectural border (2015)</h3>
+            <p>Rows are respondents, columns are dialect items. The survey asks how the use and comprehension of dialect divides across the old provincial border between Ōmi and Mino, in Maibara City (Shiga Prefecture) and Sekigahara Town (Gifu Prefecture).</p>
+        </div>
+        <ol class="steps">
+            <li><b>The survey</b>&emsp;A written questionnaire completed by an interviewer. It covered junior high school students in three school districts of Maibara (Kashiwabara, Kanan, Ibukiyama) and two of Sekigahara (Imasu, Sekigahara), together with adults resident in those areas. Adults are split into a parent generation (under 60) and a grandparent generation (60 and over).</li>
+            <li><b>Scale</b>&emsp;544 students and 329 adults took part. Valid responses number <b>809</b>, a valid response rate of 92.6%. The survey ran from November to December 2015.</li>
+            <li><b>Items</b>&emsp;For all 40 items, covering 106 words, respondents were asked whether they knew the form and whether they used it.</li>
+            <li><b>Correspondence analysis</b>&emsp;Respondents and survey items were placed on the same figure (Fig. 2). It recurs throughout the booklet: by school district (Fig. 3), for east&ndash;west contrasting items (Fig. 4), for the similarity among areas (Fig. 6), for the usage rates of Ōmi-type and Mino-type forms (Figs. 8 and 9), and for the school dialect of students (Fig. 13).</li>
+        </ol>
+        <div class="sub">
+            <h3>What was read from it</h3>
+            <p>In Figure 2, students, the parent generation and the grandparent generation separate cleanly from left to right, while respondents from Sekigahara concentrate above the origin and those from Maibara below it. Speech differs by generation, and it also differs between the two municipalities. The survey items line up in the same way: forms used by younger speakers to the left, forms belonging to older speakers further right.</p>
+            <p>The booklet introduces correspondence analysis as &ldquo;a method that reduces multi-dimensional data to a low dimension, making the tendencies in the data easier to grasp&rdquo;. It keeps technical vocabulary to a minimum and explains first how to read the figure: points close together mean similar answers.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits</h2>
+        <p class="q">The figures read well, but what is being read is only a part.</p>
+
+        <div class="warn">
+            <h3>The two-dimensional figure explains less than a third of the whole</h3>
+            <p>The correspondence analysis in (A) gives 14.45% on the first axis and 13.01% on the second. <b>Together, 27.46%</b> &mdash; no more. Over seventy per cent sits on the third axis and beyond, which the plane does not draw. Principal component analysis gives 32.64% on the first two, and only reaches 52.29% once the fourth axis is added.</p>
+            <p>So two points being close in the figure means no more than &ldquo;close in these two dimensions&rdquo;. They may always be far apart on a discarded axis. Conversely, points far apart in the figure are not necessarily unrelated. <b>A claim read off a configuration plot is guaranteed only within the explained proportion.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>The meaning of an axis is supplied by the analyst, not by the method</h3>
+            <p>What correspondence analysis returns is a set of axes ordered by inertia, and nothing more. It never says that the first axis means &ldquo;new &harr; old&rdquo;, or that the second means &ldquo;Sekigahara &harr; Maibara&rdquo;.</p>
+            <p>Figure 2 in (B) is annotated with &ldquo;new &larr; &rarr; old&rdquo; on the horizontal axis and &ldquo;Sekigahara &uarr; / Maibara &darr;&rdquo; on the vertical, but these are <b>interpretations the analyst gave after seeing the configuration</b>. The names were attached after confirming that generation and area &mdash; information known in advance &mdash; line up along the axes, so the order of reasoning is sound. What is hard for a reader to see is that the axis labels are an interpretation and not an output of the analysis. In material written for a general readership this deserves particular care.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Chi-square distance gives heavy weight to rare categories</h3>
+            <p>Because \(1/c_j\) enters the definition of the distance, <b>the rarer a column, the harder it pulls on the axes</b>. A word occurring in a single paper, or a dialect item used by a single respondent, can end up fixing the first axis.</p>
+            <p>That (A) did not use all 6,096 words but narrowed to the 24 with the largest standard deviation is in part a response to this. The paper itself notes that &ldquo;some have rather low counts. Since these do not exert a large influence in the analysis, it is desirable to exclude them in advance&rdquo;. But <b>where to cut is the analyst&rsquo;s judgement</b>: the threshold of 24 words was chosen by eye, at the point where the decrease in standard deviation stabilizes.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Losing the size of a row is both a strength and a weakness</h3>
+            <p>Because of profiling, differences in the length of a paper or the number of respondents do not enter the distance. Being able to compare objects of differing extent is an advantage, but <b>the quantitative information &mdash; that something is used a great deal &mdash; is dropped</b>. If the question is what share of the whole a word accounts for, the correspondence analysis figure cannot answer it. That (A) also reports raw occurrence counts and IDF alongside, in Table 2, can be read as an arrangement that supplies what is missing.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+
+        <div class="sub">
+            <h3>(A) Journal submissions</h3>
+            <ul class="refs">
+                <li>小野原彩香・矢野環 (2014)「雑誌『行動計量学』における言語に関する投稿論文の傾向——投稿論文の時系列変化と『計量国語学』論文との比較」岸江信介・田畑智司 編『<a href="https://www.hituzi.co.jp/hituzibooks/ISBN978-4-89476-695-2.htm" target="_blank" rel="noopener noreferrer">テキストマイニングによる言語研究</a>』ひつじ研究叢書〈言語編〉第121巻、pp. 1–20、ひつじ書房。ISBN 978-4-89476-695-2 (first printing, 3 December 2014)<br><span style="color:var(--muted)">Onohara, A. &amp; Yano, T. (2014) Trends in language-related submissions to the journal <i>Kōdō Keiryōgaku</i>: temporal change and a comparison with <i>Keiryō Kokugogaku</i>. In S. Kishie &amp; T. Tabata (eds.) <i>Text Mining and Its Applications in Language Research</i>, Hituzi Linguistics in English No. 121, pp. 1–20. Tokyo: Hituzi Syobo.</span></li>
+                <li>The material analysed is the set of papers from <i>Kōdō Keiryōgaku</i> published on J-STAGE. For <i>Keiryō Kokugogaku</i> (Mathematical Linguistics), the titles and keywords distributed on the society website (1957–1987, in CSV).</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>(B) The dialect survey on the prefectural border</h3>
+            <ul class="refs">
+                <li>はびろネット『滋賀・岐阜県境を越えた方言ハンドブック』（「まいばら協働事業提案制度」採択事業、東西東西プロジェクト）<br><span style="color:var(--muted)">Habiro Net, <i>A Dialect Handbook Across the Shiga&ndash;Gifu Prefectural Border</i>. Published by a citizens&rsquo; group based in the Kashiwabara district of Maibara City, under the city&rsquo;s collaborative-project proposal scheme.</span></li>
+                <li>According to the afterword, Habiro Net has run its &ldquo;Tōzai Tōzai&rdquo; project under that scheme since fiscal 2014, and the theme for fiscal 2015 was dialect. Sekigahara Town was considering a similar survey, so the two were carried out as a joint project, producing a questionnaire survey that crossed the prefectural border. The afterword records that <b>Ayaka Onohara and Yoshihiro Sugisaki</b> advised on the survey and carried out the analysis.</li>
+            </ul>
+            <div class="warn" style="margin-top:14px">
+                <h3>This booklet is not a peer-reviewed paper</h3>
+                <p>(B) is a <b>survey report for a general readership</b>, issued by a local citizens&rsquo; group; it was not submitted to or refereed by an academic journal. It is built as something to read, including a dialect dictionary and columns, and it does not record the details of the analysis (software used, preprocessing, criteria for selecting axes). What is quoted here is the survey summary and the figures printed in the booklet, together with its text.</p>
+            </div>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Hirschfeld, H. O. (1935) A connection between correlation and contingency. <i>Mathematical Proceedings of the Cambridge Philosophical Society</i>, 31(4), 520–524. <a href="https://doi.org/10.1017/S0305004100013517" target="_blank" rel="noopener noreferrer">doi:10.1017/S0305004100013517</a></li>
+                <li>Benzécri, J.-P. (1973) <i>L&rsquo;Analyse des Données. Tome 2: L&rsquo;Analyse des Correspondances</i>. Paris: Dunod.</li>
+                <li>足立浩平・村上隆 (2011)『<a href="https://www.asakura.co.jp/detail.php?book_code=12829" target="_blank" rel="noopener noreferrer">非計量多変量解析法：主成分分析から多重対応分析へ</a>』シリーズ〈行動計量の科学〉9、朝倉書店。ISBN 978-4-254-12829-1<br><span style="color:var(--muted)">Adachi, K. &amp; Murakami, T. (2011) <i>Nonmetric Multivariate Analysis: From Principal Component Analysis to Multiple Correspondence Analysis</i>. Tokyo: Asakura Publishing.</span></li>
+                <li>古沢正三・芳賀敏郎 (1992)『多変量解析事例集 第1集』日科技連出版社<br><span style="color:var(--muted)">Furusawa, S. &amp; Haga, T. (1992) <i>Casebook of Multivariate Analysis, vol. 1</i>. Tokyo: JUSE Press. Cited by Onohara and Yano (2014) for the definition of principal component analysis.</span></li>
+            </ul>
+            <p class="cap">In the reference list of Onohara and Yano (2014), the subtitle of Adachi and Murakami (2011) is given as &ldquo;from principal component analysis to correspondence analysis&rdquo;, whereas the book&rsquo;s formal subtitle reads &ldquo;to multiple correspondence analysis&rdquo;. The bibliographic form has been followed here.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Correspondence analysis sets up no probability model. It arranges the departure from independence in a matrix and fixes the axes by <b>minimizing the squared error of a low-rank approximation</b>. That the solution is given by the singular value decomposition is the same structure as in principal component analysis and k-means. Only the way distance is measured differs; what is being minimized does not. It falls squarely under <b>Perspective 1 (geometry, least squares)</b> in <a href="../">the seven perspectives in equations</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in her own research. All figures are quoted from values printed in the sources; no estimates or approximations have been added.<br>
+    For the phylogenetic network used alongside it in the same study, see <a href="../neighbor-net/">Neighbor-Net</a>. The overall placement of methods is in <a href="../">the seven perspectives in equations</a>, and which course sessions fall under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>

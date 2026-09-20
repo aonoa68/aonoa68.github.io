@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayesian Estimation (Stan / brms) — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="The practical side of fitting hierarchical Bayesian regression with brms and Stan: choosing priors, checking convergence, and reading posterior probabilities. Written around the hierarchical beta regression used on a three-generation dialect vocabulary survey from Maibara to Sekigahara.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* Colour of the perspective this method belongs to (Bayesian) */
+            --w:      #6a4d8a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#d9c8e8; background:rgba(106,77,138,0.42); border:1px solid rgba(217,200,232,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(217,200,232,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* Body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* Cautions and limits (the box where this method's weaknesses go) */
+        .warn { background:#f7f4fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* Reference box (gold, same role as .cross in worlds/) */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* Results table */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f9f7fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* Procedure list */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* Lineage (origin section) */
+        ul.line { list-style:none; margin-top:16px; }
+        ul.line li { font-size:0.89em; color:var(--muted); line-height:1.85; padding-left:96px; text-indent:-96px; margin-bottom:8px; }
+        ul.line li b { display:inline-block; width:84px; text-indent:0; color:var(--w); font-weight:700; font-variant-numeric:tabular-nums; }
+
+        /* References */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        /* .nav-inner is capped at 1100px, so the bar gains no room on a wider
+           screen. The English breadcrumb at this depth already fills it, and the
+           secondary links would wrap inside a 56px bar, so they are dropped here.
+           Both remain one level up, on the In Equations page. */
+        .nav-logo, .nav-current { white-space: nowrap; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+            ul.line li { padding-left:0; text-indent:0; }
+            ul.line li b { display:block; width:auto; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Bayesian Estimation</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/bayesian-estimation/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 3 ｜ <a href="../">Bayesian</a></span>
+        <h1>Bayesian <span>Estimation</span></h1>
+        <p class="lead">Estimation that treats a parameter as a distribution and returns <b>the posterior probability that an effect is positive</b> directly. The principle goes back to the eighteenth century, but applied researchers have only been able to fit hierarchical models themselves since Stan and brms.<br>
+        This page follows the implementation Onohara used to analyse a three-generation dialect vocabulary survey from Maibara to Sekigahara with hierarchical beta regression, and sets out how the priors were chosen, how convergence was checked, and how far the posterior probabilities can be read.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Asking whether settlements whose population grew lost more dialect vocabulary — as a posterior distribution over a coefficient.</p>
+        <p class="body">
+        The general formulation of Bayesian estimation sits in perspective 3 of <a href="../">Seven Perspectives in Equations</a>. This page does not repeat it. It deals with <b>what has to be decided when a hierarchical model is actually fitted</b>. Four things have to be decided: the likelihood (the response distribution and the link function), the prior, the sampler settings, and how convergence and fit are to be checked.
+        </p>
+        <p class="body">
+        What this study wanted was an answer of the form &ldquo;the posterior probability that \(\beta &gt; 0\)&rdquo; for the coefficient \(\beta\) on standardized population growth rate. The response is a rate of vocabulary loss, a proportion lying strictly inside \((0,1)\). Fitting a Gaussian would misspecify the distribution, so a beta distribution with a logit link was used instead (Ferrari &amp; Cribari-Neto 2004). Settlements are nested within middle-school districts, so the intercept for each district was given a random effect.
+        </p>
+        <p class="body">
+        There are only 25 settlements in the sample. <b>In a small sample the prior matters.</b> That is why the priors were stated explicitly rather than left at their defaults, so that what each choice implies can be said out loud.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin — the principle from the 18th century, the tools from 2017</h2>
+        <p class="q">Two hundred and fifty years passed before the theorem became usable.</p>
+        <ul class="line">
+            <li><b>1763</b>The theorem of Thomas Bayes (English clergyman) is published after his death</li>
+            <li><b>1810s</b>Pierre-Simon Laplace (French mathematician) puts it in its modern form and applies it as &ldquo;inverse probability&rdquo;</li>
+            <li><b>1939</b>Harold Jeffreys (English physicist) systematizes the Bayesian approach to scientific inference</li>
+            <li><b>1984</b>Geman &amp; Geman develop Gibbs sampling in the context of image processing. It becomes the basis of MCMC</li>
+            <li><b>1990s</b>Andrew Gelman and others bring applied Bayesian statistics into common use</li>
+            <li><b>2017</b>Stan (a probabilistic programming language) and brms (its R interface) are published as papers</li>
+        </ul>
+        <div class="sub">
+            <h3>What Stan and brms changed was not the principle but the barrier to entry</h3>
+            <p>Before Stan, using a Bayesian hierarchical model meant writing the sampling code yourself, which in practice restricted it to statisticians. brms made it possible to specify a model in almost the same notation as <code>lm()</code>. The implementation discussed on this page is written as the single line <code>brm(loss ~ ... , family = Beta(link="logit"))</code>. <b>Applied researchers have only very recently been able to reach for this method directly.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it comes from mathematically</h2>
+        <p class="q">The axioms of probability, Markov chains, and nineteenth-century analytical mechanics.</p>
+        <p class="body">
+        Bayesian estimation itself rests on Kolmogorov&rsquo;s (1933) axiomatization of probability. Writing &ldquo;\(P(\beta &gt; 0) = 0.99\)&rdquo; is possible because probability is rigorously defined as a measure assigned to sets. That foundation is shared with frequentist procedures; it does not belong to the Bayesian view alone.
+        </p>
+        <p class="body">
+        The computation comes from a different lineage. The denominator of the posterior is an integral, and in a hierarchical model it has no analytic solution. So instead of finding the distribution itself, the approach switches to <b>drawing samples from it</b>. The mechanism for drawing those samples is a Markov chain (Markov 1906). Using the property that once the present state is fixed the past is irrelevant to the future, a chain is built whose stationary distribution is the posterior, and then allowed to walk.
+        </p>
+        <div class="eq">
+            <div class="lbl">What is wanted, and what is actually computed</div>
+            \[ p(\theta \mid D) \;=\; \frac{p(D \mid \theta)\,p(\theta)}{\displaystyle\int p(D\mid\theta)\,p(\theta)\,d\theta} \qquad\longrightarrow\qquad \theta^{(1)}, \theta^{(2)}, \dots, \theta^{(S)} \;\sim\; p(\theta \mid D) \]
+            <p class="read">The denominator on the left cannot be solved for a hierarchical model. Given a sequence of draws from the posterior, as on the right, the posterior mean, the interval and \(P(\beta&gt;0)\) all come out by counting over the draws. <b>MCMC is a procedure that replaces an integral with samples.</b></p>
+        </div>
+        <div class="sub">
+            <h3>What Stan uses is Hamiltonian mechanics</h3>
+            <p>Naive MCMC is a random walk that gropes its way forward, and it loses efficiency as dimension rises. The Hamiltonian Monte Carlo that Stan adopts treats the log posterior as a landscape of potential energy and rolls a ball across it according to Hamilton&rsquo;s (1833) equations of motion. Because it uses gradient information, it can travel a long way in one move even in high dimensions. The default is the No-U-Turn Sampler (Hoffman &amp; Gelman 2014), which sets the step size and path length automatically. <b>Nineteenth-century analytical mechanics sits at the core of twenty-first-century Bayesian computation.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Definitions and assumptions — what is being decided</h2>
+        <p class="q">The likelihood, the prior and the sampler settings are all chosen by the analyst.</p>
+        <div class="eq">
+            <div class="lbl">The model used in this study</div>
+            \[ \mathrm{loss}_i \;\sim\; \mathrm{Beta}\bigl(\mu_i \phi,\; (1-\mu_i)\phi\bigr), \qquad
+               \mathrm{logit}(\mu_i) \;=\; \alpha + u_{d(i)} + \beta\, x_i + \gamma_1 z_{1i} + \gamma_2 z_{2i} \]
+            <p class="read"><b>\(\mu_i\)</b> … the mean loss rate for settlement \(i\), mapped onto the real line by the logit link<br>
+            <b>\(\phi\)</b> … the precision parameter, which sets the dispersion of the beta distribution<br>
+            <b>\(u_{d(i)}\)</b> … the random intercept for the middle-school district \(d\) containing settlement \(i\) (five districts)<br>
+            <b>\(x_i\)</b> … standardized population growth rate. <b>\(z_1, z_2\)</b> … standardized log sample sizes (middle-school students and the older generation)</p>
+        </div>
+        <div class="sub">
+            <h3>Why a weakly informative prior</h3>
+            <p>There are three options. A <b>strong prior</b> settles the conclusion in advance. A <b>flat, near-uninformative prior</b> tends to destabilize the sampler in a small sample, and on the logit scale it spreads probability over coefficient values that could not occur in reality. A <b>weakly informative prior</b> lies between the two and supplies only a thin guide of the form &ldquo;roughly within this range&rdquo;.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">The priors actually used</div>
+            \[ \beta,\gamma \sim \mathcal{N}(0,\,1), \qquad \alpha \sim \mathcal{N}(0,\,2), \qquad \phi \sim \mathrm{Gamma}(0.1,\,0.1) \]
+            <p class="read">Placing \(\mathcal{N}(0,1)\) on a coefficient amounts to saying that on the logit scale the effect is probably somewhere between \(-3\) and \(+3\). For standardized predictors that is wide enough, and narrow enough to prevent divergence. <b>Because it is centred on zero, this prior does not work in the direction of making effects look larger.</b></p>
+        </div>
+        <div class="warn">
+            <h3>A prior is not something that has no influence; it is something whose influence is checked</h3>
+            <p>In this study the data carry more information than the prior, so the effect on the final result is slight. But that is <b>something confirmed after the fact</b>, not something that follows automatically from placing a prior. With a sample of n = 25, a narrower prior would certainly pull the estimate towards itself. Priors are stated in the report so that a reader can check this point.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it is used in this research</h2>
+        <p class="q">Run four chains, confirm convergence, then count probabilities off the posterior.</p>
+        <ol class="steps">
+            <li><b>Data</b>　The 25 neighbourhood associations for which a loss rate could be obtained, across five middle-school districts. The response <code>loss</code> lies strictly inside \((0,1)\), so no endpoint transformation was needed.</li>
+            <li><b>Model specification</b>　<code>brm(loss ~ z_pop_growth + z_log_ss_ms + z_log_ss_gp + (1|district), family = Beta(link="logit"))</code>. The log sample sizes of both generations enter as covariates to control for confounding by sampling effort.</li>
+            <li><b>Sampler settings</b>　Four chains, 4,000 iterations each, of which 2,000 are warmup, giving 8,000 post-warmup draws in total. <code>adapt_delta = 0.97</code>, <code>max_treedepth = 12</code>, <code>seed = 1</code>. The backend is cmdstanr.</li>
+            <li><b>Checking convergence</b>　Inspect \(\hat{R}\), the effective sample size, and the number of divergent transitions. The reported model had \(\hat{R} = 1.00\), bulk-ESS &gt; 3,000, and at most one divergence.</li>
+            <li><b>Counting the posterior probability</b>　Count what fraction of the 8,000 draws have \(\beta &gt; 0\). That fraction is \(P(\beta &gt; 0)\).</li>
+            <li><b>Checking robustness</b>　A model with added covariates, a model with a spatial random effect, a count-level model propagating within-settlement uncertainty, a leave-one-settlement-out sensitivity analysis, a re-analysis with merged units, and a power simulation were all run alongside.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Model</th><th class="num">\(\beta\)</th><th>95% credible interval</th><th class="num">\(P(\beta&gt;0)\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>base (main model)</td><td class="num">+0.231</td><td>[+0.06, +0.40]</td><td class="num">0.993</td></tr>
+                <tr><td>cov (area, elevation and built-up land added)</td><td class="num">+0.229</td><td>[+0.03, +0.42]</td><td class="num">0.987</td></tr>
+                <tr><td>sp (ICAR spatial random effect added)</td><td class="num">+0.228</td><td>[+0.04, +0.40]</td><td class="num">0.992</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">The coefficient on standardized population growth rate. Figures are quoted from the run log of <code>R/12_brms_loss.R</code>. The main model had \(\hat{R} = 1.00\), Bulk-ESS 5,184, Tail-ESS 5,006. The spatial model is covered on the <a href="../icar/">ICAR spatial random effects</a> page.</p>
+
+        <div class="sub">
+            <h3>A credible interval and a confidence interval differ in where the probability is placed</h3>
+            <p>The interval above runs from the 2.5th to the 97.5th percentile of the posterior. It may be read as &ldquo;there is a 95% probability that the true value lies in this interval&rdquo;. The probability is placed on <b>the parameter</b>. A frequentist confidence interval is the reverse: the parameter is treated as a fixed value and the probability is placed on <b>the procedure</b>. The claim is that if the same procedure were repeated, 95% of the intervals it produced would contain the true value; it says nothing about the probability attaching to the one interval in hand.</p>
+            <p>This difference is not a difference in the principle of estimation. <b>The likelihood is used in Bayesian work too</b> — it is the \(p(D\mid\theta)\) in the expression above, and maximum likelihood is simply one principle for choosing the point that makes that likelihood largest. What separates the Bayesian and frequentist views is not whether the likelihood is used, but whether a parameter is granted a distribution.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Partial pooling by lexical stratum</h3>
+            <p>The vocabulary was divided into three strata — Kansai, Mino and Tokyo — and a growth slope was estimated for each by partial pooling. Kansai \(\beta = 0.233\) [0.073, 0.394], Mino \(\beta = 0.240\) [0.083, 0.403], Tokyo \(\beta = 0.219\) [0.022, 0.402]. The posterior probabilities are 0.997, 0.996 and 0.983 respectively. The slopes are nearly identical because strong shrinkage is at work, which reflects the effects being similar across strata.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits — what the method cannot say</h2>
+        <p class="q">A posterior probability is a probability conditional on the model being right.</p>
+        <div class="warn">
+            <h3>Figures produced by a chain that has not converged carry no meaning whatsoever</h3>
+            <p>\(\hat{R}\) is a diagnostic measuring whether several chains are exploring the same distribution; on convergence it approaches 1. Vehtari et al. (2021) showed that the conventional \(\hat{R}\) can miss convergence failure when the distribution is heavy-tailed or when variances differ between chains, and proposed a rank-normalized revision. What current <code>brms</code> reports is that revised version.</p>
+            <p>In the diversity model of the same study this became an actual problem. Some of the non-spatial models reached \(\hat{R} = 1.24\), and <b>the results were judged not to have converged and were not adopted</b>. In the spatial models <code>max_treedepth</code> was reached every time, and the spatial variance stuck close to zero, giving a funnel-shaped posterior. Both are cases where &ldquo;a number came out&rdquo; and &ldquo;the quantity could be estimated&rdquo; are different things. The diagnostics have to be read before the posterior summary.</p>
+        </div>
+        <div class="warn">
+            <h3>&ldquo;Posterior probability 0.99&rdquo; does not mean &ldquo;robust&rdquo;</h3>
+            <p>The main result of this study is \(P(\beta&gt;0) = 0.99\), but the author does not present it as a robust conclusion. In the count-level model, which propagates the within-settlement sampling uncertainty, the corresponding interaction is \(\beta = -0.17\) with a 95% credible interval of [\(-0.50\), \(0.18\)], straddling zero. In the leave-one-settlement-out sensitivity analysis, \(\beta\) falls to 0.12 only when the single settlement with just one older-generation respondent is dropped. Merging settlements until each has five or more older-generation respondents and re-analysing makes the effect disappear.</p>
+            <p>The power simulation explains the discrepancy. Under the actual sampling design, the probability of detecting a true interaction effect of \(-0.15\) or \(-0.30\) is only <b>12%</b> and <b>39%</b> respectively (reaching 82% only at \(-0.50\)). <b>The settlement-level analysis returns a strong conclusion because it treats each settlement&rsquo;s loss rate as a precise quantity measured without error.</b> A high posterior probability shows only how plausible something is under the assumptions the model has made.</p>
+        </div>
+        <div class="sub">
+            <h3>The same misuse that afflicts testing also occurs in Bayesian work</h3>
+            <p>Using &ldquo;the interval excludes zero&rdquo; as a substitute for significance is doing the same thing under a different name. Where this study wants to claim that an effect is absent, it reports, alongside the interval, how much posterior probability falls inside a region of practical equivalence of \(\pm 0.05\) and \(\pm 0.10\). <b>This is a measure for stating how precisely something can be said, rather than asserting that there is no effect.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        The subject is a three-generation dialect vocabulary survey conducted in settlements running from Maibara in Shiga Prefecture to Sekigahara in Gifu Prefecture. The original survey was carried out in 2015 by Habiro Net, a local citizens&rsquo; group, and this research is a secondary analysis of its anonymized data. The analysis is written across scripts <code>R/01</code> to <code>R/25</code>, in a structure where the original data files are never modified and are read only through a working copy. <b>The paper is in preparation and was not published at the time of writing.</b>
+        </p>
+        <ul class="refs">
+            <li>Study: analysis of vocabulary loss and gain across 27 settlements from Maibara to Sekigahara (Ayaka Onohara, Yasuo Ihara, Kenichi Aoki). JSPS KAKENHI JP18J00484.</li>
+            <li>Related earlier analyses: a 2016 poster at the GIS Association of Japan (extra-linguistic factors and vocabulary loss and gain), and 2017–2018 analyses of population size and lexical diversity.</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Bürkner, P.-C. (2017) brms: An R package for Bayesian multilevel models using Stan. <i>Journal of Statistical Software</i>, 80(1), 1–28. <a href="https://doi.org/10.18637/jss.v080.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v080.i01</a></li>
+                <li>Carpenter, B., Gelman, A., Hoffman, M. D. et al. (2017) Stan: A probabilistic programming language. <i>Journal of Statistical Software</i>, 76(1), 1–32. <a href="https://doi.org/10.18637/jss.v076.i01" target="_blank" rel="noopener noreferrer">doi:10.18637/jss.v076.i01</a></li>
+                <li>Hoffman, M. D. &amp; Gelman, A. (2014) The No-U-Turn Sampler: adaptively setting path lengths in Hamiltonian Monte Carlo. <i>Journal of Machine Learning Research</i>, 15, 1593–1623.</li>
+                <li>Vehtari, A., Gelman, A., Simpson, D., Carpenter, B. &amp; Bürkner, P.-C. (2021) Rank-normalization, folding, and localization: an improved \(\hat{R}\) for assessing convergence of MCMC. <i>Bayesian Analysis</i>, 16(2), 667–718. <a href="https://doi.org/10.1214/20-BA1221" target="_blank" rel="noopener noreferrer">doi:10.1214/20-BA1221</a></li>
+                <li>Ferrari, S. &amp; Cribari-Neto, F. (2004) Beta regression for modelling rates and proportions. <i>Journal of Applied Statistics</i>, 31(7), 799–815.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Bayesian estimation grants a distribution to the parameter and updates prior knowledge with the data into a posterior. What it returns is not a point estimate but a distribution, giving an answer directly in the form of &ldquo;the probability that the effect is positive&rdquo;. It maps straight onto <b>perspective 3 (Bayesian)</b> in <a href="../">Seven Perspectives in Equations</a>. <a href="../icar/">ICAR spatial random effects</a>, used in the same study, belongs to the same perspective, in that spatial structure is written as a prior.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Every figure is quoted from the run logs and output files of the analysis scripts; no estimated or approximate values are given.<br>
+    The whole picture of where each method sits is in <a href="../">Seven Perspectives in Equations</a>, and which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">← Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>

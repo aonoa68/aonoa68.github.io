@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normalized Compression Distance &mdash; Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Normalized compression distance measures similarity from compressed file size alone. This page sets out its relation to Kolmogorov complexity, the meaning of the definition and its normalization, and the limit imposed by dependence on the compressor, following the 2010 extraction of hypothetical cultural regions from the dialect vocabulary of Gifu Prefecture.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（情報理論） */
+            --w:      #96702f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#ecd9ae; background:rgba(150,112,47,0.42); border:1px solid rgba(236,217,174,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(236,217,174,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf8ee; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#fbf8f2; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Normalized Compression Distance</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/ncd/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 5 &nbsp;|&nbsp; <a href="../">Information theory</a></span>
+        <h1>Normalized Compression <span>Distance</span></h1>
+        <p class="lead">A distance that measures how similar two objects are <b>from compressed file size alone</b>. Nothing has to be decided about which features to extract, so data with complex structure can be compared as they stand. The theoretical ground is Kolmogorov complexity; since that quantity cannot be computed, NCD is what results from approximating it with a real compressor.<br>
+        This page follows the analysis in which Onohara (2010) extracted hypothetical cultural regions from the dialect vocabulary of Gifu Prefecture, and sets out what is assumed and what may be claimed.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Asking whether two things are similar, without deciding what counts as a feature.</p>
+        <p class="body">
+        Ordinarily, measuring the similarity of two objects begins with <b>extracting features</b>. They are turned into a sequence of numbers &mdash; word frequencies, coordinates, the presence or absence of categories &mdash; and a Euclidean or cosine distance is computed on that. The judgement of which features to choose enters at the very first step, and whatever was not chosen is lost there.
+        </p>
+        <p class="body">
+        Normalized compression distance (NCD) does not take that step. Two files are <b>handed to a compressor as they are, and only the compressed sizes are examined</b>. Concatenate two similar files and compress, and the shared parts are detected as repetition, so the result shrinks. If they are not similar, it does not. NCD puts a number on that difference.
+        </p>
+        <p class="body">
+        Onohara (2010) adopted the method because the objects to be compared were <b>XML documents with nested structure</b>. Following a model designed to conform to geographic information standards, the dialect information for each survey point was rendered as XML, holding latitude and longitude, the general name of a lexical item and its pronunciation in a hierarchy. Data with such complex structure, in the paper&rsquo;s words, &ldquo;are handled less often, because the methods of analysis available to them are limited&rdquo;. NCD offers a route to a distance matrix without flattening that structure into a numerical table.
+        </p>
+        <div class="sub">
+            <h3>The advantage the paper cites</h3>
+            <p>&ldquo;One advantage of this analytical method&rdquo;, the paper states, &ldquo;is that, compared with general analytical methods, <b>prior data extraction and shaping can be simplified</b>&rdquo;. Not designing features means not discarding information, and at the same time makes it harder to see what is being measured. That two-sidedness is taken up in section 6.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Origin &mdash; replacing an uncomputable quantity with a compressor</h2>
+        <p class="q">The starting point is Kolmogorov complexity. Which cannot be computed.</p>
+        <p class="body">
+        Kolmogorov (1965) defined the information content of an individual object without passing through a probability distribution. The complexity \(K(x)\) of a string \(x\) is <b>the length of the shortest program that outputs \(x\)</b>. A regular string can be written by a short program, so \(K\) is small; a random string leaves nothing but writing itself out, so \(K\) is large.
+        </p>
+        <p class="body">
+        From here a separation between two objects can be defined, using the additional description length needed to produce \(y\) given \(x\). Li et al. (2004) normalized this into the <b>normalized information distance</b> and showed it to be optimal in a certain sense.
+        </p>
+        <p class="body">
+        The difficulty is that \(K\) is <b>uncomputable</b>. No general procedure exists for finding the shortest program for a given string. Cilibrasi and Vitányi (2005) therefore replaced \(K(x)\) with \(C(x)\), the compressed size under a real compressor. What results is NCD: a quantity that can actually be computed, at the cost of the theoretical optimality.
+        </p>
+        <div class="sub">
+            <h3>This substitution determines everything about the method</h3>
+            <p>A compressor is not a device that finds shortest programs. GZIP merely replaces repetitions occurring within a fixed preceding range using a dictionary, and does nothing beyond that. What NCD captures as &ldquo;similar&rdquo; is therefore limited to <b>the kinds of regularity that compressor can capture</b>. The quality of the approximation is the performance of the compressor itself, and the validity of the method rests entirely here.</p>
+        </div>
+        <div class="sub">
+            <h3>The paper does not cite this lineage</h3>
+            <p>Neither Kolmogorov nor Cilibrasi and Vitányi appears in the references of Onohara (2010); NCD is introduced together with its defining equation as &ldquo;one of the general-purpose similarity computation techniques&rdquo;. The lineage set out above has been supplied on this page in order to explain where the method stands.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Where it falls within Perspective 5, information theory</h2>
+        <p class="q">The same word &ldquo;information&rdquo;, but a different object being measured.</p>
+        <p class="body">
+        <b>Perspective 5</b> of <a href="../">the seven perspectives in equations</a> gathers the position that treats a short encoding as a good explanation. The quantities set out there &mdash; entropy \(H(p)=-\sum_x p(x)\log p(x)\), Kullback&ndash;Leibler divergence, AIC &mdash; are all defined <b>over a probability distribution</b>. They concern an expected code length, with the premise that there is a distribution generating the data.
+        </p>
+        <p class="body">
+        NCD belongs to the same information theory but on the side of <b>algorithmic information theory</b>. \(K(x)\) is defined not over a distribution but over <b>a single individual object</b>. No probability model is set up, so the question of whether the model is right never arises. In its place arises the question of whether the compressor is good enough.
+        </p>
+        <div class="eq">
+            <div class="lbl">Two information quantities, measuring different objects</div>
+            \[ H(p) \;=\; -\sum_{x} p(x)\log p(x) \qquad \text{versus} \qquad K(x) \;=\; \min\{\,|P| \;:\; U(P)=x\,\} \]
+            <p class="read"><b>\(H(p)\)</b> &hellip; the average unpredictability of distribution \(p\). No value attaches to an individual \(x\)<br>
+            <b>\(K(x)\)</b> &hellip; the description length of the object \(x\) itself. \(U\) is a universal machine, \(|P|\) a program length<br>
+            <b>What they share</b> &hellip; both treat being writable briefly as being good</p>
+        </div>
+        <div class="sub">
+            <h3>Under the same roof as AIC, but standing in a different place</h3>
+            <p>The AIC of Perspective 5 measures fit by log-likelihood and penalizes by the number of parameters. It counts <b>the complexity of a model</b>. NCD concerns the description length of the object itself and holds no model. Both share the principle that a shorter description is better, while one stands in the world of distributions and models and the other in the world of individual objects. Placing this method under Perspective 5 is not in the former sense but because it shares the principle of <b>measuring goodness by code length</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>The definition, and why it is normalized</h2>
+        <p class="q">How much is gained by compressing the two together.</p>
+        <div class="eq">
+            <div class="lbl">Normalized compression distance</div>
+            \[ \mathrm{NCD}(x,y) \;=\; \frac{C_{XY} - \min\{C_X,\, C_Y\}}{\max\{C_X,\, C_Y\}} \]
+            <p class="read"><b>\(C\)</b> &hellip; the compression algorithm<br>
+            <b>\(C_X,\, C_Y\)</b> &hellip; the file sizes of \(x\) and \(y\) compressed separately<br>
+            <b>\(C_{XY}\)</b> &hellip; the file size of \(y\) concatenated to \(x\) and compressed</p>
+        </div>
+        <p class="body">
+        The form of the equation is as given in the paper. It reads as follows.
+        </p>
+        <div class="sub">
+            <h3>The numerator is the extra needed for one, given the other</h3>
+            <p>Supposing \(C_X \le C_Y\), the numerator is \(C_{XY} - C_X\). This is <b>the amount additionally required to write \(y\) once \(x\) has already been written</b>. If \(x\) and \(y\) are similar, much of \(y\) can be referred back to as repetition of \(x\) and the extra is small. If they are not similar at all, \(y\) has to be written out almost entirely and the extra approaches \(C_Y\).</p>
+        </div>
+        <div class="sub">
+            <h3>The denominator cancels the difference in length</h3>
+            <p>Used as it stands, the extra would make longer files come out at greater distance: long documents, even similar ones, carry a large absolute extra. Dividing by the larger compressed size turns it into the ratio <b>&ldquo;what fraction of writing it out whole is the extra?&rdquo;</b> The value then falls roughly within \([0,1]\), and objects of differing length can be compared on the same scale.</p>
+            <p><b>Nearer 0 is more similar, nearer 1 less similar.</b> For two identical objects, concatenation barely increases the compressed size, so the numerator is close to 0.</p>
+        </div>
+        <div class="warn">
+            <h3>That this is an approximation is built into the definition</h3>
+            <p>Replacing \(C\) in this equation with \(K\) gives the theoretical normalized information distance. Since \(K\) cannot be computed, a real compressor is substituted. NCD is therefore <b>always an approximation, and its value changes if the compressor changes</b>. The paper too states plainly that &ldquo;NCD depends on the compression algorithm&rdquo;, noting that the version of the software used supports GZIP compression only.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>How it is used in this research</h2>
+        <p class="q">Turn dialect distribution maps into XML, and extract regions from the NCD between localities.</p>
+        <p class="body">
+        The object is the dialect vocabulary of Gifu Prefecture as a whole. From ten distribution maps in <i>A Study of the Dialects of Gifu Prefecture</i> (Okumura, 1976), the pronunciations of ten lexical items &mdash; chilli pepper, maize, ring finger, hair whorl, stilts, beanbag, non-glutinous rice, potato, silk floss and taro &mdash; were read off for 125 survey points.
+        </p>
+        <ol class="steps">
+            <li><b>Extracting attributes</b>&emsp;From each distribution map, three things are taken per survey point: latitude and longitude, the general name of the lexical item, and its pronunciation in dialect. At survey point 1, for instance, chilli pepper is <i>nanban</i>, maize is <i>tōna</i>, ring finger is <i>benisashiyubi</i>, and silk floss and taro have no data.</li>
+            <li><b>Designing the metamodel</b>&emsp;A &ldquo;meta-metamodel&rdquo;, defining a cultural phenomenon as a sequence of human actions in space and time, is placed as the superordinate concept, and a metamodel of dialect is designed beneath it. It is made to conform to the <b>application schema (ISO 19109)</b> of the geographic information standards, structured so that a &ldquo;Dialects&rdquo; class consists of a &ldquo;Message&rdquo; class holding relations to a &ldquo;Speaker&rdquo; class and a &ldquo;Vocabulary&rdquo; class.</li>
+            <li><b>Instantiating as XML</b>&emsp;Following the <b>encoding rules (ISO 19118)</b> of the geographic information standards, one XML document is produced per survey point. The 125 documents become the objects of comparison.</li>
+            <li><b>Computing NCD</b>&emsp;Using the NCD software &ldquo;Hyakka Ichishiki Ver1.0&rdquo; developed by Fujimoto, NCD is computed for <b>every pair</b> among the 125 documents to obtain a distance matrix. That version of the software supports GZIP compression only.</li>
+            <li><b>Excluding points with many missing values</b>&emsp;Because the missing values written as &ldquo;NULL&rdquo; inside the XML affect the result as similarity, 15 points with many missing values (35, 62, 93, 96, 104, 114, 115, 116, 119, 120, 121, 122, 123, 124, 125) are removed from the analysis in advance, leaving 110.</li>
+            <li><b>Clustering</b>&emsp;The resulting distance matrix is submitted to non-hierarchical PAM, hierarchical Ward and average linkage, the phylogenetic neighbor-joining and <a href="../neighbor-net/">Neighbor-Net</a>, and the graph clustering method DPClus, and the results compared.</li>
+            <li><b>Validation</b>&emsp;A separate dataset is built from the same survey and checked against earlier research.</li>
+        </ol>
+
+        <div class="sub">
+            <h3>The classification obtained</h3>
+            <p>With PAM, five clusters were taken, and four classes &mdash; excluding one cluster of outliers &mdash; judged appropriate. Among methods of classification from the NCD matrix, however, <b>Neighbor-Net, based on the neighbor-joining algorithm, reproduced the findings of earlier research most faithfully</b>. Specifically, the isolation of the Tonyū district of Tokuyama Village (survey point 28) and the east&ndash;west accent contrast between Ōgaki City (point 63) and Tarui Town (point 51) both appear in the figure. Both have long been known in dialectology.</p>
+        </div>
+
+        <div class="sub">
+            <h3>Validation used different data and a different distance</h3>
+            <p>To confirm that NCD properly reflects similarity of pronunciation, two further matrices were built from the same survey. One takes survey items as columns and survey points as rows, with each pronunciation replaced by a single-character symbol. The other takes all pronunciations of the survey items as columns and survey points as rows, coding 1 where the item exists and 0 where it does not. Gower distance was used, and the Jaccard coefficient for the binary data; the same clustering methods as for NCD were tried.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Data</th><th>Distance</th><th>Classification reproducing earlier research best</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>XML documents</td><td>NCD (GZIP)</td><td>Neighbor-Net</td></tr>
+                <tr><td>Pronunciations coded as symbols</td><td>Gower</td><td>&mdash; (the row below was best)</td></tr>
+                <tr><td>Presence&ndash;absence of items (binary)</td><td>Jaccard</td><td>DPClus (distance &lt; 0.85, density = 0.95, minimum cluster size = 4)</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">All analyses on 110 points. Comparing the two sets of results, the paper states that &ldquo;there is no difference in the core constituent points of each group, and the effectiveness of the analysis by NCD was demonstrated&rdquo;. It adds that although the data used concern similarity of lexical distribution, it is also worth noting that there is no discrepancy with the findings of earlier research based on accent distribution.</p>
+
+        <div class="sub">
+            <h3>The regions obtained as a conclusion</h3>
+            <p>The survey points can be classified into seven or eight clusters, of which three to four have no geographical coherence. Seen from a spatial point of view, the conclusion drawn is that <b>Gifu Prefecture divides broadly into four groups</b>. The paper notes that one of the boundaries among these four groups lies around the city of Gifu, and that the same tendency is pointed out in Fujimoto&rsquo;s (2010) analysis using Jōmon pottery.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Limits</h2>
+        <p class="q">What governs the value is not the objects alone.</p>
+
+        <div class="warn">
+            <h3>Change the compressor and the distance changes</h3>
+            <p>NCD being an approximation of \(K\), which compressor is used bears directly on the result. Only GZIP was used in this study. GZIP replaces repetitions occurring within a fixed preceding width (the window) using a dictionary, so <b>repetitions lying beyond the window cannot be captured</b>. As the concatenated file grows longer, a region arises in which the correspondence between the first and second halves becomes invisible.</p>
+            <p>Cebrián et al. (2005) show that compressors are <b>not idempotent</b> &mdash; that placing two copies of the same content side by side can yield nearly twice the compressed size of one &mdash; and report that NCD is distorted by the size of the objects relative to the window size, with the consequence that the identity \(\mathrm{NCD}(x,x)=0\) breaks down. The paper itself mentions the dependence on the compression algorithm, but does not examine the effect of window size.</p>
+        </div>
+
+        <div class="warn">
+            <h3>XML documents from the same schema are similar to begin with</h3>
+            <p>All 125 XML documents being compared were generated from the same metamodel. <b>Their tag structure is therefore identical throughout.</b> Strings such as <code>&lt;dataset&gt;</code>, <code>&lt;communication&gt;</code>, <code>&lt;message&gt;</code> and <code>&lt;pronunciation&gt;</code> line up in the same way even between points whose pronunciations are entirely different. Concatenate and compress, and this shared portion shrinks together.</p>
+            <p>The values of the distance matrix may consequently be biased as a whole <b>toward similarity, compressing the differences between points</b>. The greater the redundancy of the tags, the smaller the relative contribution of the pronunciation information that is actually of interest. The paper does not address this point. It is raised here because it is a property common to any NCD analysis taking XML as input.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Passed to phylogenetic estimation without strictly satisfying the metric axioms</h3>
+            <p>As noted above, NCD with a real compressor does not strictly satisfy identity, and the triangle inequality is not guaranteed either. Yet in this study the resulting matrix is passed to PAM, Ward, average linkage, neighbor-joining, <a href="../neighbor-net/">Neighbor-Net</a> and DPClus. Neighbor-joining and Neighbor-Net in particular build their branches on the premise that the distance is <b>additive</b>, that is, expressible as a sum of branch lengths.</p>
+            <p>NCD values are not constructed to satisfy that premise. That earlier findings were nevertheless reproduced is empirical evidence of the method&rsquo;s robustness, but it is <b>not a theoretical justification</b>. The branch lengths of the resulting network cannot be read as divergence dates in a phylogeny.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The criterion for exclusion is not given</h3>
+            <p>Fifteen points were excluded as having &ldquo;many missing values&rdquo;, but the paper does not state how many counts as many. The reason for exclusion itself &mdash; that the string &ldquo;NULL&rdquo; inside the XML is shared, making documents similar irrespective of content &mdash; is sound, and is another manifestation of the same tag-redundancy problem described above.</p>
+            <p>Exclusion, however, reduces the material under analysis, and those points become blanks on the map. The paper marks excluded points on its figures with small brown circles and points not assigned to any cluster in grey, noting that &ldquo;this does not indicate that the grey survey points form a single cluster among themselves&rdquo;. <b>That a caution about how to read the figure is made explicit is appropriate practice.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>The number of clusters varies with how far earlier research is to be reproduced</h3>
+            <p>Grasping the outline by multidimensional scaling showed that dividing all survey points into <b>four</b> groups was appropriate. At the same time, the paper states, it also became clear that in order to see the regional differences established through earlier research, <b>seven or eight</b> clusters are needed under any of the cluster analyses.</p>
+            <p>The number of clusters, in other words, was not fixed by the data alone but <b>chosen according to what was to be seen</b>. The final conclusion that &ldquo;Gifu Prefecture divides broadly into four&rdquo; was reached by way of the observation that three or four of the seven or eight clusters lack geographical coherence, and that route is set out in the paper. Agreement with earlier research is corroborating evidence of validity, and at the same time involves the circularity of having chosen the number of clusters so as to see the structure earlier research indicates.</p>
+        </div>
+
+        <div class="sub">
+            <h3>The reservation the paper itself states</h3>
+            <p>In its conclusion, on the estimation of the direction of lexical change and the analysis of relations with areas outside Gifu Prefecture using &ldquo;archetype&rdquo; data, the paper states that &ldquo;<b>it became clear that more careful data construction and scrutiny of the data of earlier research are required in order to interpret the strict parts</b>&rdquo;. Having judged the extraction of regions by NCD itself to be effective, it asks for caution in the interpretation that follows from it.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sources and data</h2>
+        <p class="body">
+        This page is based on presentation material dated November 2010. The affiliation at the time of writing was the Graduate School of Culture and Information Science, Doshisha University (master&rsquo;s programme), and the research forms part of the results of the CITMAS project (principal investigator: Yū Fujimoto).
+        </p>
+        <ul class="refs">
+            <li>小野原彩香「岐阜県方言語彙による仮想的文化領域抽出と語彙変化の方向 ―メタモデルと Normalized Compression Distance を用いて―」（2010年11月）<br><span style="color:var(--muted)">Onohara, A. (November 2010) Extracting hypothetical cultural regions and the direction of lexical change from the dialect vocabulary of Gifu Prefecture: using a metamodel and normalized compression distance. Keywords: dialect, normalized compression distance, GIS, Gifu Prefecture.</span></li>
+            <li>Data analysed: ten distribution maps (125 survey points) in 奥村三雄 (1976)『岐阜県方言の研究』大衆書房<br><span style="color:var(--muted)">Okumura, M. (1976) <i>A Study of the Dialects of Gifu Prefecture</i>. Taishū Shobō.</span></li>
+            <li>Software: &ldquo;Hyakka Ichishiki Ver1.0&rdquo; for computing NCD (developed by Yū Fujimoto; GZIP compression only); the R package <code>maptools</code> for drawing maps; ArcGIS for terrain slope and the construction of cost-allocation regions.</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <p style="margin-bottom:6px">The four entries below have been supplied on this page to explain the theoretical placement of NCD; they are not in the paper&rsquo;s reference list. Only Huson and Bryant is cited by the paper.</p>
+            <ul class="refs">
+                <li>Kolmogorov, A. N. (1965) Three approaches to the quantitative definition of information. <i>Problems of Information Transmission</i>, 1(1).</li>
+                <li>Li, M., Chen, X., Li, X., Ma, B. &amp; Vitányi, P. M. B. (2004) The similarity metric. <i>IEEE Transactions on Information Theory</i>, 50(12), 3250–3264.</li>
+                <li>Cilibrasi, R. &amp; Vitányi, P. M. B. (2005) Clustering by compression. <i>IEEE Transactions on Information Theory</i>, 51(4), 1523–1545. <a href="https://doi.org/10.1109/TIT.2005.844059" target="_blank" rel="noopener noreferrer">doi:10.1109/TIT.2005.844059</a></li>
+                <li>Cebrián, M., Alfonseca, M. &amp; Ortega, A. (2005) Common pitfalls using the normalized compression distance: What to watch out for in a compressor. <i>Communications in Information and Systems</i>, 5(4), 367–384.</li>
+                <li>Huson, D. H. &amp; Bryant, D. (2006) Application of phylogenetic networks in evolutionary studies. <i>Molecular Biology and Evolution</i>, 23(2), 254–267.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>Earlier research checked against (as cited by the paper)</h3>
+            <ul class="refs">
+                <li>服部四郎 (1930)「近畿アクセントと東方アクセントとの境界線」『音聲の研究』第三輯, 文學社, pp.131–144.</li>
+                <li>柴田武 (1950)「揖斐川上流のアクセント」『文字と言葉』刀江書院.</li>
+                <li>山田達也 (1978)「揖斐川上流域における基礎語彙について」『名古屋市立大学教養部紀要 人文社会研究』22, pp.33–66.</li>
+                <li>徳山村の歴史を語る会 (1984)『徳山村のあけぼのを求めて ―岐阜県揖斐郡徳山村遺跡分布調査中間報告―』</li>
+                <li>藤本悠 (2010)『文化情報学および理念型モデル化分析法に関する基礎的研究 ―文化情報学における諸概念と方法について―』同志社大学大学院文化情報学研究科 博士論文.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>NCD stands on the principle of measuring the goodness or the nearness of an object <b>by code length</b>. If it can be written briefly, there is regularity in it. It shares that principle with the entropy and AIC treated under <b>Perspective 5 (information theory)</b> in <a href="../">the seven perspectives in equations</a>, differing in that those are defined over a probability distribution while NCD is defined over <b>the individual object itself</b>. Because no probability model is set up, the question of a model&rsquo;s fit gives way to the question of the compressor&rsquo;s performance.<br>
+        In this study the resulting distance matrix is passed to <a href="../neighbor-net/">Neighbor-Net</a> (Perspective 1) to draw the genealogical structure &mdash; an instance of methods connecting across perspectives.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in her own research. All figures and results are quoted from what is recorded in the presentation material; no estimates or approximations have been added. Bibliographic details have been confirmed independently of the paper&rsquo;s own reference list.<br>
+    The overall placement of methods is in <a href="../">the seven perspectives in equations</a>, and which course sessions fall under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+</footer>
+
+</body>
+</html>
