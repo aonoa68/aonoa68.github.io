@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アクセント類統合のベイズ系統推定 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="アクセント類の統合（merger）を突然変異としてモデル化し、空間拡散を樹形の事前分布に組み込んだベイズ系統推定について、潜在変数の設計・Felsenstein枝刈り・時間校正・限界を整理したページ。方法論とC++実装は高橋卓也氏（第一著者）によるもので、小野原は第二著者。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（ベイズ） */
+            --w:      #6a4d8a;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#d9c8e8; background:rgba(106,77,138,0.42); border:1px solid rgba(217,200,232,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(217,200,232,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f7f4fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f9f7fb; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 系譜（起源の節） */
+        ul.line { list-style:none; margin-top:16px; }
+        ul.line li { font-size:0.89em; color:var(--muted); line-height:1.85; padding-left:96px; text-indent:-96px; margin-bottom:8px; }
+        ul.line li b { display:inline-block; width:84px; text-indent:0; color:var(--w); font-weight:700; font-variant-numeric:tabular-nums; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+            ul.line li { padding-left:0; text-indent:0; }
+            ul.line li b { display:block; width:auto; }
+        }
+
+        /* 帰属を明示する箱（この手法の考案者・実装者を最初に示す） */
+        .attrib { background:#f3f0f8; border:1px solid color-mix(in srgb, var(--w) 34%, white);
+                  border-left:5px solid var(--w); border-radius:var(--radius);
+                  padding:18px 22px; margin-top:30px; }
+        .attrib h3 { font-size:1em; color:var(--w); margin-bottom:8px; }
+        .attrib p { font-size:0.9em; color:var(--muted); line-height:1.95; max-width:66ch; }
+        .attrib p + p { margin-top:10px; }
+        .attrib b { color:var(--text); font-weight:600; }
+        .attrib a { color:var(--w); font-weight:600; text-decoration:none; }
+        .attrib a:hover { text-decoration:underline; }
+        .filelist { margin-top:14px; font-size:0.86em; color:var(--muted); line-height:1.9; }
+        .filelist code { font-size:0.92em; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ベイズ系統推定</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 3 ｜ <a href="../">ベイズ（事前・尤度・事後）</a></span>
+        <h1>Accentual Class <span>Merger</span></h1>
+        <p class="lead">日本語諸方言のピッチアクセント体系の系統を、<b>アクセント類の統合</b>という現象そのものを突然変異としてモデル化して推定する方法です。樹形の事前分布を、人口規模と地理距離に基づく空間拡散から作る点に特徴があります。<br>
+        この手法の考案・定式化・実装は<b>高橋卓也氏</b>によるものです。小野原は共同研究の第二著者として参加しました。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <div class="attrib">
+        <h3>このページで扱う手法の帰属について</h3>
+        <p>ここで解説する<b>方法論は高橋卓也氏（本論文の第一著者）のもの</b>です。アクセント類の統合を表す突然変異モデルの設計、それを空間拡散つきのベイズ系統推定の枠組みに統合する定式化、および下記の C++ 実装は、すべて高橋氏の仕事です。小野原彩香は第二著者として共同研究に参加しました。</p>
+        <p>このページは、その方法論を授業の「<a href="../">7つの観点</a>」のうち<b>観点3（ベイズ）</b>に接続して読むために小野原が整理したものであり、<b>手法そのものの考案者・実装者ではありません</b>。引用・参照の際は下記の原論文（Takahashi, Onohara &amp; Ihara 2024）と Zenodo のコードリポジトリをご参照ください。</p>
+    </div>
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">言語の系統推定で最大の難点は「借用」である。アクセント類の統合は、その難点を回避できる数少ない現象である。</p>
+        <p class="body">
+        語彙に基づく言語系統推定では、似ている語が共通祖先に由来するのか、それとも接触によって借りられたのかを区別できない。この曖昧さは、推定される樹形を系統ではなく<b>接触の地図</b>に近づけてしまう。
+        </p>
+        <p class="body">
+        日本語のピッチアクセントには、この難点を回避できる性質がある。<b>アクセント類の統合（accentual class merger）</b>である。古い段階で区別されていた複数のアクセント類が、ある方言ではひとまとまりに合流して区別を失う。いったん失われた区別は、外から単語を借りても復活しない。したがって「どの類とどの類が統合しているか」という情報は、借用によって攪乱されにくい系統の信号になる。
+        </p>
+        <p class="body">
+        たとえば二モーラ名詞は5つのアクセント類（第1類〜第5類）を持つが、東京方言では第2類と第3類が、第4類と第5類がそれぞれ統合している。これを <code>1/23/45</code> と書く。京都方言は <code>1/23/4/5</code>、伊吹島方言は <code>1/2/3/4/5</code>（どの類も統合していない）である。従来の方言学は、こうした統合状態の分布から系統関係を論じてきたが、<b>統計モデルとして書かれたことはほとんどなかった</b>。この手法は、統合という現象を確率過程として定式化し、ベイズ系統推定の枠組みに載せる。
+        </p>
+        <div class="where">
+            関連：<a href="../neighbor-net/">系統ネットワーク（Neighbor-Net）</a>　—　距離行列から樹形を仮定せずに描く方法。こちらは樹形そのものを事後分布として推定する。
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>観測データ：何を「観測」と見なすか</h2>
+        <p class="q">観測されるのは表層のアクセントパターンと、そこから読み取れる統合状態だけである。</p>
+        <p class="body">
+        対象は本土方言である。琉球諸語と北海道は除かれている。本土の12地点に位置づけられた<b>15の分類群</b>（現代方言に加え、歴史文書に記録されたアクセント体系を含む）が、系統樹の葉になる。地理空間は日本列島を覆う<b>691個のセル</b>（およそ20km四方、経度 0.25°・緯度 0.167°）に分割される。
+        </p>
+        <p class="body">
+        アクセントの記述は6つの<b>語類</b> \(C_1,\dots,C_6\) に分かれる。モーラ数・品詞・活用が異なるものをまとめず、別々に扱うためである。各語類 \(C_i\) が持つアクセント類の数を \(l(i)\) と書くと、\(l(1)=3,\ l(2)=5,\ l(3)=2,\ l(4)=3,\ l(5)=2,\ l(6)=2\) である。
+        </p>
+        <p class="body">
+        各分類群について観測されるのは2つある。ひとつは<b>表層アクセントパターン</b> \(D_i\)（H/L/M/F/R の並びで記述される、実際に聞こえる型）。もうひとつは<b>表層統合状態</b> \(M_i\)（<code>1/23/45</code> のようにスラッシュで書かれる、どの類が合流しているか）。この2つを合わせた \(Y_i = D_i \cap M_i\) が、モデルに与えられるデータである。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>モデル①：なぜ潜在変数を置くのか</h2>
+        <p class="q">観測をそのままマルコフ過程にすると状態数が爆発する。状態数を抑えるための設計が、このモデルの核心にある。</p>
+        <p class="body">
+        各セルには、語類ごとに2つの<b>潜在変数</b>が割り当てられる。
+        </p>
+        <div class="eq">
+            <div class="lbl">潜在変数</div>
+            \[ N_i : \text{拡張統合状態} \qquad b_i = (b_{i1},\dots,b_{il(i)}) : \text{潜在アクセントパターン} \]
+            <p class="read"><b>\(N_i\)</b> は、表層の統合状態 <code>1/234/5</code> に「どの類が他を上書きしたか」の情報を足したものである。<code>'1','234','5'</code> と書き、各文字列の先頭の文字が<b>先導クラス</b>（他を上書きした類）を表す。<code>'1','234','5'</code> と <code>'1','324','5'</code> は、表層では同じ <code>1/234/5</code> だが、拡張統合状態としては別物である。過去にどの類がどの類を呑み込んだかは観測できないので、これは潜在変数になる。<br>
+            <b>\(b_i\)</b> は各アクセント類に割り当てられた「本来の」型で、その語類について経験的に記録されている型のいずれかを取る。</p>
+        </div>
+        <p class="body">
+        表層アクセントパターンは、この2つから決まる。統合されたブロックの内部では、<b>先導クラスの潜在パターンが、そのブロックに属する全ての類の表層パターンとして観測される</b>。二モーラ名詞の例を挙げる。拡張統合状態が \(N_2 = \) <code>'1','23','54'</code>、潜在パターンが \(b_2 = (\mathrm{HHM},\ \mathrm{HLL},\ \mathrm{HHL},\ \mathrm{LHL},\ \mathrm{LLH})\) のとき、表層は
+        </p>
+        <div class="eq">
+            <div class="lbl">潜在 → 表層</div>
+            \[ D_2 = (\mathrm{HHM},\ \mathrm{HLL},\ \mathrm{HLL},\ \mathrm{LLH},\ \mathrm{LLH}) \]
+            <p class="read">ブロック <code>'23'</code> では第2類が先導なので第3類も HLL になり、ブロック <code>'54'</code> では第5類が先導なので第4類も LLH になる。</p>
+        </div>
+        <div class="sub">
+            <h3>この設計が捉えている2つの性質</h3>
+            <p>第一に、<b>統合した類は同時に変化する</b>。表層が (LHH, HLL, HLL) から (LHH, LHL, LHL) に変わるのは、2回の突然変異ではなく、先導クラスの潜在パターンが1回変わっただけで説明される。第二に、<b>統合した類では常に同じ型が観測される</b>。この2つは統合という現象の定義そのものであり、二値形質を並べる標準的な系統モデルでは表現できない。</p>
+        </div>
+        <div class="sub">
+            <h3>状態数：なぜ 196 で済むのか</h3>
+            <p>二モーラ名詞は5つのアクセント類を持つ。5要素の集合を分割する方法は52通り（ベル数）だが、拡張統合状態はさらに各ブロックの先導クラスを区別するので、分割ごとに「ブロックの大きさの積」だけの場合がある。分割型ごとに数えると、5：\(1\times5=5\)、4+1：\(5\times4=20\)、3+2：\(10\times6=60\)、3+1+1：\(10\times3=30\)、2+2+1：\(15\times4=60\)、2+1+1+1：\(10\times2=20\)、1+1+1+1+1：\(1\times1=1\) で、合計 <b>196通り</b>である。これが \(N_i\) の取りうる値の全てになる。</p>
+            <p>もし表層アクセントパターン \(D_i\) を直接マルコフ過程にすると、状態数は数千から数万以上になり、枝刈りアルゴリズムの行列べき乗が現実的な時間で終わらない。潜在変数を置いたのは、この計算量の問題を解くためである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>モデル②：樹形の事前分布を空間から作る</h2>
+        <p class="q">系統樹の事前分布を、人口規模と地理的距離に基づく「どのセルから受け継いだか」の確率から構成する。</p>
+        <p class="body">
+        離散時間モデルで、各タイムステップの最初に、すべてのセルがどこか1つのセルからピッチアクセント体系<b>全体</b>を受け継ぐ。変数の一部を別のセルから取ってくることは許さない。これにより、進化史が系統<b>ネットワーク</b>ではなく系統<b>樹</b>として表現されることが保証される。
+        </p>
+        <div class="eq">
+            <div class="lbl">式 (2.1) — 継承確率</div>
+            \[ a_{ij} \;=\; K_i^{-1}\,\pi_j \exp\!\left(-\frac{d_{ij}^{\,2}}{2\sigma^{2}}\right) \]
+            <div class="lbl" style="margin-top:14px">式 (2.2) — 正規化定数</div>
+            \[ K_i \;=\; \sum_{k=1}^{n} \pi_k \exp\!\left(-\frac{d_{ik}^{\,2}}{2\sigma^{2}}\right) \]
+            <p class="read"><b>\(a_{ij}\)</b> はセル \(P_i\) がセル \(P_j\) からアクセント体系を受け継ぐ確率。<b>\(\pi_j\)</b> は \(P_j\) の人口規模、<b>\(d_{ij}\)</b> は2セル間の大円距離、<b>\(\sigma\)</b> はガウスカーネルの標準偏差である。\(K_i\) は \(\sum_j a_{ij}=1\) を保証するための定数にすぎない。</p>
+        </div>
+        <p class="body">
+        この式が言っているのは2つである。<b>近いセルから学びやすい</b>（ガウスカーネル）ことと、<b>人口の多いセルの影響が大きい</b>（\(\pi_j\) の因子）ことである。結果として、地理的に近い分類群がまとまる樹形ほど事前確率が高くなる。人口データは延喜式などの令制国別推定を 1995年の1kmメッシュ人口で空間配分して作られている。
+        </p>
+        <p class="body">
+        過去 \(\tau\) ステップ分の継承元を \(\tau \times n\) の行列 \(G\) に保存しておくと、\(G\) から分類群の系統樹 \(T\) を切り出せる。\(G\) の事前確率は式 (2.1) の積で計算できるので、<b>セルの空間的相互作用のパターンがそのまま樹形の事前分布になる</b>。
+        </p>
+        <div class="warn">
+            <h3>\(\sigma\) は推定されていない</h3>
+            <p>\(\sigma\) を自由パラメータにすると MCMC が収束しなかったため、本分析では \(\sigma = 70\,\mathrm{km}\) に<b>固定</b>されている。これは推定結果ではなく分析上の設定である。異なる \(\sigma\) の値での結果は感度分析として電子補足資料に置かれており、樹形のトポロジーはおおむね変わらなかったと報告されている。</p>
+        </div>
+        <div class="where">
+            関連：<a href="../icar/">ICAR 空間ランダム効果</a>　—　どちらも「空間的な近さ」を事前分布に入れる発想だが、ICAR が隣接グラフ上の平滑化であるのに対し、こちらは<b>系統の継承元</b>そのものを空間で重みづける。
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>モデル③：突然変異を2種類に分ける</h2>
+        <p class="q">統合が起こる過程（\(q\)）と、型が置き換わる過程（\(\alpha\)）を、独立な2つの過程として書く。</p>
+        <p class="body">
+        受け継いだ後、各セルは突然変異を起こしうる。語類が異なれば突然変異は独立に起こると仮定される（\(N_i,b_i\) の進化は \(i \neq j\) なら \(N_j,b_j\) と独立）。
+        </p>
+        <div class="eq">
+            <div class="lbl">統合の突然変異 — パラメータ \(q\)</div>
+            \[ \Pr[\text{1ステップで } N_i \text{ に統合が起こる}] \;=\; \binom{u_i}{2} q \;=\; \tfrac{1}{2}\,u_i\,(u_i-1)\,q \]
+            <p class="read"><b>\(u_i\)</b> は \(N_i\) に含まれるブロックの数。どのブロックの対も等しい確率 \(q\) で統合すると仮定するので、起こりうる対の数 \(\binom{u_i}{2}\) を掛ける。2つのブロックが統合するとき、それぞれを表す文字列はランダムな順序で連結され、どちらか一方の先導クラスがもう一方を上書きする。たとえば \(N_i=\) <code>'1','23','45'</code> は、<code>'123','45'</code>、<code>'231','45'</code>、<code>'145','23'</code>、<code>'451','23'</code>、<code>'1','2345'</code>、<code>'1','4523'</code> のいずれかに、それぞれ確率 \(q/2\) で変異する。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">型の置換 — パラメータ \(\alpha\)</div>
+            \[ \Pr[\,b_{ij} \to b'\,] = \alpha \quad (b' \neq b_{ij},\ b' \text{ はその語類で記録されている型}) \]
+            <p class="read">潜在アクセントパターンは要素ごとに変化し、その語類について経験的に記録されている他の型へ等確率で移る。これは <b>Mk モデルの離散時間版</b>である（\(k\) 個の可能な状態のあいだを等しい率で移る）。単モーラ名詞には HL, LH, HM, HH, LL, LM, MH の7型が記録されているので、ある類の潜在パターンが変化する確率は \(6\alpha\) になる。</p>
+        </div>
+        <div class="sub">
+            <h3>統合は不可逆で、型の置換は可逆である</h3>
+            <p>この非対称性がモデルの要である。\(q\) の過程はブロックを併合する一方向の過程で、分かれたブロックが元に戻ることはない。\(\alpha\) の過程は型のあいだを行き来する可逆な過程である。系統の信号を担っているのは主に前者で、後者は同じ統合状態を持つ方言のあいだの違いを説明する。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>事後分布と、尤度を計算する仕組み</h2>
+        <p class="q">同時事後分布を書き下し、Felsenstein の枝刈りアルゴリズムで樹の尤度を計算する。</p>
+        <div class="eq">
+            <div class="lbl">式 (2.3) — 同時事後分布</div>
+            \[ P(G,q,\alpha,B^{A},N \mid Y) \;\propto\; P(G)\,P(q)\,P(\alpha) \prod_{i=1}^{6} P(b_i^{A})\, P(N_i \mid T,q)\, P(M_i \mid N_i)\, P(D_i \mid T,\alpha,b_i^{A},N_i) \]
+            <p class="read"><b>\(B^A=(b_1^A,\dots,b_6^A)\)</b> は樹の根における潜在アクセントパターン。根では全ての類が未統合なので、根の潜在パターンは表層パターンと一致する。<b>\(P(q)\), \(P(\alpha)\)</b> はいずれも一様分布。<b>\(P(G)\)</b> は式 (2.1) の \(a_{ij}\) の積。<b>\(P(b_i^A)\)</b> は一様で、たとえば単モーラ名詞なら3つの類に7型から重複なく割り当てるので \(7\times6\times5=210\) 通り、各々 \(1/210\) になる。</p>
+        </div>
+        <p class="body">
+        \(P(M_i \mid N_i)\) の項は、フィルタとして働く。拡張統合状態 \(N_i\) が表層統合状態 \(M_i\) と整合すれば 1、しなければ 0 である。つまり MCMC は、観測された \(M_i\) と矛盾しない \(N_i\) の空間だけを探索すればよい。
+        </p>
+        <div class="sub">
+            <h3>枝刈りアルゴリズム：欠測を「どの状態でもよい」として扱う</h3>
+            <p>最後の項 \(P(D_i \mid T,\alpha,b_i^{A},N_i)\) は、Felsenstein の枝刈りアルゴリズムを<b>不規則な形で</b>実行して計算される。ポイントは、\(N_i\) の下で先導クラスでない類は表層に現れない、つまり<b>その葉では観測が欠測している</b>という点にある。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">葉での初期化</div>
+            \[ L_{ij}(p,v) = \begin{cases} 1 & \text{第 } j \text{ 類が } v \text{ で先導クラスで、かつ } p = D_{ij} \\ 0 & \text{第 } j \text{ 類が } v \text{ で先導クラスで、かつ } p \neq D_{ij} \\ 1 & \text{第 } j \text{ 類が } v \text{ で先導クラスでない} \end{cases} \]
+            <div class="lbl" style="margin-top:14px">内部ノードでの再帰（子ノードを \(s_1, s_2\) とする）</div>
+            \[ L_{ij}(p,v) = \left[\sum_{p'} L_{ij}(p',s_1)\,P(s_1 \text{ が } p' \mid v \text{ が } p)\right] \times \left[\sum_{p'} L_{ij}(p',s_2)\,P(s_2 \text{ が } p' \mid v \text{ が } p)\right] \]
+            <div class="lbl" style="margin-top:14px">樹全体の尤度</div>
+            \[ P(D_i \mid T,\alpha,b_i^{A},N_i) = \prod_{j=1}^{l(i)} L_{ij}\!\left(b_{ij}^{A},\ \text{root of } T\right) \]
+            <p class="read">先導クラスでない葉に 1 を入れるのが、欠測の扱いである。「その葉が何であっても矛盾しない」という意味になり、通常の枝刈りと同じ再帰がそのまま使える。</p>
+        </div>
+        <div class="sub">
+            <h3>実装：2状態の遷移確率は閉じた形で書かれている</h3>
+            <p>高橋氏の C++ 実装では、枝刈りの2状態版が行列べき乗ではなく閉じた式で計算されている。遷移率 \(q_{12}, q_{21}\) の離散時間2状態マルコフ連鎖について、\(\lambda = q_{12}/(q_{12}+q_{21})\) と置くと</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">実装で使われている閉形式（<code>pruning.cpp</code> の <code>prob_two</code>）</div>
+            \[ P(X_t = 2) \;=\; (1-q_{12}-q_{21})^{t}\,\bigl(P(X_0=2) - \lambda\bigr) + \lambda \]
+            <p class="read">遷移行列の固有値が \(1\) と \(1-q_{12}-q_{21}\) であることから直ちに出る式である。数値的な行列べき乗を避けることで、MCMC の内側ループが速く、かつ丸め誤差に強くなる。実装では <code>long double</code> が一貫して使われており、葉から根へ向かう動的計画法の配列（\(2M-1\) 個のノード）が明示的に確保されている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>時間校正と MCMC の設定</h2>
+        <p class="body">
+        樹の長さは本来タイムステップ単位で出てくるので、実時間（年）に対応づける必要がある。<b>1タイムステップ = 25年</b>（ヒトのおよそ1世代）と仮定されている。1ステップ = 10年とした場合の MCMC も実行されており、得られる系統樹はほとんど変わらなかったと報告されている。
+        </p>
+        <p class="body">
+        分類群（葉）の観測年は、現代方言の記述の調査年・出版年を考慮して<b>西暦1950年</b>とされた。歴史文書に記録されたアクセント体系は、それぞれの成立年代に置かれる。根（共通祖先）の年代の事前分布は<b>西暦450年から1100年の一様分布</b>である。上限を西暦450年としたのは、琉球諸語と本土日本語の分岐時期（近年の研究では3〜7世紀頃とされる）を考慮したためで、琉球方言には本土方言に見られないアクセント類が存在することから、本土のアクセント体系の共通祖先はその分岐より新しいと考えられる。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>MCMC の設定</th><th class="num">値</th></tr></thead>
+            <tbody>
+                <tr><td>独立な連鎖の数</td><td class="num">3</td></tr>
+                <tr><td>1連鎖あたりの反復数</td><td class="num">4 × 10<sup>6</sup></td></tr>
+                <tr><td>バーンインとして破棄</td><td class="num">1 × 10<sup>6</sup></td></tr>
+                <tr><td>標本抽出の間隔（thinning）</td><td class="num">10<sup>3</sup></td></tr>
+                <tr><td>合計標本サイズ</td><td class="num">9,000</td></tr>
+                <tr><td>ガウスカーネルの \(\sigma\)（固定）</td><td class="num">70 km</td></tr>
+                <tr><td>空間セル数</td><td class="num">691</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">初期樹（\(G\) の初期値）を変えた追加の MCMC が2回実行され、結果が確認されている。MCC 樹の作成には BEAST に同梱の TreeAnnotator、可視化には FigTree が使われている。</p>
+        <div class="where">
+            関連：<a href="../bayesian-estimation/">ベイズ推定（Stan / brms）</a>　—　事前分布・収束診断・事後分布の読み方という、ベイズ推定に共通する実務はこちらに整理してある。
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>何が言えたか</h2>
+        <p class="q">3つのクレード、共通祖先の位置、そして突然変異率の事後分布。</p>
+        <p class="body">
+        推定された MCC 樹は<b>東京型・京阪型・N型（九州）の3つのクレード</b>から成り、これは従来のピッチアクセント体系の分類と一致する。注目すべきは、列島の西側（広島・大分）と東側（東京・弘前）に分かれて分布する東京型アクセントが、<b>単系統群を形成する</b>と示唆された点である。空間拡散を事前分布に入れてなお、地理的に離れた東京型がまとまった。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>最近共通祖先までの年代</th><th class="num">95% 信用区間</th></tr></thead>
+            <tbody>
+                <tr><td>現代方言すべての共通祖先（根）</td><td class="num">西暦 450 – 825</td></tr>
+                <tr><td>東京型</td><td class="num">西暦 1000 – 1550</td></tr>
+                <tr><td>京阪型（類聚名義抄を含む）</td><td class="num">西暦 825 – 1100</td></tr>
+                <tr><td>N型</td><td class="num">西暦 1050 – 1700</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">根の年代は古墳時代中期から平安時代初期にあたる。ただし下記の「限界」に記したとおり、この事後分布は事前分布に強く依存している。</p>
+        <div class="sub">
+            <h3>共通祖先の「故郷」</h3>
+            <p>行列 \(G\) には過去の各ステップで系統がどのセルにいたかが記録されているので、MRCA の<b>地理的位置の事後分布</b>が得られる。全分類群の共通祖先は現代の京都・大阪・奈良・神戸のあたりにある可能性が高く、京阪型の MRCA も同じ地域に置かれる。N型の MRCA は九州北部または中部に位置する可能性が高い。東京型の MRCA は比較的広く散らばり、近畿周辺に最も高いピーク、東京周辺に2番目のピークがある（東北・九州は可能性が低い）。</p>
+            <p>ただしこの推定には構造的な偏りがある。式 (2.1) は人口規模の大きいセルからの継承を高く評価するので、<b>MRCA は人口の多いセルに置かれやすい</b>。京都のセルの事後確率が最も高いのは、近畿で最大の人口規模を持つセルであることと、語源に最も近い類聚名義抄のアクセントパターンがこのセルに割り当てられたことの両方が効いている。</p>
+        </div>
+        <div class="sub">
+            <h3>突然変異率</h3>
+            <p>統合率 \(q\) の事後中央値は年あたり \(3.37 \times 10^{-4}\)（95%信用区間 \(2.25 \times 10^{-4}\) – \(4.86 \times 10^{-4}\)）で、これはある2つの未統合ブロックの対が統合するのにおよそ <b>2,967年</b>かかることを意味する（\(1/3.37\times10^{-4}\)）。型の置換率 \(\alpha\) の事後中央値は年あたり \(9.89 \times 10^{-5}\)（95%信用区間 \(6.97 \times 10^{-5}\) – \(1.39 \times 10^{-4}\)）で、単モーラ名詞では7型から他の6型へ移るので率は \(6\alpha\)、すなわち潜在パターンが1回変わるのにおよそ <b>1,685年</b>かかる。</p>
+        </div>
+        <div class="sub">
+            <h3>従来の仮説との食い違い</h3>
+            <p>この結果は、方言学が提唱してきたいくつかの仮説と整合しない。第一に、外輪型（大分・弘前）は金田一によって中輪型（東京・広島）から系統的に離れたものと仮定されてきたが、推定樹は東京型が単系統群を形成することを示唆し、外輪型と中輪型は直接の共通祖先を共有しない側系統ないし多系統のまとまりとして現れた。第二に、中輪型が補忘記に記録された体系から派生したという有力な仮説は支持されなかった。第三に、現代京都方言のアクセント体系は補忘記の体系に由来するのではなく、<b>室町時代から存続していた未記載の系統</b>（統合状態 <code>1/2/3/4/5</code>）に由来すると示唆された。京都方言と補忘記に至る2つの系統は、第2類と第3類の統合をそれぞれ独立に経たという解釈になる。</p>
+            <p>また、語彙に基づく先行研究（Lee &amp; Hasegawa のベイズ系統解析など）が示す本土方言の東西分裂とも一致しない。これは「本土方言のアクセント体系と語彙が異なる歴史を持つ可能性」を示唆するが、どちらかが誤っているという結論を直ちに導くものではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>限界</h2>
+        <div class="warn">
+            <h3>年代は事前分布に強く依存する</h3>
+            <p>論文自身が繰り返し注意しているとおり、<b>共通祖先の年代の事後分布は事前分布に大きく依存する</b>。上に挙げた「西暦450–825年」という区間は、根の事前分布を西暦450–1100年の一様分布とした前提の下での結果であり、本土アクセントの MRCA が西暦450年より遡らないという仮定に依存している。樹形（トポロジー）が感度分析を通じて安定していたのとは対照的に、<b>年代は結論として弱い</b>。</p>
+        </div>
+        <div class="warn">
+            <h3>三モーラ名詞が除外されている</h3>
+            <p>可能な拡張統合状態の数はアクセント類の数とともに急増するため、6〜7類を持つ三モーラ名詞は計算上の理由で分析から除かれている。先行研究のいくつかは三モーラ名詞に基づいて系統を再構成しており、この分析はそこにある系統信号を取りこぼしている可能性がある。ただし、三モーラ名詞のアクセントパターンは多くの方言で二モーラ名詞のそれと独立ではないため、失われた情報がどれだけかは自明ではない。</p>
+        </div>
+        <div class="warn">
+            <h3>データが複数の出典の寄せ集めである</h3>
+            <p>日本語方言のアクセントパターンを一貫した基準で網羅したデータベースが公開されていないため、アクセントパターンは複数の異なる研究から収集されている。収録された方言間で記述の基準が揃わないことは避けられず、<b>結果が出典の選択によって偏っている可能性がある</b>。</p>
+        </div>
+        <div class="warn">
+            <h3>語類の独立性の仮定は現実には成り立たない</h3>
+            <p>モデルは語類ごとに突然変異が独立に起こると仮定するが、実際のデータでは二モーラ名詞と動詞の第1類のアクセントパターンはほとんどの現代方言で同じである。こうした相関した変化はモデルの下では二重の突然変異を要求するため、樹形に偏りを生じうる。名詞のみ（\(C_1, C_2\)）のサブセットを使った感度分析が行われており、トポロジーはおおむね変わらなかったと報告されている。</p>
+        </div>
+        <div class="warn">
+            <h3>潜在変数の解釈は発見的である</h3>
+            <p>「潜在アクセントパターンがマルコフ過程に従う」という設定は、計算を可能にするための工夫であって、言語変化の実体についての主張ではない。論文自身がこの設定を heuristic（発見的）であり解釈がやや難しいと述べている。<b>この手法が推定しているのは、このモデルの下での事後分布であって、言語変化そのものではない</b>。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">10</span>出典とコード</h2>
+        <div class="attrib">
+            <h3>方法論と実装は高橋卓也氏によるものです</h3>
+            <p>本ページで解説した<b>突然変異モデルの設計、ベイズ系統推定の枠組みへの統合、および C++ 実装のすべては高橋卓也氏（第一著者）の仕事</b>です。小野原彩香は第二著者として共同研究に参加しました。引用・参照の際は、下記の原論文とコードリポジトリを直接ご参照ください。</p>
+        </div>
+        <ul class="refs">
+            <li>Takahashi, T., Onohara, A., &amp; Ihara, Y. (2024) Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects. <i>Journal of Language Evolution</i>, 8(2), 169–191. <a href="https://doi.org/10.1093/jole/lzae004" target="_blank" rel="noopener noreferrer">doi:10.1093/jole/lzae004</a>（2024年7月22日公開）</li>
+            <li>Takahashi, T., Onohara, A., &amp; Ihara, Y. Data and code for “Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger”. <i>Zenodo</i>. <a href="https://doi.org/10.5281/zenodo.7983118" target="_blank" rel="noopener noreferrer">doi:10.5281/zenodo.7983118</a>（ライセンス：CC BY 4.0）</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>実装の構成</h3>
+            <p>MCMC は C++ で書かれており、モデルの各部分がファイルに分かれている。責務の切り分けがモデルの構造にそのまま対応している。</p>
+            <div class="filelist">
+                <code>main.cpp</code> — MCMC の本体（サンプリングループ）<br>
+                <code>parameter_set.cpp</code> — パラメータ集合の提案と受容<br>
+                <code>genealogy.cpp</code> — 行列 \(G\) の管理。シミュレーションによる初期化、樹の切り出し（<code>cut_tree_exact</code>）、\(G\) の変更提案（<code>mutate_diagram</code>）、式 (2.1) に基づく事前確率（<code>log_prior_from_matrix</code>）<br>
+                <code>group_integration.cpp</code> — 拡張統合状態 \(N_i\) の表現と統合の突然変異<br>
+                <code>pruning.cpp</code> — Felsenstein の枝刈り。2状態の遷移確率を閉じた式で計算し、<code>long double</code> で動的計画法を回す<br>
+                <code>tree.cpp</code> — 樹の構造（子ノードと枝長）<br>
+                <code>transmission_rate.cpp</code> — 継承確率 \(a_{ij}\) の計算<br>
+                <code>lexical_class.cpp</code>、<code>location.cpp</code>、<code>id_converter.cpp</code>、<code>csv_input.cpp</code> — 語類・地点・ID 変換・データ読み込み
+            </div>
+        </div>
+        <div class="sub" style="margin-top:22px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Felsenstein, J. (1981) Evolutionary trees from DNA sequences: a maximum likelihood approach. <i>Journal of Molecular Evolution</i>, 17, 368–376.（枝刈りアルゴリズム）</li>
+                <li>Lewis, P. O. (2001) A likelihood approach to estimating phylogeny from discrete morphological character data. <i>Systematic Biology</i>, 50(6), 913–925.（Mk モデル）</li>
+                <li>Bouckaert, R. et al. (2012) Mapping the origins and expansion of the Indo-European language family. <i>Science</i>, 337, 957–960.（言語系統への空間モデルの適用）</li>
+                <li>Lee, S. &amp; Hasegawa, T. (2011) Bayesian phylogenetic analysis supports an agricultural origin of Japonic languages. <i>Proceedings of the Royal Society B</i>, 278, 3662–3669.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>この手法は、樹形 \(T\)・突然変異率 \(q, \alpha\)・根の状態 \(B^A\) のすべてを<b>確率変数</b>として扱い、事前分布と尤度から事後分布を構成する。樹形そのものが事後分布を持つ点が特徴で、「どの系統仮説がどれだけもっともらしいか」を確率として比較できる。これは<a href="../">7つの観点を式で読む</a>の<b>観点3（ベイズ）</b>そのものである。同時に、空間拡散を事前分布に組み込んでいる点で<a href="../icar/">観点3の ICAR</a> と、距離から樹を描く発想の対極にある点で<a href="../neighbor-net/">観点1の Neighbor-Net</a> と対比して読める。</p>
+    </div>
+
+    <p class="note">
+    <b>このページは小野原が整理したものですが、解説している手法の考案者・実装者は高橋卓也氏です。</b>数値はすべて公開された論文から引用しており、推定値や概算は記載していません。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-20 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>
