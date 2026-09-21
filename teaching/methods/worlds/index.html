@@ -213,7 +213,7 @@
     <div class="page-header-inner">
         <h1>Seven <span>Perspectives</span></h1>
         <p class="lead">7つの観点を、それぞれ<b>中心となる1本の式</b>から説明します。観点が分かれるのは、問いに加えて、データに置く仮定・良さの評価基準・計算上の制約が違うためです。互いに排他ではありません。<br>
-        記号の読み方と、そこから出てくる代表的な手法の式を並べました。数式に慣れていなくても、何を小さく（大きく）しようとしているのかだけは読み取れるように書いています。<br>各観点の終わりに、<strong>その観点に当たる手法の解説ページ</strong>を並べています。実際の研究で使っているもので、全部で16本あります。</p>
+        記号の読み方と、そこから出てくる代表的な手法の式を並べました。数式に慣れていなくても、何を小さく（大きく）しようとしているのかだけは読み取れるように書いています。<br>各観点の終わりに、<strong>その観点に当たる手法の解説ページ</strong>を並べています。実際の研究で使っているもので、全部で21本あります。</p>
     </div>
 </header>
 
@@ -234,8 +234,12 @@
 <div class="sub"><h3>k-means も二乗和の最小化</h3><div class="eq" style="--w:#3d6fa8">\[\min_{C,\mu} \sum_{k}\sum_{i \in C_k} \lVert x_i - \mu_k \rVert^2\]<p class="read">まとまりの中心からの距離の合計を小さくする。確率モデルは立てない。</p></div></div>
 <p class="where" style="--w:#3d6fa8">授業で扱う回：<a href="https://aonoa68.github.io/toukei-1/10_regression/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第10回</a>、<a href="https://aonoa68.github.io/toukei-1/13_pca/" target="_blank" rel="noopener noreferrer">統計学Ⅰ 第13回</a></p>
 <p class="methodlead">この観点に当たる、実際の研究で使っている手法</p>
+<p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="gower-distance/">Gower距離 ―― 名義尺度のアクセント型から、集落間の距離を作る</a></p>
 <p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="correspondence-analysis/">対応分析 ―― 行と列を同じ平面に置き、カイ二乗距離で布置する</a></p>
 <p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="neighbor-net/">系統ネットワーク（Neighbor-Net）―― 距離行列を分割に分け、混ざりを許して描く</a></p>
+<p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="pca/">主成分分析 ―― 分散が最大になる方向を探すと、固有値問題になる</a></p>
+<p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="betweenness-centrality/">媒介中心性 ―― 交通網の最短経路から、集落の行きにくさを測る</a></p>
+<p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="pitch-accent-dtw/">話者正規化つきアクセント距離 ―― 時間の伸び縮みを許して音声の型を比べる</a></p>
     </section>
     <section class="wblock" style="--w:#8a464f">
         <h2><span class="no">2</span>頻度論（標本変動・推定・検定）</h2>
@@ -256,6 +260,7 @@
 <p class="where method" style="--w:#8a464f">研究で使う手法：<a href="power-simulation/">検出力シミュレーション ―― 効果があるとき、それを検出できるか</a></p>
 <p class="where method" style="--w:#8a464f">研究で使う手法：<a href="mantel/">Mantel検定 ―― 距離行列どうしの対応を、行と列の同時並べ替えで検定する</a></p>
 <p class="where method" style="--w:#8a464f">研究で使う手法：<a href="mixed-model/">線形混合モデルとAIC ―― 入れ子の観測を最尤で扱い、モデルを選ぶ</a></p>
+<p class="where method" style="--w:#8a464f">研究で使う手法：<a href="multiple-regression/">重回帰分析と変数選択 ―― VIFで共線性を見て、全部分集合から選ぶ</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
         <h2><span class="no">3</span>ベイズ</h2>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主成分分析（PCA） — 小野原彩香 | Teaching</title>
+    <meta name="description" content="多変量データの分散を最大にする方向を探す主成分分析について、Lagrange乗数を使った固有値問題としての導出、寄与率の読み方、主成分得点と主成分負荷量の違い、対応分析との違いを、揖斐川上流域の方言語彙データと雑誌『行動計量学』の投稿論文分析に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+    .sub p + p { margin-top:10px; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">主成分分析</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（最小二乗）</a></span>
+        <h1>Principal Component <span>Analysis</span></h1>
+        <p class="lead">変数がたくさんあるとき、<b>ばらつきの大きい方向から順に軸を取り直す</b>手法です。射影の二乗誤差を最小にすることと、射影した値の分散を最大にすることが同じ問題であるという、観点1の中心にある事実がそのまま定式化になっています。<br>
+        小野原が3つの異なる研究で使っている実装に即して、寄与率をどう読むのか、主成分得点と主成分負荷量がどう違うのか、そして高い寄与率が何を意味しないのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">変数が多いとき、何を捨てて何を残すか。</p>
+        <p class="body">
+        手元にあるのは \(n \times p\) の数値表 \(X\) である。行はケース（集落、論文）、列は変数（語、集計値）で、各セルには数が入っている。\(p\) が 4 なら表を眺めて済むかもしれないが、24 や 37 になると、列どうしの関係を頭のなかで追うことはできない。
+        </p>
+        <p class="body">
+        そこで <b>\(p\) 個の変数を、少数の新しい変数に束ね直す</b>。束ね方は無数にあるので、基準がいる。主成分分析が採る基準は<b>分散</b>である。データを 1 本の直線に射影したとき、射影された値のばらつきが最も大きくなる方向を第1主成分とし、それに直交する方向のうち次にばらつきが大きいものを第2主成分とする。以下同様に続ける。
+        </p>
+        <p class="body">
+        捨てているのは<b>分散の小さい方向</b>である。「ばらつきが小さい＝ケースの違いを説明しない」という前提を置いて、ばらつきの大きい方向だけを残す。この前提が妥当かどうかは手法の外側の問題で、あとの <a href="#limits">8節</a> で扱う。
+        </p>
+        <p class="body">
+        小野原の研究では、21 集落 × 4 変数、23 ケース × 37 変数、30 編 × 24 語という 3 つの異なる形の表に対して、この同じ操作が使われている。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>定式化：分散最大化から固有値問題へ</h2>
+        <p class="q">「分散を最大にする方向」を探すと、共分散行列の固有ベクトルが出てくる。</p>
+        <p class="body">
+        \(p\) 次元の確率ベクトル \(x\) を考え、平均は引いてあるものとする（\(\mathbb{E}[x] = 0\)）。共分散行列を \(\Sigma = \mathbb{E}[x x^{\top}]\) と書く。単位ベクトル \(w\) の方向に射影した値 \(w^{\top}x\) の分散は、次のように \(\Sigma\) の二次形式になる。
+        </p>
+        <div class="eq">
+            <div class="lbl">射影した値の分散</div>
+            \[ \mathrm{Var}\bigl[w^{\top}x\bigr] \;=\; \mathbb{E}\bigl[(w^{\top}x)^{2}\bigr] \;=\; w^{\top}\,\mathbb{E}\bigl[x x^{\top}\bigr]\,w \;=\; w^{\top}\Sigma\, w \]
+            <p class="read"><b>\(w\)</b> … 射影する方向。長さを 1 に固定しないと、\(w\) を何倍にでもして分散をいくらでも大きくできてしまう<br>
+            <b>\(\Sigma\)</b> … 共分散行列。対称かつ半正定値</p>
+        </div>
+        <p class="body">
+        したがって第1主成分は、次の制約つき最大化問題の解として定義される。
+        </p>
+        <div class="eq">
+            <div class="lbl">第1主成分の定義</div>
+            \[ \max_{\lVert w \rVert = 1}\; \mathrm{Var}\bigl[w^{\top}x\bigr] \;=\; \max_{w^{\top}w = 1}\; w^{\top}\Sigma\, w \]
+        </div>
+
+        <div class="sub">
+            <h3>Lagrange 乗数で解く</h3>
+            <p>制約 \(w^{\top}w = 1\) を Lagrange 乗数 \(\lambda\) で取り込む。</p>
+            <div class="eq">
+                \[ L(w,\lambda) \;=\; w^{\top}\Sigma\, w \;-\; \lambda\bigl(w^{\top}w - 1\bigr) \]
+                <p class="read">\(\Sigma\) が対称であることから \(\partial (w^{\top}\Sigma w)/\partial w = 2\Sigma w\)、\(\partial (w^{\top}w)/\partial w = 2w\) である。</p>
+            </div>
+            <div class="eq">
+                <div class="lbl">停留条件</div>
+                \[ \frac{\partial L}{\partial w} \;=\; 2\Sigma w \;-\; 2\lambda w \;=\; 0 \qquad\Longleftrightarrow\qquad \boxed{\;\Sigma w \;=\; \lambda w\;} \]
+                <p class="read">つまり、分散を最大にする方向 \(w\) は、<b>共分散行列 \(\Sigma\) の固有ベクトル</b>でなければならない。Lagrange 乗数 \(\lambda\) が、そのまま固有値になっている。</p>
+            </div>
+            <p>さらに、この \(w\) での目的関数の値を計算すると、</p>
+            <div class="eq">
+                \[ w^{\top}\Sigma\, w \;=\; w^{\top}(\lambda w) \;=\; \lambda\, w^{\top}w \;=\; \lambda \]
+                <p class="read">となる。<b>固有値そのものが、その方向に射影したときの分散</b>である。したがって分散を最大にするには最大固有値 \(\lambda_1\) を選べばよく、第1主成分の方向 \(w_1\) は \(\lambda_1\) に対応する固有ベクトルである。</p>
+            </div>
+        </div>
+
+        <div class="sub">
+            <h3>第2主成分以降</h3>
+            <p>第2主成分は「\(w_1\) に直交する」という制約を追加して同じ問題を解く。対称行列の固有ベクトルは互いに直交するように取れるので、答えは第2固有値 \(\lambda_2\) の固有ベクトル \(w_2\) になる。以下同様に、</p>
+            <div class="eq">
+                \[ \Sigma \;=\; \sum_{k=1}^{p} \lambda_k\, w_k w_k^{\top}, \qquad \lambda_1 \ge \lambda_2 \ge \cdots \ge \lambda_p \ge 0 \]
+                <p class="read">共分散行列の固有値分解が、そのまま主成分の並びを与える。主成分は<b>互いに直交する</b>ので、新しい変数どうしは無相関になる。小野原・矢野 (2014) が引く古沢・芳賀 (1992) の定義に「ただし、総合指標間は関連がないように」と書かれているのは、この直交性のことである。</p>
+            </div>
+        </div>
+
+        <div class="sub">
+            <h3>有限標本では</h3>
+            <p>実際には \(\Sigma\) は分からないので、中心化した \(n \times p\) のデータ行列 \(X\) から標本共分散行列を作る。</p>
+            <div class="eq">
+                \[ S \;=\; \frac{1}{n-1}X^{\top}X, \qquad z_{ik} \;=\; w_k^{\top}x_i \]
+                <p class="read">\(z_{ik}\) がケース \(i\) の第 \(k\) 主成分得点である。計算上は \(S\) の固有値分解ではなく \(X\) の特異値分解で求めるのが普通で、\(X = U\Sigma_{\mathrm{sv}}V^{\top}\) の \(V\) の列が \(w_k\)、特異値の二乗が \((n-1)\lambda_k\) にあたる。</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>寄与率とは何か</h2>
+        <p class="q">固有値の比。累積して読む。</p>
+        <p class="body">
+        主成分は互いに直交するので、元のデータの分散の総和は固有値の和に等しい。
+        </p>
+        <div class="eq">
+            <div class="lbl">分散の分解</div>
+            \[ \mathrm{tr}(\Sigma) \;=\; \sum_{j=1}^{p}\mathrm{Var}[x_j] \;=\; \sum_{k=1}^{p}\lambda_k \]
+            <p class="read">左辺は「元の変数のばらつきの総量」、右辺は「主成分ごとのばらつきの総量」である。同じものを別の座標系で数えているだけなので、一致する。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">第 \(k\) 主成分の寄与率と累積寄与率</div>
+            \[ c_k \;=\; \frac{\lambda_k}{\sum_{l=1}^{p}\lambda_l}, \qquad C_K \;=\; \sum_{k=1}^{K} c_k \]
+            <p class="read">\(c_k\) が寄与率（proportion of variance）、\(C_K\) が累積寄与率である。R の <code>prcomp</code> や FactoMineR の <code>PCA</code> が図の軸ラベルに印字する百分率がこれにあたる。</p>
+        </div>
+        <div class="sub">
+            <h3>読み方の注意</h3>
+            <p>寄与率が答えているのは「<b>元の表にあったばらつきのうち、何割をこの軸が拾ったか</b>」という一点だけである。</p>
+            <p>寄与率は、その軸が意味のある構造を捉えたかどうかを言わない。分析がうまくいったかどうかも言わない。2次元の図を見るということは \(C_2\) の外側を捨てるということであり、<b>図から読める主張は \(C_2\) の範囲でしか保証されない</b>。</p>
+            <p>もうひとつ、寄与率は<b>変数の数と相関構造に強く依存する</b>。相関行列を使う場合 \(\mathrm{tr} = p\) なので、変数が 4 つしかなければ \(c_1\) は大きく出やすく、変数が 37 個あれば同じ構造でも \(c_1\) は小さくなる。異なる研究のあいだで寄与率の数値を直接比べることはできない。この点は <a href="#limits">8節</a> でもう一度扱う。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>主成分得点と主成分負荷量</h2>
+        <p class="q">ケースを置くのが得点、変数を置くのが負荷量。この2つは違う図である。</p>
+        <p class="body">
+        主成分分析の出力は 2 種類ある。同じ「Dim 1 / Dim 2」という軸の上に描かれるので混同されやすいが、<b>プロットされている点の正体が違う</b>。
+        </p>
+
+        <div class="eq">
+            <div class="lbl">主成分得点（principal component score）</div>
+            \[ z_{ik} \;=\; w_k^{\top}x_i \qquad (i = 1,\dots,n) \]
+            <p class="read">ケース \(i\) を主成分の方向に射影した値。<b>点の個数は \(n\)（ケースの数）</b>。図の上の 1 点が 1 つの集落、1 編の論文にあたる。</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">主成分負荷量（loading）</div>
+            \[ \ell_{jk} \;=\; \mathrm{Corr}\bigl(x_j,\, z_k\bigr) \;=\; w_{jk}\,\frac{\sqrt{\lambda_k}}{\sqrt{\mathrm{Var}[x_j]}} \qquad (j = 1,\dots,p) \]
+            <p class="read">変数 \(x_j\) と第 \(k\) 主成分得点との相関。<b>点（または矢印）の個数は \(p\)（変数の数）</b>。図の上の 1 点が 1 つの語、1 つの集計値にあたる。<br>
+            なお「負荷量」の語は、固有ベクトルの成分 \(w_{jk}\) そのものを指す流儀と、上の相関を指す流儀があり、文献によって違う。</p>
+        </div>
+
+        <div class="sub">
+            <h3>見分け方</h3>
+            <p>実務的には <b>点の数を数えればよい</b>。『揖斐川上流域における語彙の類型と地理的分布』の図8 は 23 ケース、図9 は 37 変数である。前者には集落名と「東京」「京都」が、後者には <code>Tfish</code>、<code>Kcorrect</code> のような変数名が並ぶ。</p>
+            <p>もうひとつの見分け方は<b>目盛り</b>である。データを標準化して主成分分析した場合、負荷量は相関係数なので必ず \(-1\) から \(1\) の範囲に収まり、2次元の図では半径 1 の円の内側に入る。図9 の「Variables factor map (PCA)」、および小野原・矢野 (2014) の図4 には、この円が描かれている。得点の図（図8「Individuals factor map (PCA)」）には円がなく、目盛りは \(-5\) から \(5\) を超える範囲に広がっている。</p>
+        </div>
+
+        <div class="sub">
+            <h3>「近い」の意味が違う</h3>
+            <p><b>得点どうしが近い</b>とは、そのケースたちが変数全体にわたって似た値を持つということである。小野原・矢野 (2014) は「近い位置にプロットされる論文同士で使われる名詞は似ており」と書いている。</p>
+            <p><b>負荷量どうしが近い</b>とは、その変数たちがケースを横断して似た動き方をするということである。同じ論文が「近い位置にプロットされる名詞同士は、論文内で似たような頻度で出現する」と述べている。</p>
+            <p>そして<b>得点と負荷量のあいだの距離には、直接の意味がない</b>。両者を重ねた図（biplot）で読めるのは距離ではなく<b>方向</b>である。あるケースの点が、ある変数の矢印と同じ向きに遠く離れていれば、そのケースはその変数の値が大きい、と読む。小野原・矢野 (2014) の図4 と、旧徳山村周辺の発表資料の図は、どちらもこの重ね描きになっている。</p>
+            <p>『揖斐川上流域における語彙の類型と地理的分布』が「主成分得点と主成分負荷量の関係を見ると」と前置きしてから結論を述べているのは、この 2 枚を突き合わせる読み方を指している。図9 で固まっている語の位置と、図8 でその方向にある集落の位置を、両方見て初めて言えることである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>相関行列か、共分散行列か</h2>
+        <p class="q">変数の単位が違うとき、標準化しないと分散の大きい変数が軸を独占する。</p>
+        <p class="body">
+        2節の定式化は共分散行列 \(\Sigma\) を使った。しかし \(\Sigma\) の固有ベクトルは<b>変数の尺度に依存する</b>。ある変数をセンチメートルからミリメートルに直すだけで、その変数の分散は 100 倍になり、第1主成分はその変数の方向に引き寄せられる。
+        </p>
+        <div class="eq">
+            <div class="lbl">標準化してから主成分分析する＝相関行列を分解する</div>
+            \[ \tilde{x}_j \;=\; \frac{x_j - \bar{x}_j}{s_j}, \qquad \Sigma_{\tilde{x}} \;=\; R \;=\; \bigl(\mathrm{Corr}(x_j, x_{j'})\bigr)_{j,j'} \]
+            <p class="read">標準化した変数の共分散行列は、元の変数の<b>相関行列</b> \(R\) に等しい。\(\mathrm{tr}(R) = p\) なので、各変数が同じだけの「持ち分」をもって参加することになる。</p>
+        </div>
+        <p class="body">
+        単位の違う変数（身長と体重、頻度と年数）を混ぜるときは相関行列を使うのが原則である。逆に、すべての変数が同じ単位・同じ意味で測られていて、分散の大きさ自体に意味があるときは共分散行列を使う理由がある。
+        </p>
+
+        <div class="sub">
+            <h3>この研究ではどちらか</h3>
+            <p>3 件とも、本文には<b>相関行列を使ったのか共分散行列を使ったのかが明記されていない</b>。ただし、次のことは資料から言える。</p>
+            <p><b>旧徳山村周辺の発表資料</b>は元データ（21 集落 × 4 変数）を全数値で掲載している。この表を相関行列で主成分分析すると、寄与率は第1主成分 83.92%、第2主成分 15.03% となり、<b>資料に印字された数値と一致する</b>（このページでの検算）。同じ表を共分散行列で分析すると一致しない。したがって、この分析は標準化した主成分分析であったと判断できる。</p>
+            <p><b>『揖斐川上流域における語彙の類型と地理的分布』の図9</b> と <b>小野原・矢野 (2014) の図4</b> は、いずれも半径 1 の円が描かれた相関円の形式である。これは標準化した主成分分析の出力と整合する。前者の論文は参考文献に R のパッケージ FactoMineR を挙げており、図のタイトル「Individuals factor map (PCA)」「Variables factor map (PCA)」も FactoMineR の <code>PCA</code> の出力と一致する。同関数の既定は標準化ありである。ただし<b>論文本文にその旨の記載はない</b>ので、図から読めるというところまでにとどめる。</p>
+            <p>なお前者の 2 件は、変数がいずれも 0 / 0.5 / 1 に符号化された語彙データで尺度が揃っているため、標準化の有無が結果を大きく変えない可能性はある。この点も資料からは検証できない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>3つの適用例</h2>
+        <p class="q">同じ手法が、まったく違う形の表に使われている。</p>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>研究</th><th>データの形</th><th class="num">第1</th><th class="num">第2</th><th class="num">第3</th><th class="num">第4</th><th>出典</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>(a) 揖斐川上流域の語彙</td><td>23 ケース × 37 変数</td><td class="num">23.07%</td><td class="num">14.73%</td><td class="num">—</td><td class="num">—</td><td>図8・図9</td></tr>
+                <tr><td>(b) 旧徳山村周辺の語彙</td><td>21 集落 × 4 変数</td><td class="num">83.92%</td><td class="num">15.03%</td><td class="num">—</td><td class="num">—</td><td>結果スライドの図</td></tr>
+                <tr><td>(c) 『行動計量学』投稿論文</td><td>30 編 × 24 語</td><td class="num">20.54%</td><td class="num">12.1%</td><td class="num">10.27%</td><td class="num">9.38%</td><td>図4・図5</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値はすべて各出典に印字された値。「—」は第3主成分以降の寄与率が資料に記載されていないことを示す。(c) のみ本文に第3・第4主成分の寄与率が書かれている。</p>
+
+        <div class="sub">
+            <h3>(a) ランダムフォレストの結果を別の角度から確かめる</h3>
+            <p>『揖斐川上流域における語彙の類型と地理的分布』では、主成分分析は「4. 分析の手順および分析手法」に挙げられていない。同節が挙げるのは系統推定（NeighborNet）、対応分析、random Forest の 3 つである。主成分分析は結果の節（5.3）に、<b>random Forest の結果を確かめる補助として</b>現れる。</p>
+        </div>
+        <ol class="steps">
+            <li><b>元データ</b>　山田 (1978, 1980) が揖斐川上流域の 21 地点で調査した基礎語彙。各語について、中核的形態素が東京方言・京都方言と対応すれば ＋、対応しなければ －、疑問なら ○、相当語が 2 つあり一方のみ対応する場合は △ と記録されている。</li>
+            <li><b>符号化と絞り込み</b>　random Forest にあたって、東京・京都に対してともに ＋ になる語を省き、さらに ○ や NR が 1 集落でも含まれる語は<b>列ごと削除</b>した。残った変数は <code>Tfish</code>、<code>Kcorrect</code> のように「語 × 東京／京都」の形をとり、値は 1 / 0.5 / 0 に対応する。</li>
+            <li><b>データの大きさ</b>　図7 のヘッダに <code>rf. 23cases, 37vars, loop=100</code> と印字されている。23 ケースは 21 集落に東京・京都を加えた数にあたる。</li>
+            <li><b>主成分分析</b>　論文は「図8、図9 は、random Forest で用いたデータを主成分分析した結果である」と述べている。</li>
+        </ol>
+        <p class="body">
+        読み取られたのは次のことである。<a href="../random-forest/">ランダムフォレスト</a> が特徴語として上位に挙げた <code>grease</code>、<code>good</code>、<code>bite</code>、<code>fish</code>、<code>correct</code>、<code>they</code>、<code>he</code>、<code>sit</code>、<code>lie</code> は、負荷量の図（図9）で<b>丸で囲んだ位置に固まる</b>。そして得点の図（図8）から、それらの語は日坂・東津汲・西津汲・東横山・坂本・木之本といった集落において特徴的な様相を示す。得点と負荷量の関係を合わせて見ることで、これらが「東京方言寄りの方言形と京都方言寄りの方言形を分ける語彙かつ京都寄りの語彙」であると論文は結論している。
+        </p>
+        <p class="body">
+        つまりここでの主成分分析は、<b>別の手法が出した答えを、別の座標系の上で目で確かめる</b>ために使われている。同じデータに対して、分類の重要度（random Forest）と分散の方向（主成分分析）という違う基準をあてて、同じ語の集まりが浮かび上がるかを見ている。
+        </p>
+
+        <div class="sub">
+            <h3>(b) 4つの集計値で集落差を見る ― 読者が手を動かせる例</h3>
+            <p>発表資料「旧徳山村周辺地域の語彙に関する数理的側面からの再検討」は、<b>元データを全数値で掲載している</b>。21 集落について、4 つの集計値が印字されている。手元で再現できる例なので、以下に転記する。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">4つの変数の定義（資料の記載どおり）</div>
+            <p class="read"><b>Ep</b> … 東京の語彙と対応する語彙数<br>
+            <b>En</b> … （東京の語彙と）対応しない語彙数<br>
+            <b>Wp</b> … 京都の語彙と対応する語彙数<br>
+            <b>Wn</b> … （京都の語彙と）対応しない語彙数</p>
+            <p class="read">資料はさらに、東京・京都それぞれへの ＋／－ の組み合わせと 4 変数の対応を表で示している。東京 ＋ の語は「東京にも京都にも似ている（＋＋）」と「東京に似ている（＋－）」の両方が <b>Ep</b> に、東京 － の語は「京都に似ている（－＋）」と「どっちにも似ていない（－－）」の両方が <b>En</b> に入る。同様に京都 ＋ の語（＋＋ と －＋）が <b>Wp</b>、京都 － の語（＋－ と －－）が <b>Wn</b> に入る。<br>
+            つまり <b>E は東京（East）、W は京都（West）、p / n は対応の有無</b>であり、Ep と En、Wp と Wn はそれぞれ同じ 200 語を裏表から数え直したものである。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>集落</th><th>郡・村</th><th class="num">Ep</th><th class="num">En</th><th class="num">Wp</th><th class="num">Wn</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>門入</td><td>徳山</td><td class="num">168</td><td class="num">27</td><td class="num">170</td><td class="num">27</td></tr>
+                <tr><td>戸入</td><td>徳山</td><td class="num">168</td><td class="num">27</td><td class="num">166</td><td class="num">30</td></tr>
+                <tr><td>塚</td><td>徳山</td><td class="num">168</td><td class="num">27</td><td class="num">169</td><td class="num">27</td></tr>
+                <tr><td>櫨原</td><td>徳山</td><td class="num">170</td><td class="num">25</td><td class="num">167</td><td class="num">29</td></tr>
+                <tr><td>山手</td><td>徳山</td><td class="num">168</td><td class="num">26</td><td class="num">167</td><td class="num">28</td></tr>
+                <tr><td>上開田</td><td>徳山</td><td class="num">168</td><td class="num">28</td><td class="num">167</td><td class="num">29</td></tr>
+                <tr><td>本郷</td><td>徳山</td><td class="num">168</td><td class="num">28</td><td class="num">170</td><td class="num">27</td></tr>
+                <tr><td>下開田</td><td>徳山</td><td class="num">168</td><td class="num">27</td><td class="num">168</td><td class="num">29</td></tr>
+                <tr><td>川上</td><td>坂内</td><td class="num">170</td><td class="num">25</td><td class="num">172</td><td class="num">24</td></tr>
+                <tr><td>広瀬</td><td>坂内</td><td class="num">172</td><td class="num">22</td><td class="num">172</td><td class="num">23</td></tr>
+                <tr><td>坂本</td><td>坂内</td><td class="num">173</td><td class="num">22</td><td class="num">173</td><td class="num">23</td></tr>
+                <tr><td>鶴見</td><td>藤橋</td><td class="num">172</td><td class="num">24</td><td class="num">171</td><td class="num">24</td></tr>
+                <tr><td>東横山</td><td>藤橋</td><td class="num">176</td><td class="num">19</td><td class="num">177</td><td class="num">20</td></tr>
+                <tr><td>西津汲</td><td>久瀬</td><td class="num">176</td><td class="num">18</td><td class="num">175</td><td class="num">21</td></tr>
+                <tr><td>東津汲</td><td>久瀬</td><td class="num">173</td><td class="num">22</td><td class="num">177</td><td class="num">18</td></tr>
+                <tr><td>小津</td><td>久瀬</td><td class="num">173</td><td class="num">24</td><td class="num">174</td><td class="num">23</td></tr>
+                <tr><td>日坂</td><td>久瀬</td><td class="num">175</td><td class="num">21</td><td class="num">177</td><td class="num">20</td></tr>
+                <tr><td>外津汲</td><td>久瀬</td><td class="num">174</td><td class="num">23</td><td class="num">176</td><td class="num">22</td></tr>
+                <tr><td>今庄</td><td>南条</td><td class="num">166</td><td class="num">31</td><td class="num">175</td><td class="num">23</td></tr>
+                <tr><td>池田</td><td>今立</td><td class="num">167</td><td class="num">30</td><td class="num">172</td><td class="num">26</td></tr>
+                <tr><td>木之本</td><td>大野</td><td class="num">176</td><td class="num">21</td><td class="num">185</td><td class="num">13</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">発表資料のスライドに印字された表をそのまま転記した。「郡・村」列は資料では「村 / mura」と表記されている。木之本の値が「大野」となっているが、同じ資料の図では木之本は「伊香」に色分けされており、『揖斐川上流域における語彙の類型と地理的分布』の表1 も木之本町を滋賀県伊香郡としている。この 1 点は資料内で食い違っている。<br>
+        Ep と En の和は 194〜197、Wp と Wn の和は 195〜198 の範囲にあり、基礎語彙 200 語には一致しない。差の理由は資料に説明がない。</p>
+
+        <ol class="steps">
+            <li><b>元データ</b>　資料は「『基礎語彙』と呼ばれる語彙＝『わたし』『あなた』『あたま』のようなどこの地域にも見られると思われる語彙200語（Swadesh List (Swadesh, 1950) から服部 (1955) が選んだ200語）」と述べ、山田 (1978, 1980) の集計結果を用いている。</li>
+            <li><b>変数とケース</b>　資料の記載どおり「集落間の違いを出すために、Ep, En, Wp, Wn を変数、集落をケースにして主成分分析を行った」。</li>
+            <li><b>結果</b>　Dim 1 (83.92%)、Dim 2 (15.03%) の平面に、集落の得点と 4 変数のベクトルを重ねて描いている。Ep と Wp は右側、En と Wn は左側を向く。</li>
+            <li><b>読み取り</b>　徳山村の集落は図の左側に固まり、木之本は右端に単独で位置する。資料の考察は徳山村について「他村の集落に比べ、より一層、東京、京都の語彙と似ていない」と述べている。</li>
+        </ol>
+        <p class="cap">考察スライドの本文は「Wn, Pn 側に偏っている」と書かれているが、図中に <code>Pn</code> という変数はなく、<code>En</code> の誤記と読める。</p>
+
+        <div class="sub">
+            <h3>(c) 投稿論文の内容の時系列変化を見る</h3>
+            <p>小野原・矢野 (2014) は、<a href="../correspondence-analysis/">対応分析</a> にかけたのと同じ「論文 30 編 × 名詞 24 件」のデータに、主成分分析もかけている。論文は「さらに、別の角度からデータを考察するために」と動機を述べ、主成分分析を古沢ほか (1992) にもとづいて「2 種類以上の属性を持つ複数個のサンプルに対して、属性同士の関係を考慮した総合指標（ただし、総合指標間は関連がないように）を作り、それに基づいて、属性とサンプルの関係を示す分析」と定義している。</p>
+        </div>
+        <ol class="steps">
+            <li><b>図4</b>　主成分得点（名詞情報に基づく論文内容の傾向）と主成分負荷量（矢印で示す、頻出名詞の論文内での使われ方の傾向）を<b>同時にプロット</b>している。第1主成分の寄与率 20.54%、第2主成分 12.1%、以下 第3主成分 10.27%、第4主成分 9.38% と続く。</li>
+            <li><b>図5 左</b>　各論文の第1主成分得点を棒グラフにし、上を古い論文、下を新しい論文として年代順に並べ直した。2000年代に入ってから、得点が負から正に変化している。</li>
+            <li><b>図5 右</b>　第1主成分負荷量。得点が正の論文に特徴的な名詞は、負荷量の大きいものから「評価」「性」「採点」「課題」「者」。得点が負の論文に特徴的な名詞は「語」「音素」「単語」「音声」「言語」。</li>
+            <li><b>第2主成分以下</b>　論文は「第1主成分に見られたような時系列変化は第2主成分以下では見られなかった」と明記している。</li>
+        </ol>
+        <p class="body">
+        ここで効いているのは、<b>主成分得点を外部情報（発行年）の順に並べ直す</b>という操作である。主成分分析そのものは年代を知らない。年代を知らずに作った軸の上でケースを並べたら、年代と対応していた、というのが読み取りの構造である。論文が第1主成分軸の解釈について「教育に関する論文が出現している可能性がある」「経済に関係するテーマの論文が出現している可能性がある」と、いずれも「可能性がある」で止めているのは、この事後的な解釈の性質を踏まえたものと読める。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>対応分析との違い</h2>
+        <p class="q">同じ「平面に布置する」でも、最小にしている量が違う。</p>
+        <p class="body">
+        主成分分析と <a href="../correspondence-analysis/">対応分析</a> は、どちらも低ランク近似の二乗誤差を最小にする手法であり、解は特異値分解で与えられる。図の見た目もよく似ている。違いは<b>何を行列に入れ、どの距離で測るか</b>にある。
+        </p>
+        <div class="eq">
+            <div class="lbl">最小化している量を並べる</div>
+            \[ \text{PCA:}\quad \max_{\lVert w \rVert = 1} w^{\top}\Sigma\, w \qquad\Longleftrightarrow\qquad \min_{\mathrm{rank}\,\le\, K}\bigl\lVert X - \hat{X} \bigr\rVert_F^{2} \]
+            \[ \text{CA:}\quad \min_{\mathrm{rank}\,\le\, K}\bigl\lVert D_r^{-1/2}\bigl(P - \mathbf{r}\mathbf{c}^{\top}\bigr)D_c^{-1/2} - \hat{S} \bigr\rVert_F^{2} \]
+            <p class="read">主成分分析が分解するのは<b>データ行列そのもの</b>（中心化・必要なら標準化したもの）で、距離はユークリッド距離である。対応分析が分解するのは<b>独立からのずれを周辺度数で重み付けしたもの</b>で、距離はカイ二乗距離である。</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th></th><th>主成分分析</th><th>対応分析</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>入力</td><td>量的変数の数値表。負の値も、標準化した値も入る</td><td>非負の度数表（分割表）、または 0/1 の2値データ</td></tr>
+                <tr><td>測っている距離</td><td>ユークリッド距離（標準化の有無で変わる）</td><td>カイ二乗距離。列の周辺割合 \(c_j\) で重み付け</td></tr>
+                <tr><td>最大化／最小化</td><td>射影の分散を最大化</td><td>行と列の数量化値の重み付き相関を最大化</td></tr>
+                <tr><td>行の大きさ</td><td>そのまま距離に入る（中心化はする）</td><td>プロファイル化により消える</td></tr>
+                <tr><td>図に載るもの</td><td>得点（ケース）と負荷量（変数）は<b>別の図</b>。重ねるなら biplot</td><td>行と列を<b>同じ平面に同時に</b>置くのが定義</td></tr>
+                <tr><td>軸の指標</td><td>寄与率 \(\lambda_k / \sum \lambda_l\)</td><td>慣性の説明率 \(\sigma_k^2 / \sum \sigma_l^2\)。全慣性は \(\chi^2/n\)</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="sub">
+            <h3>両方かけるとどうなるか</h3>
+            <p>小野原・矢野 (2014) は、同じ 30 編 × 24 語のデータに両方をかけている。結果として<b>見えたものが違った</b>。対応分析の図ではジャンルごとに論文が固まり、主成分分析では第1主成分得点に時系列変化が見えた。</p>
+            <p>ただし、この差は手法の違いだけによるものではない。対応分析の結果はジャンル情報を重ねて読み、主成分分析の結果は得点を年代順に並べ直して読んでいる。<b>低次元に落とした座標を、どの外部情報と突き合わせるか</b>でも見えるものは変わる。手法の違いと読み方の違いは、分けて考える必要がある。</p>
+            <p>『揖斐川上流域における語彙の類型と地理的分布』でも両方が使われているが、こちらは入力が違う。対応分析は東京・京都以外の集落と語彙の表に、主成分分析は random Forest 用に整形した 23 ケース × 37 変数の表にかけられている。</p>
+        </div>
+    </section>
+
+    <section class="wblock" id="limits">
+        <h2><span class="no">8</span>限界</h2>
+        <p class="q">高い寄与率は、成功の証ではない。</p>
+
+        <div class="warn">
+            <h3>寄与率 83.92% は「うまくいった」ことを意味しない</h3>
+            <p>(b) の第1主成分の寄与率は 83.92% で、第2主成分と合わせると 98.95% になる。数字だけ見れば理想的だが、これは<b>4 つの変数が互いに強く相関していたことの表れ</b>でもある。</p>
+            <p>実際、Ep と En は同じ 200 語を裏表から数えた値であり、公開されている表の上で足し合わせると 194〜197 の範囲に収まる。Wp と Wn も同様に 195〜198 である。一方が決まればもう一方はほぼ決まるので、<b>4 変数の実質的な自由度はおおむね 2 しかない</b>。2 次元でほぼ 100% を説明できるのは当然に近い。</p>
+            <p>寄与率が高いことは「データがうまく要約できた」とも「そもそも変数に独立な情報が少なかった」とも読める。<b>どちらであるかは、寄与率の数値からは分からない</b>。変数の作り方に戻って確かめるしかない。逆に (c) の 20.54% は「失敗」ではなく、24 語が互いにあまり相関していなかったことを意味する。異なる研究の寄与率を横に並べて優劣を論じることには意味がない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>線形の方向しか探さない</h3>
+            <p>主成分分析が探すのは<b>直線の方向</b>だけである。データが曲面に沿って分布していても、あるいはケースが非線形な形で分かれていても、手法はそれを直線に射影してしまう。二乗誤差を最小にする平面は求まるが、その平面が構造を保っている保証はない。</p>
+            <p>語彙の一致数のように単調に効く量であれば線形の仮定は無理がない。しかし 0 / 0.5 / 1 に符号化した語彙データ（(a)）や、頻度を論文長で割った値（(c)）について、変数と潜在的な構造の関係が線形であるかどうかは、資料からは検証されていない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>分散を最大化するので、外れ値が軸を決める</h3>
+            <p>目的関数が分散である以上、平均から大きく離れた 1 点は二乗で効く。少数の外れたケースが第1主成分の向きをほとんど決めてしまうことがありうる。</p>
+            <p>(b) の図では、木之本が Dim 1 の 4 付近に単独で位置しており、他の 20 集落から離れている。公開された表でも木之本の Wp は 185 で、次に大きい値より 8 大きい。この 1 点が第1主成分の向きにどれだけ効いているかは、<b>木之本を除いた再計算が資料に示されていないため判断できない</b>。(a) の図8 でも「東京」が他のケースから離れた位置にある。</p>
+            <p>一般には、外れ値を除いた場合の結果を併記するか、頑健な主成分分析を使うかで確かめる必要がある。3 件とも、その確認は行われていない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>主成分の解釈は、すべて事後的である</h3>
+            <p>手法が出すのは「分散の大きい順に並んだ直交する方向」だけであり、第1主成分が何を表すかは一言も言わない。軸に名前を付けるのは分析者である。</p>
+            <p>(c) で「第1主成分軸の正の方向は教育に関する論文が出現している可能性がある」と述べられているのは、負荷量の大きい名詞（「評価」「性」「採点」「課題」「者」）を見てから与えた解釈である。論文がいずれも「可能性がある」と留保しているのは正しい書き方だが、読者には、軸のラベルが分析の出力ではなく解釈であることが見えにくい。</p>
+            <p>とくに、負荷量の上位いくつかを見て軸に名前を付ける手続きには、<b>どこまでを見るかの基準がない</b>。(c) は「上位 5 つ」を採っているが、この 5 という数に根拠はない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>標本数に対して変数が多い</h3>
+            <p>(a) は 23 ケース × 37 変数、(c) は 30 編 × 24 語である。いずれも<b>ケース数が変数の数に近いか、下回っている</b>。ケース数 \(n\)、変数の数 \(p\) のとき、標本共分散行列の階数は高々 \(n-1\) なので、(a) では 37 次元のうち 22 次元しか意味を持たない。</p>
+            <p>より本質的な問題は、\(n\) が小さいと標本共分散行列自体の推定が不安定になることである。固有値は上側が過大に、下側が過小に推定される傾向が知られており、<b>寄与率も上振れしやすい</b>。ここで印字されている 23.07% や 20.54% が、母集団の構造をどれだけ反映しているかは、この標本規模からは保証されない。</p>
+            <p>実際、(c) では第1主成分から第4主成分まで足しても 52.29% にとどまり、固有値が明確に分離していない。固有値が近接しているとき、対応する主成分の方向は標本のわずかな違いで入れ替わりうる。2 次元の図に描かれた第1・第2主成分が安定な方向であるかどうかは、資料からは判断できない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>どの変数を入れるかで、主成分は変わる</h3>
+            <p>主成分は入力した変数の集合に対して定義される。変数を 1 つ足せば、すべての主成分が変わる。</p>
+            <p>(c) は 6,096 の異なり語から、論文長で正規化した頻度の標準偏差が大きい順に 24 語を選んでいる。この 24 という数は、標準偏差の減少率が安定し始める点を目視で選んだものである。(a) は、東京・京都にともに ＋ となる語と、○ や NR を含む語の列を削除して 37 変数にしている。どちらも合理的な前処理だが、<b>別の基準で選べば別の主成分が出る</b>。寄与率の数値は、選ばれた変数の集合に対する値であって、元のデータ全体に対する値ではない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>2次元の図は、捨てた次元について何も言わない</h3>
+            <p>(a) の図8・図9 が説明しているのは 23.07 + 14.73 = 37.80% である。(c) の図4 は 20.54 + 12.1 = 32.64% にすぎない。<b>残りの 6 割以上は、この平面に描かれていない</b>。</p>
+            <p>したがって、図の上で 2 点が近いことは「この 2 次元では近い」以上を意味しない。捨てた軸の上で大きく離れている可能性は常にある。(b) のように第2主成分までで 98.95% を説明する場合は、この心配は小さい。しかしその高い説明率が前述のとおり変数の重複に由来しているのであれば、今度は「4 変数がそもそも何を測っていたのか」という別の問いが残る。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典とデータ</h2>
+
+        <div class="sub">
+            <h3>(a) 揖斐川上流域の語彙</h3>
+            <ul class="refs">
+                <li>小野原彩香「揖斐川上流域における語彙の類型と地理的分布」研究論文。<span style="color:var(--muted)">手元の刷りには誌名・巻号・発行年の記載を確認できなかったため、書誌は題名までにとどめる。</span></li>
+                <li>主成分分析は 5.3 節、図8「主成分分析（主成分得点）」・図9「主成分分析（主成分負荷量）」。図のタイトルはそれぞれ "Individuals factor map (PCA)"、"Variables factor map (PCA)"、軸は Dim 1 (23.07%)、Dim 2 (14.73%)。</li>
+                <li>元データは 山田達也 (1978)「揖斐川上流域における基礎語彙について」名古屋市立大学教養部紀要人文社会研究 22, 33–66、および 山田達也 (1980)「福井県今庄、池田方言及び滋賀県木之本方言の基礎語彙について――徳山村方言に関連して」同 24, 23–34。調査項目は Hattori, S. (1973) <i>Japanese Dialects</i>, <i>Current Trends in Linguistics</i> 11, 368–400 の 200 項目。</li>
+                <li>Package 'FactoMineR' (2012) は同論文の参考文献に挙げられている（対応分析について明示的に使用が記されている）。</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>(b) 旧徳山村周辺の語彙</h3>
+            <ul class="refs">
+                <li>小野原彩香「旧徳山村周辺地域の語彙に関する数理的側面からの再検討――徳山村とその周辺には差が見られるか――」（同志社大学大学院文化情報学研究科文化情報学専攻 博士後期課程1年 当時）発表資料。<span style="color:var(--muted)">手元のファイルには発表先・発表年月の記載がないため、書誌は題名と所属までにとどめる。</span></li>
+                <li>元データは 山田 (1978, 1980)。資料は基礎語彙 200 語について、Swadesh List (Swadesh, 1950) から 服部四郎 (1955)「『言語年代学』即ち『語彙統計学』の方法について――日本祖語の年代――」季刊民族學研究 19(1), 100–101 が選んだものと記している。</li>
+                <li>本ページに転記した 21 集落 × 4 変数の表は、同資料の「使用データについて」「分析手法」のスライドに印字された値である。</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>(c) 『行動計量学』投稿論文の分析</h3>
+            <ul class="refs">
+                <li>小野原彩香・矢野環 (2014)「雑誌『行動計量学』における言語に関する投稿論文の傾向――投稿論文の時系列変化と『計量国語学』論文との比較」岸江信介・田畑智司 編『<a href="https://www.hituzi.co.jp/hituzibooks/ISBN978-4-89476-695-2.htm" target="_blank" rel="noopener noreferrer">テキストマイニングによる言語研究</a>』ひつじ研究叢書〈言語編〉第121巻、pp. 1–20、ひつじ書房。ISBN 978-4-89476-695-2</li>
+                <li>主成分分析は 4.1.2 節（pp. 11–13）。図4「主成分分析」（Variables factor map (PCA)、Dim 1 (20.54%)、Dim 2 (12.1%)）、図5「第1主成分得点（左）と第1主成分負荷量（右）」。</li>
+                <li>古沢正三・芳賀敏郎 (1992)『多変量解析事例集 第1集』日科技連出版社（同論文が主成分分析の定義に用いた文献）</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Pearson, K. (1901) On lines and planes of closest fit to systems of points in space. <i>Philosophical Magazine</i>, 2(11), 559–572. <a href="https://doi.org/10.1080/14786440109462720" target="_blank" rel="noopener noreferrer">doi:10.1080/14786440109462720</a>（射影の二乗誤差最小化としての定式化）</li>
+                <li>Hotelling, H. (1933) Analysis of a complex of statistical variables into principal components. <i>Journal of Educational Psychology</i>, 24(6), 417–441. <a href="https://doi.org/10.1037/h0071325" target="_blank" rel="noopener noreferrer">doi:10.1037/h0071325</a>（分散最大化としての定式化）</li>
+                <li>Eckart, C. &amp; Young, G. (1936) The approximation of one matrix by another of lower rank. <i>Psychometrika</i>, 1(3), 211–218. <a href="https://doi.org/10.1007/BF02288367" target="_blank" rel="noopener noreferrer">doi:10.1007/BF02288367</a>（低ランク近似の最適解が特異値分解で与えられること）</li>
+                <li>足立浩平・村上隆 (2011)『<a href="https://www.asakura.co.jp/detail.php?book_code=12829" target="_blank" rel="noopener noreferrer">非計量多変量解析法：主成分分析から多重対応分析へ</a>』シリーズ〈行動計量の科学〉9、朝倉書店。ISBN 978-4-254-12829-1</li>
+            </ul>
+            <p class="cap">Pearson (1901)、Hotelling (1933)、Eckart &amp; Young (1936) は本ページで手法の位置づけを説明するために挙げた一般的な文献であり、上記 (a)(b)(c) の資料に引用されているものではない。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>主成分分析は確率モデルを立てない。尤度も事前分布も出てこない。出てくるのは「どの平面に射影すればデータの形がいちばん保たれるか」という<b>幾何の問い</b>だけである。</p>
+        <p style="margin-top:10px">そしてこの問いには 2 つの言い方がある。ひとつは 2節で解いた<b>分散最大化</b>、もうひとつは<b>射影の二乗誤差最小化</b>である。中心化したデータ \(x_i\) を単位ベクトル \(w\) の張る直線に射影すると、残差の二乗和は \(\sum_i \lVert x_i - w w^{\top}x_i \rVert^{2} = \sum_i \lVert x_i \rVert^{2} - \sum_i (w^{\top}x_i)^{2}\) となる。第1項は \(w\) に依存しないので、<b>二乗誤差を最小にすることと、射影した値の二乗和（＝分散）を最大にすることは同じ問題である</b>。Pearson (1901) は前者から、Hotelling (1933) は後者から同じ手法に到達した。</p>
+        <p style="margin-top:10px">この「二乗誤差を最小にする低ランク近似」という枠組みは、<a href="../correspondence-analysis/">対応分析</a> とも k-means とも共有されている。違うのは行列に何を入れ、どの重みで測るかだけである。<a href="../">7つの観点を式で読む</a> の <b>観点1（幾何・最小二乗）</b> の中心に、この同値性がある。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。寄与率などの数値はすべて出典に印字された値から引用しています。5節と8節で触れた検算（相関行列での寄与率の再現、Ep と En の和の範囲）は、発表資料に公開されている表から計算したもので、その旨を明記しています。推定値や概算は記載していません。<br>
+    同じデータに別の基準をあてた手法は <a href="../random-forest/">ランダムフォレスト</a>、同じ「平面に布置する」手法は <a href="../correspondence-analysis/">対応分析</a> と <a href="../neighbor-net/">Neighbor-Net</a> にあります。手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-21 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

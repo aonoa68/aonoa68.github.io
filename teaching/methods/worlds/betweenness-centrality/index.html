@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>媒介中心性と交通ネットワーク — 小野原彩香 | Teaching</title>
+    <meta name="description" content="近世の僧侶巡回路から復元した集落間の交通ネットワークに媒介中心性を当て、「行きにくい集落」を数値にする手法の解説。最短経路の定義、標高差を織り込んだエッジ重み、岐阜県旧徳山村での実数値（44地点の標高と媒介中心性、集落間距離）、そして近世の経路で現代の言語分布を語ることの限界を、発表資料と博士論文の記述に即して整理したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .sub p + p { margin-top:10px; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">媒介中心性</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（最小二乗）</a></span>
+        <h1>媒介<span>中心性</span></h1>
+        <p class="lead">集落を頂点、道を辺とするグラフを作り、<b>ある頂点が他の頂点どうしの最短経路の上にどれだけ乗っているか</b>を数える指標です。「行きにくい場所」「通り道にならない場所」を、印象ではなく数値で言うための道具になります。<br>
+        岐阜県旧徳山村について、近世の僧侶の巡回路から交通ネットワークを復元し、そこで求めた媒介中心性が、アクセントの特異な集落や、民俗「縁起・言いならわし」の対応分析で外れ値になる集落と重なる——という一連の分析に即して、何を計算し、何を主張してよいのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「行きにくい集落ほど言語も民俗も独自になる」を、測れる形にする。</p>
+        <p class="body">
+        出発点は、言語地理学の古い問いである。小野原 (2012a) は柴田 (1969) を引いて、言語地理学とは「言語形式と外言語的要素の関係に注目し、言語変遷の過程を明らかにするだけでなく、<b>変化の原因についても明らかにしようとする</b>」ものだと確認し、下線部に注目すると述べている。そのうえで立てられた問いが「ある地域のある方言は周りとなぜ違うのか」「<b>戸入アクセントは何故孤立する？</b>」である。
+        </p>
+        <p class="body">
+        対象は岐阜県旧徳山村（現揖斐川町）。ダム建設のため1985年に全集落が離村した村である。昭和47年の戸数は、門入 36、戸入 58、上開田 45、本郷 142、山手 45、櫨原 56、塚 34 と記録されている。この村の中で、戸入は乙種（東京式）、塚は甲種と乙種の中間型、本郷など他の集落は甲種（京阪式）という、狭い範囲に収まらないアクセントの分布を示す。
+        </p>
+        <p class="body">
+        「戸入は交通が不便だから言語も孤立したのだ」という説明は、言われてみれば自然である。だが、それは<b>説明ではなく言い換え</b>になりかねない。孤立しているから孤立している、では何も言ったことにならない。必要なのは、「交通上の不便さ」を、言語データとは独立に、別の資料から数値として取り出すことである。媒介中心性は、そのための一つの選択肢として使われている。
+        </p>
+        <div class="sub">
+            <h3>先行研究にあった言葉を、数値に置き換える</h3>
+            <p>博士論文は、この分析の位置づけをはっきり書いている。「以上の結果は、井上・太田 [1989]の論考内にて言及されていた『<b>他集落にくらべての交通上の不便さ</b>』を示す戸入集落の地理的孤立性と杉戸によって報告された戸入、塚、その他の集落におけるアクセントの様相を<b>定量的に評価した</b>結果である」。</p>
+            <p>つまり、新しい事実を発見したというより、先行研究が言葉で述べていたことを、数えられる量に置き換えたという構成である。この手法の役割を過大に見積もらないためには、この位置づけを先に押さえておくのがよい。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>グラフをどう作るか</h2>
+        <p class="q">頂点は集落と峠、辺は僧侶の巡回路。重みには標高差を入れる。</p>
+        <p class="body">
+        使われたデータは、<b>近世における誠照寺の巡回路</b>である。福井県武生の誠照寺（真宗誠照寺派本山）から僧侶が村々を巡回した経路が図として残っており、これを頂点と辺に直している。博士論文は「ネットワーク構築の際、<b>ノードは、巡回で立ち寄る集落、峠、坂とし、エッジは、巡回に用いた各集落間の道とした</b>」と書いている。頂点は44地点である。
+        </p>
+        <p class="body">
+        ここで重要なのは、<b>峠が頂点に入っている</b>ことである。徳山村のような山間部では、集落と集落を直線で結んでも移動の実態にならない。どの峠を越えるかが経路を決める。峠を頂点として明示的に置いたことで、「塚から村の外へ出るには冠峠を越えねばならない」といった構造がグラフの上に乗る。
+        </p>
+        <div class="sub">
+            <h3>なぜ辺の重みに標高差を入れるのか</h3>
+            <p>山間部では、水平方向の距離だけでは移動のコストを表さない。同じ2kmでも、平坦な谷沿いの2kmと、標高差500mを登る2kmは同じではない。そこで、辺の重みは水平距離と標高差を合成した値として定義されている。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">エッジの重み（2012年の発表資料）</div>
+            \[ \text{エッジの重み} \;=\; \sqrt{\bigl(\text{地点間の緯度経度差}(m)\bigr)^{2} + \bigl(\text{標高差}(m)\bigr)^{2}} \;\; (m) \]
+            <p class="read">発表資料の図7・図8に書かれた形。別の発表資料では第1項が「<b>地点間のユークリッド距離</b>(m)」と書かれている。いずれも、水平方向の隔たりと垂直方向の隔たりを直角三角形の二辺と見て、斜辺の長さを取っている。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">エッジの重み（博士論文の(1)式）</div>
+            \[ \sqrt{\bigl(\text{地点間のユークリッド距離}\bigr)^{2} + \bigl(\text{標高差} \times 8.3\bigr)^{2}} \;\; (m) \]
+            <p class="read">博士論文では、標高差に<b>8.3 を掛けてから</b>足している。理由も明記されている。「垂直距離を水平距離の 8.3 倍にするのは、一般的に人間は1時間に5km歩くことができ、<b>標高が600m上がるごとにそこに1時間加える</b> [cf. Langmuir (1984)] ことがわかっているためである」。600m の登りが 5000m の水平移動に相当するという換算が、8.3 という係数の中身である。</p>
+        </div>
+        <div class="sub">
+            <h3>なぜ道なりの距離や歩行コスト関数を使わなかったか</h3>
+            <p>博士論文は、この選択の理由も書いている。「地点同士の『行きやすさ』について、道路距離や Hiking 関数を用いて、地点間の移動コストを算出する方法もあるが、今回の分析ではそれらを用いずに<b>単純な直線距離を用いた</b>」。理由は二つ挙げられている。第一に、峠が巡回路に含まれていて人間が峠を通ったことが分かっているため、「低地から峠を目指して歩くとき、そのまま直線的に峠を目指しても、迂回をしながら峠を目指したとしても、最終的なコスト（労力）に差は無いと考えられる」こと。第二に、「歩行コストについては数あるモデル式の中で<b>どれを選択するべきかという問題も生じる</b>」ことである。</p>
+            <p>手法の選択が、精度の追求ではなく<b>恣意性の削減</b>を理由に説明されている点は読み取っておいてよい。ただし、これは「どちらでも同じ」という主張であって、検証された等価性ではない。第7節で改めて扱う。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>最短経路とは何か</h2>
+        <p class="q">辺の本数ではなく、重みの合計を最小にする経路。</p>
+        <p class="body">
+        媒介中心性は最短経路の上に定義されるので、まず「最短」の意味を決めなければならない。辺に重みがないグラフでは、最短経路とは<b>通る辺の本数が最も少ない経路</b>である。重み付きグラフでは、経路に沿って辺の重みを足し上げた値が最小になる経路を指す。
+        </p>
+        <div class="eq">
+            <div class="lbl">重み付き最短経路</div>
+            \[ d(j,k) \;=\; \min_{P \,:\, j \to k} \;\sum_{e \in P} w(e) \]
+            <p class="read"><b>\(P\)</b> … \(j\) から \(k\) への経路（辺の列）<br>
+            <b>\(w(e)\)</b> … 辺 \(e\) の重み。ここでは前節の式で求めた「距離と標高差を合成した値」<br>
+            最小値を与える \(P\) が最短経路である。最小値を与える経路が<b>複数あってもよい</b>。この「複数あってもよい」という点が、次節の定義で効いてくる。</p>
+        </div>
+        <p class="body">
+        辺の重みがすべて非負であるとき、この最小化は <b>Dijkstra 法</b>で解ける。始点から確定した頂点を近い順に一つずつ増やしていき、そのたびに隣接する頂点への暫定距離を更新する手続きで、全頂点への最短距離が求まる。グラフ上の全頂点対について解く場合は Warshall–Floyd 法などが使われる。頂点数が44程度であれば、どの実装でも一瞬で終わる規模である。<span style="color:var(--muted)">（アルゴリズムの選択について、参照した資料には記述がない。ここは手法一般の説明である。）</span>
+        </p>
+        <div class="sub">
+            <h3>「最短経路」は地図の上の最短ではない</h3>
+            <p>ここで言う最短経路は、<b>グラフの上での</b>最短である。地図の上で2地点が近くても、両者を結ぶ辺がグラフに無ければ、最短経路は遠回りになる。逆に、実際には通れない経路でも、辺として入れてしまえば最短経路になりうる。つまり、最短経路の値は、<b>どの辺をグラフに入れたかという判断</b>をそのまま引き継ぐ。巡回路データにどの道が載っていたかが、そのまま結果を決めている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>媒介中心性の定義</h2>
+        <p class="q">自分を通らないと行き来できない頂点ほど、値が高くなる。</p>
+        <p class="body">
+        発表資料は、媒介中心性を「ネットワーク構造において、<b>ある頂点が他の頂点間の最短経路上に位置する程度</b>を示した指標」と定義している。博士論文も同じ定義を鈴木 (2009) から引き、「つまり、<b>頂点間の仲介や情報のコントロールが可能になる</b>という点であるといえる」と補っている。
+        </p>
+        <div class="eq">
+            <div class="lbl">媒介中心性の定義（発表資料 4.3.3 の表記）</div>
+            \[ \text{頂点 } i \text{ の媒介中心性} \;=\; \sum_{j \ne i \ne k} \frac{\;j \text{ と } k \text{ の最短経路の内 } i \text{ を通るもの}\;}{\;\text{頂点 } j \text{ と頂点 } k \text{ の間の最短経路数}\;} \]
+            <p class="read">記号で書けば \(\displaystyle C_B(i) = \sum_{j \ne i \ne k} \frac{g_{jk}(i)}{g_{jk}}\) である。博士論文の説明では、<b>\(g_{jk}\)</b> は「頂点 \(j\) と頂点 \(k\) の間の最短経路数」、<b>\(g_{jk}(i)\)</b> は「頂点 \(j\) と頂点 \(k\) の間の最短経路のうち、頂点 \(i\) を通るものの数」である。</p>
+        </div>
+        <div class="sub">
+            <h3>分母が付いている理由</h3>
+            <p>もし最短経路が1本しかなければ、分数は0か1になる。すなわち「\(i\) がその経路上にあるか、ないか」である。最短経路が複数あるとき、\(i\) はそのうちの一部にしか乗っていないかもしれない。分母で割ることで、<b>\(i\) が \(j\)–\(k\) 間の通行をどれだけ独占しているか</b>という割合になる。迂回路がある地点は、その分だけ得点が下がる。</p>
+            <p>したがって、媒介中心性が高い頂点とは、単に辺が多い頂点ではなく、<b>そこを通らないと行き来できない他者の組が多い</b>頂点である。橋・関所・峠のような、構造上の隘路が高くなる。</p>
+        </div>
+        <div class="sub">
+            <h3>次数中心性・情報中心性・近接中心性との違い</h3>
+            <p>博士論文の別の章（事例2）では、三つの中心性が並べて定義されている。<b>次数中心性</b>（degree centrality）は「ネットワーク内でより多くの関係を持つ頂点を高く評価する指標」で、その頂点に接続する辺の本数そのものである。<b>情報中心性</b>（information centrality）は「頂点間の最短経路以外の経路や、経路の長さも考慮した指標」で、「頂点間のすべての経路が、その長さに応じて、短いほど高く評価されるように、経路の長さの逆数により重み付けする」ものである。</p>
+            <p>三つは別のことを測る。辺が4本ある集落でも、その4本がすべて袋小路につながっていれば、次数中心性は高いが媒介中心性は低い。逆に、辺が2本しかなくても、村の東半分と西半分をつなぐ唯一の峠であれば、媒介中心性は非常に高くなる。<b>近接中心性</b>（closeness centrality）は他の全頂点への最短距離の和の逆数で、「全体から見て遠いか近いか」を測る指標だが、参照した一連の資料では使われていない。</p>
+            <p>この研究が媒介中心性を選んだのは、問いが「孤立しているか」ではなく「<b>通り道になっているか</b>」だったからである。情報や人が通過する地点かどうかを問うなら、最短経路の通過を数える指標が対応する。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>実際のデータ</h2>
+        <p class="q">44地点の標高と媒介中心性、そして集落間の距離。</p>
+        <p class="body">
+        計算は R で行われている。博士論文は「使用ソフトは R、使用パッケージは sna [Butts, 2010]、使用関数は <code>betweenness</code> である」と明記し、描画には <code>gplot</code> を用いたとしている。2012年の発表資料では「R の sna パッケージを用いて構築及び描画を行った。<b>(Script は省略)</b>」とだけ書かれているが、博士論文には巻末 Appendix. 15・16 として R スクリプトが全文収録されている。
+        </p>
+        <div class="sub">
+            <h3>巡回路44地点の標高と媒介中心性</h3>
+            <p>博士論文 表6-3 に、全44地点の値が印刷されている。徳山村の8集落は 塚・櫨原・山手・本郷・上開田・戸入・門入・下開田 である。</p>
+        </div>
+        <div class="scroller">
+            <table class="res">
+                <thead><tr><th>地点名</th><th class="num">標高（m）</th><th class="num">媒介中心性</th></tr></thead>
+                <tbody>
+                <tr><td>誠照寺</td><td class="num">23</td><td class="num">109.667</td></tr>
+                <tr><td>武生</td><td class="num">30</td><td class="num">84.000</td></tr>
+                <tr><td>板垣坂</td><td class="num">421</td><td class="num">87.667</td></tr>
+                <tr><td>稲荷</td><td class="num">229</td><td class="num">288.000</td></tr>
+                <tr><td>月ヶ瀬</td><td class="num">246</td><td class="num">130.000</td></tr>
+                <tr><td>志津原</td><td class="num">286</td><td class="num">89.000</td></tr>
+                <tr><td>河内</td><td class="num">369</td><td class="num">68.667</td></tr>
+                <tr><td>田代</td><td class="num">429</td><td class="num">84.000</td></tr>
+                <tr><td>冠峠</td><td class="num">1032</td><td class="num">128.000</td></tr>
+                <tr><td>高倉峠</td><td class="num">958</td><td class="num">0.000</td></tr>
+                <tr><td><b>塚</b></td><td class="num">396</td><td class="num">183.667</td></tr>
+                <tr><td><b>櫨原</b></td><td class="num">364</td><td class="num">494.333</td></tr>
+                <tr><td><b>山手</b></td><td class="num">370</td><td class="num">368.333</td></tr>
+                <tr><td><b>本郷</b></td><td class="num">320</td><td class="num">437.333</td></tr>
+                <tr><td><b>上開田</b></td><td class="num">298</td><td class="num">164.000</td></tr>
+                <tr><td><b>戸入</b></td><td class="num">396</td><td class="num">84.000</td></tr>
+                <tr><td><b>門入</b></td><td class="num">435</td><td class="num">0.000</td></tr>
+                <tr><td><b>下開田</b></td><td class="num">319</td><td class="num">260.333</td></tr>
+                <tr><td>馬坂峠</td><td class="num">618</td><td class="num">246.333</td></tr>
+                <tr><td>八谷</td><td class="num">221</td><td class="num">252.000</td></tr>
+                <tr><td>長峯</td><td class="num">229</td><td class="num">414.667</td></tr>
+                <tr><td>門脇</td><td class="num">195</td><td class="num">279.000</td></tr>
+                <tr><td>樽見</td><td class="num">166</td><td class="num">245.000</td></tr>
+                <tr><td>板屋</td><td class="num">179</td><td class="num">240.000</td></tr>
+                <tr><td>口谷</td><td class="num">219</td><td class="num">84.000</td></tr>
+                <tr><td>奥谷</td><td class="num">271</td><td class="num">0.000</td></tr>
+                <tr><td>水鳥西光寺</td><td class="num">157</td><td class="num">0.000</td></tr>
+                <tr><td>小鹿</td><td class="num">232</td><td class="num">171.000</td></tr>
+                <tr><td>松田</td><td class="num">272</td><td class="num">191.000</td></tr>
+                <tr><td>上大須</td><td class="num">412</td><td class="num">221.000</td></tr>
+                <tr><td>越波</td><td class="num">414</td><td class="num">265.000</td></tr>
+                <tr><td>猶峠</td><td class="num">650</td><td class="num">315.000</td></tr>
+                <tr><td>大河原</td><td class="num">458</td><td class="num">631.667</td></tr>
+                <tr><td>能郷</td><td class="num">253</td><td class="num">265.667</td></tr>
+                <tr><td>長島</td><td class="num">228</td><td class="num">240.667</td></tr>
+                <tr><td>天神堂</td><td class="num">233</td><td class="num">225.667</td></tr>
+                <tr><td>温見峠</td><td class="num">1023</td><td class="num">349.667</td></tr>
+                <tr><td>ハエボシ峠</td><td class="num">954</td><td class="num">276.333</td></tr>
+                <tr><td>秋生</td><td class="num">551</td><td class="num">248.000</td></tr>
+                <tr><td>スバラ</td><td class="num">497</td><td class="num">311.000</td></tr>
+                <tr><td>温見</td><td class="num">727</td><td class="num">544.333</td></tr>
+                <tr><td>杉ノ谷峠</td><td class="num">1125</td><td class="num">364.333</td></tr>
+                <tr><td>熊河</td><td class="num">706</td><td class="num">314.333</td></tr>
+                <tr><td>熊河峠</td><td class="num">888</td><td class="num">163.333</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="cap">出典：小野原 (2013) 博士論文 表6-3「巡回路地点の標高と媒介中心性」（102頁）。太字は徳山村の8集落。標高の値は巻末 Appendix. 15 の座標表の Z 列と一致する。</p>
+
+        <div class="sub">
+            <h3>徳山村内の集落間距離と言語的距離</h3>
+            <p>次の表は、巡回路のうち徳山村部分について、辺の重み（(1)式の値）と、アクセントから作った言語的距離を並べたものである。言語的距離は、各集落のアクセント型の全組み合わせパターンを名義尺度データとみなして <a href="../gower-distance/">Gower距離</a> を求め、集落内の全パターン同士の平均を取ったものである。</p>
+        </div>
+        <div class="scroller">
+            <table class="res">
+                <thead><tr><th colspan="2">交通路のある地点の組み合わせ</th><th class="num">(1)式（8.3倍あり）</th><th class="num">2012年発表資料の値</th><th class="num">言語的距離</th></tr></thead>
+                <tbody>
+                <tr><td>本郷</td><td>上開田</td><td class="num">682</td><td class="num">658</td><td class="num">0.113</td></tr>
+                <tr><td>下開田</td><td>本郷</td><td class="num">951</td><td class="num">951</td><td class="num">0.113</td></tr>
+                <tr><td>塚</td><td>櫨原</td><td class="num">1761</td><td class="num">1742</td><td class="num">0.260</td></tr>
+                <tr><td>山手</td><td>本郷</td><td class="num">2400</td><td class="num">2365</td><td class="num">0.113</td></tr>
+                <tr><td>櫨原</td><td>山手</td><td class="num">2516</td><td class="num">2516</td><td class="num">0.113</td></tr>
+                <tr><td>上開田</td><td>戸入</td><td class="num">3632</td><td class="num">3541</td><td class="num">0.475</td></tr>
+                <tr><td>戸入</td><td>門入</td><td class="num">4720</td><td class="num">4709</td><td class="num">0.475</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="cap">左の数値列は小野原 (2013) 表6-5「集落間の地理的距離（式(1)）と言語的距離」（103頁）、中央の列は小野原 (2012b) の発表スライド「結果」および小野原 (2012a) 図7（10頁）。<b>二つの列が違うのは、標高差に 8.3 を掛けるかどうかの違いである</b>。標高差がほぼ無い辺（下開田–本郷は319m と 320m、櫨原–山手は364m と 370m）では両者が一致しており、この解釈と整合する。言語的距離の単位は Gower 距離（0から1）。</p>
+
+        <div class="sub">
+            <h3>集落間の移動距離（道なり）</h3>
+            <p>博士論文 表6-6 には、5集落について道なりの移動距離も示されている（単位 m）。</p>
+        </div>
+        <div class="scroller">
+            <table class="res">
+                <thead><tr><th></th><th class="num">本郷</th><th class="num">櫨原</th><th class="num">門入</th><th class="num">塚</th><th class="num">戸入</th></tr></thead>
+                <tbody>
+                <tr><td>本郷</td><td class="num">0</td><td class="num">4916</td><td class="num">8908</td><td class="num">6623</td><td class="num">4199</td></tr>
+                <tr><td>櫨原</td><td class="num">—</td><td class="num">0</td><td class="num">13789</td><td class="num">1742</td><td class="num">9080</td></tr>
+                <tr><td>門入</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">15531</td><td class="num">4709</td></tr>
+                <tr><td>塚</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">10822</td></tr>
+                <tr><td>戸入</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="cap">出典：小野原 (2013) 表6-6「集落間の移動距離（道なり）」（103頁）。原表は上三角のみに値が記されている。</p>
+
+        <div class="sub">
+            <h3>言語的距離そのもの</h3>
+            <p>博士論文 表6-4 の集落間言語距離は、本郷・櫨原・門入が互いに 0.113、これら3集落と塚が 0.260、これら3集落と戸入が 0.475、塚と戸入が 0.393 である（塚の集落内平均は 0.240、戸入も 0.240）。2012年の発表資料でも、本郷その他–塚が 0.260、本郷その他–戸入が 0.475、塚–戸入が 0.393 と同じ値が示されている。この距離の作り方は <a href="../gower-distance/">Gower距離</a> のページで扱う。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>結果</h2>
+        <p class="q">中心性の低い集落と、民俗データの外れ値が重なる。</p>
+        <p class="body">
+        表6-3 を徳山村の8集落だけ見ると、門入 0.000、戸入 84.000、上開田 164.000、塚 183.667 が低く、櫨原 494.333、本郷 437.333、山手 368.333、下開田 260.333 が高い。博士論文は「巡回路ネットワークに対して媒介中心性を求めた結果、<b>塚、上開田、戸入は、相対的に媒介中心性が低い</b>という結果が得られており、中でも特に戸入の媒介中心性は低く、情報の伝達があまりない地点であることが分かった。また、塚は北側の峠を超えるまでには距離があり、媒介中心性も低く、<b>徳山村の北の果て</b>であることが分かる」と読んでいる。
+        </p>
+        <p class="body">
+        この結果が興味深いのは、まったく別のデータでも同じ集落が浮かび上がることである。民俗資料緊急調査報告書に記載された「縁起・言いならわし集」（昭和24〜25年の全国慣習状況調査で全国6373世帯から収集された全907件のうち、徳山村各字にあるものについての調査結果）を <a href="../correspondence-analysis/">対応分析</a> にかけると、布置の外側に出る集落が現れる。
+        </p>
+        <div class="warn" style="background:#fff8e8; border-color:color-mix(in srgb,var(--gold) 35%,white)">
+            <h3 style="color:var(--navy2)">二つの独立なデータで、同じ3集落が浮かぶ</h3>
+            <p>博士論文は次のように整理している。「まず、<b>媒介中心性の低かった地点は、上開田、塚、戸入である</b>。そして、それぞれのアクセント形式は、上開田が甲種、塚が中間型、戸入が乙種である。<b>慣習データでは、特異点が上開田、塚、戸入であり、媒介中心性の低い地点と一致する</b>」。</p>
+            <p>さらに、外れ方の中身についても検討している。「また、それぞれの特異性は、相互に近い特徴を持つものではなく、<b>ばらばらの特徴から成立している</b>ことが、対応分析の得点からわかる。このことから、慣習については、それぞれの集落の独自性が強い事がわかる」。3集落が同じ方向に外れるのではなく、それぞれ別の方向に外れている、という読みである。</p>
+            <p>そのうえでの解釈が「<b>全く別の現象で、同じ集落に特徴が現れるのは、それぞれの現象が地理的な条件に束縛されている可能性を示唆している</b>。その地理的な条件の一つが媒介中心性として、今回分析できたと考えられる」である。媒介中心性は、アクセントと慣習の両方を外側から規定する条件の候補として提示されている。</p>
+        </div>
+        <p class="body">
+        媒介中心性が低いことの意味づけも書かれている。「媒介中心性は、集落同士を中継するような地点を高く評価する指標であるため、<b>媒介中心性が低いということは、中継地点ではないということを示している</b>。つまり、接触変化は起こりづらく、内的変化が起こり、独自の方向へと変化が起こりやすいということである」。
+        </p>
+        <div class="sub">
+            <h3>ただし、発表資料の方は慎重に書いている</h3>
+            <p>2012年の発表資料の考察は、同じ一致を指摘したうえでこう結んでいる。「言い習わし集データでの特異地点（戸入、塚、上開田）と交通状況のネットワークの媒介中心性が低いと出た地点（戸入、塚、上開田、※門入はデータの制約によるものなのでここでは省く）の一致については、<b>結論を急ぐことはできないが</b>、風習の内容といわゆる『行きにくい場所』との間に何らかの関係を見て取れるのではないかと考えられる」。</p>
+            <p>括弧の中の但し書きにも注意したい。門入の媒介中心性は 0.000 だが、これは門入が巡回路データの端点（他へ抜ける辺が1本しかない）であることによる。資料自身が「データの制約によるもの」として考察から外している。<b>0 という値は、孤立の度合いではなく、データの切り取られ方を反映しうる</b>。</p>
+        </div>
+        <div class="sub">
+            <h3>英語版の発表でも同じ順序で述べられている</h3>
+            <p>Geometrical and Topological Analysis for Dialect Distribution の結論スライドは、(2) 東部アクセントと中間型アクセントの地点で媒介中心性が低いこと、(3)「Settlements which traffic route's betweenness centrality is low are CA's Result (about Local histories and customs data) is Located off from other data.」を挙げ、そこから「Relationship of dialect, traffic condition and socio-cultural phenomena is revealed quantitatively.」と結んでいる。主張の範囲は「関係が定量的に示された」までで、因果までは述べていない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>限界</h2>
+        <p class="q">この数値が何でないかを、先に確認しておく。</p>
+
+        <div class="warn">
+            <h3>これは僧侶の経路であって、一般の人の移動ではない</h3>
+            <p>グラフの辺は、近世における<b>誠照寺からの僧侶の巡回路</b>である。真宗の僧侶が門徒の村を回るために使った道であって、村人の日常の行き来、物資の運搬、婚姻の往来を記録したものではない。したがって、ここで求めた媒介中心性は、正確には「僧侶の巡回路網において通過点になりやすい度合い」である。</p>
+            <p>これを言語や慣習の伝播と結びつけるには、「僧侶が通った道は、人と物が通った道でもある」という前提が要る。この前提は、資料の中で検証されていない。博士論文自身も「今回用いた巡回路に入っていない集落の存在と交流の有無についても調べる必要がある」と課題に挙げている。</p>
+            <p>実際、村内の言語分布を説明するうえで巡回路網が足りていないことを示す記述もある。門入が甲種を示す理由について、博士論文は巡回路ではなく<b>婚姻関係</b>を挙げている。「さらに西側の道を抜けた先にある坂内村と婚姻関係を結ぶことが多かったことが分かっている」。婚姻を通じた言語体系の流入は、このグラフには入っていない経路である。</p>
+        </div>
+
+        <div class="warn">
+            <h3>近世の経路で、20世紀に記録された言語分布を説明している</h3>
+            <p>ネットワークは近世の巡回路から作られている。一方、アクセントのデータは野村 (1977) 所収の杉戸の報告（調査は1971・1976年）、慣習のデータは昭和24〜25年の全国慣習状況調査である。<b>資料の時代が数世紀ずれている</b>。</p>
+            <p>この点は博士論文自身が明記している。「本研究では、<b>近世のみをネットワーク化したが、交通路における人や物の移動の有無は時間の経過に伴って変化する</b>。このため、近世、近代、現代に分けてその変遷を追い、言語伝播の様相を具体的に言語外の要素との結びつきの中で探っていく必要がある」。また「徳山村の北や東の地域との交通網については今回の巡回路からある程度判明したが、<b>西や南の交通網についても復元する必要がある</b>」とも述べている。</p>
+            <p>言語変化が近世の交通条件のもとで進んだのだと考えれば時代差は問題にならないが、それは検証されていない仮定である。どの時点の交通状況がどの時点の言語状態に効いたのかは、資料からは判断できない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>標高差を水平距離と同じ単位で足すことには、根拠と恣意性の両方がある</h3>
+            <p>2012年の発表資料の式は、水平距離と標高差をそのまま二乗和して平方根を取っている。これは幾何的には斜面に沿った直線距離だが、<b>移動コストとしては標高差の効きを過小に見積もる</b>。実際、博士論文では標高差に 8.3 を掛ける形に改められており、同じデータから計算した値が 658 と 682、3541 と 3632 のように食い違っている。</p>
+            <p>8.3 という係数には Langmuir の経験則という根拠がある。しかし、それは「係数を決める一つの流儀」であって、唯一の正解ではない。博士論文自身が「歩行コストについては数あるモデル式の中で<b>どれを選択するべきかという問題も生じる</b>」と書いているとおりである。別の歩行コストモデルを選べば、辺の重みは変わり、最短経路が変わり、媒介中心性も変わりうる。</p>
+            <p>資料からは、係数を変えたときに中心性の順位がどれだけ動くかを確かめた記述は見当たらない。<b>感度分析は行われていないと読める</b>。</p>
+        </div>
+
+        <div class="warn">
+            <h3>辺の重みが媒介中心性の計算に実際に使われたかどうかは、資料からは判断できない</h3>
+            <p>博士論文巻末の R スクリプト（Appendix. 16）は、辺の値として (1)式の<b>逆数に 10000 を掛けた値</b>を与えたうえで、<code>be &lt;- betweenness(s3, rescale = TRUE)</code> を呼んでいる。sna の <code>betweenness</code> は辺の値を使うかどうかを引数で切り替える関数だが、スクリプトにはその指定が書かれていない。また、表6-3 に印刷された値（最大 631.667）は <code>rescale = TRUE</code> の出力とは尺度が異なるので、表の値は別の呼び出しから得られたものと考えられる。</p>
+            <p>つまり、<b>表6-3 の媒介中心性が重み付き最短経路によるものなのか、辺の有無だけによるものなのかは、資料からは確定できない</b>。もし後者であれば、前節で議論した標高差の扱いは、ネットワーク図の描画（エッジの太さとノードの色）には効いているが、中心性の数値そのものには効いていないことになる。ここは原資料の記述だけでは決められない点として残しておく。</p>
+        </div>
+
+        <div class="warn">
+            <h3>頂点が少なく、端点の値が 0 に張り付く</h3>
+            <p>グラフは44頂点である。このうち、高倉峠・門入・奥谷・水鳥西光寺の4地点は媒介中心性が 0.000 である。これらはグラフの端にあり、他の頂点対の最短経路が通りようがない。<b>0 という値は「極端に孤立している」ことの証拠ではなく、「データの切り取り方によって端になった」ことの帰結でもある</b>。発表資料が門入を考察から外しているのは、この事情による。</p>
+            <p>頂点数が少ないとき、辺を1本足すか引くかで中心性の順位が大きく動きうる。巡回路の図から辺を読み取る作業には判断が入るし、「巡回路に入っていない集落」が博士論文の課題に挙がっていることからも、頂点集合は確定したものではない。<b>個々の値の小数点以下を比べることに意味があるとは考えにくい</b>。本文の読み方が「相対的に低い」「相対的に高い」という粗い粒度にとどめられているのは、この事情に対応している。</p>
+        </div>
+
+        <div class="warn">
+            <h3>一致は相関であって、因果ではない</h3>
+            <p>媒介中心性の低い集落と、慣習データの外れ値になる集落が一致した。これは 8 集落のうち 3 集落が重なったという観察であり、<b>統計的な検定が行われた形跡は資料に無い</b>。頂点数がこの規模では、偶然の一致を排除できる検出力は期待しにくい。</p>
+            <p>博士論文も因果を主張していない。「<b>それぞれの現象が地理的な条件に束縛されている可能性を示唆している</b>」という書き方であり、「ここで起きた変化は接触変化であるという証拠はない」とも明言している。さらに考察は、変化の基本を接触変化と見る読みと内的変化と見る読みの両方を並べ、どちらが正しいかは決めていない。</p>
+            <p>2012年の発表資料の「結論を急ぐことはできないが」という但し書きも同じ方向である。この一致から言えるのは、<b>交通条件が言語と民俗の両方に効いているという仮説が、否定はされなかった</b>ということまでである。</p>
+        </div>
+
+        <div class="warn">
+            <h3>言語側のデータは8集落のうち5集落しかない</h3>
+            <p>媒介中心性は44地点すべてについて計算されているが、突き合わせる相手であるアクセントのデータは、徳山村8集落のうち<b>5集落</b>にしかない。博士論文は「場所は、徳山村8集落のうち、<b>本郷、門入、櫨原、塚、戸入の5集落</b>である」と書いている。山手・上開田・下開田には、独自のアクセント記録がない。</p>
+            <p>さらに、表6-1 に型が載っているのは 本郷・塚・戸入 の3系統だけである。「表中に、調査対象地域である<b>門入、櫨原の記載がないのは、本郷と同じアクセント体系であるためである</b>」とされている。したがって、表6-4 で 本郷・櫨原・門入 の言語的距離が 0.113 で揃うのは、独立な3回の測定が一致した結果ではなく、<b>杉戸の報告が三者を同一体系としたことの帰結</b>である。</p>
+            <p>考察には「櫨原、山手、本郷、上開田、下開田がその地理的な距離に関わらず、言語的な距離で同値を示すのは、地理的要因以外の働き、例えば交通量によるものと推測され」という一節があるが、このうち山手・上開田・下開田については、表6-1・表6-4 に元になるアクセント記録が見当たらない。<b>この一節がどのデータに基づいているのかは、手元の資料からは判断できない</b>。</p>
+        </div>
+
+        <div class="warn">
+            <h3>資料の帰属に食い違いがある</h3>
+            <p>巡回路の出典について、2012年の発表資料は「近世の誠照寺からの僧侶の巡回路（<b>徳山村史編集委員会 1973</b>）図2」と記し、博士論文は「<b>民俗資料緊急調査報告書 [岐阜県教育委員会, 1973]</b>に記載の近世における誠照寺の巡回路（図6-1）」と記している。どちらの文献に載っている図を使ったのか、あるいは両方に同じ図が収録されているのかは、手元の資料からは判断できない。参考文献欄には両方の文献が挙がっている。</p>
+        </div>
+
+        <div class="warn">
+            <h3>この手法は、言語データを一切見ていない</h3>
+            <p>最後に、当たり前だが重要な点を確認しておく。媒介中心性の計算に使われたのは、巡回路の図と各地点の緯度経度・標高だけである。アクセントも慣習も入っていない。だからこそ、言語データとの一致に意味がある——というのがこの分析の設計である。</p>
+            <p>逆に言えば、この数値は<b>言語について何も言っていない</b>。「戸入の媒介中心性が低い」は交通ネットワークの性質であり、「戸入のアクセントが孤立している」は言語の性質である。両者を結ぶのは解釈であって、計算ではない。二つを混ぜて「媒介中心性が言語の孤立を測っている」と言ってしまうと、この分析が独立な2つの測定を突き合わせていることの意味が消える。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>出典とデータ</h2>
+        <ul class="refs">
+            <li>小野原彩香 (2012a)「定量的側面からの言語形式と外言語的要素の関係——岐阜県徳山村の地理的要因と民俗的要因を例として——」第147回 変異理論研究会、2012年4月14日。媒介中心性の定義は 4.3.3（9頁）、巡回路の図は図3（5頁）、エッジの重みの式と地理的距離の値は図6・図7（10頁）、交通ネットワーク図は図8（11頁）、対応分析は図9・図10（12–13頁）、考察は13–14頁。</li>
+            <li>小野原彩香 (2012b)「岐阜県旧徳山村におけるアクセント様相と交通」発表スライド。ネットワークの構築は23–26枚目、集落間距離と言語的距離の表は28枚目、言語的距離と地理的距離の図は29枚目。「R の sna パッケージを用いて構築及び描画を行った。(Script は省略)」と明記されている。</li>
+            <li>小野原彩香 (2012c) "Geometrical and Topological Analysis for Dialect Distribution"（英語版発表資料）。Gower 距離は8枚目、媒介中心性のネットワーク図は9枚目、慣習データとの対照は10枚目、結論は11–12枚目。</li>
+            <li>小野原彩香 (2013)『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』同志社大学大学院 文化情報学研究科、2013年度。第6章「事例4 アクセント形式と交通状況との関係」が本ページの主な典拠。方法は97–99頁、結果は100–105頁、考察は106–107頁。媒介中心性の数値表は表6-3（102頁）、集落間距離は表6-5・表6-6（103頁）。中心性の定義は第4章（51頁）。R スクリプトは巻末 Appendix. 15・16。慣習データの対応分析は第7章「事例5 アクセント形式と人口、慣習の関係」、考察は115–116頁。</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>一次資料</h3>
+            <ul class="refs">
+                <li>巡回路：近世における誠照寺からの僧侶の巡回路。小野原 (2012a) は 徳山村史編集委員会 編『徳山村史』大衆書房、1973 を、小野原 (2013) は 民俗資料緊急調査報告書 [岐阜県教育委員会, 1973] を典拠として挙げている。</li>
+                <li>アクセント：野村正良 (1977)「岐阜県揖斐郡徳山村戸入方言の記述的報告及び成立過程に就いての二三の考察——付アクセントの分布と変遷——」『名古屋大学文学部研究論集』70、3–17頁。所収の杉戸清樹による報告。調査時期は1971年および1976年、対象は徳山村8集落のうち本郷・門入・櫨原・塚・戸入の5集落、1〜3拍の名詞、老年層（60〜80歳代）。表として型が示されているのは本郷・塚・戸入の3系統で、門入・櫨原は本郷と同じ体系とされている。</li>
+                <li>慣習：岐阜県教育委員会 (1973)『徳山：昭和47年度民俗資料緊急調査報告書』（大島暁雄・松崎憲三・宮本袈裟雄 編、東海の民俗／静岡県編・岐阜県編［復刻版］、日本民俗調査報告書集成、三一書房）記載の「縁起・言いならわし集」。旧文部省迷信調査協議会による全国慣習状況調査（迷信調査協議会, 1955）の第16問により全国6373世帯から収集された全907件のうち、徳山村各字にあるものについての調査結果。</li>
+                <li>戸数（昭和47年）：門入 36、戸入 58、上開田 45、本郷 142、山手 45、櫨原 56、塚 34。小野原 (2012a) 1頁。</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Butts, C. T. (2010) <i>sna: Tools for Social Network Analysis</i>. R package. <a href="https://cran.r-project.org/package=sna" target="_blank" rel="noopener noreferrer">CRAN</a>　博士論文に記録されたバージョンは 2.3-1（2013-02-28）。</li>
+                <li>鈴木努 (2009)『R で学ぶデータサイエンス 8　ネットワーク分析』共立出版。次数中心性・媒介中心性・情報中心性の定義はここから引かれている。</li>
+                <li>Langmuir, E. (1984) <i>Mountaincraft and Leadership</i>. Scottish Sports Council / Mountainwalking Leader Training Board.　標高差を水平距離の 8.3 倍に換算する根拠として、博士論文が cf. の形で挙げている文献。</li>
+                <li>Gower, J. C. (1971) A general coefficient of similarity and some of its properties. <i>Biometrics</i>, 27(4), 857–871. <a href="https://www.jstor.org/stable/2528823" target="_blank" rel="noopener noreferrer">jstor.org</a></li>
+                <li>柴田武 (1969)『言語地理学の方法』筑摩書房。</li>
+                <li>井上史雄・太田有多子 (1989)「方言の地域差・個人差の多変量解析　岐阜県徳山村」『計量国語学』17–2。「他集落にくらべての交通上の不便さ」の記述がある。</li>
+                <li>上野善道 (1987)「日本本土諸方言アクセントの系譜と分布(2)」『日本学士院紀要』42(1)、15–70頁。</li>
+                <li>宮岡伯人 (1996) 言語形成期に関する議論。博士論文が門入の甲種アクセントを婚姻関係から説明する際に参照している。</li>
+                <li>馬瀬良雄 (1985) 集団移住による孤立言語の例。博士論文が戸入の移住可能性を検討する際に参照している。</li>
+            </ul>
+            <p class="cap">鈴木 (2009)、Langmuir (1984)、宮岡 (1996)、馬瀬 (1985) は、博士論文の本文中の参照表記から起こしたものである。手元の刷りから書誌の細部（版・頁）まで確認できなかったものについては、確認できた範囲にとどめた。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>媒介中心性は確率モデルを立てない。集落と峠を頂点、道を辺とするグラフを作り、辺に長さを与え、<b>その長さで測った最短経路という幾何的な構造</b>を数え上げて数値にする。距離を定義し、距離の上で最小値を取る点を探す——という手続きは、<a href="../">7つの観点を式で読む</a>の<b>観点1（幾何）</b>そのものである。最小二乗が「誤差の二乗和を最小にする点」を探すように、最短経路は「重みの総和を最小にする経路」を探す。どちらも、データに距離を入れたうえで最小化する操作である。</p>
+        <p style="margin-top:10px">違いは、最小化の舞台がユークリッド空間ではなくグラフであることだけである。そして幾何の常として、<b>距離の定義がすべてを決める</b>。標高差に 8.3 を掛けるかどうかで辺の重みが変わり、最短経路が変わり、中心性が変わる。同じ研究の中で言語側の距離をどう作るかを扱っているのが <a href="../gower-distance/">Gower距離</a>、同じデータを行と列の対応という別の幾何で見るのが <a href="../correspondence-analysis/">対応分析</a> である。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値と引用はすべて出典に印刷された記述から取り、推定や概算は記載していません。原資料のあいだで食い違う箇所（辺の重みの式、巡回路の出典）は、どちらか一方に寄せずに両方を示しました。<br>
+    言語側の距離の作り方は <a href="../gower-distance/">Gower距離</a>、民俗データの外れ値検出は <a href="../correspondence-analysis/">対応分析</a>、距離行列から系譜を描く側は <a href="../neighbor-net/">系統ネットワーク</a>、地理的距離と言語的距離の相関そのものを検定する方法は <a href="../mantel/">Mantel検定</a> にあります。手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-21 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

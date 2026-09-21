@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gower距離 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="名義尺度のデータから距離を作る Gower 距離について、1 から合致率を引くという定義、アクセントの揺れ・併存を全組み合わせに展開する列挙法、R の daisy による実装、岐阜県旧徳山村のアクセント資料に適用した実際の数値、そして符号化の粒度や等重み平均がもたらす限界を整理したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        .sub p + p { margin-top:10px; }
+        pre.rcode { background:#eef1f4; border-radius:8px; padding:14px 18px; margin-top:12px; overflow-x:auto;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.84em;
+                    color:var(--navy2); line-height:1.8; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Gower距離</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/gower-distance/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（最小二乗）</a></span>
+        <h1>Gower's <span>Distance</span></h1>
+        <p class="lead">アクセント型のような<b>名義尺度のデータから距離を作る</b>手続きです。「合っているか、合っていないか」だけを数え、合致率を 1 から引いたものを距離とします。<br>
+        小野原の博士論文（2013年度）第6章 事例4 で、岐阜県旧徳山村のアクセント体系を数値化する入口に置かれている手続きです。何が測れていて、何が測れていないのかを、論文に印刷された数値に即して整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">アクセント型という、足し算も引き算もできないデータを、比較できるひとつの指標に合成する。</p>
+        <p class="body">
+        手元にあるのは、地点ごとのアクセント型の記述である。「柄・蚊・血」の型は、本郷で <code>HHH~HHL</code>、戸入で <code>HH~LH</code>、東京式で <code>LH</code>、京阪式で <code>HHH</code> のように、高拍（H）と低拍（L）の並びとして書かれている。問いは、<b>この地点とあの地点は、どれくらい違うのか</b>という一点にある。
+        </p>
+        <p class="body">
+        この記述は、そのままでは比べられない。セルによって拍数が違い、\(\sim\) を挟んで2つの型が併記されている場合もあり、1つの地点は15個のセルに分かれている。論文はここを「地点同士のすべてのアクセント情報同士を比較する必要があり、そのときに<b>すべて同じ基準でひとつの指標に合成する必要がある</b>ため」と述べ、15個のセルから作った一連のパターンを距離に置き換えるという方針を取る。
+        </p>
+        <p class="body">
+        なぜ距離の測り方をわざわざ選ぶ必要があるのか。名義尺度、すなわち大小も間隔も定義されていない尺度では、カテゴリに数値を割り当てても、その数値に意味がないからである。仮に型そのものを1つのカテゴリとして扱うなら、\(\text{HHH}\) に 1、\(\text{HHL}\) に 2、\(\text{LHH}\) に 3 と振っても、「\(\text{LHH}\) は \(\text{HHH}\) の3倍」でも「\(\text{HHL}\) は両者の中間」でもない。<b>割り当て方を変えれば距離が変わってしまう</b>以上、出てきた数値は手法の出力ではなく符号化の副産物になる。Gower 距離が見るのは一致しているか否かだけなので、ラベルの付け方に結果が依存しない。
+        </p>
+        <div class="warn">
+            <h3>このデータに限れば、ユークリッド距離でも順序は変わらない</h3>
+            <p>ただし正確に言えば、この研究が最終的に採った符号化は<b>2値</b>である。論文は「パターンの H を 1、L を 0 として、2 値の変数に変換した上で」daisy に渡したと明記している。値が2つしかない変数では、1 と 0 の割り当ては恣意的ではなく、ユークリッド距離も意味を持つ。</p>
+            <p>実際、52 個の位置のうち不一致の数を \(m\) とすると、ユークリッド距離は \(\sqrt{m}\)、Gower 距離は \(m/52\) であり、<b>どちらも \(m\) の増加関数なので、地点の並び順は同じになる</b>。このデータでユークリッド距離を使っても結論は変わらない。</p>
+            <p>では Gower 距離を使う意味はどこにあるのか。(1) 値が 0 から 1 に正規化され、「何割の位置で食い違うか」として読めること。(2) カテゴリが3つ以上ある場合、欠測がある場合、量的変数と名義変数が混在する場合にそのまま拡張できること。この研究は (1) の利点を使っており、(2) は使っていない。<b>手法の一般性と、この適用事例で実際に効いている部分は別である。</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>定義</h2>
+        <p class="q">変数ごとに一致度を決め、その平均を 1 から引く。</p>
+        <p class="body">
+        Gower (1971) が提案した係数は、<b>変数の型が混ざっていてもよい</b>ことを目的に設計されている。2つの対象 \(i, j\) と \(p\) 個の変数について、変数ごとの類似度 \(s_{ijk}\) と、その変数を比較に使うかどうかを表す重み \(w_{ijk}\) を定め、重み付き平均を取る。
+        </p>
+        <div class="eq">
+            <div class="lbl">一般形の Gower 係数と、そこから作る距離</div>
+            \[ S_{ij} \;=\; \frac{\sum_{k=1}^{p} w_{ijk}\, s_{ijk}}{\sum_{k=1}^{p} w_{ijk}}, \qquad d_{ij} \;=\; 1 - S_{ij} \]
+            <p class="read"><b>\(s_{ijk}\)</b> … 変数 \(k\) における一致度。名義尺度なら一致で 1、不一致で 0。量的変数なら値域 \(R_k\) で割った \(1 - |x_{ik}-x_{jk}|/R_k\)。順序尺度なら順位に直してから同様に扱う<br>
+            <b>\(w_{ijk}\)</b> … どちらかが欠測なら 0、比較できるなら 1。分母が「実際に比べられた変数の数」になる<br>
+            <b>\(d_{ij}\)</b> … 1 から類似度を引いたもの。0 なら全変数が一致、1 なら全変数が不一致</p>
+        </div>
+        <p class="cap">一般形の記述は手法の標準的な定式化による。論文に書かれているのは、次に示す名義尺度の場合だけである。</p>
+        <p class="body">
+        この研究で使われたのは、<b>すべての変数が同じ型で、欠測がない場合</b>である。このとき \(w_{ijk}\) はすべて 1 になり、式は次のように縮む。
+        </p>
+        <div class="eq">
+            <div class="lbl">この研究で使われた形</div>
+            \[ d(x, y) \;=\; 1 - \frac{1}{p}\sum_{k=1}^{p} \mathbf{1}\!\left[\, x_k = y_k \,\right] \;=\; 1 - \frac{\text{合致数}}{\text{全体数}} \]
+            <p class="read">論文はこれを次のように定義している。「Gower's Distance とは、名義尺度データ同士の組み合わせの合致率を元に算出する距離であり、ある行とある行の要素の組み合わせの合致数を行全体の要素数で割り、1 から引いた値である。」</p>
+        </div>
+        <div class="sub">
+            <h3>2値変数では、名義として扱っても量的として扱っても同じ値になる</h3>
+            <p>H を 1、L を 0 に直した2値変数では、名義尺度としての一致度（一致なら 1）と、値域 \(R_k = 1\) の量的変数としての一致度 \(1 - |x_{ik}-x_{jk}|/1\) が<b>完全に一致する</b>。したがって、daisy が列を factor と見るか numeric と見るかに関わらず、同じ距離が出る。この研究の符号化では、列の型宣言が結果を左右しない。</p>
+            <p>この特殊形は、<b>単純一致係数（simple matching coefficient）の補数</b>であり、長さで割ったハミング距離に等しい。つまりこの研究で行われている計算そのものは、Gower の一般形が持つ「型の混在への対応」を使っていない。使われているのは一般形のうち<b>一致・不一致の枝だけ</b>である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>データをどう作ったか</h2>
+        <p class="q">アクセントの「揺れ」と「併存」を、ありうる型の全組み合わせに展開する。</p>
+        <p class="body">
+        入力は表6-1「名詞（+助詞）アクセントの型（老年層）」である。一拍名詞3類・二拍名詞5類・三拍名詞7類の計15類について、格助詞「が」を後接させた型が H と L で書かれている。論文の説明によれば、これは<b>野村 (1977) の論文中に併せて記載のある杉戸の報告</b>であり、本郷・戸入・塚のアクセント体系に、金田一 (2003) p.71 から引いた東京式・京阪式を付け加えたものである。
+        </p>
+        <ol class="steps">
+            <li><b>調査時期</b>　1971年および1976年。</li>
+            <li><b>対象</b>　徳山村8集落のうち、本郷・門入・櫨原・塚・戸入の<b>5集落</b>。表中に門入と櫨原の記載がないのは、本郷と同じアクセント体系であるためと論文が明記している。</li>
+            <li><b>インフォーマント</b>　老年層で、<b>各集落最低2名</b>。</li>
+            <li><b>分析項目</b>　1拍から3拍の名詞。</li>
+        </ol>
+        <p class="body">
+        ここで問題になるのが、表の中に「\(\text{LHL} \sim \text{HLL}\)」のように<b>2つの型が併記されたセル</b>があることである。論文は2種類を区別して説明する。\(\sim\) の左右の関係は<b>音声的な揺れ</b>、同じセル内に上下に並べて書かれた関係は<b>併存</b>（杉戸の用語では、揺れよりも強固にその型の発音が見られる場合）である。
+        </p>
+        <div class="warn">
+            <h3>なぜ展開する必要があるのか</h3>
+            <p>併記されたセルを1つの記号としてそのまま扱うと、「\(\text{LHL} \sim \text{HLL}\)」は「\(\text{LHL}\)」とも「\(\text{HLL}\)」とも別のカテゴリになる。名義尺度では部分一致という概念がないので、<b>揺れを持つ地点は、揺れの片方と完全に一致する地点に対しても「不一致」になってしまう</b>。揺れの幅が広い地点ほど他のどの地点からも遠く出るという、記述の書き方だけで決まる結果が生じる。</p>
+            <p>論文が挙げる理由はこれより一段手前にある。「なぜなら、地点同士のすべてのアクセント情報同士を比較する必要があり、そのときに<b>すべて同じ基準でひとつの指標に合成する必要がある</b>ためである。」併記されたセルを「その地点で話されていた可能性のある型の集合」と読み直し、拍数ごとに各類が取りうる型を1つずつ選んだ組み合わせをすべて作れば、地点は1本の文字列ではなく<b>文字列の集合</b>として同じ形式で表せる。</p>
+            <p>揺れと併存を区別せず並列に扱った理由も明記されている。「インフォーマント間で揺れるのか、一人のインフォーマントに何度か同じ語を発音してもらった時に揺れるのか、同じ語類の中で同一人物の発音が揺れるのかは<b>不明</b>であり」、かつ杉戸のいう併存との違いが「明確ではないため」である。<b>区別できるだけの情報が元の記述にないから、区別しない</b>という判断である。</p>
+        </div>
+        <div class="sub">
+            <h3>組み合わせ数</h3>
+            <p>本郷について、論文は数え上げを具体的に示している。一拍名詞の3類は表6-1 で \(\text{HHH} \sim \text{HHL}\) / \(\text{HHL}\) / \(\text{HHL} \sim \text{LHH}\) なので、取りうる組み合わせは次の 4 パターンになる。</p>
+            <pre class="rcode">HHH/HHL/HHL
+HHH/HHL/LHH
+HHL/HHL/HHL
+HHL/HHL/LHH</pre>
+            <p>同様に二拍名詞だけの組み合わせが 6 パターン、三拍名詞だけの組み合わせが 16 パターンで、\(4 \times 6 \times 16 = 384\) パターンとなる。塚は 1024 パターン、戸入は 4608 パターンである。塚と戸入については、拍数ごとの内訳は論文に記載がない。</p>
+        </div>
+        <div class="sub">
+            <h3>符号への置き換え</h3>
+            <p>15類すべてをつないだ1パターンは、H と L からなる<b>52 文字</b>の文字列になる。52 という長さは、表6-1 から直接確かめられる。一拍名詞は3類 × 3拍、二拍名詞は5類 × 3拍、三拍名詞は7類 × 4拍であり、\(9 + 15 + 28 = 52\) である。</p>
+            <p>そのうえで論文は「パターンの H を 1、L を 0 として、2 値の変数に変換した上で」daisy に渡している。<b>比較の単位は「語（類）」ではなく「拍」</b>である。この粒度の選択が、第6節で見るように値そのものを左右する。</p>
+            <p>なお、同じ分析を口頭・ポスターで発表した資料では、元の表記（\(\bullet\) 高拍・\(\blacktriangledown\) 長音化した第2拍・\(\circ\) 低拍・拍無し）を a / b / c / 0 の4値に置き換えたと説明されている。<b>博士論文の版は H / L の2値</b>であり、\(\blacktriangledown\) は高拍として H にまとめられている。掲載されている距離行列の値は両者で同じである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>実際の計算</h2>
+        <p class="q">52 個の位置を並べて、合っている数を数えるだけである。</p>
+        <p class="body">
+        論文は、本郷の第1パターンと第2パターンを例に挙げている。この2本は最後の2文字だけが異なる。
+        </p>
+        <div class="eq">
+            <div class="lbl">論文に印刷されている計算</div>
+            \[ \text{全体の数} = 52, \qquad \text{合致数} = 50, \qquad d = 1-\frac{50}{52} = 0.038 \]
+            <p class="read">「52 の要素があり、そのうち最後の 2 つの要素だけが異なる。すなわち合致数は 50 であるから、Gower's Distance は、1-(50/52)＝0.038 という値になる。」\(1 - 50/52 = 0.03846\ldots\) であり、後述する表6-2 の 本郷1–本郷2 の値 0.038 と一致する。<b>最適化も反復計算もない。</b></p>
+        </div>
+        <div class="sub">
+            <h3>最も遠い組も、同じ式で追える</h3>
+            <p>表6-2 で最大の値は 本郷1–戸入4608 の <b>0.538</b> である。定義から逆算すると、\(1 - m/52 = 0.538\) を満たす合致数は \(m = 24\) であり、<b>52 個の位置のうち 24 個で一致し、28 個で食い違っている</b>ことになる。\(1 - 24/52 = 0.53846\ldots\) で、印刷値 0.538 と一致する。</p>
+            <p>本郷1 と本郷2 は 50/52 が一致し、本郷1 と戸入4608 は 24/52 しか一致しない。この2つの数の対比が、そのまま「同じ集落の中の揺れ」と「集落をまたいだ体系の違い」の対比になっている。</p>
+        </div>
+        <p class="cap">同じ例は 2012 年の発表資料でも報告されているが、計算例の書き方が異なる。このページの数値と式は、すべて博士論文（第6章 事例4）の記述に依拠している。</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Rでの実行</h2>
+        <p class="q">cluster パッケージの daisy に metric="gower" を渡すだけである。</p>
+        <p class="body">
+        論文は「統計解析ソフト R のパッケージ cluster の関数 daisy にて Gower's Distance を算出した」と述べている。同じ分析の発表資料には、実際のスクリプトが5行で示されている。<code>data</code> は、全パターンを1行1パターン・1列1拍に並べ、H を 1・L を 0 に直した表である。
+        </p>
+        <pre class="rcode">library(cluster)
+dgower &lt;- daisy(data,  metric="gower")
+mgower=as.matrix(dgower)
+diag(mgower) &lt;- 0
+write.csv(mgower,file="goweracc.csv")</pre>
+        <div class="sub">
+            <h3>この5行が何をしているか</h3>
+            <p><code>daisy</code> は距離オブジェクトを返す関数で、<code>metric="gower"</code> を指定すると第2節の一般形で距離を計算する。列の型が計算式を決めるのが daisy の設計だが、第2節で見たとおり<b>2値の列ではどちらの扱いでも同じ値になる</b>ので、ここでは型宣言が問題にならない。</p>
+            <p><code>as.matrix</code> で対称行列に直し、<code>diag</code> に 0 を代入して対角成分を明示的に揃え、CSV に書き出している。</p>
+            <p>行数は本郷 384 ＋ 塚 1024 ＋ 戸入 4608 で <b>6016</b> になる。したがって出力は 6016 × 6016 の距離行列である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>結果</h2>
+        <p class="q">パターン間の距離をまず出し、それを集落ごとに平均して集落間の距離とする。</p>
+        <p class="body">
+        算出される Gower 距離は<b>各パターン間の距離</b>であって、集落間の距離ではない。そこで論文は「集落内の全パターン同士の平均値を集落間の言語距離とした」と述べている。6016 × 6016 の行列を、5 × 5 の表に畳む操作である。論文はこの値を「<b>疑似的な言語距離</b>」と呼んでいる。
+        </p>
+
+        <div class="sub">
+            <h3>表6-2　各パターン間の Gower's Distance（論文に掲載された抜粋）</h3>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th></th><th class="num">本郷1</th><th class="num">本郷2</th><th class="num">…</th><th class="num">本郷384</th><th class="num">塚1</th><th class="num">…</th><th class="num">戸入4607</th><th class="num">戸入4608</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>本郷1</td><td class="num">0</td><td class="num">0.038</td><td class="num">…</td><td class="num">0.173</td><td class="num">0.192</td><td class="num">…</td><td class="num">0.462</td><td class="num">0.538</td></tr>
+                <tr><td>本郷2</td><td class="num"></td><td class="num">0</td><td class="num">…</td><td class="num">0.135</td><td class="num">0.231</td><td class="num">…</td><td class="num">0.5</td><td class="num">0.5</td></tr>
+                <tr><td>…</td><td class="num"></td><td class="num"></td><td class="num">…</td><td class="num"></td><td class="num"></td><td class="num">…</td><td class="num"></td><td class="num"></td></tr>
+                <tr><td>本郷384</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td><td class="num">0.308</td><td class="num">…</td><td class="num">0.462</td><td class="num">0.462</td></tr>
+                <tr><td>塚1</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td><td class="num">…</td><td class="num">0.327</td><td class="num">0.404</td></tr>
+                <tr><td>…</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">…</td><td class="num"></td><td class="num"></td></tr>
+                <tr><td>塚1024</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.481</td><td class="num">0.404</td></tr>
+                <tr><td>戸入1</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.423</td><td class="num">0.423</td></tr>
+                <tr><td>…</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">…</td><td class="num">…</td></tr>
+                <tr><td>戸入4607</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td><td class="num">0.077</td></tr>
+                <tr><td>戸入4608</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値は表6-2 から印刷されたとおりに引用した。距離行列は対称なので上三角のみが掲載されており、行・列の間の「…」は省略を表す。ここに見えているのは 6016 × 6016 の行列のごく一部である。掲載された値はいずれも \(k/52\)（\(k\) は不一致数）をそのまま丸めたものになっており、0.038 は \(2/52\)、0.077 は \(4/52\)、0.173 は \(9/52\)、0.538 は \(28/52\) に対応する。読者が定義に戻って検算できる形である。</p>
+        <p class="body">
+        読み方は単純である。同じ集落の中のパターン同士（本郷1–本郷2 の 0.038、戸入4607–戸入4608 の 0.077）は近く、集落をまたぐと遠くなる（本郷1–戸入4608 の 0.538）。ただし<b>同じ集落の中でも 0 ではない</b>。本郷1–本郷384 は 0.173 あり、これは展開した384パターンの両端どうしが 52 個中 9 個の位置で食い違うことを意味する。揺れの幅が、そのまま距離として現れている。
+        </p>
+
+        <div class="sub">
+            <h3>表6-4　集落間の言語的距離</h3>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th></th><th class="num">本郷</th><th class="num">櫨原</th><th class="num">門入</th><th class="num">塚</th><th class="num">戸入</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>本郷</td><td class="num">0.113</td><td class="num">0.113</td><td class="num">0.113</td><td class="num">0.260</td><td class="num">0.475</td></tr>
+                <tr><td>櫨原</td><td class="num"></td><td class="num">0.113</td><td class="num">0.113</td><td class="num">0.260</td><td class="num">0.475</td></tr>
+                <tr><td>門入</td><td class="num"></td><td class="num"></td><td class="num">0.113</td><td class="num">0.260</td><td class="num">0.475</td></tr>
+                <tr><td>塚</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.240</td><td class="num">0.393</td></tr>
+                <tr><td>戸入</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.240</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">表6-4 より。上三角のみの掲載。対角成分が 0 でないのは、同じ集落の中のパターン同士の平均だからである。本郷・櫨原・門入は同じアクセント体系として扱われているため、この3集落が関わるセルはすべて同じ値になる。</p>
+
+        <div class="sub">
+            <h3>戸入が遠いとは、どういうことか</h3>
+            <p>旧徳山村の集落のうち、戸入だけが乙種（東京式）のアクセントを持ち、本郷ほかは甲種（京阪式）、塚は中間型とされてきた。論文は表6-4 の数値をこうまとめている。「本郷その他（本郷、櫨原、門入）と塚の言語距離が 0.260、本郷と戸入が 0.475、戸入と塚が 0.393 である。」</p>
+            <p>本郷–戸入が最大で、塚はその間に入る。論文はこの表を計量的 MDS（R の <code>cmdscale</code>）で図示し（図6-6）、「塚のアクセントは、本郷その他と戸入の中間に位置することがわかる」と述べている。<b>従来「中間型」と呼ばれてきたものが、実際に数直線上の中間にあることが示された</b>という読みである。</p>
+            <p>ただしこれは既知の分類の追認でもある。順序が入れ替わるような結果ではない。論文の言い方も「情報を数値に縮約しても、戸入、塚、本郷のアクセント様相の違いを示すことができた」という、控えめなものである。</p>
+        </div>
+
+        <div class="sub">
+            <h3>地理的距離と並べる</h3>
+            <p>この言語的距離は、交通路のある地点の組み合わせについて、地理的距離と対比される。地理的距離は次の式(1)で定義されている。</p>
+            <div class="eq">
+                <div class="lbl">式(1)　地点間の距離</div>
+                \[ \sqrt{\bigl(\text{地点間のユークリッド距離}(m)\bigr)^{2} + \bigl(\text{標高差}(m)\times 8.3\bigr)^{2}}\;\;(m) \]
+                <p class="read">垂直距離を水平距離の <b>8.3 倍</b>にしているのは、「一般的に人間は 1 時間に 5km 歩くことができ、標高が 600m 上がるごとにそこに 1 時間加える」ことが知られているためだと論文は説明している（cf. Langmuir 1984）。<b>直線距離ではなく、歩く労力に近づけた距離</b>である。</p>
+            </div>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>交通路のある地点の組み合わせ</th><th class="num">式(1) (m)</th><th class="num">言語的距離</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>本郷 — 上開田</td><td class="num">682</td><td class="num">0.113</td></tr>
+                <tr><td>下開田 — 本郷</td><td class="num">951</td><td class="num">0.113</td></tr>
+                <tr><td>塚 — 櫨原</td><td class="num">1761</td><td class="num">0.26</td></tr>
+                <tr><td>山手 — 本郷</td><td class="num">2400</td><td class="num">0.113</td></tr>
+                <tr><td>櫨原 — 山手</td><td class="num">2516</td><td class="num">0.113</td></tr>
+                <tr><td>上開田 — 戸入</td><td class="num">3632</td><td class="num">0.475</td></tr>
+                <tr><td>戸入 — 門入</td><td class="num">4720</td><td class="num">0.475</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">表6-5 より、印刷されたとおりに引用（塚–櫨原の言語的距離は 0.26 と表記されている）。同じ対比表は発表資料にも載っているが、そちらの地理的距離は 658 / 951 / 1742 / 2365 / 2516 / 3541 / 4709 であり、値が異なる。発表資料の式には標高差の 8.3 倍という重みがなく、標高差をそのまま足していたためと読める。<b>言語的距離の側は両者で同じ</b>である。</p>
+        <p class="body">
+        式(1) が 682 m でも 2516 m でも、言語的距離は同じ 0.113 である。これは<b>言語的距離が3つの体系の区別しか持っていない</b>ことの直接の帰結である。同じ体系で記述された地点どうしの距離は 0 ではなく 0.113 になり、地理的にどれだけ離れていてもその値のままになる。論文は「櫨原、山手、本郷、上開田、下開田がその地理的距離に関わらず、言語的距離で同値を示すのは、地理的要因以外の働き、例えば交通量によるものと推測され、その要因の抽出は今後の課題としたい」と述べている。
+        </p>
+        <p class="body">
+        この章ではさらに、近世の僧侶の巡回路から復元した44地点のネットワーク（R の sna パッケージ、重みは式(1)）について媒介中心性が計算され、戸入 84.000、塚 183.667、上開田 164.000 と、本郷 437.333 や櫨原 494.333 に比べて低いことが示されている。<b>言語的に遠い地点が、交通網の上でも経路になりにくい地点だった</b>という対応である。ただしこの媒介中心性は交通網の側の指標であり、Gower 距離から計算されたものではない。
+        </p>
+
+        <div class="sub">
+            <h3>同じ対象を、別の粒度で符号化した場合</h3>
+            <p>英語で発表された同じ研究では、符号化の単位が違う。拍ではなく<b>15の類</b>を1変数とし、各類の型に A・B・C… の文字を割り当てている。1パターンは52文字ではなく15文字になる。この符号化での計算例は「West1 と East4606 で \(1-3/15 = 0.8\)」である。</p>
+            <p>3系統間の距離行列は次のとおりである。West（甲種）内 0.2777778、Middle（中間型）内 0.3333333、East（乙種）内 0.3794667、West–Middle 0.4444444、West–East 0.8462049、Middle–East 0.7077812。結論のスライドでは 0.278 / 0.333 / 0.380 / 0.444 / 0.846 / 0.708 と丸めて示されている。</p>
+            <p><b>大小の順序は拍単位の結果と一致する</b>（West–East ＞ Middle–East ＞ West–Middle、博士論文の拍単位では 0.475 ＞ 0.393 ＞ 0.260）。しかし絶対値は倍近く違う。類単位では、その類の中の1拍でも違えばその類全体が「不一致」になるため、不一致が積み上がるからである。この比較は第7節の限界に直結する。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>限界</h2>
+        <p class="q">値は必ず 0 と 1 の間に出る。出たからといって、意味があるとは限らない。</p>
+
+        <div class="warn">
+            <h3>展開した全パターンを等重みで平均している</h3>
+            <p>384・1024・4608 は「ありうる型の組み合わせ」の数であって、それぞれが実際に同じ頻度で話されたという根拠はない。<b>揺れの正体が不明であることは論文自身が明記している</b>——インフォーマント間の揺れなのか、同一話者の反復発話の揺れなのか、同じ語類の中の揺れなのかは分からない、と。にもかかわらず集落間平均は、全パターンが等確率だという仮定を暗黙に置いている。</p>
+            <p>さらに、パターン数が集落ごとに大きく違う（384 : 1024 : 4608）。本郷と戸入の平均は \(384 \times 4608\) 個のセルの平均、本郷と塚の平均は \(384 \times 1024\) 個のセルの平均であり、平均の取られ方が組ごとに違う。<b>距離の値のうちどれだけが言語の違いで、どれだけが記述に含まれる揺れの量の違いなのかは、この手続きでは分離できない。</b></p>
+            <p>対角成分（本郷ほか 0.113、塚 0.240、戸入 0.240）は、集落内のパターン同士の平均であり、その集落の記述に含まれる揺れの大きさをそのまま表している。集落間の値と同じ表に同じ尺度で並んでいるが、<b>測っているものが違う</b>。論文がこの数値を「疑似的な言語距離」と呼んでいるのは、こうした留保を含んだ表現だと読める。</p>
+        </div>
+
+        <div class="warn">
+            <h3>合致か不一致かの二値化で、「近い型」と「遠い型」が区別できない</h3>
+            <p>拍単位の 0/1 に直した時点で、残るのは「何個の拍で食い違うか」だけになる。\(\text{HHLL}\) と \(\text{HLLL}\)（2拍目だけ違う）も \(\text{HHLL}\) と \(\text{HHHL}\)（3拍目だけ違う）も、等しく「不一致1」である。アクセント核が語頭側にずれたのか語末側にずれたのかという、<b>変化の方向</b>は距離に入らない。類単位で符号化した英語版では、この区別はさらに失われ、どちらも「その類は不一致」の1カウントになる。</p>
+            <p>この点は論文自身が今後の課題として挙げている。「いわゆる乙種（東京式）、甲種（京阪式）の単純な対立ではなく、<b>拍ごとや類ごとに両者の特徴が入り混じるのが方言の通常の様態</b>であるため、それらの細かい変化と変化の方向に注目することが今後、必要になると思われる。」1つの距離に合成するという操作が、まさにその「入り混じり」を潰している。</p>
+        </div>
+
+        <div class="warn">
+            <h3>変数間の相関を無視している</h3>
+            <p>52 個の位置は独立ではない。同じ語の隣り合う拍は音韻的に強く依存し、同じ類に属する語は定義上まとめて動く。Gower 距離はすべての変数を<b>等重みで単純平均する</b>ので、連動して動く変数が多い部分ほど、その部分が実質的に重く効く。三拍名詞は7類 × 4拍で 28 個の位置を占め、52 個の過半である。それが妥当な重みづけであるという根拠は示されていない。</p>
+            <p>Gower (1971) の一般形には変数ごとの重み \(w_{ijk}\) があるが、この研究で重みを調整したという記述はない。既定の等重みがそのまま使われていると読める。<a href="../correspondence-analysis/">対応分析</a>のカイ二乗距離が周辺度数で重み付けを行うのと対照的で、<b>Gower 距離には「どの変数を重く見るか」という機構が入っていない</b>。</p>
+        </div>
+
+        <div class="warn">
+            <h3>値そのものに絶対的な意味はない。符号化の設計で変わる</h3>
+            <p>同じ対象・同じ手法でも、博士論文の拍単位（52変数）では甲種–乙種が 0.475、英語発表の類単位（15変数）では 0.8462049 になる。順序は保たれるが、<b>数値は倍近く違う</b>。したがって「0.5 以上なら別系統」といった閾値的な解釈は、この距離には与えられない。</p>
+            <p>比較できるのは、<b>同じ符号化のもとで計算された値どうし</b>だけである。他の研究の Gower 距離や、他の距離尺度の値と直接並べることはできない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>データの規模が小さい</h3>
+            <p>アクセントの記述は、杉戸の報告に基づく<b>3つの体系</b>（本郷・塚・戸入）しかない。門入と櫨原は本郷と同じ体系として扱われているため、表6-4 の 5集落のうち3集落は完全に同じ行になる。表6-5 に現れる山手・上開田・下開田も、同じ理由ですべて 0.113 である。<b>5×5 の表に見えるが、独立な情報は 3×3 しかない。</b></p>
+            <p>インフォーマントは老年層で各集落最低2名、調査時期は1971年および1976年である。比較に用いた語彙は一拍名詞3類・二拍名詞5類・三拍名詞7類の計15類で全体系に共通しており、<b>この点では揃っている</b>。ただし、この15類がアクセント体系全体をどれだけ代表しているかは資料からは判断できない。また、各集落2名前後の発話から得られた揺れの記述が、集落の言語をどれだけ代表しているかも判断できない。</p>
+        </div>
+
+        <div class="warn">
+            <h3>距離であって、統計モデルではない</h3>
+            <p>Gower 距離には確率モデルがない。したがって標準誤差も信頼区間も検定も伴わない。0.475 と 0.393 の差が意味のある差なのか、パターン展開の仕方を少し変えただけで消える差なのかは、<b>この手続きだけでは判断できない</b>。</p>
+            <p>この研究では、その判断を距離の内部ではなく外部に求めている。近世の巡回路から復元した交通網の媒介中心性、坂内村との婚姻関係、先行研究が記述してきたアクセント体系といった<b>別の種類の情報</b>と突き合わせ、戸入の孤立が複数の指標で同時に現れることを確認するという構成である。距離そのものの不確実性を評価する手続きは含まれていない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>出典とデータ</h2>
+
+        <div class="sub">
+            <h3>主たる典拠</h3>
+            <ul class="refs">
+                <li>小野原彩香 (2013年度)『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』博士論文、同志社大学大学院文化情報学研究科。<b>第6章 事例4「アクセント形式と交通状況との関係」</b>（本文 pp. 92–107）。Gower 距離の定義、計算例、表6-1〜表6-6、式(1)、考察と今後の課題は、すべてこの章による。</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Gower, J. C. (1971) A general coefficient of similarity and some of its properties. <i>Biometrics</i>, 27, 857–874. <a href="https://doi.org/10.2307/2528823" target="_blank" rel="noopener noreferrer">doi:10.2307/2528823</a>（論文中では [Gower, 1971] として引用）</li>
+                <li>R パッケージ <code>cluster</code> の関数 <code>daisy</code>（<code>metric="gower"</code>）。ネットワークの構築・描画・媒介中心性には <code>sna</code> パッケージ [Butts, 2010]、計量的 MDS には <code>cmdscale</code> が用いられている。</li>
+                <li>Langmuir, E. (1984)（歩行時間の目安。式(1) の標高差 8.3 倍の根拠として論文が cf. で挙げている）</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>元になったデータ</h3>
+            <ul class="refs">
+                <li>杉戸の報告（野村正良 (1977)「岐阜県揖斐郡徳山村戸入方言の記述的報告及び成立過程に就いての二三の考察——付アクセントの分布と変遷——」『名古屋大学文学部研究論集』70、pp. 3–17 に併せて記載）。表6-1 のアクセント型の出典。調査時期1971年・1976年、対象は本郷・門入・櫨原・塚・戸入の5集落、インフォーマントは老年層で各集落最低2名。</li>
+                <li>金田一春彦 (2003) p.71。表6-1 に付け加えられた東京式・京阪式アクセントの出典。</li>
+                <li>徳山村史編集委員会編 (1973)『徳山村史』大衆書房。近世の誠照寺からの巡回路（図6-2）。</li>
+                <li>岐阜県教育委員会 (1973)『徳山：昭和47年度民俗資料緊急調査報告書』。巡回路の調査は1972年（昭和47年）の緊急民俗資料調査による。復元されたネットワークは、越前国（福井県誠照寺本山）から美濃国（岐阜県水鳥集落）まで、8つの峠・1つの坂・34集落の<b>合わせて44地点</b>である。</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>同じ分析を扱った発表資料</h3>
+            <ul class="refs">
+                <li>小野原彩香「定量的側面からの言語形式と外言語的要素の関係——岐阜県徳山村の地理的要因と民俗的要因を例として——」第147回 変異理論研究会、2012年4月14日。R スクリプト5行はここから引用した。</li>
+                <li>小野原彩香「岐阜県旧徳山村におけるアクセント様相と交通状況との関係性——ネットワーク分析を用いたアクセント分布と交通状況の類似性の算出——」同志社大学大学院文化情報学研究科。</li>
+                <li>Onohara, Ayaka. <i>Geometrical and Topological Analysis for Dialect Distribution: A Mathematical Approach in Tokuyama District</i>. Graduate School of Culture and Information Science, Doshisha University. 類単位で符号化した版の計算例と3系統間の距離行列の出典。</li>
+            </ul>
+            <p style="margin-top:12px">これらの発表資料と博士論文とでは、符号化の説明（a/b/c/0 の4値 と H/L の2値）、計算例の合致数の数え方、式(1) の標高差の重み（なし と 8.3倍）が異なる。<b>このページは博士論文の記述を正とし、発表資料からの引用はその旨を明記した箇所に限った。</b>掲載されている Gower 距離の値そのものは、両者で一致している。</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>Gower 距離は、モデルを立てて推定する手続きではない。名義尺度のデータに対して<b>距離空間そのものを構成する</b>手続きであり、その意味で分析ではなく分析の前段にある。<a href="../">7つの観点を式で読む</a>の<b>観点1（幾何・最小二乗）</b>に属するのは、この段階で「何をもって近いとするか」という幾何が決まるからである。</p>
+        <p>この章でも、Gower 距離は入口に置かれている。表6-4 の集落間距離がそのまま計量的 MDS（図6-6）の入力になり、ネットワーク図（図6-8 上）のエッジの重みになる。<b>距離の定義を変えれば、その先の答えはすべて変わる</b>。距離を入力に取る手法は例外なくこの段階の設計に乗っており、<a href="../neighbor-net/">Neighbor-Net</a> が距離行列から分岐構造を描くのも、計量的 MDS が距離を座標に直すのも、同じ依存関係にある。</p>
+        <p>ただし、この章のすべてが Gower 距離の上に乗っているわけではない。媒介中心性は交通網の側の指標で、重みは式(1) の地理的距離である。<a href="../correspondence-analysis/">対応分析</a>も、隣接する第7章で人口密度や慣習のデータに適用されており、アクセントの距離とは別の入力を持つ。<b>2つの系列は直列ではなく並列に置かれ、同じ結論に別経路で到達するかどうかを見る構成になっている。</b>距離は万能の入口ではなく、その距離で測れるものの入口である。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて出典に印刷された値から引用し、推定値や概算は記載していません。複数の資料で記述が食い違う箇所は、博士論文の記述を採り、その旨を明記しています。<br>
+    距離を入力に取る手法については <a href="../neighbor-net/">Neighbor-Net</a> と <a href="../correspondence-analysis/">対応分析</a>、手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-21 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

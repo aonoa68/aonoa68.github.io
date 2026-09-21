@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>話者正規化つきアクセント距離 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="日本語ピッチアクセントを話者差に左右されずに比べるための音響距離の設計。セミトーン変換とMAD正規化、Sakoe-Chiba帯で制約したDTW、記号記述から合成した仮想参照による軸の外部固定、そして「勾配が保たれるか」で測る評価の考え方を、68名の実測結果に即して整理したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+
+        .sub p + p { margin-top:10px; }
+        .filelist { margin-top:14px; font-size:0.86em; color:var(--muted); line-height:1.9; }
+        .filelist code { font-size:0.92em; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">アクセント距離</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（距離と最小化）</a></span>
+        <h1>Pitch-Accent <span>Distance</span></h1>
+        <p class="lead">同じ文を読んでも、声の高さも話す速さも人によって違います。その差を消したうえで<b>アクセントの型だけを比べる</b>ための距離を設計する、という話です。<br>
+        鍵は3つあります。話者ごとの正規化、時間の伸び縮みを許す対応づけ（DTW）、そして<b>軸の端を録音データの外側に固定する</b>ことです。滋賀県米原市柏原の68名の実測に即して整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「この人のアクセントは東京寄りか、京阪寄りか」を、聞き手の主観によらず座標として出したい。</p>
+        <p class="body">
+        日本語のピッチアクセントを話者間で比べるのは、見た目より難しい。同じ「東京式」でも、声の高い人と低い人では F0 の絶対値がまるで違う。早口の人と遅い人では、同じ型でも時間軸上の位置がずれる。地声の質（発声）も人によって違う。<b>これらを消さないまま距離を測ると、測っているのは型ではなく話者の個人差になる</b>。
+        </p>
+        <p class="body">
+        この研究が作ろうとしているのは、分類器ではなく<b>ものさし</b>である。ある話者を、文献に記述されたアクセント変種の勾配の上に、安定して・解釈できる形で置きたい。目的がものさしの設計であることは、評価の仕方にも効いてくる（第6節）。
+        </p>
+        <p class="body">
+        対象は滋賀県米原市柏原の話者である。柏原は方言学の記述上、<b>京阪式と東京式のあいだの垂井式の地域</b>とされる。つまり「どこに来るはずか」という予測が、この研究のデータとは独立に、先行する方言記述の側から与えられている。この外部の予測を評価の基準に使えることが、この土地を選ぶ理由になっている。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>話者差をどう消すか</h2>
+        <p class="q">正規化は「差を消す」操作だが、消しすぎると比べたいものまで消える。</p>
+        <p class="body">
+        音声から F0（基本周波数）の系列を取り出し、2段階で正規化する。
+        </p>
+        <div class="eq">
+            <div class="lbl">① セミトーン変換</div>
+            \[ s(t) \;=\; 12 \log_2 \frac{F_0(t)}{\mathrm{median}\,F_0} \]
+            <p class="read">Hz をそのまま使わず、<b>自分の中央値からの比</b>の対数を取る。声の高い人も低い人も、「自分の平均からどれだけ上がったか」という同じ尺度に乗る。12 を掛けるのは半音を単位にするためで、1オクターブ（2倍）がちょうど 12 になる。<br>
+            比の対数を取るのは恣意的な選択ではない。<b>音の高さの知覚は周波数の比で決まる</b>ため、加法的に扱えるのは Hz ではなく対数の側である。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">② MAD による z 化</div>
+            \[ z(t) \;=\; \frac{s(t) - \mathrm{median}(s)}{\mathrm{MAD}(s)}, \qquad \mathrm{MAD}(s) = \mathrm{median}\bigl(\,|s - \mathrm{median}(s)|\,\bigr) \]
+            <p class="read">さらに、ばらつきの大きさでも割る。ここで標準偏差ではなく <b>MAD（中央絶対偏差）</b>を使う。F0 推定は半音ではなくオクターブ単位で飛ぶ失敗（オクターブエラー）を起こすことがあり、外れ値が1つ入るだけで標準偏差は大きく膨らむ。MAD は中央値ベースなので、そうした少数の異常値に引きずられない。</p>
+        </div>
+        <p class="body">
+        この2段で、<b>声の高さ（位置）と抑揚の幅（尺度）</b>が話者間で揃う。残るのは「どのタイミングで上がり、どこで下がるか」という形だけであり、これがアクセントの型を担っている。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>前処理</th><th>設定</th></tr></thead>
+            <tbody>
+                <tr><td>音声区間検出（VAD）</td><td><code>top_db = 25</code>、最短区間 120 ms</td></tr>
+                <tr><td>F0 推定</td><td>YIN（pYIN をフォールバック）、\(f_{\min}=50\,\mathrm{Hz}\)、\(f_{\max}=700\,\mathrm{Hz}\)</td></tr>
+                <tr><td>平滑化</td><td>Savitzky–Golay フィルタ（窓 11、次数 3）</td></tr>
+                <tr><td>録音</td><td>16 kHz / 16 bit、屋内</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="warn">
+            <h3>正規化は「消す対象」を決める設計判断である</h3>
+            <p>中央値で引き MAD で割るという操作は、<b>話者の平均的な声の高さと抑揚の幅には情報がない</b>と決めたことを意味する。これは型を比べるうえでは妥当だが、たとえば「京阪式話者は全体に抑揚が大きい」といった特徴があったとすれば、それはこの時点で捨てられている。何を残し何を捨てたかは、後の結果を読むときに常に効いてくる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>時間の伸び縮みを許して対応づける</h2>
+        <p class="q">早口の人と遅い人の系列を、フレームごとに突き合わせても意味がない。</p>
+        <p class="body">
+        2つの系列 \(a = (a_1,\dots,a_n)\) と \(b = (b_1,\dots,b_m)\) を、長さが違うまま比べたい。DTW（動的時間伸縮法）は、<b>各点をどう対応づけるか</b>を全通り考え、総コストが最小になる対応を選ぶ。
+        </p>
+        <div class="eq">
+            <div class="lbl">動的計画法の漸化式</div>
+            \[ D(i,j) \;=\; \min \begin{cases} D(i-1,\,j) + c_{\mathrm{del}} \\[2pt] D(i,\,j-1) + c_{\mathrm{ins}} \\[2pt] D(i-1,\,j-1) + c_{\mathrm{sub}}\,\bigl|a_i - b_j\bigr| \end{cases} \]
+            <p class="read">\(D(i,j)\) は、\(a\) の先頭 \(i\) 個と \(b\) の先頭 \(j\) 個を対応づけ終えたときの最小コスト。<b>斜め</b>に進むのが「対応させる」、<b>縦・横</b>に進むのが「片方だけ進める」＝時間を伸ばす操作である。初期条件は \(D(0,0)=0\)、それ以外の境界は \(\infty\)。<br>
+            実装での値は \(c_{\mathrm{sub}} = 1.0\)、\(c_{\mathrm{ins}} = c_{\mathrm{del}} = 1.1\)。<b>伸縮にわずかな罰を置いている</b>ため、際限なく伸ばして無理に合わせることが抑えられる。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">経路長で割って正規化する</div>
+            \[ \mathrm{dtw}(a,b) \;=\; \frac{D(n,m)}{n+m} \]
+            <p class="read">総コストをそのまま使うと、長い発話ほど大きな値になってしまう。\(n+m\) で割ることで、<b>1ステップあたりの平均コスト</b>になり、長さの違う発話どうしを比べられる。</p>
+        </div>
+        <div class="sub">
+            <h3>Sakoe–Chiba 帯：どこまでずらすことを許すか</h3>
+            <p>対応づけを完全に自由にすると、時間的にかけ離れた点どうしが結ばれてしまい、「似ている」という判断が壊れる。そこで \(|i-j|\) に上限を置く。この研究では帯幅を系列長の <b>0.15 倍</b>（<code>band_ratio = 0.15</code>）としている。計算量も \(O(nm)\) から \(O(n \cdot \text{band})\) に落ちる。</p>
+            <p>この帯幅は、後で見るとおり<b>結果を最も大きく左右するパラメータ</b>だった（第7節）。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">静的な高さと、その変化率を混ぜる</div>
+            \[ D \;=\; \alpha \cdot \mathrm{dtw}(z) \;+\; (1-\alpha)\cdot \mathrm{dtw}(\Delta z), \qquad \alpha = 0.7 \]
+            <p class="read">\(z(t)\) そのもの（どの高さにいるか）だけでなく、その差分 \(\Delta z(t)\)（上がっているか下がっているか）についても DTW を取り、重みをつけて足す。<b>アクセントの型は「高さ」よりも「下がり目の位置」で決まる</b>ため、変化の情報を別建てで入れている。<br>
+            差分は無声区間（F0 が取れない箇所）を飛ばして中央差分で計算される。\(\mathrm{dtw}(z)\) と \(\mathrm{dtw}(\Delta z)\) のどちらかが計算できない場合は、計算できた側だけで重みを付け直す。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>軸の端を、録音データの外に固定する</h2>
+        <p class="q">「東京寄り」と言うとき、その東京はどこにあるのか。</p>
+        <p class="body">
+        ここがこの研究の設計上いちばん重要な判断である。話者どうしの距離行列だけを作ると、軸は<b>集めた68名の中の相対的な位置</b>しか表さない。別の土地で録れば軸の意味が変わってしまい、研究間で比べられない。
+        </p>
+        <p class="body">
+        そこで、東京式・京阪式・垂井式・鹿児島式という4つの参照点を、<b>録音ではなく音韻記述から合成する</b>。上野（1999）・木部（2010）らの記述にある L / H / R の記号列を、数値の輪郭に変換して仮想的な参照音声とする。
+        </p>
+        <div class="eq">
+            <div class="lbl">記号から輪郭へ</div>
+            \[ \mathrm{L} \mapsto -1.0, \qquad \mathrm{H} \mapsto +1.0, \qquad \mathrm{R} \mapsto +0.5 \]
+            <p class="read">これに、発話が進むにつれて全体が下がっていく現象（declination）を傾き \(-0.05\) 〜 \(-0.10\) で加え、実音声と同じ Savitzky–Golay フィルタ（窓 11、次数 3）で平滑化する。話者側と同じ平滑化を通すのは、<b>比較する2つの系列に同じ処理を掛ける</b>ためである。</p>
+        </div>
+        <p class="body">
+        こうして各話者は、4つの参照点への距離ベクトルとして表される。<b>軸の端が外部の記述で定義されているので、座標の意味がこのデータセットに閉じない</b>。この設計がなければ、次節の評価そのものが成り立たない。
+        </p>
+        <div class="warn">
+            <h3>仮想参照は「理想化された型」であって、実在の話者ではない</h3>
+            <p>記号列から合成した輪郭は、音韻論的な記述をそのまま数値にしたものである。実際の東京方言話者の発話ではない。したがってここで測っているのは「記述された型からの隔たり」であり、「実在の東京話者との隔たり」ではない。また L/H/R に \(-1.0\) / \(+1.0\) / \(+0.5\) を割り当てる操作自体が設計判断であり、R を H と L の中点ではなく \(+0.5\) に置いたことの妥当性は、この枠組みの内側では検証できない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>何と比べたか</h2>
+        <p class="body">
+        提案手法だけを示しても、それが良いのかは分からない。次の3系統が比較対象に置かれている。
+        </p>
+        <ol class="steps">
+            <li><b>平均 F0</b> ── 話者の声の高さの平均だけを使う。時間情報を一切持たない、最も素朴な基準線。</li>
+            <li><b>ヒストグラム EMD</b> ── \(z\) の分布（30ビン、範囲 \([-3, 3]\)）どうしの Earth Mover's Distance。<b>どの高さにどれだけ滞在したか</b>は見るが、順序は見ない。</li>
+            <li><b>wav2vec 2.0（XLSR-53）</b> ── 自己教師あり学習による音声表現。3通りを試している：<b>3a</b> 最終層(L24)の平均プーリング＋コサイン距離、<b>3b</b> 最終層のフレーム単位 DTW、<b>3c</b> 中間層(L9)のフレーム単位 DTW。3c で中間層を使うのは、韻律情報が中間層により保たれるという先行知見（Pasad et al. 2021 ほか）による。</li>
+        </ol>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>「当たったか」ではなく「勾配が保たれたか」で測る</h2>
+        <p class="q">正解ラベルがないとき、ものさしの良し悪しをどう評価するか。</p>
+        <p class="body">
+        話者一人ひとりに「この人は垂井式である」という正解ラベルは付いていない。付けようとすれば、結局は誰かの聴取判断になり、主観に戻ってしまう。そこでこの研究は、<b>分類精度ではない基準</b>を使う。
+        </p>
+        <p class="body">
+        柏原は方言記述上、京阪式と東京式の中間帯にあるとされる。ならば、良いものさしは<b>68名を京阪－東京軸の中間領域に置くはずである</b>。この「置かれ方」を3つの指標で見る。
+        </p>
+        <div class="eq">
+            <div class="lbl">3つの指標</div>
+            \[ \text{Inter.\%} = \text{中間領域に置かれた話者の割合}, \qquad r = \overline{\left(\frac{d_T}{d_K}\right)}, \qquad s = \overline{\left(\frac{d_K - d_T}{d_K + d_T}\right)} \]
+            <p class="read">\(d_T\) は東京参照までの距離、\(d_K\) は京阪参照までの距離。<b>\(r\)</b> は釣り合い比で、1 に近いほど軸が両端に対して対称である。<b>\(s\)</b> は対称指数で、0 に近いほどどちらの極にも偏っていない。\(r \approx 1\) かつ \(s \approx 0\) でなければ、Inter.% が高くても「軸が片側に潰れている」ことになる。</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>手法</th><th class="num">Inter.%</th><th class="num">\(r\)</th><th class="num">\(s\)</th><th>読み取り</th></tr></thead>
+            <tbody>
+                <tr><td>平均 F0</td><td class="num">1.5%</td><td class="num">1.42</td><td class="num">−0.05</td><td>勾配が潰れる</td></tr>
+                <tr><td>ヒストグラム EMD</td><td class="num">85.3%</td><td class="num">0.83</td><td class="num">+0.12</td><td>勾配が平坦化しすぎ</td></tr>
+                <tr><td>wav2vec 2.0（3a: 平均プール, L24）</td><td class="num">0%</td><td class="num">4.46</td><td class="num">−0.61</td><td>極に張り付く</td></tr>
+                <tr><td>wav2vec 2.0（3b: DTW, L24）</td><td class="num">0%</td><td class="num">1.55</td><td class="num">−0.21</td><td>極に張り付く</td></tr>
+                <tr><td>wav2vec 2.0（3c: DTW, L9）</td><td class="num">22.1%</td><td class="num">0.99</td><td class="num">+0.01</td><td>軸がずれている</td></tr>
+                <tr><td><b>DTW（提案手法）</b></td><td class="num"><b>57.4%</b></td><td class="num"><b>1.01</b></td><td class="num"><b>−0.01</b></td><td><b>勾配が保たれる</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">68名中の人数に直すと、1.5% = 1名、22.1% = 15名、57.4% = 39名、85.3% = 58名である。</p>
+        <div class="sub">
+            <h3>単一の数字では順位が付かない</h3>
+            <p>Inter.% だけを見れば、ヒストグラム EMD の 85.3% が提案手法の 57.4% を上回る。それでも「平坦化しすぎ」と判断されるのは、\(r = 0.83\)、\(s = +0.12\) と軸が片寄っているためである。<b>ほぼ全員を中間に置くものさしは、中間と非中間を区別する力を失っている</b>と読める。3つの指標を同時に満たすのは提案手法だけ、という形の主張になっている。</p>
+            <p>これは評価設計として妥当だが、裏を返せば<b>「どの指標をどう重みづけるか」の判断が結論に入り込んでいる</b>ということでもある。単一のスコアで機械的に順位が決まる形にはなっていない。</p>
+        </div>
+        <div class="sub">
+            <h3>wav2vec 3c との差は、精度の差ではない</h3>
+            <p>3c は \(r = 0.99\)、\(s = +0.01\) と対称性では提案手法に並ぶが、Inter.% が 22.1% にとどまる。リポジトリの解釈は「<b>測っている軸が違う</b>」というもので、自己教師あり表現にも内部的な軸はあるが、それが言語学的に定義された京阪－東京の勾配とずれている、と読む。同じ軸の上での精度差ではない、という区別である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>パラメータを動かすとどうなるか</h2>
+        <p class="q">band と α を振ったときの、補助的なハードラベル判定の一致率。</p>
+        <p class="body">
+        主たる出力は連続的な4極距離ベクトルだが、診断のために2段階のハードラベル分類も併走させている（第1段：東京 / 鹿児島 / 京阪ブロック、第2段：京阪ブロック → 京阪 / 垂井）。その一致率を、Sakoe–Chiba 帯幅と \(\alpha\) について振った結果が次である。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th class="num">band</th><th class="num">α</th><th class="num">一致率</th><th class="num">判定保留</th><th class="num">保留率</th></tr></thead>
+            <tbody>
+                <tr><td class="num">0.12</td><td class="num">0.5</td><td class="num">77.9%</td><td class="num">30</td><td class="num">44.1%</td></tr>
+                <tr><td class="num">0.12</td><td class="num">0.7</td><td class="num">75.0%</td><td class="num">28</td><td class="num">41.2%</td></tr>
+                <tr><td class="num">0.12</td><td class="num">0.9</td><td class="num">72.1%</td><td class="num">26</td><td class="num">38.2%</td></tr>
+                <tr><td class="num">0.15</td><td class="num">0.5</td><td class="num">98.5%</td><td class="num">14</td><td class="num">20.6%</td></tr>
+                <tr><td class="num"><b>0.15</b></td><td class="num"><b>0.7</b></td><td class="num"><b>100.0%</b></td><td class="num">15</td><td class="num">22.1%</td></tr>
+                <tr><td class="num">0.15</td><td class="num">0.9</td><td class="num">97.1%</td><td class="num">15</td><td class="num">22.1%</td></tr>
+                <tr><td class="num">0.2</td><td class="num">0.5</td><td class="num">64.7%</td><td class="num">10</td><td class="num">14.7%</td></tr>
+                <tr><td class="num">0.2</td><td class="num">0.7</td><td class="num">61.8%</td><td class="num">10</td><td class="num">14.7%</td></tr>
+                <tr><td class="num">0.2</td><td class="num">0.9</td><td class="num">52.9%</td><td class="num">11</td><td class="num">16.2%</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">一致率は採用設定（band = 0.15、α = 0.7）を基準とした一致であり、band = 0.15 / α = 0.7 の行が 100% になるのはその定義による。判定保留は曖昧しきい値（\(m_{\mathrm{abs}} < 0.011\)、\(m_{\mathrm{rel}} < 0.035\)）に掛かった人数。</p>
+        <div class="warn">
+            <h3>この表の読み方には注意がいる</h3>
+            <p>一致率 100% は<b>採用設定が自分自身と一致している</b>ことを言っているにすぎず、正解率ではない。この表から読み取れるのは「帯幅を 0.12 や 0.2 にすると判定が大きく動く」という<b>感度の大きさ</b>であって、0.15 が正しいということではない。</p>
+            <p>むしろ注目すべきは、帯幅を広げる（0.2）と判定保留が 10 名まで減る一方で一致率が 52.9% まで落ちることである。<b>迷わなくなるが答えが変わる</b>——対応づけを自由にすると、無理に合った結果として自信だけが上がる、という挙動と読める。band = 0.15 が選ばれた根拠が第6節の Inter.% の外側にあるのかどうかは、リポジトリの資料からは判断できない。</p>
+        </div>
+        <div class="sub">
+            <h3>教師なしクラスタリングでの確認</h3>
+            <p>68×68 の距離行列（FastDTW）に Ward 法を掛けたときのシルエット係数は、\(k=2\) で 0.660、\(k=3\) で 0.466、\(k=4\) で 0.357、\(k=5\) で 0.343、\(k=6\) で 0.331 である。<b>\(k\) が増えるほど単調に下がり、明確な谷や肩がない</b>。これは「柏原の話者が離散的な型に分かれている」証拠にはならず、むしろ連続的な勾配として捉えるこの研究の立場と整合する。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>計算コスト</h2>
+        <p class="body">
+        ものさしとして使われるには、現実的な時間で回る必要がある。1ペアあたりの実測時間は次のとおり。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>手法</th><th class="num">時間 (ms)</th><th class="num">相対</th><th>備考</th></tr></thead>
+            <tbody>
+                <tr><td>平均 F0</td><td class="num">0.04</td><td class="num">1×</td><td>時間情報なし</td></tr>
+                <tr><td>ヒストグラム EMD</td><td class="num">0.20</td><td class="num">5×</td><td>分布のみ</td></tr>
+                <tr><td>DTW（静的 \(z\) のみ）</td><td class="num">0.26</td><td class="num">7×</td><td>Sakoe–Chiba 帯</td></tr>
+                <tr><td>DTW（提案手法・完全版）</td><td class="num">0.99</td><td class="num">25×</td><td>\(z(t)\) ＋ \(\Delta z(t)\)、\(\alpha=0.7\)</td></tr>
+                <tr><td>wav2vec 2.0</td><td class="num">約 450</td><td class="num">約 11000×</td><td>GPU 推奨</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Numba による JIT 高速化を用いた場合、68話者 × 25文 × 4参照の全組み合わせが 30 秒以内に終わる。GPU を必要としない点が、現場で使う道具としては効いている。</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>限界</h2>
+        <div class="warn">
+            <h3>評価基準が「方言記述による予測」である</h3>
+            <p>Inter.% は、柏原が中間帯であるという先行する方言記述を正しいものとして、そこにどれだけ置けたかを測っている。<b>記述のほうが誤っていれば、評価も誤る</b>。また、この基準は「中間に置くほど良い」という向きを持つため、実際には中間でない話者が混じっていても検出できない。個々の話者についての正解は依然として無い。</p>
+        </div>
+        <div class="warn">
+            <h3>1地点・68名である</h3>
+            <p>対象は柏原の68名のみで、他地域での検証は含まれていない。軸の端を外部の記述に固定した設計は、原理的には他地点にも移せるはずだが、<b>実際に移して同じ性質が出るかは確かめられていない</b>。指標の値も 68 という標本の上の値であり、信用区間は示されていない。</p>
+        </div>
+        <div class="warn">
+            <h3>パラメータの選択と評価が同じデータの上にある</h3>
+            <p>帯幅 0.15、\(\alpha = 0.7\)、曖昧しきい値といった設定は、この68名のデータを見ながら決められている。第6節の指標も同じ68名で計算されている。<b>設定を選んだデータと性能を測ったデータが分かれていない</b>ため、示された値は独立なデータでの性能の見積もりとしては楽観的でありうる。</p>
+        </div>
+        <div class="warn">
+            <h3>DTW の対応づけは言語的な単位を知らない</h3>
+            <p>漸化式が扱うのはフレームの列であって、モーラでも音節でもない。伸縮は純粋にコストの都合で決まり、「ここは同じモーラだから対応させる」という制約は入っていない。結果として、<b>言語的にはあり得ない対応づけが最小コストになる場合がありうる</b>。帯幅の制約はそれを緩和するが、なくしはしない。</p>
+        </div>
+        <div class="warn">
+            <h3>音声データは公開されていない</h3>
+            <p>録音はプライバシー上の制約から公開されていない。話者ごとの匿名化メタデータも、出身地と学校名の組み合わせが倫理審査で同意された集計公開の範囲を超えるため、公開リポジトリには含まれず、合理的な請求に応じた制限付き提供となっている。<b>コードと記号パターン表は公開されているが、この研究の主結果を第三者が完全に再現することは現時点ではできない</b>。集計レベルの整合確認のみが可能である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">10</span>出典とコード</h2>
+        <p class="body">
+        コードは MIT ライセンスで公開されている。正規化から DTW、仮想参照の合成、各ベースライン、感度分析、可視化までが一続きに実行できる構成になっている。原稿は査読中である。
+        </p>
+        <ul class="refs">
+            <li>小野原彩香「Speaker-normalized Acoustic Distance for Japanese Pitch Accent: Design Principles and Evaluation」<a href="https://github.com/aonoa68/pitch-accent-dtw2025" target="_blank" rel="noopener noreferrer">github.com/aonoa68/pitch-accent-dtw2025</a>（v1.0.0、2026-07-08）　ライセンス：MIT</li>
+            <li>ORCID: <a href="https://orcid.org/0009-0004-3082-3267" target="_blank" rel="noopener noreferrer">0009-0004-3082-3267</a></li>
+            <li>アクセント型の記号パターン表（L/H/R）は <code>data/accent_types_20251027.xlsx</code> として公開。音声データは非公開。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>実装の構成</h3>
+            <div class="filelist">
+                <code>src/extractor.py</code> — F0 抽出と正規化（VAD・YIN・セミトーン・MAD-z・平滑化）<br>
+                <code>src/dtw_distance.py</code> — Sakoe–Chiba 制約つき DTW。Numba 版と純 Python 版の2実装<br>
+                <code>src/virtual_reference.py</code> — 記号記述（L/H/R）から仮想参照輪郭を合成<br>
+                <code>src/baselines.py</code> — 平均 F0、ヒストグラム EMD<br>
+                <code>src/wav2vec_enhanced.py</code> — wav2vec 2.0 の 3a / 3b / 3c と層ごとの走査<br>
+                <code>src/classifier.py</code> — 2段階のハードラベル判定（診断用）<br>
+                <code>src/unsupervised.py</code> — 68×68 距離行列、MDS、Ward 法<br>
+                <code>sensitivity_sweep.py</code> — 帯幅と \(\alpha\) の感度分析<br>
+                <code>benchmark_timing.py</code> — 計算コストの実測
+            </div>
+        </div>
+        <div class="sub" style="margin-top:22px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Sakoe, H. &amp; Chiba, S. (1978) Dynamic programming algorithm optimization for spoken word recognition. <i>IEEE Transactions on Acoustics, Speech, and Signal Processing</i>, 26(1), 43–49.</li>
+                <li>de Cheveigné, A. &amp; Kawahara, H. (2002) YIN, a fundamental frequency estimator for speech and music. <i>Journal of the Acoustical Society of America</i>, 111(4), 1917–1930.</li>
+                <li>Conneau, A. et al. (2021) Unsupervised cross-lingual representation learning for speech recognition (XLSR-53). <i>Interspeech 2021</i>.</li>
+                <li>Pasad, A., Chou, J.-C., &amp; Livescu, K. (2021) Layer-wise analysis of a self-supervised speech representation model. <i>ASRU 2021</i>.</li>
+                <li>アクセント変種の音韻記述：上野善道（1999）、木部暢子（2010）ほか</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>DTW が最小化するのは、二乗和ではなく<b>対応づけ全体にわたるコストの和</b>である。その意味で最小二乗そのものではない。それでも観点1に置くのは、この手法が<b>まず距離を定め、その距離の下で最小化する</b>という構えを共有しているからで、しかも下流はそのまま最小二乗の世界に入る。68×68 の距離行列を平面に落とす MDS も、Ward 法のクラスタリングも、最小化しているのは二乗和である。<a href="../">7つの観点を式で読む</a>の<b>観点1（幾何）</b>の、距離を作る側の端にあたる。</p>
+        <p style="margin-top:10px">距離の作り方という点では <a href="../gower-distance/">Gower距離</a>（名義尺度から距離を作る）と <a href="../ncd/">正規化圧縮距離</a>（圧縮率から距離を作る）が対になる。対象が音声の時系列か、記号の一致か、バイト列かという違いだけで、<b>比べたいものに合わせて距離そのものを設計する</b>という発想は同じである。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて公開リポジトリの実行結果および README から引用し、推定値や概算は記載していません。原稿は査読中のため、結論は変わりうるものとしてお読みください。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-21 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重回帰分析と変数選択 — 小野原彩香 | Teaching</title>
+    <meta name="description" content="重回帰分析と変数選択について、最小二乗法と正規方程式、VIF（分散拡大係数）の定義式 1/(1-R^2) の導出、All possible subset selection による総当たりのモデル選択、accuracy パッケージによる感度分析を、小野原彩香の博士論文 第4章（小豆島のアクセント変化数の重回帰分析）の実数値に即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .sub p + p { margin-top:10px; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">重回帰と変数選択</span>
+        <div class="nav-right">
+            <a href="../../../map/">科目の重なり</a>
+            <a href="../../../guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/teaching/methods/worlds/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Multiple <span>Regression</span></h1>
+        <p class="lead">1つの<b>目的変数</b>を、複数の<b>説明変数</b>の線形結合で説明するモデルです。説明変数が互いに強く相関していると、係数の推定はできても、その係数の<b>分散が膨らんで</b>符号や大きさが信用できなくなります。この膨らみを測るのが VIF、どの変数の組を使うかを総当たりで決めるのが All possible subset selection です。<br>
+        小野原の博士論文 第4章（小豆島9集落のアクセント変化数を、人口・世帯数・中心性・標高で説明する分析）の実数値に即して、何を仮定し、何を主張できるのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">「アクセントが変化した数」を、集落の何が説明するか。</p>
+        <p class="body">
+        小豆島の9集落について、中井[1998]の記述と2012年の調査とを突き合わせ、2拍名詞のアクセント型が<b>いくつ変わったか</b>を数えた値がある。高拍 H・低拍 L・中拍 M・拍内上昇 R・拍内下降 F をそれぞれ <code>11</code>・<code>00</code>・<code>0.5 0.5</code>・<code>01</code>・<code>10</code> という数値に置き換え、1998年側と2012年側で対応するセルの差の絶対値を取り、地点ごとに和をとったものである（原典 pp.49–50、表4-6〜表4-8）。この和が<b>変化数</b>である。
+        </p>
+        <p class="body">
+        問いは「この変化数の集落ごとの違いは、集落の何と結びついているか」である。原典が説明変数として並べたのは、人口（平成22年・平成12年の国勢調査小地域集計）、世帯数（同）、人口増加率（人口H22÷人口H12）、3種類の中心性（情報中心性・媒介中心性・次数中心性）、標高（基盤地図情報の5mメッシュ数値標高モデル）である（原典 pp.47–48、p.52）。中心性は、バスルートと定期旅客航路のデータから集落間のつながりを 0/1 で表した隣接行列（表4-5）を作り、R の <code>sna</code> パッケージの <code>degree</code>・<code>betweenness</code>・<code>infocent</code> で算出している（原典 pp.50–52）。
+        </p>
+        <p class="body">
+        ここで重回帰分析が必要になるのは、<b>これらの説明変数が互いに強く相関しているから</b>である。人口が多い集落は世帯数も多く、道路が集中している集落は媒介中心性も次数中心性も高い。単相関を9本並べても、どれがどれの言い換えなのかが分からない。重回帰は「他の変数を固定したときの効き」という形で答えを出そうとするが、その「固定」が効かないほど変数同士が似ているとき、係数は不安定になる。第3節以降はこの問題への対処の話である。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>モデル式と最小二乗</h2>
+        <p class="q">残差二乗和を最小にする係数は、正規方程式の解として一意に書ける。</p>
+        <p class="body">
+        観測が \(n\) 個、説明変数が \(p\) 個あるとする。\(i\) 番目の観測について
+        </p>
+        <div class="eq">
+            <div class="lbl">重回帰モデル</div>
+            \[ y_i \;=\; \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \cdots + \beta_p x_{ip} + \varepsilon_i \qquad (i = 1,\dots,n) \]
+            <p class="read"><b>\(y_i\)</b> … 目的変数（ここでは集落 \(i\) のアクセント変化数）<br>
+            <b>\(x_{ij}\)</b> … \(j\) 番目の説明変数の値<br>
+            <b>\(\varepsilon_i\)</b> … 誤差項。最小二乗そのものは分布を仮定しないが、\(t\) 検定・\(F\) 検定を行う段では \(\varepsilon_i \sim \mathcal{N}(0,\sigma^2)\) が互いに独立であることを仮定する</p>
+        </div>
+        <p class="body">
+        計画行列 \(X\)（第1列が全部 1、以下が各説明変数）と係数ベクトル \(\beta\) を使って \(y = X\beta + \varepsilon\) と書く。最小二乗法は、残差二乗和
+        </p>
+        <div class="eq">
+            <div class="lbl">残差二乗和と正規方程式</div>
+            \[ S(\beta) \;=\; \sum_{i=1}^{n}\Bigl(y_i - \beta_0 - \textstyle\sum_{j=1}^{p}\beta_j x_{ij}\Bigr)^{2} \;=\; \lVert y - X\beta \rVert^{2} \]
+            \[ \frac{\partial S}{\partial \beta} \;=\; -2X^{\top}\bigl(y - X\beta\bigr) \;=\; 0 \quad\Longrightarrow\quad X^{\top}X\,\hat{\beta} \;=\; X^{\top}y \]
+            \[ \hat{\beta} \;=\; \bigl(X^{\top}X\bigr)^{-1}X^{\top}y \qquad \mathrm{Var}\bigl(\hat{\beta}\bigr) \;=\; \sigma^{2}\bigl(X^{\top}X\bigr)^{-1} \]
+            <p class="read">2番目の式が<b>正規方程式</b>である。\(X^{\top}X\) が正則であれば解は一意に定まる。<b>逆行列が存在するかどうか</b>ではなく、<b>逆行列の対角成分がどれだけ大きいか</b>が、次節の主題になる。</p>
+        </div>
+        <div class="sub">
+            <h3>原典は標準化したデータで回帰している</h3>
+            <p>原典は、表4-9 のデータを R の <code>scale</code> で標準化してから <code>lm</code> に渡している（原典 Appendix. 5）。そのため定数項の推定値は 0.000 になり、係数は「説明変数が1標準偏差動いたときに、変化数が何標準偏差動くか」を表す。変数間の大きさの比較ができる代わりに、元の単位（人、m など）での解釈は失われる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>説明変数が互いに相関しているという問題</h2>
+        <p class="q">多重共線性は「推定できない」問題ではなく、「推定値の分散が膨らむ」問題である。</p>
+        <p class="body">
+        原典の図4-1（表4-9 を標準化したデータの相関係数行列・散布図行列、p.54）では、人口H22・世帯数H22・人口H12・世帯数H12 の4つが互いに 0.998〜0.999 という値を示している。中心性どうしの相関も高く、原典 p.53 は「媒介中心性、次数中心性 同士の相関についても高い」、2拍名詞（＋助詞）の側については p.62 で「情報中心性、次数中心性 同士の相関も高い」と述べている。これだけ似た変数を同時にモデルに入れると何が起きるかを、係数の分散の形で見る。
+        </p>
+        <p class="body">
+        \(j\) 番目の説明変数 \(x_j\) を、<b>残りのすべての説明変数（定数項を含む）で回帰</b>し、その残差を \(\tilde{x}_j\) と書く。Frisch–Waugh–Lovell の定理により、重回帰の係数 \(\hat{\beta}_j\) は、\(y\) を \(\tilde{x}_j\) だけに回帰した単回帰係数と一致する。
+        </p>
+        <div class="eq">
+            <div class="lbl">係数と、その分散</div>
+            \[ \hat{\beta}_j \;=\; \frac{\tilde{x}_j^{\top}y}{\tilde{x}_j^{\top}\tilde{x}_j} \qquad\Longrightarrow\qquad \mathrm{Var}\bigl(\hat{\beta}_j\bigr) \;=\; \frac{\sigma^{2}}{\tilde{x}_j^{\top}\tilde{x}_j} \;=\; \frac{\sigma^{2}}{\mathrm{RSS}_j} \]
+            <p class="read"><b>\(\mathrm{RSS}_j\)</b> … \(x_j\) を他の説明変数で回帰したときの残差二乗和。<b>他の変数で説明しきれずに残った部分の大きさ</b>が、そのまま係数の精度を決める。</p>
+        </div>
+        <p class="body">
+        \(x_j\) を他の説明変数で回帰したときの決定係数を \(R_j^2\) とすると、定義から \(\mathrm{RSS}_j = \mathrm{TSS}_j\,(1-R_j^2)\)、ただし \(\mathrm{TSS}_j = \sum_i (x_{ij}-\bar{x}_j)^2\) である。これを代入すると、
+        </p>
+        <div class="eq">
+            <div class="lbl">分散の膨張率としての VIF</div>
+            \[ \mathrm{Var}\bigl(\hat{\beta}_j\bigr) \;=\; \frac{\sigma^{2}}{\displaystyle\sum_{i}\bigl(x_{ij}-\bar{x}_j\bigr)^{2}} \;\times\; \underbrace{\frac{1}{1-R_j^{2}}}_{\textstyle \mathrm{VIF}_j} \]
+            \[ \mathrm{VIF}_j \;=\; \frac{1}{1-R_j^{2}} \]
+            <p class="read"><b>前半の分数</b> … \(x_j\) が他の変数と無相関（\(R_j^2=0\)）だった場合の分散<br>
+            <b>\(\mathrm{VIF}_j\)</b> … 実際の分散が、その理想的な場合の<b>何倍に膨らんでいるか</b>。標準誤差で見れば \(\sqrt{\mathrm{VIF}_j}\) 倍<br>
+            <b>\(R_j^2\)</b> … \(x_j\) を<b>目的変数</b>に、他の説明変数を説明変数にして回帰したときの決定係数。目的変数 \(y\) は一切使わない</p>
+        </div>
+        <div class="sub">
+            <h3>原典はこの式をそのまま脚注に書いている</h3>
+            <p>原典 p.55 の脚注16 に「vif は、該当の説明変数を目的変数にして、他の説明変数で回帰したときの R<sup>2</sup> をもとめて、1/（1 - R<sup>2</sup>） を計算している」とある。同じ脚注に「ある説明変数の変動の90％以上が、他の説明変数で説明されてしまう状態であるのが VIF=10。VIF=5 の場合でも80%以上が説明されてしまう」とも書かれている。\(R_j^2 = 0.9\) なら \(\mathrm{VIF}_j = 10\)、\(R_j^2 = 0.8\) なら \(5\) であり、これは上の式の言い換えである。</p>
+            <p>計算は R の <code>car</code> パッケージの <code>vif</code> 関数による（原典 p.53、Appendix. 5）。</p>
+        </div>
+        <div class="warn">
+            <h3>VIF が大きくても、推定値そのものは不偏である</h3>
+            <p>多重共線性は最小二乗推定量の不偏性を壊さない。壊れるのは<b>精度</b>だけである。したがって「VIF が大きいから係数が間違っている」とは言えず、「その係数は、この標本を取り直すと大きく動きうる」と言えるにとどまる。VIF が 10 を超えたら削る、という運用は、分散を小さくする代わりに<b>削った変数の効果を残した変数の係数に押し込む</b>操作でもある。原典はこの削除を2段階にわたって行っており、最終モデルの係数はその前提の上で読む必要がある。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>All possible subset selection</h2>
+        <p class="q">\(2^p\) 通りを全部当てはめて、情報量規準の小さい順に並べる。</p>
+        <p class="body">
+        説明変数が \(p\) 個あるとき、それぞれを「使う／使わない」で分けた組み合わせは \(2^p\) 通りある。空集合を除けば \(2^p - 1\) 通りである。All possible subset selection は、この全部について <code>lm</code> を実行し、決定係数・自由度調整済み決定係数・AIC・BIC などを計算して並べ替える、という手続きである。原典が使ったのは矢野環による R スクリプト <code>papca.R</code> 中の関数 <code>All.possible.subset.selection</code> で、全文が原典 Appendix. 4（A-11〜A-12）に収録されている。
+        </p>
+        <div class="eq">
+            <div class="lbl">総当たりの範囲</div>
+            \[ \#\{\text{候補モデル}\} \;=\; 2^{p} - 1 \]
+            <p class="read">原典の場合、表4-9 の説明変数は9個なので \(2^{9}-1 = 511\) 通り。媒介中心性などを削った第2段階では \(p=6\) で \(2^{6}-1=63\) 通り、第3段階では \(p=4\) で \(2^{4}-1=15\) 通りである。スクリプトは既定で AIC の小さい方から20件だけを表示する。</p>
+        </div>
+        <p class="body">
+        並べ替えの基準は AIC である。対数尤度 \(\log L\) とパラメータ数 \(k\) について
+        </p>
+        <div class="eq">
+            <div class="lbl">AIC と、スクリプトが併せて出す指標</div>
+            \[ \mathrm{AIC} \;=\; -2\log L\bigl(\hat{\theta}\bigr) + 2k \qquad \mathrm{BIC} \;=\; -2\log L\bigl(\hat{\theta}\bigr) + k\log n \]
+            \[ \mathrm{cAIC} \;=\; \mathrm{AIC} + \frac{2(k+1)(k+2)}{n-k-2} \]
+            <p class="read">3番目は Appendix. 4 のスクリプトが <code>result7[i] &lt;- result3[i] + 2*(nd+1)*(nd+2)/(nrow(df)-nd-2)</code> として計算しているもので、\(k\)（コード中の <code>nd</code>、R の <code>ans$rank</code>）に対する小標本補正である。スクリプトはこのほか \(R^2\)、自由度調整済み \(R^2\)、および <code>Rh</code> という指標を出力する。</p>
+        </div>
+        <div class="sub">
+            <h3>ステップワイズとの違い</h3>
+            <p>原典 p.53 の脚注14 に次のようにある。「一般には stepAIC を用いるが、stepAIC は、説明変数すべての組み合わせを算出せず、変数を減らしていき、適切な段階で処理を終わらせる。一方、All.possible.subset.selection は説明変数のあらゆる組み合わせについて、AIC の小さい順番に表示を行う」。</p>
+            <p>ステップワイズは<b>探索の経路に依存する</b>。ある変数をいったん落とすと、その変数を含む組み合わせは二度と評価されない。総当たりにはこの経路依存がなく、AIC の意味での最良モデルを取り逃がさない。ただし、取り逃がさないことと、選ばれたモデルが正しいこととは別である。候補が増えるほど、たまたま当てはまりの良い組み合わせが上位に来る確率も上がる。</p>
+        </div>
+        <div class="sub">
+            <h3>AIC は検定ではない</h3>
+            <p>AIC は予測の観点（Kullback–Leibler 情報量の推定）からの比較であり、有意水準も帰無仮説も持たない。したがって「AIC が最小だから、そのモデルが有意である」とは言えない。原典は AIC で選んだモデルに対して <code>summary(lm(...))</code> の \(t\) 検定と \(F\) 検定を当てているが、その解釈上の問題は<a href="#limits">第8節</a>で述べる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>実際のデータと、変数を絞っていく過程</h2>
+        <p class="q">9集落 × 2行、説明変数9個。ここから2変数まで絞られる。</p>
+        <p class="body">
+        原典 p.52 の表4-9（2拍名詞のみ）をそのまま示す。18行あるが、集落は9つである。原典の脚注13 は「同一集落内での調査地点数が2地点もしくは音声の揺れにより同一地点に2パターンの音声が認められる場合、重回帰分析をする際に該当の地点の重みが大きくなる。これを防ぐため、調査地点が1地点および音声のパターンが1つである調査地点のデータ列を2つにした」と説明している。<b>説明変数の値は、同じ集落の a と b のあいだで完全に一致する</b>。
+        </p>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>分析名</th><th class="num">変化数</th><th class="num">人口H22</th><th class="num">世帯数H22</th><th class="num">人口H12</th><th class="num">世帯数H12</th><th class="num">人口増加率</th><th class="num">情報中心性</th><th class="num">媒介中心性</th><th class="num">次数中心性</th><th class="num">標高</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>家浦a</td><td class="num">2</td><td class="num">1246</td><td class="num">562</td><td class="num">1560</td><td class="num">676</td><td class="num">0.799</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">5.5</td></tr>
+                <tr><td>家浦b</td><td class="num">2</td><td class="num">1246</td><td class="num">562</td><td class="num">1560</td><td class="num">676</td><td class="num">0.799</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">5.5</td></tr>
+                <tr><td>蒲野a</td><td class="num">0</td><td class="num">294</td><td class="num">142</td><td class="num">378</td><td class="num">149</td><td class="num">0.778</td><td class="num">0.816</td><td class="num">0</td><td class="num">4</td><td class="num">6.38</td></tr>
+                <tr><td>蒲野b</td><td class="num">0</td><td class="num">294</td><td class="num">142</td><td class="num">378</td><td class="num">149</td><td class="num">0.778</td><td class="num">0.816</td><td class="num">0</td><td class="num">4</td><td class="num">6.38</td></tr>
+                <tr><td>唐櫃a</td><td class="num">2</td><td class="num">648</td><td class="num">290</td><td class="num">854</td><td class="num">328</td><td class="num">0.759</td><td class="num">0.804</td><td class="num">24</td><td class="num">6</td><td class="num">110.06</td></tr>
+                <tr><td>唐櫃b</td><td class="num">5</td><td class="num">648</td><td class="num">290</td><td class="num">854</td><td class="num">328</td><td class="num">0.759</td><td class="num">0.804</td><td class="num">24</td><td class="num">6</td><td class="num">110.06</td></tr>
+                <tr><td>草壁a</td><td class="num">4</td><td class="num">1300</td><td class="num">626</td><td class="num">1525</td><td class="num">663</td><td class="num">0.852</td><td class="num">0.997</td><td class="num">13.333</td><td class="num">8</td><td class="num">2.13</td></tr>
+                <tr><td>草壁b</td><td class="num">4</td><td class="num">1300</td><td class="num">626</td><td class="num">1525</td><td class="num">663</td><td class="num">0.852</td><td class="num">0.997</td><td class="num">13.333</td><td class="num">8</td><td class="num">2.13</td></tr>
+                <tr><td>土庄a</td><td class="num">2</td><td class="num">5106</td><td class="num">2188</td><td class="num">5665</td><td class="num">2261</td><td class="num">0.901</td><td class="num">1.098</td><td class="num">31.667</td><td class="num">8</td><td class="num">8.58</td></tr>
+                <tr><td>土庄b</td><td class="num">2</td><td class="num">5106</td><td class="num">2188</td><td class="num">5665</td><td class="num">2261</td><td class="num">0.901</td><td class="num">1.098</td><td class="num">31.667</td><td class="num">8</td><td class="num">8.58</td></tr>
+                <tr><td>福田a</td><td class="num">0</td><td class="num">749</td><td class="num">338</td><td class="num">967</td><td class="num">378</td><td class="num">0.775</td><td class="num">0.722</td><td class="num">1</td><td class="num">4</td><td class="num">24.09</td></tr>
+                <tr><td>福田b</td><td class="num">0</td><td class="num">749</td><td class="num">338</td><td class="num">967</td><td class="num">378</td><td class="num">0.775</td><td class="num">0.722</td><td class="num">1</td><td class="num">4</td><td class="num">24.09</td></tr>
+                <tr><td>吉田a</td><td class="num">0</td><td class="num">115</td><td class="num">48</td><td class="num">148</td><td class="num">56</td><td class="num">0.777</td><td class="num">0.923</td><td class="num">10.333</td><td class="num">6</td><td class="num">93.42</td></tr>
+                <tr><td>吉田b</td><td class="num">0</td><td class="num">115</td><td class="num">48</td><td class="num">148</td><td class="num">56</td><td class="num">0.777</td><td class="num">0.923</td><td class="num">10.333</td><td class="num">6</td><td class="num">93.42</td></tr>
+                <tr><td>甲生a</td><td class="num">3</td><td class="num">71</td><td class="num">42</td><td class="num">120</td><td class="num">60</td><td class="num">0.592</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">29.33</td></tr>
+                <tr><td>甲生b</td><td class="num">3</td><td class="num">71</td><td class="num">42</td><td class="num">120</td><td class="num">60</td><td class="num">0.592</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">29.33</td></tr>
+                <tr><td>当浜a</td><td class="num">0</td><td class="num">102</td><td class="num">46</td><td class="num">154</td><td class="num">58</td><td class="num">0.662</td><td class="num">0.736</td><td class="num">1.667</td><td class="num">4</td><td class="num">32.64</td></tr>
+                <tr><td>当浜b</td><td class="num">0</td><td class="num">102</td><td class="num">46</td><td class="num">154</td><td class="num">58</td><td class="num">0.662</td><td class="num">0.736</td><td class="num">1.667</td><td class="num">4</td><td class="num">32.64</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原典 表4-9「重回帰分析のデータ（2拍名詞のみ）」（p.52）。原典 脚注12 により、[変化数] は表4-8 の「和」に相当し、[人口増加率] は 人口H22÷人口H12 である。</p>
+
+        <p class="body">
+        原典が踏んだ手順は次のとおりである（原典 pp.53–58、Appendix. 5）。
+        </p>
+        <ol class="steps">
+            <li><b>標準化</b>　表4-9 を <code>scale</code> で標準化する（<code>data1</code> → 標準化後）。</li>
+            <li><b>相関の確認</b>　相関係数行列と散布図行列（図4-1）を描き、人口H22・世帯数H22・人口H12・世帯数H12 の相関がいずれも 0.9 以上であることを確認する。</li>
+            <li><b>1回目の総当たり</b>　説明変数9個について All.possible.subset.selection を実行する（表4-10）。人口系4変数のうち、AIC の低い組み合わせに現れやすい<b>世帯数H22</b> のみを残し、人口H22・人口H12・世帯数H12 を消去して <code>data1.2</code> を作る。</li>
+            <li><b>2回目の総当たり</b>　<code>data1.2</code>（説明変数6個）について再度実行する（表4-11）。AIC 最小は 世帯数H22 + 情報中心性 + 媒介中心性 + 次数中心性 + 標高。</li>
+            <li><b>VIF と感度分析</b>　このモデルについて <code>vif</code> と <code>sensitivity</code> を実行する。</li>
+            <li><b>3回目の総当たり</b>　VIF が 10 を超えた 世帯数H22・媒介中心性 を消去して <code>data1.3</code> を作り、再度実行する（表4-14）。AIC 最小は 情報中心性 + 次数中心性。</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(R^2\)</th><th class="num">Adj.\(R^2\)</th><th class="num">Rh</th><th class="num">AIC</th><th class="num">cAIC</th><th class="num">BIC</th><th>Formula</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0.881</td><td class="num">0.832</td><td class="num">0.787</td><td class="num">25.712</td><td class="num">36.912</td><td class="num">31.944</td><td>世帯数H22+情報中心性+媒介中心性+次数中心性+標高</td></tr>
+                <tr><td class="num">0.881</td><td class="num">0.817</td><td class="num">0.759</td><td class="num">27.686</td><td class="num">43.686</td><td class="num">34.809</td><td>世帯数H22+人口増加率+情報中心性+媒介中心性+次数中心性+標高</td></tr>
+                <tr><td class="num">0.767</td><td class="num">0.736</td><td class="num">0.708</td><td class="num">31.823</td><td class="num">34.900</td><td class="num">35.384</td><td>情報中心性+次数中心性</td></tr>
+                <tr><td class="num">0.773</td><td class="num">0.724</td><td class="num">0.680</td><td class="num">33.397</td><td class="num">38.397</td><td class="num">37.849</td><td>情報中心性+次数中心性+標高</td></tr>
+                <tr><td class="num">0.772</td><td class="num">0.723</td><td class="num">0.680</td><td class="num">33.424</td><td class="num">38.424</td><td class="num">37.876</td><td>人口増加率+情報中心性+次数中心性</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原典 表4-11「Data1.2 についてのモデル選択（2拍名詞のみ）」（p.55）の上位5件のみを抜粋。原典は20件を掲載している。AIC 最小の行と3番目の行では AIC 差が約 6.1 ある一方、cAIC では 36.912 対 34.900 と順位が逆転している点は、原典の表からそのまま読み取れる。</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>結果</h2>
+        <p class="q">残ったのは、情報中心性（負）と次数中心性（正）の2つである。</p>
+        <p class="body">
+        <b>第2段階（<code>data1.2</code>、2拍名詞のみ）。</b>AIC で選ばれたモデルの回帰式は、原典 p.54 に次の形で書かれている。
+        </p>
+        <div class="eq">
+            <div class="lbl">原典 p.54 の回帰式（標準化データ）</div>
+            \[ \text{変化数} = 0.000 - 1.097\,\text{世帯数H22} - 1.590\,\text{情報中心性} + 1.523\,\text{媒介中心性} + 1.383\,\text{次数中心性} - 0.895\,\text{標高} \]
+            <p class="read">決定係数 0.881、自由度修正済み決定係数 0.832、\(F\) 値 17.8（\(p\) 値 \(3.514\times10^{-5}\)、自由度 5 と 12）、残差の標準誤差 0.410。</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>変数</th><th class="num">推定値</th><th class="num">標準誤差</th><th class="num">\(t\) 値</th><th class="num">\(p\) 値</th><th class="num">VIF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>定数項</td><td class="num">0.000</td><td class="num">0.097</td><td class="num">0.000</td><td class="num">1.000</td><td class="num">—</td></tr>
+                <tr><td>世帯数H22</td><td class="num">−1.097</td><td class="num">0.343</td><td class="num">−3.196</td><td class="num">0.008</td><td class="num">11.890</td></tr>
+                <tr><td>情報中心性</td><td class="num">−1.590</td><td class="num">0.218</td><td class="num">−7.283</td><td class="num">0.000</td><td class="num">4.813</td></tr>
+                <tr><td>媒介中心性</td><td class="num">1.523</td><td class="num">0.470</td><td class="num">3.238</td><td class="num">0.007</td><td class="num">22.331</td></tr>
+                <tr><td>次数中心性</td><td class="num">1.383</td><td class="num">0.297</td><td class="num">4.653</td><td class="num">0.001</td><td class="num">8.924</td></tr>
+                <tr><td>標高</td><td class="num">−0.895</td><td class="num">0.268</td><td class="num">−3.346</td><td class="num">0.006</td><td class="num">7.226</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">推定値・標準誤差・\(t\) 値・\(p\) 値は原典 表4-12「data1.2 の重回帰分析結果」（p.56）。VIF は原典 p.55 の本文および Appendix. 5（A-17）の <code>vif(RegModel.1)</code> 出力。原典は「VIF が 10 になると多重共線性が起きているとする指標があり、この指標に則れば、次数中心性、情報中心性、標高が適切な変数である」と述べている。</p>
+
+        <p class="body">
+        <b>第3段階（<code>data1.3</code>、2拍名詞のみ）。</b>VIF が 10 を超えた 世帯数H22 と 媒介中心性 を落として総当たりをやり直すと、AIC 最小は 情報中心性 + 次数中心性 の2変数モデルになる。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>変数</th><th class="num">推定値</th><th class="num">標準誤差</th><th class="num">\(t\) 値</th><th class="num">\(p\) 値</th><th class="num">VIF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>定数項</td><td class="num">0.000</td><td class="num">0.121</td><td class="num">0.000</td><td class="num">1.000</td><td class="num">—</td></tr>
+                <tr><td>次数中心性</td><td class="num">1.895</td><td class="num">0.271</td><td class="num">6.987</td><td class="num">0.000</td><td class="num">4.738</td></tr>
+                <tr><td>情報中心性</td><td class="num">−1.588</td><td class="num">0.271</td><td class="num">−5.855</td><td class="num">0.000</td><td class="num">4.738</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原典 表4-15「data1.3 についての重回帰分析の結果」（p.57）、VIF は原典 p.58 および Appendix. 5（A-19）。決定係数 0.767、自由度修正済み決定係数 0.736、\(F\) 値 24.7（\(p\) 値 \(1.79\times10^{-5}\)、自由度 2 と 15）、残差の標準誤差 0.514（原典 p.58）。<br>
+        なお原典 p.58 の本文中の回帰式は「変化数 = 0.000 + 1.901 次数中心性 − 1.595 情報中心性」となっており、表4-15 および Appendix. 5 の <code>summary</code> 出力（1.90 / −1.59、\(t\) = 6.99 / −5.85）と末尾の桁が一致しない。ここでは表4-15 の値を載せた。</p>
+
+        <p class="body">
+        <b>2拍名詞（＋助詞）のケース。</b>同じ9集落・同じ説明変数で、目的変数だけを「助詞を後続させた形も含めた変化数」（原典 表4-18）に替えた分析も行われている。第2段階（<code>data2.2</code>）で AIC 最小となったのは 世帯数H22 + 人口増加率 + 情報中心性 + 媒介中心性 + 次数中心性 + 標高 で、決定係数 0.896、自由度修正済み決定係数 0.839、\(F\) 値 15.77（\(p\) 値 \(8.00\times10^{-5}\)）、残差の標準誤差 0.401（原典 p.63）。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>変数</th><th class="num">推定値</th><th class="num">標準誤差</th><th class="num">\(t\) 値</th><th class="num">\(p\) 値</th><th class="num">VIF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>定数項</td><td class="num">0.000</td><td class="num">0.095</td><td class="num">0.000</td><td class="num">1.000</td><td class="num">—</td></tr>
+                <tr><td>世帯数H22</td><td class="num">−1.394</td><td class="num">0.359</td><td class="num">−3.880</td><td class="num">0.003</td><td class="num">13.634</td></tr>
+                <tr><td>人口増加率</td><td class="num">0.214</td><td class="num">0.170</td><td class="num">1.253</td><td class="num">0.236</td><td class="num">3.064</td></tr>
+                <tr><td>情報中心性</td><td class="num">−1.586</td><td class="num">0.228</td><td class="num">−6.952</td><td class="num">0.000</td><td class="num">5.495</td></tr>
+                <tr><td>媒介中心性</td><td class="num">1.291</td><td class="num">0.473</td><td class="num">2.732</td><td class="num">0.020</td><td class="num">23.593</td></tr>
+                <tr><td>次数中心性</td><td class="num">1.601</td><td class="num">0.295</td><td class="num">5.420</td><td class="num">0.000</td><td class="num">9.219</td></tr>
+                <tr><td>標高</td><td class="num">−0.799</td><td class="num">0.264</td><td class="num">−3.025</td><td class="num">0.012</td><td class="num">7.370</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原典 表4-21「data2.2 の重回帰分析結果」（p.64）、VIF は原典 p.63 本文。\(p\) 値が 0.05 を下回らないのは人口増加率のみ。</p>
+
+        <p class="body">
+        ここでも VIF が 10 を超えた 世帯数H22 と 媒介中心性 を落として総当たりをやり直すと（<code>data2.3</code>）、AIC 最小はやはり 情報中心性 + 次数中心性 になる。決定係数 0.727、自由度修正済み決定係数 0.69、\(F\) 値 20（\(p\) 値 \(5.94\times10^{-5}\)）、残差の標準誤差 0.556、VIF は両変数とも 4.738（原典 pp.66–67）。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>変数</th><th class="num">推定値</th><th class="num">標準誤差</th><th class="num">\(t\) 値</th><th class="num">\(p\) 値</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>定数項</td><td class="num">0.000</td><td class="num">0.131</td><td class="num">0.000</td><td class="num">1.000</td></tr>
+                <tr><td>次数中心性</td><td class="num">1.846</td><td class="num">0.294</td><td class="num">6.283</td><td class="num">0.000</td></tr>
+                <tr><td>情報中心性</td><td class="num">−1.552</td><td class="num">0.294</td><td class="num">−5.283</td><td class="num">0.000</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原典 表4-24「data2.3 についての重回帰分析の結果」（p.67）。</p>
+
+        <div class="sub">
+            <h3>符号の向きが、原典の主張の核になっている</h3>
+            <p>次数中心性の係数は正、情報中心性の係数は負である。原典 p.71 はこれを「道路が集中している集落は、1998年から2012年の間にアクセントが大きく変化した」「アクセスしやすい集落は、1998年から2012年の間にアクセントがあまり変化しなかった」と読み、金田一[2003]の「都市の言語は変化しにくい部分があり、地方の言語は変化しやすい部分がある」という議論と結びつけている。同時に原典は「ただし、都市の方が言語が変化しやすいという説もあり、一概に都市とアクセスのしやすさを同義のものとして結びつけることはできない」とも述べている。</p>
+            <p>原典はさらに、残差の大小（図4-4、表4-17）を使って、どのアクセント変化が外言語的要素に影響されるものかを切り分けている。残差の小さい集落にのみ現れる変化（LLF→LHL、MLR→LLH、MLF→LHL）と、残差の大きい集落にのみ現れる変化（MF→HL、MFL→HLL、LLR→LHL）とを対比し、前者を接触変化、後者を内的変化に対応づける、という議論である（原典 pp.72–73）。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>感度分析（Sensitivity Analysis）</h2>
+        <p class="q">説明変数に揺さぶりをかけ、係数がどれだけ動くかを見る。</p>
+        <p class="body">
+        原典は、VIF とは別の多重共線性の診断として Sensitivity Analysis を併用している。使ったのは R の <code>accuracy</code> パッケージ中の <code>sensitivity</code> 関数で、原典 p.53 に「説明変数に変動を与えて、多重共線性を判定する Sensitivity Analysis を行うパッケージ accuracy 中の関数 sensitivity を用いた」とある。Appendix. 5 の実際の呼び出しは <code>data1.2.sens &lt;- sensitivity(data1.2, lm, 変化数 ~ ., ptb.R = 2000)</code> で、出力の見出しは <code>"Sensitivity of coefficients over 2000 perturbations:"</code> である。原典 p.55 の本文も「2000回の変動を与えて、チェックを行った」と書いている。
+        </p>
+        <div class="sub">
+            <h3>Unstable の定義</h3>
+            <p>原典 p.57 の脚注17 に「Unstable となるのは説明変数に変動を与え、それを任意の回数繰り返した際に、それぞれの推定値の結果の値が95%信頼区間内にどれだけ収まるかを検定し、それが棄却される場合である」とあり、Unstable の場合は出力の <code>[Unstable]</code> 欄に「*」が表示される。</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>変数</th><th class="num">変動推定値</th><th class="num">推定値</th><th class="num">標準誤差</th><th class="num">2.50%</th><th class="num">97.50%</th><th>不安定</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>定数項</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.100</td><td class="num">−0.004</td><td class="num">0.004</td><td>—</td></tr>
+                <tr><td>世帯数H22</td><td class="num">−1.100</td><td class="num">−1.100</td><td class="num">0.380</td><td class="num">−1.100</td><td class="num">−1.060</td><td>—</td></tr>
+                <tr><td>人口増加率</td><td class="num">−0.023</td><td class="num">−0.023</td><td class="num">0.180</td><td class="num">−0.030</td><td class="num">−0.015</td><td>—</td></tr>
+                <tr><td>情報中心性</td><td class="num">−1.600</td><td class="num">−1.600</td><td class="num">0.240</td><td class="num">−1.588</td><td class="num">−1.570</td><td>—</td></tr>
+                <tr><td>媒介中心性</td><td class="num">1.500</td><td class="num">1.500</td><td class="num">0.500</td><td class="num">1.485</td><td class="num">1.533</td><td>—</td></tr>
+                <tr><td>次数中心性</td><td class="num">1.400</td><td class="num">1.400</td><td class="num">0.320</td><td class="num">1.378</td><td class="num">1.403</td><td>—</td></tr>
+                <tr><td>標高</td><td class="num">−0.890</td><td class="num">−0.890</td><td class="num">0.280</td><td class="num">−0.903</td><td class="num">−0.877</td><td>—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">原典 表4-13「data1.2 に対する Sensitivity Analysis の結果（1）」（p.56）。「不安定」欄はいずれも空欄で、原典 p.57 は「どの変数も不安定（Unstable）でないという結果が得られた」と述べている。なお、同じ出力が Appendix. 5（A-18）にも <code>digits = 2</code> で印字されており、2.5%／97.5% の値は末尾1桁が表4-13 と食い違う箇所がある（例：世帯数H22 の 2.5% が表4-13 では −1.100、Appendix. 5 では −1.099）。<code>data2.2</code>・<code>data1.3</code>・<code>data2.3</code> についても同様の出力が原典 表4-22・表4-16・表4-25 に掲載されており、いずれも「不安定」の判定は出ていない。</p>
+
+        <div class="warn">
+            <h3>感度分析に渡されたモデルは、AIC で選ばれたモデルではない</h3>
+            <p>Appendix. 5 の呼び出しは <code>sensitivity(data1.2, lm, 変化数 ~ ., ptb.R = 2000)</code> である。<code>変化数 ~ .</code> は「データフレームに残っている全列を説明変数にする」という指定なので、ここで当てはめられているのは <code>data1.2</code> の6変数すべてを含むモデルであり、AIC で選ばれた5変数モデル（人口増加率を含まない）ではない。表4-13 に人口増加率の行があるのはそのためである。<code>data1.3</code> についても同様で、表4-16 には 人口増加率・標高 の行があるが、AIC で選ばれたのは 情報中心性 + 次数中心性 の2変数モデルである。</p>
+            <p>つまり、<b>感度分析が「安定」と判定した対象と、係数表・\(p\) 値が報告されている対象は、同じモデルではない</b>と読める。原典はこの違いに言及していない。</p>
+        </div>
+        <div class="warn">
+            <h3>2つの診断は食い違っている</h3>
+            <p>VIF は 世帯数H22 = 11.890、媒介中心性 = 22.331 を「10 超」と判定したが、感度分析はどの変数も Unstable としなかった。原典 p.57 の本文は「data1.2 から vif(&gt;10)で不安定と判定された世帯数H22、媒介中心性を消去した」と書いており、VIF の判定を優先して変数を落としている。どちらの診断を採るかで最終モデルは変わるが、原典はその選択の理由を明示していない。</p>
+        </div>
+        <div class="sub">
+            <h3>読み取れなかったこと</h3>
+            <p>原典および Appendix. 4〜6 の範囲では、<code>sensitivity</code> が説明変数に与える「変動」の分布や大きさ（摂動の規模）は記されていない。<code>ptb.R = 2000</code> という繰り返し回数だけが指定されており、摂動の既定設定に依存している。また <code>accuracy</code> パッケージは、原典 p.53 の脚注15 の時点ですでに「現在は開発が中止されており CRAN からは入手不可」とされている。</p>
+        </div>
+    </section>
+
+    <section class="wblock" id="limits">
+        <h2><span class="no">8</span>限界</h2>
+        <p class="q">総当たりで選んでから検定する、という手順そのものに問題がある。</p>
+
+        <div class="warn">
+            <h3>選んでから検定すると、\(p\) 値は甘くなる</h3>
+            <p>All possible subset selection は、同じ標本の上で \(2^p-1\) 通りのモデルを当てはめ、最も当てはまりの良いものを選ぶ。その選ばれたモデルについて、<b>同じ標本で</b> \(t\) 検定と \(F\) 検定を行うと、報告される \(p\) 値は名目の意味を失う。\(t\) 分布も \(F\) 分布も「モデルがデータを見る前に決まっていた」ことを前提に導かれているからで、データを見てから最良を拾う操作は、この前提を壊す。実際に報告されている \(p\) 値は本来より小さく、信頼区間は本来より狭くなる（選択後推測、post-selection inference の問題）。</p>
+            <p>原典の第2段階では \(p=6\) から 63 通り、第1段階では \(p=9\) から 511 通りが比較されている。511 通りのなかで最良だったモデルの \(F\) 値 17.8 に \(3.514\times10^{-5}\) という \(p\) 値を付けることは、<b>1つのモデルだけを見たときの計算をそのまま流用している</b>ことを意味する。<b>原典はこの点に触れていない。</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>標本数に対して変数が多く、しかも行が重複している</h3>
+            <p>表4-9 は18行だが、集落は9つで、説明変数の値は同じ集落の a と b のあいだで完全に一致する。原典 脚注13 はこの重複を「同一集落内での調査地点数が2地点」の場合との重みを揃えるための処置だと説明している。目的変数（変化数）は集落によって a と b で異なることがあるが、説明変数の側には9通りの値しかない。</p>
+            <p>それにもかかわらず、回帰は18行のデータとして実行されており、残差自由度は 12（第2段階）ないし 15（第3段階）と計算されている。<b>独立な集落は9つしかないので、この自由度は過大である可能性が高い</b>。標準誤差は小さく、\(t\) 値は大きく、\(p\) 値は小さく出る方向に偏る。<b>原典はこの点に触れていない。</b></p>
+            <p>加えて、第1段階では説明変数が9個で、独立な集落は9つである。この比のもとで 511 通りを探索すれば、偶然の当てはまりを拾う余地は大きい。</p>
+        </div>
+
+        <div class="warn">
+            <h3>観測は空間的に配置されており、誤差の独立性は疑わしい</h3>
+            <p>9集落は小豆島の上に配置されている。説明変数そのものが、集落間の道路・航路のつながり（表4-5）から作られた中心性である。近い集落どうしは人の行き来も方言の様相も似ている可能性が高く、その場合、回帰の誤差項は互いに独立ではない。誤差に正の空間的自己相関があると、標準誤差は過小評価される。</p>
+            <p>原典は残差の絶対値を集落の位置の上に円の大きさとして描いており（図4-5）、空間的な見取り図は与えている。しかし、残差の空間的自己相関を検定したり、空間構造をモデルに組み込んだりはしていない。<b>原典はこの点を限界として述べていない。</b>誤差の空間相関を明示的にモデルへ入れる立場については <a href="../icar/">ICAR 空間ランダム効果</a> を参照。</p>
+        </div>
+
+        <div class="warn">
+            <h3>入れ子のデータとして扱われていない</h3>
+            <p>18行は「9集落 × 2行」という入れ子構造を持つ。同じ集落の2行は、同じ説明変数を共有し、同じ話者集団に由来する。こうしたデータで各行を独立な観測として扱うと、集落内の相関が無視される。集落を変量効果として扱い、集落内・集落間の分散を分けて推定するのが素直な対処で、その枠組みは <a href="../mixed-model/">線形混合モデルとAIC</a> にあたる。<b>原典は固定効果のみの重回帰で処理しており、この選択肢に触れていない。</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>目的変数は非負の計数である</h3>
+            <p>変化数は 0 以上の値で、表4-9 では 0〜5、表4-18 では 0〜10 の範囲に入る。算出の途中では中拍 M を 0.5 に置き換えているのでセル単位の差は 0.5 を取りうるが、表4-9・表4-18 に載っている地点ごとの和はいずれも整数である。いずれにせよ、下に 0 という壁があり、分散が水準とともに変わる可能性がある。正規誤差の線形モデルはこれを近似として扱っていることになる。予測値が負になりうる点も、モデルの外挿には注意が要る。<b>原典はこの点に触れていない。</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>2つの分析は独立な再現ではない</h3>
+            <p>「2拍名詞のみ」と「2拍名詞＋助詞」の両方で 情報中心性 + 次数中心性 が選ばれたことは、原典 p.71 で結論の支えとして使われている。しかし両者は<b>同じ9集落・同じ説明変数</b>を使っており、目的変数も同じ語（水・音・山・針・秋）の同じ調査から作られている。独立な標本での再現ではないので、一致したことをもって確からしさが2倍になるとは言えない。<b>原典はこの点に触れていない。</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>これは因果の主張ではない</h3>
+            <p>回帰係数が「次数中心性が1標準偏差大きい集落は、変化数が 1.9 標準偏差大きい」という関連を表すことと、「道路を増やせばアクセントが変わる」こととは別である。交絡になりうる変数（集落の産業構造、通学・通勤の実態、話者の年齢構成、そもそも1998年時点でのアクセント体系の違い）はモデルに入っていない。原典自身、金田一[2003]の議論と結びつける箇所で「一概に都市とアクセスのしやすさを同義のものとして結びつけることはできない」と留保を置いている。</p>
+        </div>
+
+        <div class="sub">
+            <h3>VIF の閾値そのものについて</h3>
+            <p>「VIF &gt; 10 なら多重共線性あり」は経験則であって、検定ではない。原典 脚注16 が書くとおり、これは \(R_j^2 &gt; 0.9\) と言っているにすぎない。閾値を 5 にすれば、第2段階では 情報中心性（4.813）以外のすべてが落ちる。どこで切るかによって最終モデルが変わる以上、閾値は結果の一部として報告されるべきものである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典</h2>
+        <p class="body">
+        このページの数値はすべて、小野原彩香『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』（同志社大学大学院文化情報学研究科、2013年度 博士論文）の第4章および巻末 Appendix から引用したものである。本文ページ番号は論文本体の通し番号、Appendix のページ番号は「A-」を冠した巻末資料の番号による。
+        </p>
+        <ul class="refs">
+            <li>小野原彩香（2013）『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』同志社大学大学院文化情報学研究科 博士論文。<br>
+            　第4章第4節「方法 ―中心性、重回帰分析―」pp.49–52 ／ 第5節「結果」pp.53–70 ／ 第6節「考察」pp.71–73。<br>
+            　表4-9（分析データ、p.52）、表4-10・表4-11（モデル選択、p.55）、表4-12・表4-13（係数と感度分析、p.56）、表4-14・表4-15（同、p.57）、表4-18（＋助詞のデータ、p.62）、表4-21（係数、p.64）、表4-22（感度分析、p.65）、表4-24・表4-25（同、p.67）。<br>
+            　Appendix. 4「事例2 All.possible.subset.selection のスクリプト」A-11〜A-12 ／ Appendix. 5「事例2 重回帰分析 R スクリプト（2拍名詞）」A-13〜 ／ Appendix. 6「事例2 重回帰分析 R スクリプト（2拍名詞＋助詞）」。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>原典が挙げている手法・道具の文献</h3>
+            <ul class="refs">
+                <li>Stephenson, K. &amp; Zelen, M. (1989) Rethinking Centrality: Methods and Applications. <i>Social Networks</i>, 11, 1–37.　情報中心性の典拠として原典 p.52 が引く。</li>
+                <li>鈴木努（2009）『中心性』R で学ぶデータサイエンス ネットワーク分析（第8巻）、共立出版。　次数中心性・媒介中心性・情報中心性の説明の典拠として原典 pp.51–52 が引く。</li>
+                <li>Butts, C. T. (2010) <i>Package &lsquo;sna&rsquo;</i>.　中心性の計算に使われた R パッケージ。</li>
+                <li>R パッケージ <code>car</code> の関数 <code>vif</code>（原典 p.53）。</li>
+                <li>R パッケージ <code>accuracy</code> の関数 <code>sensitivity</code>（原典 p.53、脚注15）。原典執筆時点で開発中止・CRAN から入手不可と注記されている。</li>
+                <li>矢野環による R スクリプト <code>papca.R</code> 中の関数 <code>All.possible.subset.selection</code>（原典 p.53、脚注14）。スクリプト冒頭のコメントには &ldquo;originaly by S.Aoki / modified by T.Yano&rdquo; とある。</li>
+            </ul>
+        </div>
+        <div class="sub" style="margin-top:26px">
+            <h3>データの出所</h3>
+            <ul class="refs">
+                <li>アクセント：中井幸比古（1998）「香川県東部島嶼のアクセント」61, 1–26、および 2012年3月の調査（科学研究費 基盤研究(A) 2324202「方言分布変化の詳細解明」代表：大西拓一郎、徳島大学日本語学研究室 岸江信介教授主導）。原典 p.47、脚注10。</li>
+                <li>人口・世帯数：総務省統計局「平成22年国勢調査 小地域集計 第2表 男女別人口及び世帯数 －町丁・字等」、「平成12年国勢調査（小地域）男女別人口総数及び世帯総数」。原典 p.48。</li>
+                <li>集落間のつながり：国土交通省「国土数値情報 バスルート」（SHAPE形式、世界測地系、香川県、2011）および「国土数値情報 定期旅客航路データ」（2012）。原典 p.48。</li>
+                <li>標高：国土交通省国土地理院「基盤地図情報」数値標高モデル（JPGIS形式、5mメッシュ）。原典 p.48。</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>重回帰分析は、真の係数 \(\beta\) を<b>固定された未知の定数</b>と見る。推定量 \(\hat{\beta}\) のほうが確率変数で、その揺らぎは「同じ集落から標本を取り直したら、係数はどれだけ動くか」という標本変動として評価される。標準誤差 \(\sqrt{\sigma^2 (X^{\top}X)^{-1}_{jj}}\) も、\(t\) 値も、\(p\) 値も、すべてこの反復のなかでの当たり率の話である。VIF が測っているのも、その反復のなかで係数がどれだけ散らばるかの倍率にほかならない。<a href="../">7つの観点を式で読む</a>の<b>観点2（頻度論）</b>にそのまま重なる。</p>
+        <p>係数のほうに分布を置き、事前分布と事後分布で語る立場（<a href="../bayesian-estimation/">ベイズ推定</a>）、入れ子構造を変量効果として扱う立場（<a href="../mixed-model/">線形混合モデルとAIC</a>）、空間的な依存そのものをモデルに入れる立場（<a href="../icar/">ICAR 空間ランダム効果</a>）とは、同じデータを前にしても評価の物差しが違う。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使った手法を、同じ分野の読み手に向けて整理したものです。数値はすべて博士論文の本文および巻末 Appendix から引用し、推定値や概算は記載していません。原典内で値が一致しない箇所は、その旨を明記しました。<br>
+    手法の位置づけの全体像は <a href="../">7つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-09-21 &nbsp;|&nbsp; <a href="../">← 7つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>
