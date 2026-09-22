@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betweenness Centrality &mdash; Ayaka Onohara | Teaching</title>
+    <meta name="description" content="A traffic network between settlements, reconstructed from an early-modern priest’s itinerary, with betweenness centrality applied to it so that &quot;the settlements that are hard to reach&quot; become a number. This page sets out the definition of the shortest path, the edge weight that folds in difference in elevation, the actual figures for the former Tokuyama Village in Gifu Prefecture (elevation and betweenness centrality at 44 points, distances between settlements), and the limits of speaking about a modern linguistic distribution through an early-modern route, following the presentation slides and the doctoral dissertation.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .sub p + p { margin-top:10px; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Betweenness Centrality</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/betweenness-centrality/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 &nbsp;|&nbsp; <a href="../">Geometry (least squares)</a></span>
+        <h1>Betweenness <span>Centrality</span></h1>
+        <p class="lead">Build a graph whose vertices are settlements and whose edges are roads, then count <b>how far a given vertex lies on the shortest paths between other vertices</b>. The measure is an instrument for saying &ldquo;a place that is hard to reach&rdquo;, &ldquo;a place that never becomes a thoroughfare&rdquo;, as a number rather than an impression.<br>
+        For the former Tokuyama Village in Gifu Prefecture, a traffic network was reconstructed from the itinerary of an early-modern priest, and the betweenness centrality obtained on it turns out to coincide with the settlements whose accent is peculiar and with the settlements that come out as outliers in a correspondence analysis of the folkloric &ldquo;origin tales and sayings&rdquo;. Following that line of analysis, this page sets out what is computed and what may be claimed.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Putting &ldquo;the harder a settlement is to reach, the more distinctive its language and folklore&rdquo; into a measurable form.</p>
+        <p class="body">
+        The starting point is an old question in linguistic geography. Onohara (2012a), citing Shibata (1969), confirms that linguistic geography &ldquo;attends to the relation between linguistic forms and extralinguistic factors, and seeks not only to clarify the process of linguistic change but also <b>to clarify its causes</b>&rdquo;, and says that it is the underlined clause she is after. The questions raised on that basis are: why is a given dialect of a given region unlike those around it? And: <b>why is the Tonyū accent isolated?</b>
+        </p>
+        <p class="body">
+        The object is the former Tokuyama Village in Gifu Prefecture (now Ibigawa Town), a village every settlement of which was vacated in 1985 for the construction of a dam. The numbers of households recorded for 1972 are Kadonyū 36, Tonyū 58, Kami-Kaiden 45, Hongō 142, Yamate 45, Hazehara 56 and Tsuka 34. Within this village, Tonyū shows the otsu type (Tokyo type), Tsuka a type intermediate between kō and otsu, and the remaining settlements, Hongō among them, the kō type (Keihan type) &mdash; an accent distribution that refuses to settle down within so narrow an area.
+        </p>
+        <p class="body">
+        &ldquo;Tonyū is linguistically isolated because it is inconvenient to reach.&rdquo; Put that way, the explanation sounds natural. But it risks being <b>a restatement rather than an explanation</b>: it is isolated because it is isolated says nothing at all. What is needed is to extract &ldquo;inconvenience of access&rdquo; as a number, from a different body of material, <b>independently of the linguistic data</b>. Betweenness centrality is used as one option for doing so.
+        </p>
+        <div class="sub">
+            <h3>Replacing a phrase from earlier research with a number</h3>
+            <p>The doctoral dissertation states the standing of the analysis plainly: &ldquo;the above results are the outcome of <b>evaluating quantitatively</b> the geographical isolation of the Tonyū settlement, which exhibits the &lsquo;<b>inconvenience of access compared with the other settlements</b>&rsquo; mentioned in the discussion of Inoue and Ōta [1989], together with the state of the accent at Tonyū, Tsuka and the other settlements as reported by Sugito&rdquo;.</p>
+            <p>The construction, in other words, is less the discovery of a new fact than the replacement of something earlier research had stated in words by a countable quantity. Fixing that standing in advance is the way to avoid overestimating what the method does.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>How the graph is built</h2>
+        <p class="q">Vertices are settlements and passes, edges are the priest&rsquo;s itinerary, and the weights carry difference in elevation.</p>
+        <p class="body">
+        The data used are <b>the early-modern circuit route of Jōshōji</b>. A figure survives showing the route along which priests from Jōshōji in Takefu, Fukui Prefecture (the head temple of the Jōshōji branch of Shin Buddhism) travelled from village to village, and it is this that has been turned into vertices and edges. The dissertation writes: &ldquo;in constructing the network, <b>the nodes were taken to be the settlements, passes and slopes visited on the circuit, and the edges the roads between the settlements used on the circuit</b>&rdquo;. There are 44 vertices.
+        </p>
+        <p class="body">
+        What matters here is that <b>passes are included among the vertices</b>. In mountainous country like Tokuyama Village, joining settlement to settlement by a straight line does not correspond to how movement actually happened; which pass is crossed is what determines the route. Because passes were placed explicitly as vertices, a structure such as &ldquo;to leave the village from Tsuka one must cross Kanmuri Pass&rdquo; is carried on the graph itself.
+        </p>
+        <div class="sub">
+            <h3>Why difference in elevation enters the edge weight</h3>
+            <p>In mountainous country, horizontal distance alone does not represent the cost of movement. Two kilometres along a flat valley floor and two kilometres climbing 500 m are not the same two kilometres. The edge weight is therefore defined as a value compounding horizontal distance and difference in elevation.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Edge weight (2012 presentation slides)</div>
+            \[ \text{edge weight} \;=\; \sqrt{\bigl(\text{difference in latitude and longitude between points}\,(m)\bigr)^{2} + \bigl(\text{difference in elevation}\,(m)\bigr)^{2}} \;\; (m) \]
+            <p class="read">The form given in Figures 7 and 8 of the presentation materials. In another set of slides the first term is written &ldquo;<b>Euclidean distance between the points</b> (m)&rdquo;. Either way, the horizontal separation and the vertical separation are treated as the two legs of a right triangle and the length of the hypotenuse is taken.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Edge weight (equation (1) of the doctoral dissertation)</div>
+            \[ \sqrt{\bigl(\text{Euclidean distance between points}\bigr)^{2} + \bigl(\text{difference in elevation} \times 8.3\bigr)^{2}} \;\; (m) \]
+            <p class="read">In the dissertation the difference in elevation is <b>multiplied by 8.3 before</b> being added. The reason is stated as well: &ldquo;vertical distance is made 8.3 times horizontal distance because it is known that a human being can generally walk 5 km in an hour, and that <b>an hour is added for every 600 m of ascent</b> [cf. Langmuir (1984)]&rdquo;. The conversion by which a 600 m climb is equivalent to 5000 m of horizontal travel is what the coefficient 8.3 contains.</p>
+        </div>
+        <div class="sub">
+            <h3>Why road distance or a walking-cost function was not used</h3>
+            <p>The dissertation gives its reasons for this choice too: &ldquo;as regards the &lsquo;ease of access&rsquo; between points, there are also methods of computing the cost of movement between points using road distance or a hiking function, but in the present analysis these were not used and <b>simple straight-line distance was used</b> instead&rdquo;. Two reasons are offered. First, because the passes are included in the circuit route and it is known that people crossed them, &ldquo;when walking from low ground towards a pass, it is considered that there is no difference in the eventual cost (effort) whether one heads for the pass in a straight line or reaches it by a detour&rdquo;. Second, &ldquo;as for walking cost, <b>the problem also arises of which of the many model equations one ought to select</b>&rdquo;.</p>
+            <p>It is worth registering that the choice of method is justified not by a pursuit of accuracy but by <b>a reduction of arbitrariness</b>. That said, this is a claim that the two are equivalent, not a verified equivalence. Section 7 returns to the point.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>What a shortest path is</h2>
+        <p class="q">Not the fewest edges, but the path minimizing the total weight.</p>
+        <p class="body">
+        Betweenness centrality is defined over shortest paths, so the meaning of &ldquo;shortest&rdquo; has to be settled first. In a graph without edge weights, the shortest path is <b>the path traversing the fewest edges</b>. In a weighted graph it is the path for which the sum of the edge weights along it is smallest.
+        </p>
+        <div class="eq">
+            <div class="lbl">Weighted shortest path</div>
+            \[ d(j,k) \;=\; \min_{P \,:\, j \to k} \;\sum_{e \in P} w(e) \]
+            <p class="read"><b>\(P\)</b> &hellip; a path (a sequence of edges) from \(j\) to \(k\)<br>
+            <b>\(w(e)\)</b> &hellip; the weight of edge \(e\); here, the value compounding distance and difference in elevation obtained by the equation of the previous section<br>
+            The \(P\) attaining the minimum is the shortest path. <b>There may be more than one</b> path attaining it. That there may be more than one is what tells in the definition of the next section.</p>
+        </div>
+        <p class="body">
+        When all edge weights are non-negative, this minimization is solved by <b>Dijkstra&rsquo;s algorithm</b>: vertices are settled one at a time in order of proximity from the source, and at each step the provisional distances to the adjacent vertices are updated, until the shortest distance to every vertex is obtained. For all pairs of vertices on a graph, methods such as Warshall&ndash;Floyd are used. At around 44 vertices, any implementation finishes in an instant. <span style="color:var(--muted)">(The materials consulted say nothing about the choice of algorithm. This much is a general account of the method.)</span>
+        </p>
+        <div class="sub">
+            <h3>&ldquo;Shortest path&rdquo; does not mean shortest on the map</h3>
+            <p>The shortest path meant here is shortest <b>on the graph</b>. Two points may be close on the map, but if no edge joins them in the graph the shortest path goes the long way round. Conversely, a route that could not in fact be travelled becomes a shortest path once it is entered as an edge. The value of a shortest path, in other words, carries straight through <b>the judgement of which edges were put into the graph</b>. Which roads appeared in the itinerary data is what settles the result.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>The definition of betweenness centrality</h2>
+        <p class="q">The more others cannot pass without going through you, the higher the value.</p>
+        <p class="body">
+        The presentation materials define betweenness centrality as &ldquo;a measure indicating, in a network structure, <b>the degree to which a given vertex lies on the shortest paths between other vertices</b>&rdquo;. The dissertation takes the same definition from Suzuki (2009) and adds that &ldquo;the point, that is, is that <b>mediation between vertices and control of information become possible</b>&rdquo;.
+        </p>
+        <div class="eq">
+            <div class="lbl">Definition of betweenness centrality (notation of section 4.3.3 of the presentation materials)</div>
+            \[ \text{betweenness centrality of vertex } i \;=\; \sum_{j \ne i \ne k} \frac{\;\text{shortest paths between } j \text{ and } k \text{ passing through } i\;}{\;\text{number of shortest paths between vertex } j \text{ and vertex } k\;} \]
+            <p class="read">In symbols, \(\displaystyle C_B(i) = \sum_{j \ne i \ne k} \frac{g_{jk}(i)}{g_{jk}}\). In the dissertation&rsquo;s account, <b>\(g_{jk}\)</b> is &ldquo;the number of shortest paths between vertex \(j\) and vertex \(k\)&rdquo; and <b>\(g_{jk}(i)\)</b> is &ldquo;the number of shortest paths between vertex \(j\) and vertex \(k\) that pass through vertex \(i\)&rdquo;.</p>
+        </div>
+        <div class="sub">
+            <h3>Why there is a denominator</h3>
+            <p>If there were only one shortest path, the fraction would be 0 or 1: either \(i\) is on that path or it is not. When there are several shortest paths, \(i\) may lie on only some of them. Dividing by the denominator turns the quantity into a proportion: <b>how far \(i\) monopolizes passage between \(j\) and \(k\)</b>. A point with a detour around it loses score to that extent.</p>
+            <p>A vertex with high betweenness centrality is therefore not simply a vertex with many edges, but a vertex <b>through which many pairs of others cannot pass without it</b>. Structural bottlenecks &mdash; bridges, barriers, passes &mdash; come out high.</p>
+        </div>
+        <div class="sub">
+            <h3>How it differs from degree, information and closeness centrality</h3>
+            <p>Another chapter of the dissertation (case 2) defines three centralities side by side. <b>Degree centrality</b> is &ldquo;a measure that rates highly the vertices having more relations within the network&rdquo;, that is, the number of edges incident on the vertex itself. <b>Information centrality</b> is &ldquo;a measure that also takes into account paths other than the shortest paths between vertices, and the lengths of paths&rdquo;, weighting &ldquo;all paths between vertices by the reciprocal of path length, so that the shorter a path the more highly it is rated&rdquo;.</p>
+            <p>The three measure different things. A settlement with four edges all leading into dead ends has high degree centrality but low betweenness centrality. Conversely, a settlement with only two edges will have very high betweenness centrality if it is the only pass joining the eastern and western halves of the village. <b>Closeness centrality</b> is the reciprocal of the sum of the shortest distances to all other vertices, a measure of &ldquo;far or near as seen from the whole&rdquo;; it is not used anywhere in the materials consulted.</p>
+            <p>This research chose betweenness centrality because the question was not &ldquo;is it isolated?&rdquo; but &ldquo;<b>is it a thoroughfare?</b>&rdquo; If what is asked is whether a point is one that information and people pass through, the measure that answers is the one counting passage along shortest paths.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The actual data</h2>
+        <p class="q">Elevation and betweenness centrality at 44 points, and the distances between settlements.</p>
+        <p class="body">
+        The computation was done in R. The dissertation states explicitly that &ldquo;the software used is R, the package used is sna [Butts, 2010], and the function used is <code>betweenness</code>&rdquo;, with <code>gplot</code> used for drawing. The 2012 presentation slides say only that &ldquo;construction and drawing were carried out using the sna package of R. <b>(Script omitted.)</b>&rdquo;, but the dissertation reproduces the R scripts in full as Appendices 15 and 16.
+        </p>
+        <div class="sub">
+            <h3>Elevation and betweenness centrality at the 44 points of the circuit route</h3>
+            <p>Table 6-3 of the dissertation prints the values for all 44 points. The eight settlements of Tokuyama Village are Tsuka, Hazehara, Yamate, Hongō, Kami-Kaiden, Tonyū, Kadonyū and Shimo-Kaiden.</p>
+        </div>
+        <div class="scroller">
+            <table class="res">
+                <thead><tr><th>Point</th><th class="num">Elevation (m)</th><th class="num">Betweenness centrality</th></tr></thead>
+                <tbody>
+                <tr><td>Jōshōji (誠照寺)</td><td class="num">23</td><td class="num">109.667</td></tr>
+                <tr><td>Takefu (武生)</td><td class="num">30</td><td class="num">84.000</td></tr>
+                <tr><td>Itagaki-zaka (板垣坂)</td><td class="num">421</td><td class="num">87.667</td></tr>
+                <tr><td>Inari (稲荷)</td><td class="num">229</td><td class="num">288.000</td></tr>
+                <tr><td>Tsukigase (月ヶ瀬)</td><td class="num">246</td><td class="num">130.000</td></tr>
+                <tr><td>Shizuhara (志津原)</td><td class="num">286</td><td class="num">89.000</td></tr>
+                <tr><td>Kōchi (河内)</td><td class="num">369</td><td class="num">68.667</td></tr>
+                <tr><td>Tashiro (田代)</td><td class="num">429</td><td class="num">84.000</td></tr>
+                <tr><td>Kanmuri Pass (冠峠)</td><td class="num">1032</td><td class="num">128.000</td></tr>
+                <tr><td>Takakura Pass (高倉峠)</td><td class="num">958</td><td class="num">0.000</td></tr>
+                <tr><td><b>Tsuka (塚)</b></td><td class="num">396</td><td class="num">183.667</td></tr>
+                <tr><td><b>Hazehara (櫨原)</b></td><td class="num">364</td><td class="num">494.333</td></tr>
+                <tr><td><b>Yamate (山手)</b></td><td class="num">370</td><td class="num">368.333</td></tr>
+                <tr><td><b>Hongō (本郷)</b></td><td class="num">320</td><td class="num">437.333</td></tr>
+                <tr><td><b>Kami-Kaiden (上開田)</b></td><td class="num">298</td><td class="num">164.000</td></tr>
+                <tr><td><b>Tonyū (戸入)</b></td><td class="num">396</td><td class="num">84.000</td></tr>
+                <tr><td><b>Kadonyū (門入)</b></td><td class="num">435</td><td class="num">0.000</td></tr>
+                <tr><td><b>Shimo-Kaiden (下開田)</b></td><td class="num">319</td><td class="num">260.333</td></tr>
+                <tr><td>Umasaka Pass (馬坂峠)</td><td class="num">618</td><td class="num">246.333</td></tr>
+                <tr><td>Hachiya (八谷)</td><td class="num">221</td><td class="num">252.000</td></tr>
+                <tr><td>Nagamine (長峯)</td><td class="num">229</td><td class="num">414.667</td></tr>
+                <tr><td>Kadowaki (門脇)</td><td class="num">195</td><td class="num">279.000</td></tr>
+                <tr><td>Tarumi (樽見)</td><td class="num">166</td><td class="num">245.000</td></tr>
+                <tr><td>Itaya (板屋)</td><td class="num">179</td><td class="num">240.000</td></tr>
+                <tr><td>Kuchidani (口谷)</td><td class="num">219</td><td class="num">84.000</td></tr>
+                <tr><td>Okudani (奥谷)</td><td class="num">271</td><td class="num">0.000</td></tr>
+                <tr><td>Midori Saikōji (水鳥西光寺)</td><td class="num">157</td><td class="num">0.000</td></tr>
+                <tr><td>Ojika (小鹿)</td><td class="num">232</td><td class="num">171.000</td></tr>
+                <tr><td>Matsuda (松田)</td><td class="num">272</td><td class="num">191.000</td></tr>
+                <tr><td>Kami-Ōsu (上大須)</td><td class="num">412</td><td class="num">221.000</td></tr>
+                <tr><td>Oppa (越波)</td><td class="num">414</td><td class="num">265.000</td></tr>
+                <tr><td>Nao Pass (猶峠)</td><td class="num">650</td><td class="num">315.000</td></tr>
+                <tr><td>Ōkawara (大河原)</td><td class="num">458</td><td class="num">631.667</td></tr>
+                <tr><td>Nōgō (能郷)</td><td class="num">253</td><td class="num">265.667</td></tr>
+                <tr><td>Nagashima (長島)</td><td class="num">228</td><td class="num">240.667</td></tr>
+                <tr><td>Tenjindō (天神堂)</td><td class="num">233</td><td class="num">225.667</td></tr>
+                <tr><td>Nukumi Pass (温見峠)</td><td class="num">1023</td><td class="num">349.667</td></tr>
+                <tr><td>Haeboshi Pass (ハエボシ峠)</td><td class="num">954</td><td class="num">276.333</td></tr>
+                <tr><td>Akiu (秋生)</td><td class="num">551</td><td class="num">248.000</td></tr>
+                <tr><td>Subara (スバラ)</td><td class="num">497</td><td class="num">311.000</td></tr>
+                <tr><td>Nukumi (温見)</td><td class="num">727</td><td class="num">544.333</td></tr>
+                <tr><td>Suginotani Pass (杉ノ谷峠)</td><td class="num">1125</td><td class="num">364.333</td></tr>
+                <tr><td>Kumogawa (熊河)</td><td class="num">706</td><td class="num">314.333</td></tr>
+                <tr><td>Kumogawa Pass (熊河峠)</td><td class="num">888</td><td class="num">163.333</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="cap">Source: Onohara (2013), doctoral dissertation, Table 6-3, &ldquo;Elevation and betweenness centrality of the points on the circuit route&rdquo; (p. 102). Bold marks the eight settlements of Tokuyama Village. The elevation values agree with the Z column of the coordinate table in Appendix 15. Romanizations of the point names are given with the original forms, since the readings of several of the hamlet and pass names cannot be confirmed from the materials.</p>
+
+        <div class="sub">
+            <h3>Distances between settlements within Tokuyama Village, and linguistic distance</h3>
+            <p>The next table sets the edge weights (the values of equation (1)) for the Tokuyama Village portion of the circuit route against the linguistic distance built from the accent data. The linguistic distance was obtained by treating the full set of accent-type patterns of each settlement as nominal-scale data, computing <a href="../gower-distance/">Gower distance</a>, and averaging over all pairs of patterns within a settlement.</p>
+        </div>
+        <div class="scroller">
+            <table class="res">
+                <thead><tr><th colspan="2">Pairs of points joined by a route</th><th class="num">Equation (1) (with the 8.3 factor)</th><th class="num">Value in the 2012 slides</th><th class="num">Linguistic distance</th></tr></thead>
+                <tbody>
+                <tr><td>Hongō</td><td>Kami-Kaiden</td><td class="num">682</td><td class="num">658</td><td class="num">0.113</td></tr>
+                <tr><td>Shimo-Kaiden</td><td>Hongō</td><td class="num">951</td><td class="num">951</td><td class="num">0.113</td></tr>
+                <tr><td>Tsuka</td><td>Hazehara</td><td class="num">1761</td><td class="num">1742</td><td class="num">0.260</td></tr>
+                <tr><td>Yamate</td><td>Hongō</td><td class="num">2400</td><td class="num">2365</td><td class="num">0.113</td></tr>
+                <tr><td>Hazehara</td><td>Yamate</td><td class="num">2516</td><td class="num">2516</td><td class="num">0.113</td></tr>
+                <tr><td>Kami-Kaiden</td><td>Tonyū</td><td class="num">3632</td><td class="num">3541</td><td class="num">0.475</td></tr>
+                <tr><td>Tonyū</td><td>Kadonyū</td><td class="num">4720</td><td class="num">4709</td><td class="num">0.475</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="cap">The left column of figures is from Onohara (2013), Table 6-5, &ldquo;Geographical distance (equation (1)) and linguistic distance between settlements&rdquo; (p. 103); the middle column from the &ldquo;Results&rdquo; slide of Onohara (2012b) and from Figure 7 of Onohara (2012a) (p. 10). <b>The two columns differ because of whether the difference in elevation is multiplied by 8.3.</b> On edges with almost no difference in elevation (Shimo-Kaiden&ndash;Hongō, 319 m and 320 m; Hazehara&ndash;Yamate, 364 m and 370 m) the two agree, which is consistent with that reading. The unit of linguistic distance is Gower distance (0 to 1).</p>
+
+        <div class="sub">
+            <h3>Travel distance between settlements (following the road)</h3>
+            <p>Table 6-6 of the dissertation also gives the travel distance along the road for five settlements (in m).</p>
+        </div>
+        <div class="scroller">
+            <table class="res">
+                <thead><tr><th></th><th class="num">Hongō</th><th class="num">Hazehara</th><th class="num">Kadonyū</th><th class="num">Tsuka</th><th class="num">Tonyū</th></tr></thead>
+                <tbody>
+                <tr><td>Hongō</td><td class="num">0</td><td class="num">4916</td><td class="num">8908</td><td class="num">6623</td><td class="num">4199</td></tr>
+                <tr><td>Hazehara</td><td class="num">—</td><td class="num">0</td><td class="num">13789</td><td class="num">1742</td><td class="num">9080</td></tr>
+                <tr><td>Kadonyū</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">15531</td><td class="num">4709</td></tr>
+                <tr><td>Tsuka</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">10822</td></tr>
+                <tr><td>Tonyū</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="cap">Source: Onohara (2013), Table 6-6, &ldquo;Travel distance between settlements (following the road)&rdquo; (p. 103). In the original table the values are entered in the upper triangle only.</p>
+
+        <div class="sub">
+            <h3>The linguistic distances themselves</h3>
+            <p>In the inter-settlement linguistic distances of Table 6-4 of the dissertation, Hongō, Hazehara and Kadonyū stand at 0.113 from one another; these three and Tsuka at 0.260; these three and Tonyū at 0.475; and Tsuka and Tonyū at 0.393 (the within-settlement mean is 0.240 for Tsuka, and 0.240 for Tonyū as well). The 2012 presentation materials give the same values: Hongō and the others against Tsuka 0.260, against Tonyū 0.475, and Tsuka against Tonyū 0.393. How this distance is built is treated on the <a href="../gower-distance/">Gower distance</a> page.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Results</h2>
+        <p class="q">The settlements low in centrality coincide with the outliers in the folklore data.</p>
+        <p class="body">
+        Looking at Table 6-3 for the eight settlements of Tokuyama Village alone, Kadonyū 0.000, Tonyū 84.000, Kami-Kaiden 164.000 and Tsuka 183.667 are low, while Hazehara 494.333, Hongō 437.333, Yamate 368.333 and Shimo-Kaiden 260.333 are high. The dissertation reads this as follows: &ldquo;computing betweenness centrality for the circuit-route network gives the result that <b>Tsuka, Kami-Kaiden and Tonyū have relatively low betweenness centrality</b>, and that of Tonyū in particular is low, showing it to be a point with little transmission of information. Tsuka, further, lies at some distance from crossing the pass to the north and is also low in betweenness centrality, showing it to be <b>the far northern edge of Tokuyama Village</b>&rdquo;.
+        </p>
+        <p class="body">
+        What makes the result interesting is that the same settlements emerge from data of an entirely different kind. When the &ldquo;collection of origin tales and sayings&rdquo; recorded in the emergency survey report on folklore materials (the results, for the several districts of Tokuyama Village, drawn from the 907 items collected from 6,373 households nationwide in the national survey of customary practice of 1949&ndash;50) is put through <a href="../correspondence-analysis/">correspondence analysis</a>, certain settlements come out on the outside of the configuration.
+        </p>
+        <div class="warn" style="background:#fff8e8; border-color:color-mix(in srgb,var(--gold) 35%,white)">
+            <h3 style="color:var(--navy2)">The same three settlements emerge from two independent bodies of data</h3>
+            <p>The dissertation sets it out thus: &ldquo;first, <b>the points low in betweenness centrality are Kami-Kaiden, Tsuka and Tonyū</b>. And their respective accent forms are kō type for Kami-Kaiden, intermediate type for Tsuka and otsu type for Tonyū. <b>In the data on customary practice, the singular points are Kami-Kaiden, Tsuka and Tonyū, which coincide with the points low in betweenness centrality</b>&rdquo;.</p>
+            <p>The content of the departure is examined as well: &ldquo;moreover, the scores of the correspondence analysis show that these singularities are not mutually similar in character but <b>arise from disparate characteristics</b>. From this it is clear that, as regards customary practice, the distinctiveness of each settlement is strong&rdquo;. The reading, that is, is that the three settlements do not depart in the same direction but each in its own.</p>
+            <p>The interpretation built on that is: &ldquo;<b>that characteristics appear at the same settlements in entirely distinct phenomena suggests the possibility that each phenomenon is constrained by geographical conditions</b>. One of those geographical conditions is what could be analysed on this occasion as betweenness centrality&rdquo;. Betweenness centrality is offered as a candidate for the condition governing both accent and custom from outside.</p>
+        </div>
+        <p class="body">
+        The significance of a low betweenness centrality is spelt out too: &ldquo;since betweenness centrality is a measure that rates highly the points relaying settlement to settlement, <b>a low betweenness centrality indicates that the point is not a relay point</b>. That is, change through contact is unlikely to occur, internal change occurs, and change in a distinctive direction is likely to arise&rdquo;.
+        </p>
+        <div class="sub">
+            <h3>The presentation materials, however, put it more cautiously</h3>
+            <p>The discussion in the 2012 presentation materials notes the same coincidence and concludes: &ldquo;as regards the coincidence between the singular points in the collection-of-sayings data (Tonyū, Tsuka, Kami-Kaiden) and the points that came out low in betweenness centrality in the network of traffic conditions (Tonyū, Tsuka, Kami-Kaiden; Kadonyū is omitted here as being due to a constraint of the data), <b>one cannot rush to a conclusion</b>, but it may be thought that some relation can be seen between the content of the customs and what are called &lsquo;places that are hard to reach&rsquo;&rdquo;.</p>
+            <p>The parenthetical caveat deserves attention as well. The betweenness centrality of Kadonyū is 0.000, but that is because Kadonyū is an endpoint of the itinerary data (only one edge leads out of it). The materials themselves exclude it from the discussion as &ldquo;due to a constraint of the data&rdquo;. <b>A value of 0 may reflect how the data were cut out rather than a degree of isolation.</b></p>
+        </div>
+        <div class="sub">
+            <h3>The English-language presentation states it in the same order</h3>
+            <p>The concluding slides of &ldquo;Geometrical and Topological Analysis for Dialect Distribution&rdquo; list (2) that betweenness centrality is low at the points with eastern accent and with the intermediate accent type, and (3) &ldquo;Settlements which traffic route&rsquo;s betweenness centrality is low are CA&rsquo;s Result (about Local histories and customs data) is Located off from other data.&rdquo;, concluding from these that &ldquo;Relationship of dialect, traffic condition and socio-cultural phenomena is revealed quantitatively.&rdquo; The scope of the claim reaches as far as &ldquo;a relation has been shown quantitatively&rdquo;, and no further; causation is not stated.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Limits</h2>
+        <p class="q">Settling first what this number is not.</p>
+
+        <div class="warn">
+            <h3>This is a priest&rsquo;s route, not the movement of ordinary people</h3>
+            <p>The edges of the graph are <b>the circuit route of priests from Jōshōji</b> in the early modern period. They are the roads used by Shin Buddhist priests to make the round of the villages of their parishioners; they do not record the villagers&rsquo; daily comings and goings, the carriage of goods, or the traffic of marriage. The betweenness centrality obtained here is therefore, strictly, &ldquo;the degree to which a point is likely to become a place of passage within the network of a priest&rsquo;s circuit&rdquo;.</p>
+            <p>Tying that to the transmission of language and custom requires the premise that &ldquo;the roads the priests travelled were also the roads people and goods travelled&rdquo;. That premise is not tested in the materials. The dissertation itself lists among its tasks that &ldquo;it is also necessary to investigate the existence of settlements not included in the circuit route used here, and whether there was interaction with them&rdquo;.</p>
+            <p>There is in fact a passage showing that the circuit network is insufficient for explaining the linguistic distribution within the village. On why Kadonyū shows the kō type, the dissertation invokes not the circuit route but <b>marriage relations</b>: &ldquo;it is known that marriages were frequently contracted with Sakauchi Village, which lies beyond the road further to the west&rdquo;. The influx of a linguistic system through marriage is a route that is not in this graph.</p>
+        </div>
+
+        <div class="warn">
+            <h3>An early-modern route is being used to explain a linguistic distribution recorded in the twentieth century</h3>
+            <p>The network is built from an early-modern circuit route. The accent data, meanwhile, are Sugito&rsquo;s report contained in Nomura (1977) (surveys of 1971 and 1976), and the data on custom are from the national survey of customary practice of 1949&ndash;50. <b>The periods of the materials are several centuries apart.</b></p>
+            <p>The dissertation states this itself: &ldquo;in the present study, <b>only the early modern period was made into a network, but the presence or absence of movement of people and goods along traffic routes changes with the passage of time</b>. It is therefore necessary to divide the early modern, modern and contemporary periods, trace the transition, and explore the aspect of linguistic diffusion concretely in connection with extralinguistic factors&rdquo;. It also says that &ldquo;the traffic network with the regions to the north and east of Tokuyama Village has been clarified to a degree by the present circuit route, but <b>the traffic networks to the west and south also need to be reconstructed</b>&rdquo;.</p>
+            <p>If one takes linguistic change to have proceeded under early-modern traffic conditions, the difference in period is not a problem &mdash; but that is an untested assumption. Which state of traffic, at which point in time, bore on which linguistic state at which point in time, cannot be judged from the materials.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Adding difference in elevation in the same units as horizontal distance has both a warrant and an arbitrariness</h3>
+            <p>The equation in the 2012 presentation materials takes the square root of the sum of the squares of horizontal distance and difference in elevation as they stand. Geometrically that is straight-line distance along the slope, but <b>as a cost of movement it underestimates the effect of elevation</b>. In the dissertation, indeed, it is revised into the form multiplying the difference in elevation by 8.3, and values computed from the same data diverge: 658 against 682, 3541 against 3632.</p>
+            <p>The coefficient 8.3 has a warrant in Langmuir&rsquo;s rule of thumb. But that is <b>one way of fixing a coefficient</b>, not the single right answer &mdash; as the dissertation itself writes, &ldquo;as for walking cost, <b>the problem also arises of which of the many model equations one ought to select</b>&rdquo;. Choose a different walking-cost model and the edge weights change, the shortest paths change, and the betweenness centrality may change with them.</p>
+            <p>Nothing in the materials records a check of how far the ranking by centrality moves when the coefficient is changed. <b>It reads as though no sensitivity analysis was carried out.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>Whether the edge weights were actually used in computing betweenness centrality cannot be settled from the materials</h3>
+            <p>The R script at the end of the dissertation (Appendix 16) supplies as edge values <b>the reciprocal of equation (1) multiplied by 10000</b>, and then calls <code>be &lt;- betweenness(s3, rescale = TRUE)</code>. The <code>betweenness</code> function of sna switches by argument between using and not using the edge values, but the script carries no such specification. Moreover, the values printed in Table 6-3 (maximum 631.667) are on a different scale from the output of <code>rescale = TRUE</code>, so the table&rsquo;s values are presumably obtained from a different call.</p>
+            <p>In other words, <b>whether the betweenness centrality of Table 6-3 rests on weighted shortest paths or on the presence and absence of edges alone cannot be determined from the materials</b>. If the latter, then the treatment of elevation discussed in the previous section tells on the drawing of the network figure (edge thickness and node colour) but not on the centrality values themselves. This is left standing as a point the original materials do not settle.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The vertices are few, and the values at the endpoints stick at 0</h3>
+            <p>The graph has 44 vertices. Of these, four points &mdash; Takakura Pass, Kadonyū, Okudani and Midori Saikōji &mdash; have a betweenness centrality of 0.000. They lie at the edge of the graph, where no shortest path between any other pair of vertices could pass. <b>A value of 0 is not evidence of extreme isolation; it is also a consequence of having ended up at the edge through how the data were cut out.</b> That is why the presentation materials exclude Kadonyū from the discussion.</p>
+            <p>When the vertices are few, adding or removing a single edge can move the ranking by centrality substantially. Reading edges off a figure of the circuit route involves judgement, and since &ldquo;settlements not included in the circuit route&rdquo; appear among the dissertation&rsquo;s stated tasks, the vertex set is not something settled. <b>It is hard to see any meaning in comparing the decimal places of individual values.</b> That the text keeps its reading at the coarse grain of &ldquo;relatively low&rdquo; and &ldquo;relatively high&rdquo; answers to this state of affairs.</p>
+        </div>
+
+        <div class="warn">
+            <h3>A coincidence is a correlation, not a cause</h3>
+            <p>The settlements low in betweenness centrality coincided with the settlements that come out as outliers in the data on custom. This is an observation that 3 of 8 settlements overlap, and <b>the materials show no trace of any statistical test having been performed</b>. At this number of vertices, one can hardly expect the power to rule out a chance coincidence.</p>
+            <p>The dissertation does not claim causation either. It is written as &ldquo;<b>suggests the possibility that each phenomenon is constrained by geographical conditions</b>&rdquo;, and it states outright that &ldquo;there is no evidence that the change that occurred here was change through contact&rdquo;. The discussion further sets side by side a reading that takes change to be fundamentally change through contact and one that takes it to be internal change, without deciding which is right.</p>
+            <p>The caveat &ldquo;one cannot rush to a conclusion&rdquo; in the 2012 presentation materials points the same way. What can be said from this coincidence is no more than that <b>the hypothesis that traffic conditions bear on both language and folklore was not refuted</b>.</p>
+        </div>
+
+        <div class="warn">
+            <h3>On the linguistic side there are data for only five of the eight settlements</h3>
+            <p>Betweenness centrality is computed for all 44 points, but the accent data it is set against exist for only <b>five</b> of the eight settlements of Tokuyama Village. The dissertation writes: &ldquo;the places are, of the eight settlements of Tokuyama Village, <b>the five settlements of Hongō, Kadonyū, Hazehara, Tsuka and Tonyū</b>&rdquo;. For Yamate, Kami-Kaiden and Shimo-Kaiden there is no accent record of their own.</p>
+            <p>Furthermore, only three systems &mdash; Hongō, Tsuka and Tonyū &mdash; have their types given in Table 6-1. &ldquo;<b>Kadonyū and Hazehara, which are among the survey area, do not appear in the table because they have the same accent system as Hongō</b>&rdquo;, it is stated. That Hongō, Hazehara and Kadonyū line up at a linguistic distance of 0.113 in Table 6-4 is therefore not the result of three independent measurements agreeing, but <b>a consequence of Sugito&rsquo;s report having treated the three as a single system</b>.</p>
+            <p>The discussion contains the passage &ldquo;that Hazehara, Yamate, Hongō, Kami-Kaiden and Shimo-Kaiden show equal values in linguistic distance irrespective of their geographical distance is surmised to be due to a working other than geographical factors, for example traffic volume&rdquo;; but for Yamate, Kami-Kaiden and Shimo-Kaiden among these, no underlying accent record is to be found in Tables 6-1 and 6-4. <b>Which data this passage rests on cannot be judged from the materials at hand.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>The attribution of the source material is inconsistent</h3>
+            <p>As to the source of the circuit route, the 2012 presentation materials give &ldquo;the early-modern circuit route of priests from Jōshōji (<b>Tokuyama Village History Editorial Committee 1973</b>), Figure 2&rdquo;, while the dissertation gives &ldquo;the early-modern circuit route of Jōshōji recorded in <b>the emergency survey report on folklore materials [Gifu Prefectural Board of Education, 1973]</b> (Figure 6-1)&rdquo;. Which of the two works the figure used is taken from, or whether the same figure is contained in both, cannot be judged from the materials at hand. Both works appear in the reference list.</p>
+        </div>
+
+        <div class="warn">
+            <h3>This method looks at no linguistic data whatever</h3>
+            <p>Finally, an obvious but important point. What went into the computation of betweenness centrality is the figure of the circuit route and the latitude, longitude and elevation of each point &mdash; nothing else. Neither accent nor custom enters. Which is precisely why the coincidence with the linguistic data means something: that is the design of the analysis.</p>
+            <p>Put the other way round, this number <b>says nothing about language</b>. &ldquo;Tonyū is low in betweenness centrality&rdquo; is a property of the traffic network; &ldquo;the accent of Tonyū is isolated&rdquo; is a property of the language. What joins them is interpretation, not computation. Mixing the two and saying &ldquo;betweenness centrality measures linguistic isolation&rdquo; destroys the point of this analysis, which is that it sets two independent measurements against each other.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Sources and data</h2>
+        <ul class="refs">
+            <li>小野原彩香 (2012a)「定量的側面からの言語形式と外言語的要素の関係——岐阜県徳山村の地理的要因と民俗的要因を例として——」第147回 変異理論研究会、2012年4月14日。The definition of betweenness centrality is in 4.3.3 (p. 9), the figure of the circuit route is Figure 3 (p. 5), the edge-weight equation and the values of geographical distance are Figures 6 and 7 (p. 10), the traffic network figure is Figure 8 (p. 11), the correspondence analysis is Figures 9 and 10 (pp. 12–13), and the discussion is at pp. 13–14.</li>
+            <li>小野原彩香 (2012b)「岐阜県旧徳山村におけるアクセント様相と交通」presentation slides. Construction of the network is on slides 23–26, the table of inter-settlement distance and linguistic distance on slide 28, and the figure of linguistic against geographical distance on slide 29. It states explicitly that &ldquo;construction and drawing were carried out using the sna package of R. (Script omitted.)&rdquo;</li>
+            <li>小野原彩香 (2012c) &ldquo;Geometrical and Topological Analysis for Dialect Distribution&rdquo; (English-language presentation materials). Gower distance is on slide 8, the network figure of betweenness centrality on slide 9, the comparison with the data on custom on slide 10, and the conclusions on slides 11–12.</li>
+            <li>小野原彩香 (2013)『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』同志社大学大学院 文化情報学研究科、2013年度。Chapter 6, &ldquo;Case 4: the relation between accent form and traffic conditions&rdquo;, is the principal source for this page: method at pp. 97–99, results at pp. 100–105, discussion at pp. 106–107. The table of centrality values is Table 6-3 (p. 102), and the inter-settlement distances are Tables 6-5 and 6-6 (p. 103). The definitions of the centralities are in chapter 4 (p. 51). The R scripts are Appendices 15 and 16. The correspondence analysis of the data on custom is in chapter 7, &ldquo;Case 5: the relation between accent form, population and custom&rdquo;, with the discussion at pp. 115–116.</li>
+        </ul>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>Primary materials</h3>
+            <ul class="refs">
+                <li>The circuit route: the early-modern circuit route of priests from Jōshōji. Onohara (2012a) cites 徳山村史編集委員会 編『徳山村史』大衆書房、1973; Onohara (2013) cites the emergency survey report on folklore materials [岐阜県教育委員会, 1973].</li>
+                <li>Accent: 野村正良 (1977)「岐阜県揖斐郡徳山村戸入方言の記述的報告及び成立過程に就いての二三の考察——付アクセントの分布と変遷——」『名古屋大学文学部研究論集』70、3–17頁。The report by Seiju Sugito contained therein. The surveys date from 1971 and 1976; the objects are five of the eight settlements of Tokuyama Village — Hongō, Kadonyū, Hazehara, Tsuka and Tonyū — with nouns of one to three morae, from the older generation (in their sixties to eighties). Types are given in the table for three systems, Hongō, Tsuka and Tonyū, with Kadonyū and Hazehara taken to have the same system as Hongō.</li>
+                <li>Custom: the &ldquo;collection of origin tales and sayings&rdquo; recorded in 岐阜県教育委員会 (1973)『徳山：昭和47年度民俗資料緊急調査報告書』(大島暁雄・松崎憲三・宮本袈裟雄 編、東海の民俗／静岡県編・岐阜県編［復刻版］、日本民俗調査報告書集成、三一書房). The results, for the several districts of Tokuyama Village, drawn from the 907 items collected from 6,373 households nationwide under question 16 of the national survey of customary practice conducted by the Superstition Survey Council of the former Ministry of Education (迷信調査協議会, 1955).</li>
+                <li>Numbers of households (1972): Kadonyū 36, Tonyū 58, Kami-Kaiden 45, Hongō 142, Yamate 45, Hazehara 56, Tsuka 34. Onohara (2012a), p. 1.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Butts, C. T. (2010) <i>sna: Tools for Social Network Analysis</i>. R package. <a href="https://cran.r-project.org/package=sna" target="_blank" rel="noopener noreferrer">CRAN</a>　The version recorded in the dissertation is 2.3-1 (2013-02-28).</li>
+                <li>鈴木努 (2009)『R で学ぶデータサイエンス 8　ネットワーク分析』共立出版。The definitions of degree, betweenness and information centrality are taken from here.</li>
+                <li>Langmuir, E. (1984) <i>Mountaincraft and Leadership</i>. Scottish Sports Council / Mountainwalking Leader Training Board.　The work the dissertation cites, in the form &ldquo;cf.&rdquo;, as the warrant for converting difference in elevation at 8.3 times horizontal distance.</li>
+                <li>Gower, J. C. (1971) A general coefficient of similarity and some of its properties. <i>Biometrics</i>, 27(4), 857–871. <a href="https://www.jstor.org/stable/2528823" target="_blank" rel="noopener noreferrer">jstor.org</a></li>
+                <li>柴田武 (1969)『言語地理学の方法』筑摩書房。</li>
+                <li>井上史雄・太田有多子 (1989)「方言の地域差・個人差の多変量解析　岐阜県徳山村」『計量国語学』17–2。The source of the phrase &ldquo;inconvenience of access compared with the other settlements&rdquo;.</li>
+                <li>上野善道 (1987)「日本本土諸方言アクセントの系譜と分布(2)」『日本学士院紀要』42(1)、15–70頁。</li>
+                <li>宮岡伯人 (1996) On the language-formative period. Referred to by the dissertation when explaining the kō-type accent of Kadonyū through marriage relations.</li>
+                <li>馬瀬良雄 (1985) An instance of an isolated variety produced by group migration. Referred to by the dissertation when considering the possibility of migration at Tonyū.</li>
+            </ul>
+            <p class="cap">Suzuki (2009), Langmuir (1984), Miyaoka (1996) and Mase (1985) have been reconstructed from the in-text citations of the dissertation. Where the bibliographic details (edition, pages) could not be confirmed from the copy at hand, the entry stops at what could be confirmed.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Betweenness centrality sets up no probability model. It builds a graph whose vertices are settlements and passes and whose edges are roads, gives the edges lengths, and turns into a number the count over <b>a geometrical structure, the shortest path as measured by those lengths</b>. Defining a distance and then looking for the point that minimizes over that distance is <b>Perspective 1 (geometry)</b> of <a href="../">the seven perspectives in equations</a>, exactly. As least squares looks for &ldquo;the point minimizing the sum of squared errors&rdquo;, so the shortest path looks for &ldquo;the path minimizing the total weight&rdquo;. Both are operations that put a distance on the data and then minimize over it.</p>
+        <p style="margin-top:10px">The only difference is that the stage of the minimization is a graph rather than Euclidean space. And, as always in geometry, <b>the definition of the distance decides everything</b>. Whether the difference in elevation is multiplied by 8.3 changes the edge weights, which changes the shortest paths, which changes the centrality. How the distance on the linguistic side is built, within the same research, is treated at <a href="../gower-distance/">Gower distance</a>; seeing the same data through a different geometry, the correspondence of rows and columns, is <a href="../correspondence-analysis/">correspondence analysis</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in her own research. All figures and quotations are taken from what is printed in the sources; no estimates or approximations have been added. Where the original materials disagree (the edge-weight equation, the source of the circuit route), both have been shown rather than one being preferred.<br>
+    How the distance on the linguistic side is built is at <a href="../gower-distance/">Gower distance</a>; outlier detection in the folklore data is at <a href="../correspondence-analysis/">correspondence analysis</a>; drawing a genealogy from a distance matrix is at <a href="../neighbor-net/">phylogenetic networks</a>; and testing the correlation between geographical and linguistic distance itself is at <a href="../mantel/">the Mantel test</a>. The overall placement of methods is in <a href="../">the seven perspectives in equations</a>, and which course sessions fall under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-23 &nbsp;|&nbsp; <a href="../">← Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>

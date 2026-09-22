@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Principal Component Analysis &mdash; Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Principal component analysis looks for the directions of greatest variance in multivariate data. This page sets out the derivation as an eigenvalue problem via Lagrange multipliers, how to read the explained proportion of variance, the difference between component scores and component loadings, and the difference from correspondence analysis, following three implementations: dialect vocabulary in the upper Ibi River basin and an analysis of submissions to the journal Kodo Keiryogaku.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+    .sub p + p { margin-top:10px; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Principal Component Analysis</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/pca/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 &nbsp;|&nbsp; <a href="../">Geometry (least squares)</a></span>
+        <h1>Principal Component <span>Analysis</span></h1>
+        <p class="lead">When there are many variables, this is the method that <b>takes the axes again, in order of how much the data spread along them</b>. That minimizing the squared error of a projection and maximizing the variance of the projected values are one and the same problem &mdash; the fact at the centre of Perspective 1 &mdash; is carried over directly into the formulation.<br>
+        Following the implementations Onohara uses in three different studies, this page sets out how the explained proportion of variance is to be read, how component scores differ from component loadings, and what a high explained proportion does not mean.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">With many variables, what is discarded and what is kept.</p>
+        <p class="body">
+        What is at hand is an \(n \times p\) table of numbers \(X\). Rows are cases (settlements, papers), columns are variables (words, tallies), and every cell holds a number. With \(p\) equal to 4 one might get by simply looking at the table, but at 24 or 37 the relations among the columns can no longer be followed in the head.
+        </p>
+        <p class="body">
+        So the \(p\) <b>variables are bundled together into a small number of new ones</b>. There are endlessly many ways to bundle them, so a criterion is needed. The criterion principal component analysis adopts is <b>variance</b>. Project the data onto a single line; the direction in which the projected values spread most is taken as the first principal component, and among the directions orthogonal to it, the one with the next largest spread as the second. And so on.
+        </p>
+        <p class="body">
+        What is being discarded is <b>the directions of small variance</b>. The assumption is that small spread means the direction does not account for differences among cases, and only the directions of large spread are kept. Whether that assumption holds is a question outside the method, taken up in <a href="#limits">section 8</a>.
+        </p>
+        <p class="body">
+        In Onohara&rsquo;s research this same operation is applied to three tables of quite different shape: 21 settlements &times; 4 variables, 23 cases &times; 37 variables, and 30 papers &times; 24 words.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Formulation: from maximizing variance to an eigenvalue problem</h2>
+        <p class="q">Look for &ldquo;the direction that maximizes variance&rdquo;, and an eigenvector of the covariance matrix comes out.</p>
+        <p class="body">
+        Take a \(p\)-dimensional random vector \(x\), with the mean already subtracted (\(\mathbb{E}[x] = 0\)). Write the covariance matrix as \(\Sigma = \mathbb{E}[x x^{\top}]\). The variance of the value \(w^{\top}x\) obtained by projecting onto the direction of a unit vector \(w\) is a quadratic form in \(\Sigma\):
+        </p>
+        <div class="eq">
+            <div class="lbl">Variance of the projected value</div>
+            \[ \mathrm{Var}\bigl[w^{\top}x\bigr] \;=\; \mathbb{E}\bigl[(w^{\top}x)^{2}\bigr] \;=\; w^{\top}\,\mathbb{E}\bigl[x x^{\top}\bigr]\,w \;=\; w^{\top}\Sigma\, w \]
+            <p class="read"><b>\(w\)</b> &hellip; the direction projected onto. Unless its length is fixed at 1, \(w\) could be scaled up without limit and the variance made arbitrarily large<br>
+            <b>\(\Sigma\)</b> &hellip; the covariance matrix; symmetric and positive semi-definite</p>
+        </div>
+        <p class="body">
+        The first principal component is therefore defined as the solution of the following constrained maximization.
+        </p>
+        <div class="eq">
+            <div class="lbl">Definition of the first principal component</div>
+            \[ \max_{\lVert w \rVert = 1}\; \mathrm{Var}\bigl[w^{\top}x\bigr] \;=\; \max_{w^{\top}w = 1}\; w^{\top}\Sigma\, w \]
+        </div>
+
+        <div class="sub">
+            <h3>Solving with a Lagrange multiplier</h3>
+            <p>Bring the constraint \(w^{\top}w = 1\) in with a Lagrange multiplier \(\lambda\).</p>
+            <div class="eq">
+                \[ L(w,\lambda) \;=\; w^{\top}\Sigma\, w \;-\; \lambda\bigl(w^{\top}w - 1\bigr) \]
+                <p class="read">Since \(\Sigma\) is symmetric, \(\partial (w^{\top}\Sigma w)/\partial w = 2\Sigma w\) and \(\partial (w^{\top}w)/\partial w = 2w\).</p>
+            </div>
+            <div class="eq">
+                <div class="lbl">Stationarity condition</div>
+                \[ \frac{\partial L}{\partial w} \;=\; 2\Sigma w \;-\; 2\lambda w \;=\; 0 \qquad\Longleftrightarrow\qquad \boxed{\;\Sigma w \;=\; \lambda w\;} \]
+                <p class="read">That is, the direction \(w\) maximizing the variance must be <b>an eigenvector of the covariance matrix \(\Sigma\)</b>. The Lagrange multiplier \(\lambda\) is itself the eigenvalue.</p>
+            </div>
+            <p>Evaluating the objective at this \(w\),</p>
+            <div class="eq">
+                \[ w^{\top}\Sigma\, w \;=\; w^{\top}(\lambda w) \;=\; \lambda\, w^{\top}w \;=\; \lambda \]
+                <p class="read">so that <b>the eigenvalue is itself the variance of the projection onto that direction</b>. To maximize the variance one therefore takes the largest eigenvalue \(\lambda_1\), and the direction \(w_1\) of the first principal component is the eigenvector corresponding to \(\lambda_1\).</p>
+            </div>
+        </div>
+
+        <div class="sub">
+            <h3>The second component onward</h3>
+            <p>For the second principal component, the same problem is solved with the added constraint of orthogonality to \(w_1\). Since the eigenvectors of a symmetric matrix can be taken mutually orthogonal, the answer is the eigenvector \(w_2\) of the second eigenvalue \(\lambda_2\). Continuing in the same way,</p>
+            <div class="eq">
+                \[ \Sigma \;=\; \sum_{k=1}^{p} \lambda_k\, w_k w_k^{\top}, \qquad \lambda_1 \ge \lambda_2 \ge \cdots \ge \lambda_p \ge 0 \]
+                <p class="read">the eigendecomposition of the covariance matrix gives the sequence of principal components directly. The components are <b>mutually orthogonal</b>, so the new variables are uncorrelated with one another. When the definition of Furusawa and Haga (1992), quoted by Onohara and Yano (2014), adds &ldquo;with the composite indices bearing no relation to one another&rdquo;, it is this orthogonality that is meant.</p>
+            </div>
+        </div>
+
+        <div class="sub">
+            <h3>In a finite sample</h3>
+            <p>In practice \(\Sigma\) is unknown, so a sample covariance matrix is formed from the centred \(n \times p\) data matrix \(X\).</p>
+            <div class="eq">
+                \[ S \;=\; \frac{1}{n-1}X^{\top}X, \qquad z_{ik} \;=\; w_k^{\top}x_i \]
+                <p class="read">Here \(z_{ik}\) is the \(k\)th component score of case \(i\). Computationally one usually obtains these not from an eigendecomposition of \(S\) but from a singular value decomposition of \(X\): in \(X = U\Sigma_{\mathrm{sv}}V^{\top}\), the columns of \(V\) are the \(w_k\), and the squared singular values correspond to \((n-1)\lambda_k\).</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>What the explained proportion of variance is</h2>
+        <p class="q">A ratio of eigenvalues. To be read cumulatively.</p>
+        <p class="body">
+        Because the components are mutually orthogonal, the total variance of the original data equals the sum of the eigenvalues.
+        </p>
+        <div class="eq">
+            <div class="lbl">Decomposition of the variance</div>
+            \[ \mathrm{tr}(\Sigma) \;=\; \sum_{j=1}^{p}\mathrm{Var}[x_j] \;=\; \sum_{k=1}^{p}\lambda_k \]
+            <p class="read">The left-hand side is the total spread of the original variables, the right-hand side the total spread across the components. The two agree because they are the same quantity counted in different coordinate systems.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Explained proportion of the \(k\)th component, and the cumulative proportion</div>
+            \[ c_k \;=\; \frac{\lambda_k}{\sum_{l=1}^{p}\lambda_l}, \qquad C_K \;=\; \sum_{k=1}^{K} c_k \]
+            <p class="read">\(c_k\) is the proportion of variance explained, \(C_K\) the cumulative proportion. These are the percentages that R&rsquo;s <code>prcomp</code> and FactoMineR&rsquo;s <code>PCA</code> print on the axis labels of a figure.</p>
+        </div>
+        <div class="sub">
+            <h3>Cautions in reading it</h3>
+            <p>What the explained proportion answers is one thing only: <b>what share of the spread that was in the original table this axis has picked up</b>.</p>
+            <p>It does not say whether the axis has captured a meaningful structure. It does not say whether the analysis succeeded. To look at a two-dimensional figure is to discard everything outside \(C_2\), and <b>a claim read off the figure is guaranteed only within \(C_2\)</b>.</p>
+            <p>And the explained proportion <b>depends heavily on the number of variables and on the correlation structure</b>. With a correlation matrix, \(\mathrm{tr} = p\), so with only 4 variables \(c_1\) tends to come out large, while with 37 variables the same structure gives a smaller \(c_1\). The explained proportions of different studies cannot be compared directly. This point is taken up again in <a href="#limits">section 8</a>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Component scores and component loadings</h2>
+        <p class="q">Scores place the cases, loadings place the variables. These are two different figures.</p>
+        <p class="body">
+        Principal component analysis has two kinds of output. Because both are drawn on axes labelled &ldquo;Dim 1 / Dim 2&rdquo;, they are easily confused, but <b>the points plotted are of different kinds</b>.
+        </p>
+
+        <div class="eq">
+            <div class="lbl">Principal component score</div>
+            \[ z_{ik} \;=\; w_k^{\top}x_i \qquad (i = 1,\dots,n) \]
+            <p class="read">The value obtained by projecting case \(i\) onto the direction of the component. <b>The number of points is \(n\), the number of cases.</b> One point in the figure is one settlement, or one paper.</p>
+        </div>
+
+        <div class="eq">
+            <div class="lbl">Principal component loading</div>
+            \[ \ell_{jk} \;=\; \mathrm{Corr}\bigl(x_j,\, z_k\bigr) \;=\; w_{jk}\,\frac{\sqrt{\lambda_k}}{\sqrt{\mathrm{Var}[x_j]}} \qquad (j = 1,\dots,p) \]
+            <p class="read">The correlation between variable \(x_j\) and the \(k\)th component score. <b>The number of points (or arrows) is \(p\), the number of variables.</b> One point in the figure is one word, or one tally.<br>
+            Note that the term &ldquo;loading&rdquo; is used in two ways in the literature: for the components \(w_{jk}\) of the eigenvector themselves, and for the correlation above.</p>
+        </div>
+
+        <div class="sub">
+            <h3>How to tell them apart</h3>
+            <p>In practice, <b>count the points</b>. In &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo;, Figure 8 has 23 cases and Figure 9 has 37 variables. The former carries settlement names together with &ldquo;Tokyo&rdquo; and &ldquo;Kyoto&rdquo;; the latter carries variable names such as <code>Tfish</code> and <code>Kcorrect</code>.</p>
+            <p>The other way to tell is by <b>the scale</b>. When the data have been standardized before the analysis, loadings are correlation coefficients and therefore necessarily lie between \(-1\) and \(1\), falling inside a circle of radius 1 in a two-dimensional figure. That circle is drawn in Figure 9, &ldquo;Variables factor map (PCA)&rdquo;, and in Figure 4 of Onohara and Yano (2014). The score plot (Figure 8, &ldquo;Individuals factor map (PCA)&rdquo;) has no such circle, and its scale runs beyond \(-5\) to \(5\).</p>
+        </div>
+
+        <div class="sub">
+            <h3>&ldquo;Close&rdquo; means different things</h3>
+            <p><b>Two scores being close</b> means that those cases take similar values across the variables as a whole. Onohara and Yano (2014) write that &ldquo;papers plotted in close positions use similar nouns&rdquo;.</p>
+            <p><b>Two loadings being close</b> means that those variables move in similar ways across the cases. The same paper states that &ldquo;nouns plotted in close positions occur at similar frequencies within a paper&rdquo;.</p>
+            <p>And <b>the distance between a score and a loading has no direct meaning</b>. What can be read from a figure that superimposes the two (a biplot) is not distance but <b>direction</b>. If the point for a case lies far out in the same direction as the arrow for a variable, that case is read as having a large value on that variable. Figure 4 of Onohara and Yano (2014) and the figure in the presentation on the area around the old Tokuyama Village are both of this superimposed kind.</p>
+            <p>When &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo; prefaces its conclusion with &ldquo;looking at the relation between the component scores and the component loadings&rdquo;, it is pointing to this way of reading the two figures against each other. Only by looking at both &mdash; where the words cluster in Figure 9, and which settlements lie in that direction in Figure 8 &mdash; can the statement be made.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Correlation matrix, or covariance matrix?</h2>
+        <p class="q">When variables are on different scales, failing to standardize lets the high-variance variable monopolize the axis.</p>
+        <p class="body">
+        The formulation in section 2 used the covariance matrix \(\Sigma\). But the eigenvectors of \(\Sigma\) <b>depend on the scale of the variables</b>. Merely converting one variable from centimetres to millimetres multiplies its variance by 100, and the first principal component is pulled toward that variable.
+        </p>
+        <div class="eq">
+            <div class="lbl">Standardizing before the analysis = decomposing the correlation matrix</div>
+            \[ \tilde{x}_j \;=\; \frac{x_j - \bar{x}_j}{s_j}, \qquad \Sigma_{\tilde{x}} \;=\; R \;=\; \bigl(\mathrm{Corr}(x_j, x_{j'})\bigr)_{j,j'} \]
+            <p class="read">The covariance matrix of the standardized variables equals the <b>correlation matrix</b> \(R\) of the original ones. Since \(\mathrm{tr}(R) = p\), every variable enters with the same share.</p>
+        </div>
+        <p class="body">
+        When variables measured in different units are mixed (height and weight, frequency and years), the rule is to use the correlation matrix. Conversely, when all variables are measured in the same unit with the same meaning and the size of the variance itself is informative, there is a reason to use the covariance matrix.
+        </p>
+
+        <div class="sub">
+            <h3>Which was used in this research</h3>
+            <p>In all three cases, <b>the text does not state whether a correlation matrix or a covariance matrix was used</b>. The following, however, can be said from the materials.</p>
+            <p><b>The presentation on the area around the old Tokuyama Village</b> prints the original data (21 settlements &times; 4 variables) in full. Running principal component analysis on that table with the correlation matrix gives explained proportions of 83.92% on the first component and 15.03% on the second, which <b>agree with the values printed in the material</b> (a check carried out for this page). Analysing the same table with the covariance matrix does not agree. The analysis can therefore be judged to have been a standardized principal component analysis.</p>
+            <p><b>Figure 9 of &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo;</b> and <b>Figure 4 of Onohara and Yano (2014)</b> are both correlation circles, drawn with a circle of radius 1. This is consistent with the output of a standardized principal component analysis. The former paper lists the R package FactoMineR among its references, and the figure titles &ldquo;Individuals factor map (PCA)&rdquo; and &ldquo;Variables factor map (PCA)&rdquo; match the output of that package&rsquo;s <code>PCA</code> function, whose default is to standardize. But <b>the body of the paper says nothing to that effect</b>, so the claim is kept to what the figures show.</p>
+            <p>For the first two, moreover, the variables are all vocabulary data coded as 0 / 0.5 / 1, so the scales are already comparable and standardization may well not change the result much. That point, too, cannot be verified from the materials.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Three applications</h2>
+        <p class="q">The same method, applied to tables of entirely different shape.</p>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Study</th><th>Shape of the data</th><th class="num">1st</th><th class="num">2nd</th><th class="num">3rd</th><th class="num">4th</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>(a) Vocabulary of the upper Ibi River basin</td><td>23 cases &times; 37 variables</td><td class="num">23.07%</td><td class="num">14.73%</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td>Figs. 8 and 9</td></tr>
+                <tr><td>(b) Vocabulary around the old Tokuyama Village</td><td>21 settlements &times; 4 variables</td><td class="num">83.92%</td><td class="num">15.03%</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td>Figure on the results slide</td></tr>
+                <tr><td>(c) Submissions to <i>Kōdō Keiryōgaku</i></td><td>30 papers &times; 24 words</td><td class="num">20.54%</td><td class="num">12.1%</td><td class="num">10.27%</td><td class="num">9.38%</td><td>Figs. 4 and 5</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">All figures are values printed in the respective sources. &ldquo;&mdash;&rdquo; indicates that the source does not report the explained proportion from the third component onward. Only (c) gives the third and fourth in its text.</p>
+
+        <div class="sub">
+            <h3>(a) Checking a random forest result from another angle</h3>
+            <p>In &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo;, principal component analysis is not listed in section 4, &ldquo;Analytical procedure and methods&rdquo;. That section lists three: phylogenetic estimation (NeighborNet), correspondence analysis, and random forest. Principal component analysis appears in the results section (5.3), <b>as an auxiliary check on the random forest result</b>.</p>
+        </div>
+        <ol class="steps">
+            <li><b>The original data</b>&emsp;The basic vocabulary surveyed by Yamada (1978, 1980) at 21 sites in the upper Ibi River basin. For each word, the record is + if the core morpheme corresponds to the Tokyo or the Kyoto dialect form, &minus; if it does not, ○ if doubtful, and △ where there are two equivalent forms of which only one corresponds.</li>
+            <li><b>Coding and narrowing</b>&emsp;For the random forest, words that were + for both Tokyo and Kyoto were dropped, and any word containing ○ or NR in even one settlement was <b>deleted column-wise</b>. The remaining variables take the form &ldquo;word &times; Tokyo/Kyoto&rdquo;, as in <code>Tfish</code> and <code>Kcorrect</code>, with values corresponding to 1 / 0.5 / 0.</li>
+            <li><b>Size of the data</b>&emsp;The header of Figure 7 prints <code>rf. 23cases, 37vars, loop=100</code>. The 23 cases are the 21 settlements plus Tokyo and Kyoto.</li>
+            <li><b>Principal component analysis</b>&emsp;The paper states that &ldquo;Figures 8 and 9 are the result of a principal component analysis of the data used for the random forest&rdquo;.</li>
+        </ol>
+        <p class="body">
+        What was read from it is the following. The words <code>grease</code>, <code>good</code>, <code>bite</code>, <code>fish</code>, <code>correct</code>, <code>they</code>, <code>he</code>, <code>sit</code> and <code>lie</code>, which <a href="../random-forest/">random forest</a> ranked highest as characteristic words, <b>cluster at the circled position</b> in the loading plot (Figure 9). And from the score plot (Figure 8), those words show a distinctive pattern in settlements such as Hisaka, Higashi-Tsugumi, Nishi-Tsugumi, Higashi-Yokoyama, Sakamoto and Kinomoto. Reading scores and loadings together, the paper concludes that these are vocabulary items that separate Tokyo-leaning from Kyoto-leaning dialect forms, and that lean to the Kyoto side.
+        </p>
+        <p class="body">
+        Principal component analysis is thus used here <b>to confirm by eye, in a different coordinate system, an answer produced by another method</b>. Two different criteria &mdash; importance for classification (random forest) and direction of variance (principal component analysis) &mdash; are applied to the same data, and the question is whether the same set of words emerges.
+        </p>
+
+        <div class="sub">
+            <h3>(b) Four tallies to see differences among settlements &mdash; an example the reader can work through</h3>
+            <p>The presentation &ldquo;A re-examination of the vocabulary of the area around the old Tokuyama Village from a mathematical standpoint&rdquo; <b>prints the original data in full</b>: four tallies for each of 21 settlements. Since it is an example that can be reproduced at hand, it is transcribed below.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Definition of the four variables (as stated in the material)</div>
+            <p class="read"><b>Ep</b> &hellip; the number of vocabulary items corresponding to the Tokyo vocabulary<br>
+            <b>En</b> &hellip; the number of items not corresponding (to the Tokyo vocabulary)<br>
+            <b>Wp</b> &hellip; the number of vocabulary items corresponding to the Kyoto vocabulary<br>
+            <b>Wn</b> &hellip; the number of items not corresponding (to the Kyoto vocabulary)</p>
+            <p class="read">The material further gives, in a table, the correspondence between the four variables and the combinations of + / &minus; against Tokyo and against Kyoto. Words that are + for Tokyo &mdash; both &ldquo;similar to Tokyo and to Kyoto&rdquo; (++) and &ldquo;similar to Tokyo&rdquo; (+&minus;) &mdash; go into <b>Ep</b>; words that are &minus; for Tokyo &mdash; both &ldquo;similar to Kyoto&rdquo; (&minus;+) and &ldquo;similar to neither&rdquo; (&minus;&minus;) &mdash; go into <b>En</b>. In the same way, words that are + for Kyoto (++ and &minus;+) go into <b>Wp</b>, and words that are &minus; for Kyoto (+&minus; and &minus;&minus;) into <b>Wn</b>.<br>
+            That is, <b>E stands for East (Tokyo), W for West (Kyoto), and p / n for whether the item corresponds or not</b>; Ep and En, like Wp and Wn, are the same 200 words counted over from the two opposite sides.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Settlement</th><th>District / village</th><th class="num">Ep</th><th class="num">En</th><th class="num">Wp</th><th class="num">Wn</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Kadonyū</td><td>Tokuyama</td><td class="num">168</td><td class="num">27</td><td class="num">170</td><td class="num">27</td></tr>
+                <tr><td>Tonyū</td><td>Tokuyama</td><td class="num">168</td><td class="num">27</td><td class="num">166</td><td class="num">30</td></tr>
+                <tr><td>Tsuka</td><td>Tokuyama</td><td class="num">168</td><td class="num">27</td><td class="num">169</td><td class="num">27</td></tr>
+                <tr><td>Hazehara</td><td>Tokuyama</td><td class="num">170</td><td class="num">25</td><td class="num">167</td><td class="num">29</td></tr>
+                <tr><td>Yamate</td><td>Tokuyama</td><td class="num">168</td><td class="num">26</td><td class="num">167</td><td class="num">28</td></tr>
+                <tr><td>Kami-Kaiden</td><td>Tokuyama</td><td class="num">168</td><td class="num">28</td><td class="num">167</td><td class="num">29</td></tr>
+                <tr><td>Hongō</td><td>Tokuyama</td><td class="num">168</td><td class="num">28</td><td class="num">170</td><td class="num">27</td></tr>
+                <tr><td>Shimo-Kaiden</td><td>Tokuyama</td><td class="num">168</td><td class="num">27</td><td class="num">168</td><td class="num">29</td></tr>
+                <tr><td>Kawakami</td><td>Sakauchi</td><td class="num">170</td><td class="num">25</td><td class="num">172</td><td class="num">24</td></tr>
+                <tr><td>Hirose</td><td>Sakauchi</td><td class="num">172</td><td class="num">22</td><td class="num">172</td><td class="num">23</td></tr>
+                <tr><td>Sakamoto</td><td>Sakauchi</td><td class="num">173</td><td class="num">22</td><td class="num">173</td><td class="num">23</td></tr>
+                <tr><td>Tsurumi</td><td>Fujihashi</td><td class="num">172</td><td class="num">24</td><td class="num">171</td><td class="num">24</td></tr>
+                <tr><td>Higashi-Yokoyama</td><td>Fujihashi</td><td class="num">176</td><td class="num">19</td><td class="num">177</td><td class="num">20</td></tr>
+                <tr><td>Nishi-Tsugumi</td><td>Kuze</td><td class="num">176</td><td class="num">18</td><td class="num">175</td><td class="num">21</td></tr>
+                <tr><td>Higashi-Tsugumi</td><td>Kuze</td><td class="num">173</td><td class="num">22</td><td class="num">177</td><td class="num">18</td></tr>
+                <tr><td>Ozu</td><td>Kuze</td><td class="num">173</td><td class="num">24</td><td class="num">174</td><td class="num">23</td></tr>
+                <tr><td>Hisaka</td><td>Kuze</td><td class="num">175</td><td class="num">21</td><td class="num">177</td><td class="num">20</td></tr>
+                <tr><td>Soto-Tsugumi</td><td>Kuze</td><td class="num">174</td><td class="num">23</td><td class="num">176</td><td class="num">22</td></tr>
+                <tr><td>Imajō</td><td>Nanjō</td><td class="num">166</td><td class="num">31</td><td class="num">175</td><td class="num">23</td></tr>
+                <tr><td>Ikeda</td><td>Imadate</td><td class="num">167</td><td class="num">30</td><td class="num">172</td><td class="num">26</td></tr>
+                <tr><td>Kinomoto</td><td>Ōno</td><td class="num">176</td><td class="num">21</td><td class="num">185</td><td class="num">13</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Transcribed as printed on the slides of the presentation. The &ldquo;district / village&rdquo; column is labelled &ldquo;村 / mura&rdquo; in the material. Kinomoto is given as Ōno there, but in a figure in the same material Kinomoto is colour-coded as Ika, and Table 1 of &ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo; likewise places the town of Kinomoto in Ika District, Shiga Prefecture. On this one point the material is inconsistent with itself.<br>
+        The sum of Ep and En falls between 194 and 197, and that of Wp and Wn between 195 and 198; neither matches the 200 items of the basic vocabulary. The material gives no explanation for the difference.</p>
+
+        <ol class="steps">
+            <li><b>The original data</b>&emsp;The material describes &ldquo;the vocabulary called &lsquo;basic vocabulary&rsquo; &mdash; 200 words such as &lsquo;I&rsquo;, &lsquo;you&rsquo;, &lsquo;head&rsquo; that may be supposed to occur in any region (the 200 selected by Hattori (1955) from the Swadesh List (Swadesh, 1950))&rdquo;, and uses the tallies of Yamada (1978, 1980).</li>
+            <li><b>Variables and cases</b>&emsp;As stated in the material, &ldquo;in order to bring out the differences among settlements, a principal component analysis was carried out with Ep, En, Wp, Wn as variables and the settlements as cases&rdquo;.</li>
+            <li><b>Result</b>&emsp;On the plane of Dim 1 (83.92%) and Dim 2 (15.03%), the settlement scores and the vectors of the four variables are drawn superimposed. Ep and Wp point to the right, En and Wn to the left.</li>
+            <li><b>What was read</b>&emsp;The settlements of Tokuyama Village cluster on the left of the figure, while Kinomoto sits alone at the right edge. The discussion in the material says of Tokuyama Village that it is &ldquo;even less similar to the Tokyo and Kyoto vocabulary than the settlements of the other villages&rdquo;.</li>
+        </ol>
+        <p class="cap">The text of the discussion slide reads &ldquo;skewed toward the Wn, Pn side&rdquo;, but there is no variable <code>Pn</code> in the figure; it can be read as a slip for <code>En</code>.</p>
+
+        <div class="sub">
+            <h3>(c) Following change over time in the content of submitted papers</h3>
+            <p>Onohara and Yano (2014) also apply principal component analysis to the same &ldquo;30 papers &times; 24 nouns&rdquo; data that they put through <a href="../correspondence-analysis/">correspondence analysis</a>. The stated motive is &ldquo;to consider the data from another angle&rdquo;, and, following Furusawa et al. (1992), the paper defines principal component analysis as &ldquo;an analysis that, for a set of samples each carrying two or more attributes, constructs composite indices taking the relations among the attributes into account (with the composite indices bearing no relation to one another), and on that basis shows the relation between the attributes and the samples&rdquo;.</p>
+        </div>
+        <ol class="steps">
+            <li><b>Figure 4</b>&emsp;<b>Plots simultaneously</b> the component scores (the tendency of paper content, based on the noun information) and the component loadings (shown as arrows: the tendency in how frequent nouns are used within papers). The explained proportion is 20.54% on the first component and 12.1% on the second, followed by 10.27% on the third and 9.38% on the fourth.</li>
+            <li><b>Figure 5, left</b>&emsp;The first-component score of each paper as a bar chart, re-sorted by date with older papers at the top and newer ones at the bottom. From the 2000s onward, the scores change from negative to positive.</li>
+            <li><b>Figure 5, right</b>&emsp;The first-component loadings. The nouns characteristic of papers with positive scores are, in decreasing order of loading, &ldquo;evaluation&rdquo;, &ldquo;nature&rdquo;, &ldquo;scoring&rdquo;, &ldquo;task&rdquo;, &ldquo;person&rdquo;. Those characteristic of papers with negative scores are &ldquo;word&rdquo;, &ldquo;phoneme&rdquo;, &ldquo;vocabulary&rdquo;, &ldquo;speech&rdquo;, &ldquo;language&rdquo;.</li>
+            <li><b>The second component and below</b>&emsp;The paper states explicitly that &ldquo;the temporal change seen on the first component was not seen on the second component or below&rdquo;.</li>
+        </ol>
+        <p class="body">
+        What does the work here is the operation of <b>re-sorting the component scores by external information (year of publication)</b>. The analysis itself knows nothing of dates. The structure of the reading is that when cases are arranged on an axis built in ignorance of the dates, they turn out to line up with them. That the paper stops at &ldquo;there is a possibility that papers on education are appearing&rdquo; and &ldquo;there is a possibility that papers on themes related to the economy are appearing&rdquo; &mdash; in both cases only a possibility &mdash; can be read as an acknowledgement of the after-the-fact character of such an interpretation.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>The difference from correspondence analysis</h2>
+        <p class="q">Both place points on a plane, but the quantity being minimized differs.</p>
+        <p class="body">
+        Principal component analysis and <a href="../correspondence-analysis/">correspondence analysis</a> both minimize the squared error of a low-rank approximation, and both are solved by the singular value decomposition. The figures look much alike too. The difference lies in <b>what goes into the matrix, and in which distance it is measured</b>.
+        </p>
+        <div class="eq">
+            <div class="lbl">The quantities being minimized, side by side</div>
+            \[ \text{PCA:}\quad \max_{\lVert w \rVert = 1} w^{\top}\Sigma\, w \qquad\Longleftrightarrow\qquad \min_{\mathrm{rank}\,\le\, K}\bigl\lVert X - \hat{X} \bigr\rVert_F^{2} \]
+            \[ \text{CA:}\quad \min_{\mathrm{rank}\,\le\, K}\bigl\lVert D_r^{-1/2}\bigl(P - \mathbf{r}\mathbf{c}^{\top}\bigr)D_c^{-1/2} - \hat{S} \bigr\rVert_F^{2} \]
+            <p class="read">What principal component analysis decomposes is <b>the data matrix itself</b> (centred, and standardized if required), under Euclidean distance. What correspondence analysis decomposes is <b>the departure from independence, weighted by the marginals</b>, under chi-square distance.</p>
+        </div>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th></th><th>Principal component analysis</th><th>Correspondence analysis</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Input</td><td>A table of quantitative variables. Negative values and standardized values are both admissible</td><td>A table of non-negative counts (a contingency table), or 0/1 binary data</td></tr>
+                <tr><td>Distance measured</td><td>Euclidean distance (which changes with standardization)</td><td>Chi-square distance, weighted by the column marginal proportion \(c_j\)</td></tr>
+                <tr><td>Maximized / minimized</td><td>Maximizes the variance of the projection</td><td>Maximizes the weighted correlation between the quantified values of rows and columns</td></tr>
+                <tr><td>Size of a row</td><td>Enters the distance as it is (though centring is applied)</td><td>Disappears through profiling</td></tr>
+                <tr><td>What goes in the figure</td><td>Scores (cases) and loadings (variables) are <b>separate figures</b>; superimposing them makes a biplot</td><td>Placing rows and columns <b>on the same plane at once</b> is the definition</td></tr>
+                <tr><td>Index for an axis</td><td>Explained proportion of variance \(\lambda_k / \sum \lambda_l\)</td><td>Explained proportion of inertia \(\sigma_k^2 / \sum \sigma_l^2\); total inertia is \(\chi^2/n\)</td></tr>
+            </tbody>
+        </table>
+        </div>
+
+        <div class="sub">
+            <h3>What happens when both are applied</h3>
+            <p>Onohara and Yano (2014) apply both to the same 30 papers &times; 24 words data. As a result, <b>what became visible differed</b>. In the correspondence analysis figure the papers cluster by genre; in the principal component analysis a temporal change appeared in the first-component scores.</p>
+            <p>This difference, however, is not due to the methods alone. The correspondence analysis result was read with genre information overlaid, and the principal component result was read after re-sorting the scores by year. <b>Which external information the low-dimensional coordinates are matched against</b> also changes what becomes visible. The difference between methods and the difference between ways of reading need to be kept apart.</p>
+            <p>&ldquo;Types and geographical distribution of vocabulary in the upper Ibi River basin&rdquo; also uses both, but there the inputs differ. Correspondence analysis is applied to a table of vocabulary against the settlements other than Tokyo and Kyoto; principal component analysis to the 23 cases &times; 37 variables table prepared for the random forest.</p>
+        </div>
+    </section>
+
+    <section class="wblock" id="limits">
+        <h2><span class="no">8</span>Limits</h2>
+        <p class="q">A high explained proportion is not a certificate of success.</p>
+
+        <div class="warn">
+            <h3>An explained proportion of 83.92% does not mean the analysis &ldquo;worked&rdquo;</h3>
+            <p>The first component in (b) explains 83.92%, and together with the second, 98.95%. On the numbers alone this is ideal, but it is also <b>an expression of the fact that the four variables were strongly correlated with one another</b>.</p>
+            <p>Indeed, Ep and En are the same 200 words counted from the two opposite sides, and summing them over the published table gives values in the range 194 to 197. Wp and Wn likewise give 195 to 198. Once one is fixed the other is all but fixed, so <b>the effective degrees of freedom of the four variables are roughly two</b>. That two dimensions account for nearly 100% is close to inevitable.</p>
+            <p>A high explained proportion can be read as &ldquo;the data summarized well&rdquo; or as &ldquo;there was little independent information in the variables to begin with&rdquo;. <b>Which of the two it is cannot be told from the number</b>. The only way is to go back to how the variables were constructed. Conversely, the 20.54% of (c) is not a failure: it means that the 24 words were not much correlated with one another. There is no point in setting the explained proportions of different studies side by side and arguing which is better.</p>
+        </div>
+
+        <div class="warn">
+            <h3>It looks only for linear directions</h3>
+            <p>What principal component analysis looks for is <b>straight-line directions</b>, and nothing else. If the data lie along a curved surface, or if the cases separate in a non-linear way, the method projects them onto a line all the same. A plane minimizing the squared error is found, but there is no guarantee that this plane preserves the structure.</p>
+            <p>For a quantity that acts monotonically, such as a count of vocabulary agreements, the linear assumption is not a stretch. But for vocabulary data coded as 0 / 0.5 / 1 ((a)), or for frequencies divided by paper length ((c)), whether the relation between the variables and the latent structure is linear has not been verified from the materials.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Because variance is maximized, outliers decide the axes</h3>
+            <p>Since the objective function is variance, a single point far from the mean enters squared. A few outlying cases can end up all but determining the direction of the first principal component.</p>
+            <p>In the figure of (b), Kinomoto sits alone near 4 on Dim 1, away from the other 20 settlements. In the published table, too, Kinomoto&rsquo;s Wp is 185, eight larger than the next largest value. How much this single point contributes to the direction of the first component <b>cannot be judged, because the material presents no recomputation with Kinomoto removed</b>. In Figure 8 of (a), likewise, &ldquo;Tokyo&rdquo; lies apart from the other cases.</p>
+            <p>In general this needs to be checked either by reporting the result with outliers removed alongside, or by using a robust principal component analysis. In none of the three cases was that check carried out.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Every interpretation of a component is made after the fact</h3>
+            <p>What the method returns is only &ldquo;orthogonal directions ordered by variance&rdquo;; it says not a word about what the first component represents. Naming an axis is the analyst&rsquo;s doing.</p>
+            <p>When (c) states that &ldquo;on the positive side of the first component axis there is a possibility that papers on education are appearing&rdquo;, that is an interpretation given after looking at the nouns with large loadings (&ldquo;evaluation&rdquo;, &ldquo;nature&rdquo;, &ldquo;scoring&rdquo;, &ldquo;task&rdquo;, &ldquo;person&rdquo;). The paper&rsquo;s consistent reservation, &ldquo;there is a possibility&rdquo;, is the right way to write it, but it remains hard for a reader to see that an axis label is an interpretation and not an output of the analysis.</p>
+            <p>In particular, the procedure of naming an axis after looking at the top few loadings has <b>no criterion for how far down to look</b>. (c) takes the top five, and there is no ground for that number five.</p>
+        </div>
+
+        <div class="warn">
+            <h3>There are many variables relative to the sample size</h3>
+            <p>(a) is 23 cases &times; 37 variables, (c) 30 papers &times; 24 words. In both, <b>the number of cases is close to, or below, the number of variables</b>. With \(n\) cases and \(p\) variables, the rank of the sample covariance matrix is at most \(n-1\), so in (a) only 22 of the 37 dimensions carry any meaning.</p>
+            <p>The more fundamental problem is that with small \(n\) the estimate of the sample covariance matrix is itself unstable. Eigenvalues are known to be overestimated at the top and underestimated at the bottom, so <b>explained proportions tend to be inflated as well</b>. How far the 23.07% and 20.54% printed here reflect the structure of the population is not guaranteed at this sample size.</p>
+            <p>In fact, in (c) the first four components together come to only 52.29%, and the eigenvalues are not clearly separated. When eigenvalues lie close together, the corresponding component directions can swap places under a slight change of sample. Whether the first and second components drawn in the two-dimensional figure are stable directions cannot be judged from the materials.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Which variables are included changes the components</h3>
+            <p>Principal components are defined relative to the set of variables put in. Add one variable and every component changes.</p>
+            <p>(c) selects 24 words from 6,096 distinct words, in decreasing order of the standard deviation of frequency normalized by paper length. The number 24 was chosen by eye, at the point where the rate of decrease in the standard deviation begins to stabilize. (a) arrives at 37 variables by deleting the columns for words that are + for both Tokyo and Kyoto and for words containing ○ or NR. Both are reasonable preprocessing steps, but <b>a different criterion would yield different components</b>. The explained proportion is a value for the selected set of variables, not for the original data as a whole.</p>
+        </div>
+
+        <div class="warn">
+            <h3>A two-dimensional figure says nothing about the discarded dimensions</h3>
+            <p>What Figures 8 and 9 of (a) explain is 23.07 + 14.73 = 37.80%. Figure 4 of (c) is no more than 20.54 + 12.1 = 32.64%. <b>The remaining sixty per cent and more is not drawn on the plane.</b></p>
+            <p>So two points being close in a figure means no more than &ldquo;close in these two dimensions&rdquo;. They may always be far apart on a discarded axis. Where, as in (b), the first two components explain 98.95%, this worry is small. But if that high explained proportion derives, as described above, from redundancy among the variables, then another question remains in its place: what the four variables were measuring in the first place.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources and data</h2>
+
+        <div class="sub">
+            <h3>(a) Vocabulary of the upper Ibi River basin</h3>
+            <ul class="refs">
+                <li>Onohara, A. Types and geographical distribution of vocabulary in the upper Ibi River basin. Research paper. <span style="color:var(--muted)">The journal title, volume and year of publication could not be confirmed from the copy at hand, so the bibliographic entry is kept to the title.</span></li>
+                <li>The principal component analysis is in section 5.3, Figure 8 &ldquo;Principal component analysis (component scores)&rdquo; and Figure 9 &ldquo;Principal component analysis (component loadings)&rdquo;. The figure titles are &ldquo;Individuals factor map (PCA)&rdquo; and &ldquo;Variables factor map (PCA)&rdquo; respectively, with axes Dim 1 (23.07%) and Dim 2 (14.73%).</li>
+                <li>The original data are Tatsuya Yamada (1978) On the basic vocabulary of the upper Ibi River valley. <i>Nagoya City University, Bulletin of the Faculty of Liberal Arts, Studies in Humanities and Social Sciences</i>, 22, 33–66; and Tatsuya Yamada (1980) On the basic vocabulary of the Imajō and Ikeda dialects of Fukui Prefecture and the Kinomoto dialect of Shiga Prefecture, in relation to the Tokuyama dialect, ibid. 24, 23–34. The survey items are the 200 items of Hattori, S. (1973) Japanese dialects, <i>Current Trends in Linguistics</i> 11, 368–400.</li>
+                <li>Package &lsquo;FactoMineR&rsquo; (2012) is listed among the references of that paper (its use is stated explicitly for the correspondence analysis).</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>(b) Vocabulary around the old Tokuyama Village</h3>
+            <ul class="refs">
+                <li>小野原彩香「旧徳山村周辺地域の語彙に関する数理的側面からの再検討――徳山村とその周辺には差が見られるか――」（同志社大学大学院文化情報学研究科文化情報学専攻 博士後期課程1年 当時）発表資料。<br><span style="color:var(--muted)">Onohara, A. A re-examination of the vocabulary of the area around the old Tokuyama Village from a mathematical standpoint: are differences to be seen between Tokuyama Village and its surroundings? Presentation material (then a first-year doctoral student, Graduate School of Culture and Information Science, Doshisha University). The file at hand records neither the venue nor the date of presentation, so the bibliographic entry is kept to the title and the affiliation.</span></li>
+                <li>The original data are Yamada (1978, 1980). The material states that the 200 items of basic vocabulary are those selected from the Swadesh List (Swadesh, 1950) by 服部四郎 (1955)「『言語年代学』即ち『語彙統計学』の方法について――日本祖語の年代――」季刊民族學研究 19(1), 100–101 <span style="color:var(--muted)">(Shirō Hattori (1955) On the method of &ldquo;glottochronology&rdquo;, that is, &ldquo;lexicostatistics&rdquo;: the date of Proto-Japanese. <i>Japanese Journal of Ethnology</i>, 19(1), 100–101).</span></li>
+                <li>The 21 settlements &times; 4 variables table transcribed on this page holds the values printed on the &ldquo;About the data used&rdquo; and &ldquo;Method of analysis&rdquo; slides of that material.</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>(c) The analysis of submissions to <i>Kōdō Keiryōgaku</i></h3>
+            <ul class="refs">
+                <li>小野原彩香・矢野環 (2014)「雑誌『行動計量学』における言語に関する投稿論文の傾向――投稿論文の時系列変化と『計量国語学』論文との比較」岸江信介・田畑智司 編『<a href="https://www.hituzi.co.jp/hituzibooks/ISBN978-4-89476-695-2.htm" target="_blank" rel="noopener noreferrer">テキストマイニングによる言語研究</a>』ひつじ研究叢書〈言語編〉第121巻、pp. 1–20、ひつじ書房。ISBN 978-4-89476-695-2<br><span style="color:var(--muted)">Onohara, A. &amp; Yano, T. (2014) Trends in language-related submissions to the journal <i>Kōdō Keiryōgaku</i>: temporal change and a comparison with <i>Keiryō Kokugogaku</i>. In S. Kishie &amp; T. Tabata (eds.) <i>Text Mining and Its Applications in Language Research</i>, Hituzi Linguistics in English No. 121, pp. 1–20. Tokyo: Hituzi Syobo.</span></li>
+                <li>The principal component analysis is in section 4.1.2 (pp. 11–13). Figure 4 &ldquo;Principal component analysis&rdquo; (Variables factor map (PCA), Dim 1 (20.54%), Dim 2 (12.1%)); Figure 5 &ldquo;First-component scores (left) and first-component loadings (right)&rdquo;.</li>
+                <li>古沢正三・芳賀敏郎 (1992)『多変量解析事例集 第1集』日科技連出版社<br><span style="color:var(--muted)">Furusawa, S. &amp; Haga, T. (1992) <i>Casebook of Multivariate Analysis, vol. 1</i>. Tokyo: JUSE Press. (The work that paper uses for its definition of principal component analysis.)</span></li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:26px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Pearson, K. (1901) On lines and planes of closest fit to systems of points in space. <i>Philosophical Magazine</i>, 2(11), 559–572. <a href="https://doi.org/10.1080/14786440109462720" target="_blank" rel="noopener noreferrer">doi:10.1080/14786440109462720</a> (the formulation as minimization of the squared error of a projection)</li>
+                <li>Hotelling, H. (1933) Analysis of a complex of statistical variables into principal components. <i>Journal of Educational Psychology</i>, 24(6), 417–441. <a href="https://doi.org/10.1037/h0071325" target="_blank" rel="noopener noreferrer">doi:10.1037/h0071325</a> (the formulation as maximization of variance)</li>
+                <li>Eckart, C. &amp; Young, G. (1936) The approximation of one matrix by another of lower rank. <i>Psychometrika</i>, 1(3), 211–218. <a href="https://doi.org/10.1007/BF02288367" target="_blank" rel="noopener noreferrer">doi:10.1007/BF02288367</a> (that the optimal low-rank approximation is given by the singular value decomposition)</li>
+                <li>足立浩平・村上隆 (2011)『<a href="https://www.asakura.co.jp/detail.php?book_code=12829" target="_blank" rel="noopener noreferrer">非計量多変量解析法：主成分分析から多重対応分析へ</a>』シリーズ〈行動計量の科学〉9、朝倉書店。ISBN 978-4-254-12829-1<br><span style="color:var(--muted)">Adachi, K. &amp; Murakami, T. (2011) <i>Nonmetric Multivariate Analysis: From Principal Component Analysis to Multiple Correspondence Analysis</i>. Tokyo: Asakura Publishing.</span></li>
+            </ul>
+            <p class="cap">Pearson (1901), Hotelling (1933) and Eckart &amp; Young (1936) are general references cited here to situate the method on this page; they are not cited in the materials (a), (b) and (c) above.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Principal component analysis sets up no probability model. No likelihood, no prior appears. What appears is only a <b>question of geometry</b>: onto which plane should the data be projected so that their shape is best preserved?</p>
+        <p style="margin-top:10px">And there are two ways of putting that question. One is the <b>maximization of variance</b> solved in section 2; the other is the <b>minimization of the squared error of the projection</b>. Project centred data \(x_i\) onto the line spanned by a unit vector \(w\), and the residual sum of squares is \(\sum_i \lVert x_i - w w^{\top}x_i \rVert^{2} = \sum_i \lVert x_i \rVert^{2} - \sum_i (w^{\top}x_i)^{2}\). The first term does not depend on \(w\), so <b>minimizing the squared error and maximizing the sum of squares of the projected values (that is, the variance) are the same problem</b>. Pearson (1901) reached the method from the first, Hotelling (1933) from the second.</p>
+        <p style="margin-top:10px">This framework &mdash; a low-rank approximation minimizing squared error &mdash; is shared with <a href="../correspondence-analysis/">correspondence analysis</a> and with k-means. All that differs is what goes into the matrix and with which weights it is measured. This equivalence sits at the centre of <b>Perspective 1 (geometry, least squares)</b> in <a href="../">the seven perspectives in equations</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in her own research. All figures such as explained proportions are quoted from values printed in the sources. The checks mentioned in sections 5 and 8 (reproducing the explained proportions with the correlation matrix, and the range of the sums of Ep and En) were computed from the table published in the presentation material, and are identified as such. No estimates or approximations have been added.<br>
+    For a method applying a different criterion to the same data, see <a href="../random-forest/">random forest</a>; for other methods that place points on a plane, see <a href="../correspondence-analysis/">correspondence analysis</a> and <a href="../neighbor-net/">Neighbor-Net</a>. The overall placement of methods is in <a href="../">the seven perspectives in equations</a>, and which course sessions fall under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-23 &nbsp;|&nbsp; <a href="../">&larr; Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>

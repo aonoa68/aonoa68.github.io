@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gower&rsquo;s Distance &mdash; Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Gower&#39;s distance builds a distance out of nominal-scale data. This page sets out the definition as one minus the matching rate, the enumeration that expands accent variation and coexistence into all possible combinations, the implementation through daisy in R, the actual figures obtained from the accent records of the former Tokuyama Village in Gifu Prefecture, and the limits imposed by the granularity of the coding and by equally weighted averaging.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+
+        .sub p + p { margin-top:10px; }
+        pre.rcode { background:#eef1f4; border-radius:8px; padding:14px 18px; margin-top:12px; overflow-x:auto;
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.84em;
+                    color:var(--navy2); line-height:1.8; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Gower&rsquo;s Distance</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/gower-distance/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 &nbsp;|&nbsp; <a href="../">Geometry (least squares)</a></span>
+        <h1>Gower&rsquo;s <span>Distance</span></h1>
+        <p class="lead">A procedure that <b>builds a distance out of nominal-scale data</b>, such as accent types. It counts nothing but whether two things match or fail to match, and takes the distance to be one minus the matching rate.<br>
+        In chapter 6, case 4 of Onohara&rsquo;s doctoral dissertation (FY2013), this procedure stands at the entrance to the numerical treatment of the accent systems of the former Tokuyama Village in Gifu Prefecture. What follows sets out what it does and does not measure, keeping to the figures printed in the dissertation.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Composing accent types &mdash; data that can be neither added nor subtracted &mdash; into a single comparable index.</p>
+        <p class="body">
+        What is at hand is a description, locality by locality, of accent type. The types for <i>e</i> &lsquo;handle&rsquo;, <i>ka</i> &lsquo;mosquito&rsquo; and <i>chi</i> &lsquo;blood&rsquo; are written as sequences of high morae (H) and low morae (L): <code>HHH~HHL</code> at Hongō, <code>HH~LH</code> at Tonyū, <code>LH</code> in the Tokyo type, <code>HHH</code> in the Kyoto type. The question is a single one: <b>how far apart are this locality and that one</b>.
+        </p>
+        <p class="body">
+        These descriptions cannot be compared as they stand. The number of morae differs from cell to cell, some cells carry two types written together with \(\sim\) between them, and a single locality is spread over fifteen cells. The dissertation states the reason as follows: &ldquo;all the accent information of one locality has to be compared with all that of another, and for that it must <b>all be composed into a single index on the same basis</b>&rdquo;. The policy it adopts is to replace the series of patterns built from the fifteen cells by a distance.
+        </p>
+        <p class="body">
+        Why does the way of measuring distance have to be chosen at all? Because on a nominal scale &mdash; a scale on which neither order nor interval is defined &mdash; assigning numbers to categories gives those numbers no meaning. Suppose the types themselves were treated as categories: labelling \(\text{HHH}\) as 1, \(\text{HHL}\) as 2 and \(\text{LHH}\) as 3 does not make \(\text{LHH}\) three times \(\text{HHH}\), nor \(\text{HHL}\) something halfway between the two. Since <b>a different assignment would yield a different distance</b>, the resulting numbers would be an artefact of the coding rather than an output of the method. Gower&rsquo;s distance looks only at whether two values agree, so the result does not depend on how the labels are attached.
+        </p>
+        <div class="warn">
+            <h3>For this data set, Euclidean distance would not change the ordering either</h3>
+            <p>To be precise, however, the coding this study finally adopted is <b>binary</b>. The dissertation states explicitly that the H of a pattern was set to 1 and the L to 0, &ldquo;converting them into binary variables&rdquo;, before they were passed to daisy. For a variable with only two values the assignment of 1 and 0 is not arbitrary, and Euclidean distance is meaningful as well.</p>
+            <p>Indeed, writing \(m\) for the number of mismatches among the 52 positions, the Euclidean distance is \(\sqrt{m}\) and Gower&rsquo;s distance is \(m/52\); <b>both are increasing functions of \(m\), so the ordering of the localities comes out the same</b>. Using Euclidean distance on this data would not change the conclusions.</p>
+            <p>What, then, is gained by using Gower&rsquo;s distance? (1) The value is normalized to lie between 0 and 1, so that it can be read as &ldquo;in what proportion of the positions do they disagree&rdquo;. (2) The definition extends unchanged to three or more categories, to missing values, and to a mixture of quantitative and nominal variables. This study uses advantage (1); it does not use (2). <b>The generality of a method and the part of it that actually does the work in a given application are two different things.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Definition</h2>
+        <p class="q">Fix a degree of agreement for each variable, average them, and subtract from one.</p>
+        <p class="body">
+        The coefficient proposed by Gower (1971) was designed so that <b>the variables may be of mixed types</b>. For two objects \(i, j\) and \(p\) variables, one defines a per-variable similarity \(s_{ijk}\) together with a weight \(w_{ijk}\) recording whether that variable can be used in the comparison, and takes the weighted mean.
+        </p>
+        <div class="eq">
+            <div class="lbl">The general Gower coefficient, and the distance built from it</div>
+            \[ S_{ij} \;=\; \frac{\sum_{k=1}^{p} w_{ijk}\, s_{ijk}}{\sum_{k=1}^{p} w_{ijk}}, \qquad d_{ij} \;=\; 1 - S_{ij} \]
+            <p class="read"><b>\(s_{ijk}\)</b> &hellip; the degree of agreement on variable \(k\). On a nominal scale, 1 for a match and 0 for a mismatch. For a quantitative variable, \(1 - |x_{ik}-x_{jk}|/R_k\), dividing by the range \(R_k\). An ordinal variable is turned into ranks and then handled in the same way<br>
+            <b>\(w_{ijk}\)</b> &hellip; 0 if either value is missing, 1 if the comparison can be made. The denominator thus becomes &ldquo;the number of variables actually compared&rdquo;<br>
+            <b>\(d_{ij}\)</b> &hellip; one minus the similarity. 0 when every variable matches, 1 when every variable differs</p>
+        </div>
+        <p class="cap">The general form is given here in its standard formulation. What is written in the dissertation is only the nominal-scale case set out below.</p>
+        <p class="body">
+        What this study uses is <b>the case in which every variable is of the same type and nothing is missing</b>. All the \(w_{ijk}\) are then 1, and the expression contracts as follows.
+        </p>
+        <div class="eq">
+            <div class="lbl">The form used in this study</div>
+            \[ d(x, y) \;=\; 1 - \frac{1}{p}\sum_{k=1}^{p} \mathbf{1}\!\left[\, x_k = y_k \,\right] \;=\; 1 - \frac{\text{number of matches}}{\text{total number of elements}} \]
+            <p class="read">The dissertation defines it thus: &ldquo;Gower&rsquo;s Distance is a distance computed from the matching rate between combinations of nominal-scale data; it is the number of matching elements between the combination of one row and another, divided by the total number of elements in a row, subtracted from 1.&rdquo;</p>
+        </div>
+        <div class="sub">
+            <h3>For a binary variable, treating it as nominal and treating it as quantitative give the same value</h3>
+            <p>Once H has been turned into 1 and L into 0, the degree of agreement as a nominal variable (1 for a match) and the degree of agreement as a quantitative variable with range \(R_k = 1\), namely \(1 - |x_{ik}-x_{jk}|/1\), <b>coincide exactly</b>. The same distance therefore results whether daisy regards a column as a factor or as numeric. Under the coding used in this study, the declared type of a column does not govern the result.</p>
+            <p>This special case is <b>the complement of the simple matching coefficient</b>, and equals the Hamming distance divided by the length. In other words, the computation actually carried out in this study makes no use of the general Gower form&rsquo;s capacity to handle mixed types. What is used is <b>only the match/mismatch branch</b> of the general form.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>How the data were built</h2>
+        <p class="q">Expanding accent &ldquo;variation&rdquo; and &ldquo;coexistence&rdquo; into every combination of possible types.</p>
+        <p class="body">
+        The input is Table 6-1, &ldquo;Accent types of nouns (+ particle), older generation&rdquo;. For fifteen classes in all &mdash; 3 classes of monomoraic nouns, 5 of bimoraic nouns and 7 of trimoraic nouns &mdash; the type taken with the following case particle <i>ga</i> is written out in H and L. As the dissertation explains, this is <b>the report by Sugito included in the paper of Nomura (1977)</b>, covering the accent systems of Hongō, Tonyū and Tsuka, to which the Tokyo and Kyoto types have been added from Kindaichi (2003), p. 71.
+        </p>
+        <ol class="steps">
+            <li><b>Date of survey</b>&emsp;1971 and 1976.</li>
+            <li><b>Localities</b>&emsp;Of the eight settlements of Tokuyama Village, <b>five</b>: Hongō, Kadonyū, Hazehara, Tsuka and Tonyū. The dissertation states explicitly that Kadonyū and Hazehara do not appear in the table because their accent system is the same as that of Hongō.</li>
+            <li><b>Informants</b>&emsp;Members of the older generation, <b>at least two per settlement</b>.</li>
+            <li><b>Items analysed</b>&emsp;Nouns of one to three morae.</li>
+        </ol>
+        <p class="body">
+        The difficulty here is that some cells of the table hold <b>two types written together</b>, as in &ldquo;\(\text{LHL} \sim \text{HLL}\)&rdquo;. The dissertation distinguishes two cases. What stands on either side of \(\sim\) is <b>phonetic variation</b>; what is written one above the other within the same cell is <b>coexistence</b> (in Sugito&rsquo;s terminology, a case in which the pronunciation of that type is attested more robustly than mere variation).
+        </p>
+        <div class="warn">
+            <h3>Why the expansion is necessary</h3>
+            <p>If a cell holding two types is kept as a single symbol, &ldquo;\(\text{LHL} \sim \text{HLL}\)&rdquo; becomes a category distinct both from &ldquo;\(\text{LHL}\)&rdquo; and from &ldquo;\(\text{HLL}\)&rdquo;. A nominal scale has no notion of partial agreement, so <b>a locality that shows variation would count as a mismatch even against a locality that agrees exactly with one side of that variation</b>. The wider a locality&rsquo;s range of variation, the further it would come out from every other locality &mdash; a result determined by nothing but the way the description happens to be written.</p>
+            <p>The reason the dissertation gives lies one step before this. &ldquo;This is because all the accent information of one locality has to be compared with all that of another, and for that it must <b>all be composed into a single index on the same basis</b>.&rdquo; Reread a doubly written cell as &ldquo;the set of types that may have been spoken at that locality&rdquo;, and form every combination that picks one possible type per class for each mora count; a locality is then expressible in a single uniform format, not as one string but as <b>a set of strings</b>.</p>
+            <p>The reason for treating variation and coexistence alike, without distinguishing them, is stated as well: &ldquo;whether the variation is between informants, or arises when a single informant is asked to pronounce the same word several times, or lies within the same word class for the same speaker, is <b>unknown</b>&rdquo;, and the difference from what Sugito calls coexistence &ldquo;is not clear&rdquo;. The judgement is that <b>the original description does not carry enough information to make the distinction, so the distinction is not made</b>.</p>
+        </div>
+        <div class="sub">
+            <h3>Number of combinations</h3>
+            <p>For Hongō, the dissertation sets out the count concretely. In Table 6-1 the three classes of monomoraic nouns are \(\text{HHH} \sim \text{HHL}\) / \(\text{HHL}\) / \(\text{HHL} \sim \text{LHH}\), so the possible combinations come to the following 4 patterns.</p>
+            <pre class="rcode">HHH/HHL/HHL
+HHH/HHL/LHH
+HHL/HHL/HHL
+HHL/HHL/LHH</pre>
+            <p>In the same way the bimoraic nouns alone give 6 patterns and the trimoraic nouns alone 16, for \(4 \times 6 \times 16 = 384\) patterns. Tsuka gives 1024 patterns and Tonyū 4608. For Tsuka and Tonyū the dissertation does not report the breakdown by mora count.</p>
+        </div>
+        <div class="sub">
+            <h3>Conversion into code</h3>
+            <p>A single pattern with all fifteen classes strung together becomes a string of <b>52 characters</b> made of H and L. The length 52 can be checked directly against Table 6-1: the monomoraic nouns give 3 classes &times; 3 morae, the bimoraic nouns 5 classes &times; 3 morae and the trimoraic nouns 7 classes &times; 4 morae, and \(9 + 15 + 28 = 52\).</p>
+            <p>On that basis the dissertation passed the data to daisy after setting the H of a pattern to 1 and the L to 0, &ldquo;converting them into binary variables&rdquo;. <b>The unit of comparison is the mora, not the word (class)</b>. As section 6 shows, this choice of granularity governs the values themselves.</p>
+            <p>It should be added that the presentation slides reporting the same analysis at a talk and on a poster describe the original notation (\(\bullet\) high mora, \(\blacktriangledown\) lengthened second mora, \(\circ\) low mora, no mora) as having been replaced by the four values a / b / c / 0. <b>The dissertation version is binary, H / L</b>, with \(\blacktriangledown\) folded into H as a high mora. The values of the distance matrix printed in the two are the same.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>The computation itself</h2>
+        <p class="q">Line up the 52 positions and count how many agree. That is all.</p>
+        <p class="body">
+        The dissertation takes the first and second patterns of Hongō as its example. The two strings differ only in their last two characters.
+        </p>
+        <div class="eq">
+            <div class="lbl">The computation as printed in the dissertation</div>
+            \[ \text{total number} = 52, \qquad \text{number of matches} = 50, \qquad d = 1-\frac{50}{52} = 0.038 \]
+            <p class="read">&ldquo;There are 52 elements, of which only the last 2 elements differ. That is, the number of matches is 50, so Gower&rsquo;s Distance takes the value 1-(50/52)＝0.038.&rdquo; Since \(1 - 50/52 = 0.03846\ldots\), this agrees with the value 0.038 for Hongō 1&ndash;Hongō 2 in Table 6-2 below. <b>There is no optimization and no iteration.</b></p>
+        </div>
+        <div class="sub">
+            <h3>The most distant pair can be traced through the same formula</h3>
+            <p>The largest value in Table 6-2 is <b>0.538</b>, for Hongō 1&ndash;Tonyū 4608. Working back from the definition, the number of matches satisfying \(1 - m/52 = 0.538\) is \(m = 24\), so <b>the two agree at 24 of the 52 positions and disagree at 28</b>. Since \(1 - 24/52 = 0.53846\ldots\), this matches the printed value of 0.538.</p>
+            <p>Hongō 1 and Hongō 2 agree at 50 of 52 positions; Hongō 1 and Tonyū 4608 agree at only 24 of 52. The contrast between these two numbers is precisely the contrast between &ldquo;variation within one settlement&rdquo; and &ldquo;a difference of system across settlements&rdquo;.</p>
+        </div>
+        <p class="cap">The same example is also reported in the 2012 presentation slides, but the worked computation is written up differently there. Every figure and formula on this page follows the account in the doctoral dissertation (chapter 6, case 4).</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Running it in R</h2>
+        <p class="q">Pass metric="gower" to daisy in the cluster package. Nothing more.</p>
+        <p class="body">
+        The dissertation states that &ldquo;Gower&rsquo;s Distance was computed with the function daisy of the package cluster in the statistical software R&rdquo;. The presentation slides for the same analysis give the actual script, in five lines. <code>data</code> is the table with all the patterns laid out one pattern per row and one mora per column, with H turned into 1 and L into 0.
+        </p>
+        <pre class="rcode">library(cluster)
+dgower &lt;- daisy(data,  metric="gower")
+mgower=as.matrix(dgower)
+diag(mgower) &lt;- 0
+write.csv(mgower,file="goweracc.csv")</pre>
+        <div class="sub">
+            <h3>What these five lines do</h3>
+            <p><code>daisy</code> is a function returning a distance object; given <code>metric="gower"</code>, it computes the distance by the general form of section 2. It is by design the column types that determine the formula in daisy, but as section 2 showed, <b>for a binary column either treatment yields the same value</b>, so the declared type raises no issue here.</p>
+            <p><code>as.matrix</code> turns the result into a symmetric matrix, assigning 0 to <code>diag</code> aligns the diagonal explicitly, and the matrix is written out to CSV.</p>
+            <p>The number of rows is 384 for Hongō plus 1024 for Tsuka plus 4608 for Tonyū, that is <b>6016</b>. The output is therefore a 6016 &times; 6016 distance matrix.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Results</h2>
+        <p class="q">Distances between patterns come first; averaging them by settlement gives the distances between settlements.</p>
+        <p class="body">
+        The Gower distances computed are <b>distances between patterns</b>, not between settlements. The dissertation therefore states that &ldquo;the mean over all pairs of patterns within the settlements was taken as the linguistic distance between settlements&rdquo;. This is an operation folding a 6016 &times; 6016 matrix into a 5 &times; 5 table. The dissertation calls the resulting value a <b>pseudo linguistic distance</b>.
+        </p>
+
+        <div class="sub">
+            <h3>Table 6-2&emsp;Gower&rsquo;s Distance between patterns (the excerpt printed in the dissertation)</h3>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th></th><th class="num">Hongō 1</th><th class="num">Hongō 2</th><th class="num">&hellip;</th><th class="num">Hongō 384</th><th class="num">Tsuka 1</th><th class="num">&hellip;</th><th class="num">Tonyū 4607</th><th class="num">Tonyū 4608</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hongō 1</td><td class="num">0</td><td class="num">0.038</td><td class="num">&hellip;</td><td class="num">0.173</td><td class="num">0.192</td><td class="num">&hellip;</td><td class="num">0.462</td><td class="num">0.538</td></tr>
+                <tr><td>Hongō 2</td><td class="num"></td><td class="num">0</td><td class="num">&hellip;</td><td class="num">0.135</td><td class="num">0.231</td><td class="num">&hellip;</td><td class="num">0.5</td><td class="num">0.5</td></tr>
+                <tr><td>&hellip;</td><td class="num"></td><td class="num"></td><td class="num">&hellip;</td><td class="num"></td><td class="num"></td><td class="num">&hellip;</td><td class="num"></td><td class="num"></td></tr>
+                <tr><td>Hongō 384</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td><td class="num">0.308</td><td class="num">&hellip;</td><td class="num">0.462</td><td class="num">0.462</td></tr>
+                <tr><td>Tsuka 1</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td><td class="num">&hellip;</td><td class="num">0.327</td><td class="num">0.404</td></tr>
+                <tr><td>&hellip;</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">&hellip;</td><td class="num"></td><td class="num"></td></tr>
+                <tr><td>Tsuka 1024</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.481</td><td class="num">0.404</td></tr>
+                <tr><td>Tonyū 1</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.423</td><td class="num">0.423</td></tr>
+                <tr><td>&hellip;</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">&hellip;</td><td class="num">&hellip;</td></tr>
+                <tr><td>Tonyū 4607</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td><td class="num">0.077</td></tr>
+                <tr><td>Tonyū 4608</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">The figures are quoted exactly as printed in Table 6-2. The distance matrix is symmetric, so only the upper triangle is printed, and the &ldquo;&hellip;&rdquo; between rows and columns marks an omission. What is visible here is a very small part of a 6016 &times; 6016 matrix. Every value printed is a rounding of \(k/52\) (with \(k\) the number of mismatches): 0.038 corresponds to \(2/52\), 0.077 to \(4/52\), 0.173 to \(9/52\) and 0.538 to \(28/52\). The reader can go back to the definition and check the arithmetic.</p>
+        <p class="body">
+        The reading is straightforward. Patterns within the same settlement (0.038 for Hongō 1&ndash;Hongō 2, 0.077 for Tonyū 4607&ndash;Tonyū 4608) lie close together, and the distance grows across settlements (0.538 for Hongō 1&ndash;Tonyū 4608). But <b>even within one settlement the value is not 0</b>. Hongō 1&ndash;Hongō 384 is 0.173, which means that the two extremes of the 384 expanded patterns disagree at 9 of the 52 positions. The breadth of the variation appears directly as distance.
+        </p>
+
+        <div class="sub">
+            <h3>Table 6-4&emsp;Linguistic distances between settlements</h3>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th></th><th class="num">Hongō</th><th class="num">Hazehara</th><th class="num">Kadonyū</th><th class="num">Tsuka</th><th class="num">Tonyū</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hongō</td><td class="num">0.113</td><td class="num">0.113</td><td class="num">0.113</td><td class="num">0.260</td><td class="num">0.475</td></tr>
+                <tr><td>Hazehara</td><td class="num"></td><td class="num">0.113</td><td class="num">0.113</td><td class="num">0.260</td><td class="num">0.475</td></tr>
+                <tr><td>Kadonyū</td><td class="num"></td><td class="num"></td><td class="num">0.113</td><td class="num">0.260</td><td class="num">0.475</td></tr>
+                <tr><td>Tsuka</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.240</td><td class="num">0.393</td></tr>
+                <tr><td>Tonyū</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">0.240</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">From Table 6-4. Only the upper triangle is printed. The diagonal is not 0 because it is the mean over pairs of patterns within one settlement. Hongō, Hazehara and Kadonyū are treated as sharing one accent system, so every cell involving those three settlements carries the same value.</p>
+
+        <div class="sub">
+            <h3>What it means for Tonyū to be distant</h3>
+            <p>Among the settlements of the former Tokuyama Village, Tonyū alone has been held to carry <i>otsushu</i> (Tokyo-type) accent, Hongō and the others <i>kōshu</i> (Kyoto-type), and Tsuka an intermediate type. The dissertation sums up the figures of Table 6-4 as follows: &ldquo;the linguistic distance between Hongō and the others (Hongō, Hazehara, Kadonyū) and Tsuka is 0.260, that between Hongō and Tonyū 0.475, and that between Tonyū and Tsuka 0.393.&rdquo;</p>
+            <p>Hongō&ndash;Tonyū is the largest, and Tsuka falls between. The dissertation displays this table by metric MDS (<code>cmdscale</code> in R) in Figure 6-6, and states that &ldquo;the accent of Tsuka is seen to lie between Hongō and the others on one side and Tonyū on the other&rdquo;. The reading is that <b>what had been called an intermediate type is shown actually to lie in the middle on a line</b>.</p>
+            <p>This is, however, also a confirmation of a classification already known. It is not a result that reverses any ordering. The dissertation puts it modestly as well: &ldquo;even after reducing the information to numbers, the differences in the accent situation of Tonyū, Tsuka and Hongō could be shown.&rdquo;</p>
+        </div>
+
+        <div class="sub">
+            <h3>Setting it against geographical distance</h3>
+            <p>This linguistic distance is contrasted with geographical distance, for those pairs of points connected by a route. Geographical distance is defined by equation (1) below.</p>
+            <div class="eq">
+                <div class="lbl">Equation (1)&emsp;Distance between two points</div>
+                \[ \sqrt{\bigl(\text{Euclidean distance between the points}(m)\bigr)^{2} + \bigl(\text{elevation difference}(m)\times 8.3\bigr)^{2}}\;\;(m) \]
+                <p class="read">The vertical distance is taken at <b>8.3 times</b> the horizontal because, as the dissertation explains, &ldquo;it is generally known that a person can walk 5 km in an hour, and that an hour is to be added for every 600 m of ascent&rdquo; (cf. Langmuir 1984). This is <b>not a straight-line distance but one brought closer to the effort of walking</b>.</p>
+            </div>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Pairs of points connected by a route</th><th class="num">Equation (1) (m)</th><th class="num">Linguistic distance</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hongō &mdash; Kami-Kaiden</td><td class="num">682</td><td class="num">0.113</td></tr>
+                <tr><td>Shimo-Kaiden &mdash; Hongō</td><td class="num">951</td><td class="num">0.113</td></tr>
+                <tr><td>Tsuka &mdash; Hazehara</td><td class="num">1761</td><td class="num">0.26</td></tr>
+                <tr><td>Yamate &mdash; Hongō</td><td class="num">2400</td><td class="num">0.113</td></tr>
+                <tr><td>Hazehara &mdash; Yamate</td><td class="num">2516</td><td class="num">0.113</td></tr>
+                <tr><td>Kami-Kaiden &mdash; Tonyū</td><td class="num">3632</td><td class="num">0.475</td></tr>
+                <tr><td>Tonyū &mdash; Kadonyū</td><td class="num">4720</td><td class="num">0.475</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">From Table 6-5, quoted as printed (the linguistic distance for Tsuka&ndash;Hazehara is given there as 0.26). The same contrastive table appears in the presentation slides, but the geographical distances there are 658 / 951 / 1742 / 2365 / 2516 / 3541 / 4709, different values. The formula in the slides carries no factor of 8.3 on the elevation difference, and can be read as having added the elevation difference as it stood. <b>The linguistic distances are the same in both.</b></p>
+        <p class="body">
+        Whether equation (1) gives 682 m or 2516 m, the linguistic distance is the same 0.113. This follows directly from the fact that <b>the linguistic distance distinguishes no more than three systems</b>. The distance between two localities described by the same system is 0.113 rather than 0, and stays at that value however far apart they lie geographically. The dissertation states: &ldquo;that Hazehara, Yamate, Hongō, Kami-Kaiden and Shimo-Kaiden show equal linguistic distances irrespective of their geographical distance is presumed to be due to something other than geographical factors, for example traffic volume; extracting that factor is left as a task for the future.&rdquo;
+        </p>
+        <p class="body">
+        The chapter goes on to compute betweenness centrality for a network of 44 points reconstructed from the circuit route of early-modern priests (the <code>sna</code> package in R, with weights from equation (1)), showing Tonyū at 84.000, Tsuka at 183.667 and Kami-Kaiden at 164.000, low by comparison with Hongō at 437.333 or Hazehara at 494.333. The correspondence is that <b>the localities that are linguistically distant were also localities unlikely to lie on a route through the traffic network</b>. This betweenness centrality is, however, an index on the side of the traffic network; it is not computed from Gower&rsquo;s distance.
+        </p>
+
+        <div class="sub">
+            <h3>The same material coded at a different granularity</h3>
+            <p>In the version of the same research presented in English, the unit of coding differs. One variable is not a mora but one of <b>the fifteen classes</b>, with the letters A, B, C&hellip; assigned to the types of each class. A pattern is then 15 characters long rather than 52. The worked example under this coding is &ldquo;\(1-3/15 = 0.8\) for West1 and East4606&rdquo;.</p>
+            <p>The distance matrix among the three lineages runs as follows: within West (<i>kōshu</i>) 0.2777778, within Middle (intermediate type) 0.3333333, within East (<i>otsushu</i>) 0.3794667, West&ndash;Middle 0.4444444, West&ndash;East 0.8462049, Middle&ndash;East 0.7077812. The concluding slide gives them rounded as 0.278 / 0.333 / 0.380 / 0.444 / 0.846 / 0.708.</p>
+            <p><b>The ordering agrees with the result at the mora level</b> (West&ndash;East &gt; Middle&ndash;East &gt; West&ndash;Middle; at the mora level in the dissertation, 0.475 &gt; 0.393 &gt; 0.260). The absolute values, however, differ by close to a factor of two. At the level of classes, a class counts as a mismatch as soon as even one mora within it differs, so mismatches accumulate. This comparison bears directly on the limits set out in section 7.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Limits</h2>
+        <p class="q">A value always comes out between 0 and 1. That it came out does not mean it means something.</p>
+
+        <div class="warn">
+            <h3>All the expanded patterns are averaged with equal weight</h3>
+            <p>384, 1024 and 4608 are counts of &ldquo;possible combinations of types&rdquo;; there is no evidence that each of them was actually spoken with the same frequency. <b>That the nature of the variation is unknown is stated by the dissertation itself</b> &mdash; whether it is variation between informants, variation across repeated utterances by one speaker, or variation within the same word class, cannot be determined. Averaging across settlements nonetheless assumes tacitly that all patterns are equally probable.</p>
+            <p>Moreover, the number of patterns differs greatly by settlement (384 : 1024 : 4608). The Hongō&ndash;Tonyū mean is a mean over \(384 \times 4608\) cells, the Hongō&ndash;Tsuka mean over \(384 \times 1024\) cells; the averaging is done differently for each pair. <b>This procedure cannot separate how much of a distance value is a difference of language from how much is a difference in the amount of variation contained in the description.</b></p>
+            <p>The diagonal entries (0.113 for Hongō and the others, 0.240 for Tsuka, 0.240 for Tonyū) are means over pairs of patterns within a settlement, and express directly the extent of the variation in that settlement&rsquo;s description. They stand in the same table on the same scale as the between-settlement values, but <b>they measure something different</b>. That the dissertation calls these figures a &ldquo;pseudo linguistic distance&rdquo; can be read as an expression carrying just such a reservation.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Binarizing into match or mismatch makes &ldquo;near&rdquo; and &ldquo;far&rdquo; types indistinguishable</h3>
+            <p>Once reduced to 0/1 at the level of the mora, all that remains is how many morae disagree. \(\text{HHLL}\) against \(\text{HLLL}\) (differing only in the second mora) and \(\text{HHLL}\) against \(\text{HHHL}\) (differing only in the third) both count equally as &ldquo;one mismatch&rdquo;. Whether the accent nucleus has shifted towards the beginning or towards the end of the word &mdash; the <b>direction of change</b> &mdash; does not enter the distance. In the English version coded by class, the distinction is lost further still: both count as the single tally &ldquo;that class does not match&rdquo;.</p>
+            <p>The dissertation itself raises this as a task for the future. &ldquo;Since the ordinary state of a dialect is not a simple opposition between the so-called <i>otsushu</i> (Tokyo type) and <i>kōshu</i> (Kyoto type) but one in which <b>the characteristics of both are intermixed mora by mora and class by class</b>, attending to those fine changes and to the direction of change will, it seems, be needed hereafter.&rdquo; The very operation of composing everything into one distance flattens that intermixture.</p>
+        </div>
+
+        <div class="warn">
+            <h3>Correlations among variables are ignored</h3>
+            <p>The 52 positions are not independent. Adjacent morae of the same word depend strongly on one another phonologically, and words belonging to the same class move together by definition. Gower&rsquo;s distance takes <b>a simple, equally weighted mean over all variables</b>, so the parts holding many variables that move together carry, in effect, the greater weight. The trimoraic nouns occupy 28 of the positions (7 classes &times; 4 morae), more than half of the 52. No grounds are given for regarding that as an appropriate weighting.</p>
+            <p>The general form of Gower (1971) carries a per-variable weight \(w_{ijk}\), but there is no statement that any weights were adjusted in this study. The reading is that the default equal weighting was used as it stood. This contrasts with the chi-square distance of <a href="../correspondence-analysis/">correspondence analysis</a>, which weights by the marginal frequencies: <b>Gower&rsquo;s distance contains no mechanism for saying which variables should count for more</b>.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The values have no absolute meaning in themselves. They change with the design of the coding</h3>
+            <p>For the same material and the same method, <i>kōshu</i>&ndash;<i>otsushu</i> comes out at 0.475 at the mora level of the dissertation (52 variables) and at 0.8462049 at the class level of the English presentation (15 variables). The ordering is preserved, but <b>the numbers differ by close to a factor of two</b>. No threshold reading such as &ldquo;0.5 or more means a separate lineage&rdquo; can therefore be attached to this distance.</p>
+            <p>What can be compared are <b>only values computed under the same coding</b>. Gower distances from other studies, or values from other distance measures, cannot be set directly alongside them.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The data are small in scale</h3>
+            <p>The accent descriptions amount to no more than <b>three systems</b> (Hongō, Tsuka, Tonyū), based on Sugito&rsquo;s report. Kadonyū and Hazehara are treated as sharing the system of Hongō, so three of the five settlements in Table 6-4 are entirely identical rows. Yamate, Kami-Kaiden and Shimo-Kaiden, which appear in Table 6-5, are all at 0.113 for the same reason. <b>What looks like a 5&times;5 table carries only 3&times;3 independent pieces of information.</b></p>
+            <p>The informants are members of the older generation, at least two per settlement, and the survey dates are 1971 and 1976. The vocabulary used for comparison is the same across all the systems &mdash; 3 classes of monomoraic nouns, 5 of bimoraic nouns and 7 of trimoraic nouns, fifteen classes in all &mdash; so <b>on that point the material is matched</b>. How far these fifteen classes represent the accent system as a whole cannot, however, be judged from the sources. Nor can it be judged how far a description of variation obtained from about two speakers per settlement represents the language of that settlement.</p>
+        </div>
+
+        <div class="warn">
+            <h3>It is a distance, not a statistical model</h3>
+            <p>Gower&rsquo;s distance carries no probability model. It brings with it no standard error, no confidence interval and no test. Whether the gap between 0.475 and 0.393 is a meaningful one, or one that would disappear under a slight change in the way the patterns are expanded, <b>cannot be judged from this procedure alone</b>.</p>
+            <p>This study seeks that judgement outside the distance rather than within it. The design is to set the figures against <b>other kinds of information</b> &mdash; the betweenness centrality of the traffic network reconstructed from the early-modern circuit route, marriage ties with Sakauchi Village, the accent systems described in earlier research &mdash; and to confirm that the isolation of Tonyū shows up simultaneously in several indices. No procedure for assessing the uncertainty of the distance itself is included.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Sources and data</h2>
+
+        <div class="sub">
+            <h3>Principal source</h3>
+            <ul class="refs">
+                <li>小野原彩香 (2013年度)『数理的アプローチからの言語変化と外言語的要素との関わりに関する研究』博士論文、同志社大学大学院文化情報学研究科。<b>第6章 事例4「アクセント形式と交通状況との関係」</b>（本文 pp. 92–107）。<br><span style="color:var(--muted)">Onohara, A. (FY2013) <i>A mathematical approach to language change and its relation to extralinguistic factors</i>. Doctoral dissertation, Graduate School of Culture and Information Science, Doshisha University. Chapter 6, case 4, &ldquo;The relation between accent form and traffic conditions&rdquo; (pp. 92–107). The definition of Gower&rsquo;s distance, the worked computation, Tables 6-1 to 6-6, equation (1), the discussion and the tasks left for the future all come from this chapter.</span></li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>References on the method</h3>
+            <ul class="refs">
+                <li>Gower, J. C. (1971) A general coefficient of similarity and some of its properties. <i>Biometrics</i>, 27(4), 857–871. <a href="https://doi.org/10.2307/2528823" target="_blank" rel="noopener noreferrer">doi:10.2307/2528823</a> (cited in the dissertation as [Gower, 1971])</li>
+                <li>The function <code>daisy</code> of the R package <code>cluster</code> (<code>metric="gower"</code>). The <code>sna</code> package [Butts, 2010] is used to build and draw the network and to compute betweenness centrality, and <code>cmdscale</code> for the metric MDS.</li>
+                <li>Langmuir, E. (1984) <i>Mountaincraft and Leadership</i>. Scottish Sports Council / Mountainwalking Leader Training Board. (on walking times; cited by the dissertation with a &ldquo;cf.&rdquo; as the basis for the factor of 8.3 on the elevation difference in equation (1))</li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>The underlying data</h3>
+            <ul class="refs">
+                <li>杉戸の報告（野村正良 (1977)「岐阜県揖斐郡徳山村戸入方言の記述的報告及び成立過程に就いての二三の考察——付アクセントの分布と変遷——」『名古屋大学文学部研究論集』70、pp. 3–17 に併せて記載）。<br><span style="color:var(--muted)">Sugito&rsquo;s report, included in Nomura, M. (1977) A descriptive report on the Tonyū dialect of Tokuyama Village, Ibi County, Gifu Prefecture, with some considerations on its formation: with the distribution and change of accent. <i>Studies in Humanities, Faculty of Letters, Nagoya University</i>, 70, pp. 3–17. The source of the accent types in Table 6-1. Surveyed in 1971 and 1976; the localities are the five settlements of Hongō, Kadonyū, Hazehara, Tsuka and Tonyū; the informants are members of the older generation, at least two per settlement.</span></li>
+                <li>金田一春彦 (2003) p.71。<br><span style="color:var(--muted)">Kindaichi, H. (2003), p. 71. The source of the Tokyo-type and Kyoto-type accents added to Table 6-1.</span></li>
+                <li>徳山村史編集委員会編 (1973)『徳山村史』大衆書房。<br><span style="color:var(--muted)">Tokuyama Village History Editorial Committee (ed.) (1973) <i>A History of Tokuyama Village</i>. Taishū Shobō. The early-modern circuit route out of Jōshōji (Figure 6-2).</span></li>
+                <li>岐阜県教育委員会 (1973)『徳山：昭和47年度民俗資料緊急調査報告書』。<br><span style="color:var(--muted)">Gifu Prefectural Board of Education (1973) <i>Tokuyama: report of the FY1972 emergency survey of folklore materials</i>. The survey of the circuit route derives from the emergency survey of folklore materials of 1972 (Shōwa 47). The reconstructed network runs from Echizen Province (Jōshōji head temple, Fukui Prefecture) to Mino Province (the Mizutori settlement, Gifu Prefecture) and comprises eight passes, one slope and 34 settlements, <b>44 points in all</b>.</span></li>
+            </ul>
+        </div>
+
+        <div class="sub" style="margin-top:22px">
+            <h3>Presentation slides covering the same analysis</h3>
+            <ul class="refs">
+                <li>小野原彩香「定量的側面からの言語形式と外言語的要素の関係——岐阜県徳山村の地理的要因と民俗的要因を例として——」第147回 変異理論研究会、2012年4月14日。<br><span style="color:var(--muted)">Onohara, A. The relation between linguistic form and extralinguistic factors from a quantitative angle: geographical and folkloric factors in Tokuyama Village, Gifu Prefecture. 147th meeting of the Variation Theory Study Group, 14 April 2012. The five lines of R script are quoted from here.</span></li>
+                <li>小野原彩香「岐阜県旧徳山村におけるアクセント様相と交通状況との関係性——ネットワーク分析を用いたアクセント分布と交通状況の類似性の算出——」同志社大学大学院文化情報学研究科。<br><span style="color:var(--muted)">Onohara, A. The relation between the accent situation and traffic conditions in the former Tokuyama Village, Gifu Prefecture: computing the similarity between accent distribution and traffic conditions by network analysis. Graduate School of Culture and Information Science, Doshisha University.</span></li>
+                <li>Onohara, Ayaka. <i>Geometrical and Topological Analysis for Dialect Distribution: A Mathematical Approach in Tokuyama District</i>. Graduate School of Culture and Information Science, Doshisha University. The source of the worked computation and the three-lineage distance matrix under the coding by class.</li>
+            </ul>
+            <p style="margin-top:12px">Between these presentation slides and the doctoral dissertation, the account of the coding (four values a/b/c/0 versus binary H/L), the way the number of matches is counted in the worked computation, and the weight on the elevation difference in equation (1) (none versus a factor of 8.3) all differ. <b>This page takes the account in the dissertation as authoritative, and quotes from the presentation slides only where that is stated explicitly.</b> The values of Gower&rsquo;s distance printed in the two agree.</p>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Gower&rsquo;s distance is not a procedure for setting up a model and estimating it. It is a procedure that <b>constructs the metric space itself</b> over nominal-scale data, and in that sense it comes before the analysis rather than being one. It belongs to <b>Perspective 1 (geometry, least squares)</b> in <a href="../">the seven perspectives in equations</a> because it is at this stage that the geometry &mdash; what shall count as being close &mdash; is fixed.</p>
+        <p>In this chapter too, Gower&rsquo;s distance stands at the entrance. The between-settlement distances of Table 6-4 go straight in as the input to the metric MDS (Figure 6-6), and become the edge weights of the network diagram (Figure 6-8, upper). <b>Change the definition of the distance and everything downstream changes with it.</b> Every method that takes a distance as input rides on the design of this stage without exception: that <a href="../neighbor-net/">Neighbor-Net</a> draws a branching structure from a distance matrix, and that metric MDS turns distances into coordinates, are the same dependence.</p>
+        <p>Not everything in this chapter rests on Gower&rsquo;s distance, however. Betweenness centrality is an index on the side of the traffic network, with weights given by the geographical distance of equation (1). <a href="../correspondence-analysis/">Correspondence analysis</a>, likewise, is applied in the adjacent chapter 7 to data on population density and customs, and has an input separate from the accent distances. <b>The two series are placed in parallel rather than in series, so as to see whether the same conclusion is reached by two different routes.</b> A distance is not a universal entrance, but the entrance to what that distance can measure.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in her own research. All figures are quoted from values printed in the sources; no estimates or approximations have been added. Where the sources disagree, the account in the doctoral dissertation has been followed, and this is stated where it occurs.<br>
+    For other methods that take a distance as input, see <a href="../neighbor-net/">Neighbor-Net</a> and <a href="../correspondence-analysis/">correspondence analysis</a>. The overall placement of methods is in <a href="../">the seven perspectives in equations</a>, and which course sessions fall under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-23 &nbsp;|&nbsp; <a href="../">&larr; Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>

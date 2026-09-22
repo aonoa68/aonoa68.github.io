@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Regression and Variable Selection — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Multiple regression and variable selection: least squares and the normal equations, the derivation of the variance inflation factor VIF = 1/(1-R^2), all possible subset selection as an exhaustive model search, and sensitivity analysis with the accuracy package, set out against the actual figures of Chapter 4 of Ayaka Onohara's doctoral dissertation (a multiple regression on the number of accent changes in Shodoshima).">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (frequentist) */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* body blocks (same construction as worlds/) */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* cautions and limits (the box where the weaknesses go) */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* gold box, same role as .cross in worlds/ */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* results table */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf7f8; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* procedure list */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* references */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        .sub p + p { margin-top:10px; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Multiple Regression</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/multiple-regression/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">PERSPECTIVE 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Multiple <span>Regression</span></h1>
+        <p class="lead">A model that explains a single <b>response variable</b> by a linear combination of several <b>explanatory variables</b>. When the explanatory variables are strongly correlated with one another, the coefficients can still be estimated, but <b>their variance inflates</b> to the point where neither sign nor magnitude can be trusted. VIF measures that inflation; all possible subset selection decides, by exhaustive search, which set of variables to use.<br>
+        What follows is set out against the actual figures of Chapter 4 of Onohara's doctoral dissertation — an analysis explaining the number of accent changes in nine settlements on Shōdoshima by population, households, centrality and elevation — with attention to what is assumed and what may be claimed.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">What is it about a settlement that explains "the number of accents that changed"?</p>
+        <p class="body">
+        For nine settlements on Shōdoshima there exists a figure obtained by setting the description in Nakai [1998] against a survey carried out in 2012 and counting <b>how many</b> of the accent types of two-mora nouns had changed. High mora H, low mora L, mid mora M, intra-mora rise R and intra-mora fall F were each replaced by the numerical codes <code>11</code>, <code>00</code>, <code>0.5 0.5</code>, <code>01</code> and <code>10</code>; the absolute difference was taken between corresponding cells on the 1998 side and the 2012 side; and these were summed for each locality (source pp.49–50, Tables 4-6 to 4-8). That sum is the <b>number of changes</b>.
+        </p>
+        <p class="body">
+        The question is: what is the settlement-to-settlement variation in this number of changes bound up with? The explanatory variables the dissertation assembled are population (small-area tabulations of the 2010 and 2000 censuses), households (the same source), population growth rate (population 2010 ÷ population 2000), three kinds of centrality (information, betweenness and degree centrality), and elevation (the 5&nbsp;m mesh digital elevation model of the Fundamental Geospatial Data) (source pp.47–48, p.52). The centralities were computed by building an adjacency matrix recording the connections between settlements as 0/1 from bus-route and scheduled passenger shipping-route data (Table 4-5), and passing it to <code>degree</code>, <code>betweenness</code> and <code>infocent</code> in R's <code>sna</code> package (source pp.50–52).
+        </p>
+        <p class="body">
+        Multiple regression becomes necessary here <b>because these explanatory variables are strongly correlated with one another</b>. A settlement with a large population also has many households; a settlement where roads converge scores high on both betweenness and degree centrality. Lining up nine simple correlations does not reveal which variable is a restatement of which. Multiple regression attempts an answer in the form of "the effect of one variable with the others held fixed" — but when the variables resemble one another so closely that the holding-fixed does not bite, the coefficients become unstable. Everything from section 3 onwards concerns how that problem is handled.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>The model and least squares</h2>
+        <p class="q">The coefficients that minimise the residual sum of squares can be written uniquely as the solution of the normal equations.</p>
+        <p class="body">
+        Suppose there are \(n\) observations and \(p\) explanatory variables. For the \(i\)-th observation,
+        </p>
+        <div class="eq">
+            <div class="lbl">THE MULTIPLE REGRESSION MODEL</div>
+            \[ y_i \;=\; \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \cdots + \beta_p x_{ip} + \varepsilon_i \qquad (i = 1,\dots,n) \]
+            <p class="read"><b>\(y_i\)</b> … the response variable (here, the number of accent changes in settlement \(i\))<br>
+            <b>\(x_{ij}\)</b> … the value of the \(j\)-th explanatory variable<br>
+            <b>\(\varepsilon_i\)</b> … the error term. Least squares itself assumes no distribution, but at the stage where the \(t\) test and the \(F\) test are carried out one assumes that the \(\varepsilon_i \sim \mathcal{N}(0,\sigma^2)\) are mutually independent</p>
+        </div>
+        <p class="body">
+        With the design matrix \(X\) (a first column of ones, then each explanatory variable) and the coefficient vector \(\beta\), write \(y = X\beta + \varepsilon\). Least squares takes the residual sum of squares
+        </p>
+        <div class="eq">
+            <div class="lbl">RESIDUAL SUM OF SQUARES AND THE NORMAL EQUATIONS</div>
+            \[ S(\beta) \;=\; \sum_{i=1}^{n}\Bigl(y_i - \beta_0 - \textstyle\sum_{j=1}^{p}\beta_j x_{ij}\Bigr)^{2} \;=\; \lVert y - X\beta \rVert^{2} \]
+            \[ \frac{\partial S}{\partial \beta} \;=\; -2X^{\top}\bigl(y - X\beta\bigr) \;=\; 0 \quad\Longrightarrow\quad X^{\top}X\,\hat{\beta} \;=\; X^{\top}y \]
+            \[ \hat{\beta} \;=\; \bigl(X^{\top}X\bigr)^{-1}X^{\top}y \qquad \mathrm{Var}\bigl(\hat{\beta}\bigr) \;=\; \sigma^{2}\bigl(X^{\top}X\bigr)^{-1} \]
+            <p class="read">The second expression is the <b>normal equations</b>. If \(X^{\top}X\) is non-singular the solution is uniquely determined. What the next section turns on is not <b>whether the inverse exists</b> but <b>how large the diagonal entries of that inverse are</b>.</p>
+        </div>
+        <div class="sub">
+            <h3>The dissertation regresses on standardised data</h3>
+            <p>The data of Table 4-9 were standardised with R's <code>scale</code> before being passed to <code>lm</code> (source Appendix. 5). The intercept therefore comes out as 0.000, and each coefficient states how many standard deviations the number of changes moves when the explanatory variable moves by one standard deviation. The price of being able to compare magnitudes across variables is that interpretation in the original units (persons, metres and so on) is lost.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>The problem of explanatory variables correlated with one another</h2>
+        <p class="q">Multicollinearity is not a problem of "cannot be estimated" but of "the variance of the estimate inflates".</p>
+        <p class="body">
+        In Figure 4-1 of the dissertation (the correlation matrix and scatterplot matrix of the standardised data of Table 4-9, p.54), the four variables population (2010), households (2010), population (2000) and households (2000) show mutual correlations of 0.998 to 0.999. The correlations among the centralities are high as well: p.53 states that "the correlation between betweenness centrality and degree centrality is likewise high", and, on the two-mora-noun-plus-particle side, p.62 states that "the correlation between information centrality and degree centrality is also high". What happens when variables this similar enter the model together is best seen in the form of the variance of the coefficients.
+        </p>
+        <p class="body">
+        Take the \(j\)-th explanatory variable \(x_j\) and <b>regress it on all the remaining explanatory variables (including the intercept)</b>, writing the residual as \(\tilde{x}_j\). By the Frisch–Waugh–Lovell theorem, the multiple regression coefficient \(\hat{\beta}_j\) coincides with the simple regression coefficient obtained by regressing \(y\) on \(\tilde{x}_j\) alone.
+        </p>
+        <div class="eq">
+            <div class="lbl">THE COEFFICIENT, AND ITS VARIANCE</div>
+            \[ \hat{\beta}_j \;=\; \frac{\tilde{x}_j^{\top}y}{\tilde{x}_j^{\top}\tilde{x}_j} \qquad\Longrightarrow\qquad \mathrm{Var}\bigl(\hat{\beta}_j\bigr) \;=\; \frac{\sigma^{2}}{\tilde{x}_j^{\top}\tilde{x}_j} \;=\; \frac{\sigma^{2}}{\mathrm{RSS}_j} \]
+            <p class="read"><b>\(\mathrm{RSS}_j\)</b> … the residual sum of squares from regressing \(x_j\) on the other explanatory variables. <b>The size of what is left over once the other variables have explained what they can</b> is precisely what fixes the precision of the coefficient.</p>
+        </div>
+        <p class="body">
+        Writing \(R_j^2\) for the coefficient of determination of that regression of \(x_j\) on the other explanatory variables, by definition \(\mathrm{RSS}_j = \mathrm{TSS}_j\,(1-R_j^2)\), where \(\mathrm{TSS}_j = \sum_i (x_{ij}-\bar{x}_j)^2\). Substituting,
+        </p>
+        <div class="eq">
+            <div class="lbl">VIF AS THE INFLATION FACTOR OF THE VARIANCE</div>
+            \[ \mathrm{Var}\bigl(\hat{\beta}_j\bigr) \;=\; \frac{\sigma^{2}}{\displaystyle\sum_{i}\bigl(x_{ij}-\bar{x}_j\bigr)^{2}} \;\times\; \underbrace{\frac{1}{1-R_j^{2}}}_{\textstyle \mathrm{VIF}_j} \]
+            \[ \mathrm{VIF}_j \;=\; \frac{1}{1-R_j^{2}} \]
+            <p class="read"><b>the leading fraction</b> … the variance that would obtain if \(x_j\) were uncorrelated with the other variables (\(R_j^2=0\))<br>
+            <b>\(\mathrm{VIF}_j\)</b> … <b>by what factor the actual variance is inflated</b> relative to that ideal case. On the scale of the standard error, the factor is \(\sqrt{\mathrm{VIF}_j}\)<br>
+            <b>\(R_j^2\)</b> … the coefficient of determination from a regression that takes \(x_j\) as the <b>response</b> and the other explanatory variables as predictors. The response \(y\) is not used at all</p>
+        </div>
+        <div class="sub">
+            <h3>The dissertation writes this very formula into a footnote</h3>
+            <p>Footnote 16 on p.55 reads: "vif takes the explanatory variable in question as the response, obtains the R<sup>2</sup> from regressing it on the other explanatory variables, and computes 1/(1 − R<sup>2</sup>)". The same footnote adds that "VIF = 10 is the state in which more than 90% of the variation of one explanatory variable is explained away by the others. Even at VIF = 5, more than 80% is explained away." If \(R_j^2 = 0.9\) then \(\mathrm{VIF}_j = 10\), and if \(R_j^2 = 0.8\) then \(5\); this is a restatement of the formula above.</p>
+            <p>The computation uses the <code>vif</code> function of R's <code>car</code> package (source p.53, Appendix. 5).</p>
+        </div>
+        <div class="warn">
+            <h3>A large VIF does not make the estimate itself biased</h3>
+            <p>Multicollinearity does not break the unbiasedness of the least squares estimator. What it breaks is <b>precision</b> alone. One therefore cannot say "the coefficient is wrong because the VIF is large", only "this coefficient could move a great deal if the sample were drawn again". The practice of dropping a variable once its VIF exceeds 10 buys a smaller variance at the price of an operation that <b>pushes the effect of the dropped variable into the coefficients of the variables retained</b>. The dissertation carries out this deletion in two rounds, and the coefficients of the final model have to be read on that understanding.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>All possible subset selection</h2>
+        <p class="q">Fit all \(2^p\) combinations and sort them by information criterion.</p>
+        <p class="body">
+        With \(p\) explanatory variables, sorting each into "used" or "not used" yields \(2^p\) combinations, or \(2^p - 1\) once the empty set is excluded. All possible subset selection is the procedure of running <code>lm</code> on every one of these, computing the coefficient of determination, the adjusted coefficient of determination, AIC, BIC and so on, and sorting the results. What the dissertation used is the function <code>All.possible.subset.selection</code> from Tamaki Yano's R script <code>papca.R</code>, reproduced in full in Appendix. 4 (A-11 to A-12).
+        </p>
+        <div class="eq">
+            <div class="lbl">THE SCOPE OF THE EXHAUSTIVE SEARCH</div>
+            \[ \#\{\text{candidate models}\} \;=\; 2^{p} - 1 \]
+            <p class="read">In the case at hand, Table 4-9 has nine explanatory variables, so \(2^{9}-1 = 511\) combinations. At the second stage, after betweenness centrality and others had been dropped, \(p=6\) gives \(2^{6}-1=63\); at the third stage \(p=4\) gives \(2^{4}-1=15\). By default the script displays only the twenty models with the smallest AIC.</p>
+        </div>
+        <p class="body">
+        The sorting criterion is AIC. For a log-likelihood \(\log L\) and a number of parameters \(k\),
+        </p>
+        <div class="eq">
+            <div class="lbl">AIC, AND THE OTHER QUANTITIES THE SCRIPT REPORTS</div>
+            \[ \mathrm{AIC} \;=\; -2\log L\bigl(\hat{\theta}\bigr) + 2k \qquad \mathrm{BIC} \;=\; -2\log L\bigl(\hat{\theta}\bigr) + k\log n \]
+            \[ \mathrm{cAIC} \;=\; \mathrm{AIC} + \frac{2(k+1)(k+2)}{n-k-2} \]
+            <p class="read">The third is what the script in Appendix. 4 computes as <code>result7[i] &lt;- result3[i] + 2*(nd+1)*(nd+2)/(nrow(df)-nd-2)</code>: a small-sample correction in \(k\) (<code>nd</code> in the code, R's <code>ans$rank</code>). Besides these the script outputs \(R^2\), the adjusted \(R^2\), and a quantity called <code>Rh</code>.</p>
+        </div>
+        <div class="sub">
+            <h3>How this differs from stepwise selection</h3>
+            <p>Footnote 14 on p.53 reads as follows. "One generally uses stepAIC, but stepAIC does not compute every combination of the explanatory variables; it removes variables one at a time and halts the process at an appropriate point. All.possible.subset.selection, by contrast, displays every combination of the explanatory variables in ascending order of AIC."</p>
+            <p>Stepwise selection <b>depends on the path of the search</b>. Once a variable has been dropped, no combination containing it is ever evaluated again. Exhaustive search has no such path dependence and cannot miss the best model in the sense of AIC. But not missing it and the selected model being correct are two different things. The more candidates there are, the greater the probability that some combination fits well by accident and rises to the top.</p>
+        </div>
+        <div class="sub">
+            <h3>AIC is not a test</h3>
+            <p>AIC is a comparison from the standpoint of prediction (an estimate of the Kullback–Leibler divergence); it carries neither a significance level nor a null hypothesis. One therefore cannot say "this model is significant because its AIC is smallest". The dissertation applies the \(t\) test and \(F\) test of <code>summary(lm(...))</code> to the model chosen by AIC; the interpretive problem that raises is taken up in <a href="#limits">section 8</a>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The actual data, and the process of narrowing the variables</h2>
+        <p class="q">Nine settlements × 2 rows, nine explanatory variables. From this, two variables remain.</p>
+        <p class="body">
+        Table 4-9 of the dissertation (two-mora nouns only, p.52) is reproduced as it stands. There are 18 rows, but only nine settlements. Footnote 13 explains: "where there were two survey points within a single settlement, or where variation in pronunciation meant that two phonetic patterns were recognised at one and the same point, the weight of that point in the multiple regression would become large. To prevent this, the data row for each survey point that had a single location and a single phonetic pattern was duplicated." <b>The values of the explanatory variables agree exactly between rows a and b of the same settlement.</b>
+        </p>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Analysis name</th><th class="num">Changes</th><th class="num">Pop. 2010</th><th class="num">Households 2010</th><th class="num">Pop. 2000</th><th class="num">Households 2000</th><th class="num">Pop. growth rate</th><th class="num">Information centrality</th><th class="num">Betweenness centrality</th><th class="num">Degree centrality</th><th class="num">Elevation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Ieura a</td><td class="num">2</td><td class="num">1246</td><td class="num">562</td><td class="num">1560</td><td class="num">676</td><td class="num">0.799</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">5.5</td></tr>
+                <tr><td>Ieura b</td><td class="num">2</td><td class="num">1246</td><td class="num">562</td><td class="num">1560</td><td class="num">676</td><td class="num">0.799</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">5.5</td></tr>
+                <tr><td>Kamano a</td><td class="num">0</td><td class="num">294</td><td class="num">142</td><td class="num">378</td><td class="num">149</td><td class="num">0.778</td><td class="num">0.816</td><td class="num">0</td><td class="num">4</td><td class="num">6.38</td></tr>
+                <tr><td>Kamano b</td><td class="num">0</td><td class="num">294</td><td class="num">142</td><td class="num">378</td><td class="num">149</td><td class="num">0.778</td><td class="num">0.816</td><td class="num">0</td><td class="num">4</td><td class="num">6.38</td></tr>
+                <tr><td>Karato a</td><td class="num">2</td><td class="num">648</td><td class="num">290</td><td class="num">854</td><td class="num">328</td><td class="num">0.759</td><td class="num">0.804</td><td class="num">24</td><td class="num">6</td><td class="num">110.06</td></tr>
+                <tr><td>Karato b</td><td class="num">5</td><td class="num">648</td><td class="num">290</td><td class="num">854</td><td class="num">328</td><td class="num">0.759</td><td class="num">0.804</td><td class="num">24</td><td class="num">6</td><td class="num">110.06</td></tr>
+                <tr><td>Kusakabe a</td><td class="num">4</td><td class="num">1300</td><td class="num">626</td><td class="num">1525</td><td class="num">663</td><td class="num">0.852</td><td class="num">0.997</td><td class="num">13.333</td><td class="num">8</td><td class="num">2.13</td></tr>
+                <tr><td>Kusakabe b</td><td class="num">4</td><td class="num">1300</td><td class="num">626</td><td class="num">1525</td><td class="num">663</td><td class="num">0.852</td><td class="num">0.997</td><td class="num">13.333</td><td class="num">8</td><td class="num">2.13</td></tr>
+                <tr><td>Tonoshō a</td><td class="num">2</td><td class="num">5106</td><td class="num">2188</td><td class="num">5665</td><td class="num">2261</td><td class="num">0.901</td><td class="num">1.098</td><td class="num">31.667</td><td class="num">8</td><td class="num">8.58</td></tr>
+                <tr><td>Tonoshō b</td><td class="num">2</td><td class="num">5106</td><td class="num">2188</td><td class="num">5665</td><td class="num">2261</td><td class="num">0.901</td><td class="num">1.098</td><td class="num">31.667</td><td class="num">8</td><td class="num">8.58</td></tr>
+                <tr><td>Fukuda a</td><td class="num">0</td><td class="num">749</td><td class="num">338</td><td class="num">967</td><td class="num">378</td><td class="num">0.775</td><td class="num">0.722</td><td class="num">1</td><td class="num">4</td><td class="num">24.09</td></tr>
+                <tr><td>Fukuda b</td><td class="num">0</td><td class="num">749</td><td class="num">338</td><td class="num">967</td><td class="num">378</td><td class="num">0.775</td><td class="num">0.722</td><td class="num">1</td><td class="num">4</td><td class="num">24.09</td></tr>
+                <tr><td>Yoshida a</td><td class="num">0</td><td class="num">115</td><td class="num">48</td><td class="num">148</td><td class="num">56</td><td class="num">0.777</td><td class="num">0.923</td><td class="num">10.333</td><td class="num">6</td><td class="num">93.42</td></tr>
+                <tr><td>Yoshida b</td><td class="num">0</td><td class="num">115</td><td class="num">48</td><td class="num">148</td><td class="num">56</td><td class="num">0.777</td><td class="num">0.923</td><td class="num">10.333</td><td class="num">6</td><td class="num">93.42</td></tr>
+                <tr><td>Kō a</td><td class="num">3</td><td class="num">71</td><td class="num">42</td><td class="num">120</td><td class="num">60</td><td class="num">0.592</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">29.33</td></tr>
+                <tr><td>Kō b</td><td class="num">3</td><td class="num">71</td><td class="num">42</td><td class="num">120</td><td class="num">60</td><td class="num">0.592</td><td class="num">0.592</td><td class="num">0</td><td class="num">4</td><td class="num">29.33</td></tr>
+                <tr><td>Tōhama a</td><td class="num">0</td><td class="num">102</td><td class="num">46</td><td class="num">154</td><td class="num">58</td><td class="num">0.662</td><td class="num">0.736</td><td class="num">1.667</td><td class="num">4</td><td class="num">32.64</td></tr>
+                <tr><td>Tōhama b</td><td class="num">0</td><td class="num">102</td><td class="num">46</td><td class="num">154</td><td class="num">58</td><td class="num">0.662</td><td class="num">0.736</td><td class="num">1.667</td><td class="num">4</td><td class="num">32.64</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Source Table 4-9, "Data for the multiple regression (two-mora nouns only)" (p.52). By footnote 12 of the source, [changes] corresponds to the "sum" in Table 4-8, and [population growth rate] is population 2010 ÷ population 2000.</p>
+
+        <p class="body">
+        The steps the dissertation followed are these (source pp.53–58, Appendix. 5).
+        </p>
+        <ol class="steps">
+            <li><b>Standardisation</b>　Table 4-9 is standardised with <code>scale</code> (<code>data1</code> → standardised).</li>
+            <li><b>Inspecting the correlations</b>　The correlation matrix and scatterplot matrix (Figure 4-1) are drawn, confirming that the correlations among population (2010), households (2010), population (2000) and households (2000) are all above 0.9.</li>
+            <li><b>First exhaustive search</b>　All.possible.subset.selection is run on the nine explanatory variables (Table 4-10). Of the four population-related variables, only <b>households (2010)</b> — the one that appears most readily in the low-AIC combinations — is retained; population (2010), population (2000) and households (2000) are removed to form <code>data1.2</code>.</li>
+            <li><b>Second exhaustive search</b>　The search is run again on <code>data1.2</code> (six explanatory variables) (Table 4-11). The minimum AIC is households (2010) + information centrality + betweenness centrality + degree centrality + elevation.</li>
+            <li><b>VIF and sensitivity analysis</b>　<code>vif</code> and <code>sensitivity</code> are run on this model.</li>
+            <li><b>Third exhaustive search</b>　Households (2010) and betweenness centrality, whose VIFs exceeded 10, are removed to form <code>data1.3</code>, and the search is run once more (Table 4-14). The minimum AIC is information centrality + degree centrality.</li>
+        </ol>
+
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(R^2\)</th><th class="num">Adj.\(R^2\)</th><th class="num">Rh</th><th class="num">AIC</th><th class="num">cAIC</th><th class="num">BIC</th><th>Formula</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0.881</td><td class="num">0.832</td><td class="num">0.787</td><td class="num">25.712</td><td class="num">36.912</td><td class="num">31.944</td><td>households 2010 + information centrality + betweenness centrality + degree centrality + elevation</td></tr>
+                <tr><td class="num">0.881</td><td class="num">0.817</td><td class="num">0.759</td><td class="num">27.686</td><td class="num">43.686</td><td class="num">34.809</td><td>households 2010 + population growth rate + information centrality + betweenness centrality + degree centrality + elevation</td></tr>
+                <tr><td class="num">0.767</td><td class="num">0.736</td><td class="num">0.708</td><td class="num">31.823</td><td class="num">34.900</td><td class="num">35.384</td><td>information centrality + degree centrality</td></tr>
+                <tr><td class="num">0.773</td><td class="num">0.724</td><td class="num">0.680</td><td class="num">33.397</td><td class="num">38.397</td><td class="num">37.849</td><td>information centrality + degree centrality + elevation</td></tr>
+                <tr><td class="num">0.772</td><td class="num">0.723</td><td class="num">0.680</td><td class="num">33.424</td><td class="num">38.424</td><td class="num">37.876</td><td>population growth rate + information centrality + degree centrality</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Only the top five rows of source Table 4-11, "Model selection for Data1.2 (two-mora nouns only)" (p.55); the source lists twenty. That the AIC gap between the minimum-AIC row and the third row is about 6.1, while on cAIC the ranking reverses — 36.912 against 34.900 — can be read directly off the source's own table.</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Results</h2>
+        <p class="q">What remains is two variables: information centrality (negative) and degree centrality (positive).</p>
+        <p class="body">
+        <b>Second stage (<code>data1.2</code>, two-mora nouns only).</b> The regression equation of the model chosen by AIC is given on p.54 of the dissertation in the following form.
+        </p>
+        <div class="eq">
+            <div class="lbl">THE REGRESSION EQUATION OF SOURCE p.54 (STANDARDISED DATA)</div>
+            \[ \text{changes} = 0.000 - 1.097\,\text{households 2010} - 1.590\,\text{information centrality} + 1.523\,\text{betweenness centrality} + 1.383\,\text{degree centrality} - 0.895\,\text{elevation} \]
+            <p class="read">Coefficient of determination 0.881, adjusted coefficient of determination 0.832, \(F\) = 17.8 (\(p\) = \(3.514\times10^{-5}\), 5 and 12 degrees of freedom), residual standard error 0.410.</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Variable</th><th class="num">Estimate</th><th class="num">Std. error</th><th class="num">\(t\)</th><th class="num">\(p\)</th><th class="num">VIF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Intercept</td><td class="num">0.000</td><td class="num">0.097</td><td class="num">0.000</td><td class="num">1.000</td><td class="num">—</td></tr>
+                <tr><td>Households 2010</td><td class="num">−1.097</td><td class="num">0.343</td><td class="num">−3.196</td><td class="num">0.008</td><td class="num">11.890</td></tr>
+                <tr><td>Information centrality</td><td class="num">−1.590</td><td class="num">0.218</td><td class="num">−7.283</td><td class="num">0.000</td><td class="num">4.813</td></tr>
+                <tr><td>Betweenness centrality</td><td class="num">1.523</td><td class="num">0.470</td><td class="num">3.238</td><td class="num">0.007</td><td class="num">22.331</td></tr>
+                <tr><td>Degree centrality</td><td class="num">1.383</td><td class="num">0.297</td><td class="num">4.653</td><td class="num">0.001</td><td class="num">8.924</td></tr>
+                <tr><td>Elevation</td><td class="num">−0.895</td><td class="num">0.268</td><td class="num">−3.346</td><td class="num">0.006</td><td class="num">7.226</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Estimates, standard errors, \(t\) and \(p\) values from source Table 4-12, "Results of the multiple regression on data1.2" (p.56). The VIFs are from the text on p.55 and from the <code>vif(RegModel.1)</code> output in Appendix. 5 (A-17). The dissertation states that "there is an indicator holding that multicollinearity is present once VIF reaches 10, and on that indicator degree centrality, information centrality and elevation are the appropriate variables".</p>
+
+        <p class="body">
+        <b>Third stage (<code>data1.3</code>, two-mora nouns only).</b> Dropping households (2010) and betweenness centrality, whose VIFs exceeded 10, and repeating the exhaustive search, the minimum AIC is a two-variable model: information centrality + degree centrality.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Variable</th><th class="num">Estimate</th><th class="num">Std. error</th><th class="num">\(t\)</th><th class="num">\(p\)</th><th class="num">VIF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Intercept</td><td class="num">0.000</td><td class="num">0.121</td><td class="num">0.000</td><td class="num">1.000</td><td class="num">—</td></tr>
+                <tr><td>Degree centrality</td><td class="num">1.895</td><td class="num">0.271</td><td class="num">6.987</td><td class="num">0.000</td><td class="num">4.738</td></tr>
+                <tr><td>Information centrality</td><td class="num">−1.588</td><td class="num">0.271</td><td class="num">−5.855</td><td class="num">0.000</td><td class="num">4.738</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Source Table 4-15, "Results of the multiple regression on data1.3" (p.57); the VIFs are from p.58 and Appendix. 5 (A-19). Coefficient of determination 0.767, adjusted coefficient of determination 0.736, \(F\) = 24.7 (\(p\) = \(1.79\times10^{-5}\), 2 and 15 degrees of freedom), residual standard error 0.514 (source p.58).<br>
+        Note that the regression equation in the running text on p.58 reads "changes = 0.000 + 1.901 degree centrality − 1.595 information centrality", whose final digits do not agree with Table 4-15 or with the <code>summary</code> output in Appendix. 5 (1.90 / −1.59, \(t\) = 6.99 / −5.85). The values of Table 4-15 are the ones given here.</p>
+
+        <p class="body">
+        <b>The two-mora-noun-plus-particle case.</b> An analysis was also run on the same nine settlements with the same explanatory variables, replacing only the response by "the number of changes including the forms followed by a particle" (source Table 4-18). At the second stage (<code>data2.2</code>) the minimum AIC was households (2010) + population growth rate + information centrality + betweenness centrality + degree centrality + elevation, with coefficient of determination 0.896, adjusted coefficient of determination 0.839, \(F\) = 15.77 (\(p\) = \(8.00\times10^{-5}\)) and residual standard error 0.401 (source p.63).
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Variable</th><th class="num">Estimate</th><th class="num">Std. error</th><th class="num">\(t\)</th><th class="num">\(p\)</th><th class="num">VIF</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Intercept</td><td class="num">0.000</td><td class="num">0.095</td><td class="num">0.000</td><td class="num">1.000</td><td class="num">—</td></tr>
+                <tr><td>Households 2010</td><td class="num">−1.394</td><td class="num">0.359</td><td class="num">−3.880</td><td class="num">0.003</td><td class="num">13.634</td></tr>
+                <tr><td>Population growth rate</td><td class="num">0.214</td><td class="num">0.170</td><td class="num">1.253</td><td class="num">0.236</td><td class="num">3.064</td></tr>
+                <tr><td>Information centrality</td><td class="num">−1.586</td><td class="num">0.228</td><td class="num">−6.952</td><td class="num">0.000</td><td class="num">5.495</td></tr>
+                <tr><td>Betweenness centrality</td><td class="num">1.291</td><td class="num">0.473</td><td class="num">2.732</td><td class="num">0.020</td><td class="num">23.593</td></tr>
+                <tr><td>Degree centrality</td><td class="num">1.601</td><td class="num">0.295</td><td class="num">5.420</td><td class="num">0.000</td><td class="num">9.219</td></tr>
+                <tr><td>Elevation</td><td class="num">−0.799</td><td class="num">0.264</td><td class="num">−3.025</td><td class="num">0.012</td><td class="num">7.370</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Source Table 4-21, "Results of the multiple regression on data2.2" (p.64); the VIFs are from the text on p.63. Population growth rate is the only variable whose \(p\) does not fall below 0.05.</p>
+
+        <p class="body">
+        Here too, dropping households (2010) and betweenness centrality for VIFs above 10 and repeating the exhaustive search (<code>data2.3</code>), the minimum AIC is again information centrality + degree centrality: coefficient of determination 0.727, adjusted coefficient of determination 0.69, \(F\) = 20 (\(p\) = \(5.94\times10^{-5}\)), residual standard error 0.556, with a VIF of 4.738 for both variables (source pp.66–67).
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Variable</th><th class="num">Estimate</th><th class="num">Std. error</th><th class="num">\(t\)</th><th class="num">\(p\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Intercept</td><td class="num">0.000</td><td class="num">0.131</td><td class="num">0.000</td><td class="num">1.000</td></tr>
+                <tr><td>Degree centrality</td><td class="num">1.846</td><td class="num">0.294</td><td class="num">6.283</td><td class="num">0.000</td></tr>
+                <tr><td>Information centrality</td><td class="num">−1.552</td><td class="num">0.294</td><td class="num">−5.283</td><td class="num">0.000</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Source Table 4-24, "Results of the multiple regression on data2.3" (p.67).</p>
+
+        <div class="sub">
+            <h3>The direction of the signs is the core of the dissertation's claim</h3>
+            <p>The coefficient on degree centrality is positive, that on information centrality negative. Page 71 reads this as "settlements where roads converge underwent large accent change between 1998 and 2012" and "settlements that are easy to reach changed little in accent between 1998 and 2012", and connects it to Kindaichi's [2003] argument that "urban language has parts that resist change, while regional language has parts that change readily". At the same time the dissertation notes that "there is also a view that language changes more readily in cities, so one cannot simply equate the urban with ease of access".</p>
+            <p>The dissertation goes further, using the magnitude of the residuals (Figure 4-4, Table 4-17) to separate out which accent changes are influenced by extra-linguistic factors. Changes appearing only in settlements with small residuals (LLF→LHL, MLR→LLH, MLF→LHL) are set against changes appearing only in settlements with large residuals (MF→HL, MFL→HLL, LLR→LHL), and the former are assigned to contact-induced change, the latter to internal change (source pp.72–73).</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Sensitivity analysis</h2>
+        <p class="q">Perturb the explanatory variables and see how far the coefficients move.</p>
+        <p class="body">
+        Alongside VIF the dissertation uses a second diagnostic for multicollinearity: sensitivity analysis. The tool is the <code>sensitivity</code> function of R's <code>accuracy</code> package; p.53 states that "the function sensitivity in the package accuracy, which performs a Sensitivity Analysis that judges multicollinearity by applying perturbations to the explanatory variables, was used". The actual call in Appendix. 5 is <code>data1.2.sens &lt;- sensitivity(data1.2, lm, 変化数 ~ ., ptb.R = 2000)</code>, and the heading of the output is <code>"Sensitivity of coefficients over 2000 perturbations:"</code>. The text on p.55 likewise says that "the check was carried out with 2000 perturbations".
+        </p>
+        <div class="sub">
+            <h3>The definition of Unstable</h3>
+            <p>Footnote 17 on p.57 states that "a variable is Unstable when, after perturbing the explanatory variables and repeating this an arbitrary number of times, a test of how far each of the resulting estimates falls within the 95% confidence interval is rejected"; in that case an asterisk appears in the <code>[Unstable]</code> column of the output.</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>Variable</th><th class="num">Perturbed estimate</th><th class="num">Estimate</th><th class="num">Std. error</th><th class="num">2.50%</th><th class="num">97.50%</th><th>Unstable</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Intercept</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.100</td><td class="num">−0.004</td><td class="num">0.004</td><td>—</td></tr>
+                <tr><td>Households 2010</td><td class="num">−1.100</td><td class="num">−1.100</td><td class="num">0.380</td><td class="num">−1.100</td><td class="num">−1.060</td><td>—</td></tr>
+                <tr><td>Population growth rate</td><td class="num">−0.023</td><td class="num">−0.023</td><td class="num">0.180</td><td class="num">−0.030</td><td class="num">−0.015</td><td>—</td></tr>
+                <tr><td>Information centrality</td><td class="num">−1.600</td><td class="num">−1.600</td><td class="num">0.240</td><td class="num">−1.588</td><td class="num">−1.570</td><td>—</td></tr>
+                <tr><td>Betweenness centrality</td><td class="num">1.500</td><td class="num">1.500</td><td class="num">0.500</td><td class="num">1.485</td><td class="num">1.533</td><td>—</td></tr>
+                <tr><td>Degree centrality</td><td class="num">1.400</td><td class="num">1.400</td><td class="num">0.320</td><td class="num">1.378</td><td class="num">1.403</td><td>—</td></tr>
+                <tr><td>Elevation</td><td class="num">−0.890</td><td class="num">−0.890</td><td class="num">0.280</td><td class="num">−0.903</td><td class="num">−0.877</td><td>—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Source Table 4-13, "Results of the Sensitivity Analysis on data1.2 (1)" (p.56). The "Unstable" column is blank throughout, and p.57 states that "the result obtained was that no variable was unstable (Unstable)". The same output is also printed in Appendix. 5 (A-18) with <code>digits = 2</code>, and there are places where the final digit of the 2.5% / 97.5% values disagrees with Table 4-13 (for example, the 2.5% figure for households 2010 is −1.100 in Table 4-13 and −1.099 in Appendix. 5). Comparable output for <code>data2.2</code>, <code>data1.3</code> and <code>data2.3</code> appears in source Tables 4-22, 4-16 and 4-25, and in none of them is a verdict of instability returned.</p>
+
+        <div class="warn">
+            <h3>The model handed to the sensitivity analysis is not the model chosen by AIC</h3>
+            <p>The call in Appendix. 5 is <code>sensitivity(data1.2, lm, 変化数 ~ ., ptb.R = 2000)</code>. Since <code>変化数 ~ .</code> means "take every column remaining in the data frame as an explanatory variable", what is fitted here is the model containing all six variables of <code>data1.2</code>, not the five-variable model chosen by AIC (which excludes population growth rate). That is why Table 4-13 has a row for population growth rate. The same holds for <code>data1.3</code>: Table 4-16 has rows for population growth rate and elevation, whereas the model chosen by AIC is the two-variable model information centrality + degree centrality.</p>
+            <p>In other words, <b>the object the sensitivity analysis judged "stable" and the object whose coefficients and \(p\) values are reported are not the same model</b>. The dissertation does not mention this difference.</p>
+        </div>
+        <div class="warn">
+            <h3>The two diagnostics disagree</h3>
+            <p>VIF judged households 2010 = 11.890 and betweenness centrality = 22.331 to be "above 10", yet the sensitivity analysis found no variable Unstable. The text on p.57 reads "households H22 and betweenness centrality, judged unstable by vif (&gt;10), were removed from data1.2", so the VIF verdict was given priority in dropping variables. Which diagnostic one adopts changes the final model, and the dissertation does not state the reason for the choice.</p>
+        </div>
+        <div class="sub">
+            <h3>What could not be determined</h3>
+            <p>Within the dissertation and Appendices 4 to 6, neither the distribution nor the magnitude of the "perturbation" that <code>sensitivity</code> applies to the explanatory variables is recorded. Only the number of repetitions, <code>ptb.R = 2000</code>, is specified; the rest relies on the default perturbation settings. The <code>accuracy</code> package is moreover already described, in footnote 15 on p.53, as "no longer being developed and unobtainable from CRAN".</p>
+        </div>
+    </section>
+
+    <section class="wblock" id="limits">
+        <h2><span class="no">8</span>Limits</h2>
+        <p class="q">There is a problem in the procedure itself: selecting by exhaustive search and then testing.</p>
+
+        <div class="warn">
+            <h3>Testing after selecting makes the \(p\) values too generous</h3>
+            <p>All possible subset selection fits \(2^p-1\) models on one and the same sample and picks the one that fits best. When the \(t\) test and \(F\) test are then carried out on that selected model <b>using the same sample</b>, the reported \(p\) values lose their nominal meaning. Both the \(t\) and the \(F\) distribution are derived on the premise that the model was fixed before the data were seen, and the operation of looking at the data and then picking the best breaks that premise. The \(p\) values actually reported are smaller than they should be, and the confidence intervals narrower (the problem of post-selection inference).</p>
+            <p>At the second stage, 63 models were compared from \(p=6\); at the first stage, 511 from \(p=9\). Attaching a \(p\) value of \(3.514\times10^{-5}\) to the \(F\) value of 17.8 of the model that was best among 511 means <b>carrying over unchanged the calculation appropriate to having looked at a single model</b>. <b>The dissertation does not address this point.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>There are many variables relative to the sample size, and the rows are duplicated</h3>
+            <p>Table 4-9 has 18 rows, but there are nine settlements, and the values of the explanatory variables agree exactly between rows a and b of the same settlement. Footnote 13 explains this duplication as a device for equalising the weight against the case where "there were two survey points within a single settlement". The response (the number of changes) can differ between a and b for a given settlement, but on the explanatory side there are only nine distinct sets of values.</p>
+            <p>Despite this, the regression is run on 18 rows of data, and the residual degrees of freedom are computed as 12 (second stage) or 15 (third stage). <b>Since there are only nine independent settlements, these degrees of freedom are very likely too large.</b> The bias runs towards standard errors that are too small, \(t\) values too large and \(p\) values too small. <b>The dissertation does not address this point.</b></p>
+            <p>In addition, at the first stage there are nine explanatory variables and nine independent settlements. Searching 511 combinations under that ratio leaves ample room to pick up an accidental fit.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The observations are spatially arranged, and the independence of the errors is doubtful</h3>
+            <p>The nine settlements are laid out on Shōdoshima. The explanatory variables are themselves centralities built from the road and shipping-route connections between settlements (Table 4-5). Settlements close to one another are likely to resemble each other both in the movement of people and in dialect, and in that case the error terms of the regression are not mutually independent. Positive spatial autocorrelation in the errors leads to underestimated standard errors.</p>
+            <p>The dissertation plots the absolute values of the residuals as circles sized over the settlement locations (Figure 4-5), so a spatial sketch is provided. It does not, however, test the residuals for spatial autocorrelation, nor build the spatial structure into the model. <b>The dissertation does not state this as a limitation.</b> For the position that puts spatial correlation of the errors into the model explicitly, see <a href="../icar/">ICAR spatial random effects</a>.</p>
+        </div>
+
+        <div class="warn">
+            <h3>The data are not treated as nested</h3>
+            <p>The 18 rows have a nested structure: nine settlements × 2 rows. The two rows of a settlement share the same explanatory variables and derive from the same body of speakers. Treating each row of such data as an independent observation ignores the within-settlement correlation. The straightforward remedy is to treat settlement as a random effect and estimate the within- and between-settlement variance separately, a framework covered under <a href="../mixed-model/">linear mixed models and AIC</a>. <b>The dissertation proceeds with a fixed-effects-only multiple regression and does not mention this option.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>The response is a non-negative count</h3>
+            <p>The number of changes is a value of 0 or more, falling in the range 0 to 5 in Table 4-9 and 0 to 10 in Table 4-18. Because mid mora M is replaced by 0.5 during the computation, a cell-level difference can take the value 0.5, but the per-locality sums listed in Tables 4-9 and 4-18 are all integers. Either way, there is a floor at 0, and the variance may change with the level. A linear model with normal errors is treating this as an approximation. That the fitted values can go negative is a further caution for extrapolating from the model. <b>The dissertation does not address this point.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>The two analyses are not independent replications</h3>
+            <p>That information centrality + degree centrality was selected in both the "two-mora nouns only" and the "two-mora nouns plus particle" analyses is used on p.71 as support for the conclusion. But the two use <b>the same nine settlements and the same explanatory variables</b>, and both responses are built from the same survey of the same words (water, sound, mountain, needle, autumn). This is not replication on an independent sample, so the agreement cannot be taken to double the credibility. <b>The dissertation does not address this point.</b></p>
+        </div>
+
+        <div class="warn">
+            <h3>This is not a causal claim</h3>
+            <p>That a regression coefficient expresses the association "a settlement one standard deviation higher in degree centrality has a number of changes 1.9 standard deviations higher" is one thing; "building more roads will change the accent" is another. Variables that could confound the relation — the industrial structure of the settlement, actual patterns of commuting to school and work, the age composition of the speakers, and differences in the accent system already present in 1998 — are not in the model. The dissertation itself enters a reservation where it connects the results to Kindaichi's [2003] argument: "one cannot simply equate the urban with ease of access".</p>
+        </div>
+
+        <div class="sub">
+            <h3>On the VIF threshold itself</h3>
+            <p>"VIF &gt; 10 means multicollinearity" is a rule of thumb, not a test. As footnote 16 of the dissertation writes, it says no more than \(R_j^2 &gt; 0.9\). Set the threshold at 5 and everything at the second stage except information centrality (4.813) would be dropped. Since where one cuts changes the final model, the threshold ought to be reported as part of the result.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources</h2>
+        <p class="body">
+        Every figure on this page is quoted from Chapter 4 and the end matter Appendix of Ayaka Onohara, <i>A study of language change and its relation to extra-linguistic factors from a mathematical approach</i> (Graduate School of Culture and Information Science, Doshisha University, doctoral dissertation, academic year 2013). Page numbers in the body text refer to the continuous pagination of the dissertation itself; Appendix page numbers refer to the end matter, prefixed "A-".
+        </p>
+        <ul class="refs">
+            <li>Onohara, Ayaka (2013) <i>A study of language change and its relation to extra-linguistic factors from a mathematical approach</i>. Doctoral dissertation, Graduate School of Culture and Information Science, Doshisha University.<br>
+            　Chapter 4, section 4, "Method — centrality and multiple regression" pp.49–52 ／ section 5, "Results" pp.53–70 ／ section 6, "Discussion" pp.71–73.<br>
+            　Table 4-9 (analysis data, p.52), Tables 4-10 and 4-11 (model selection, p.55), Tables 4-12 and 4-13 (coefficients and sensitivity analysis, p.56), Tables 4-14 and 4-15 (the same, p.57), Table 4-18 (data with particle, p.62), Table 4-21 (coefficients, p.64), Table 4-22 (sensitivity analysis, p.65), Tables 4-24 and 4-25 (the same, p.67).<br>
+            　Appendix. 4, "Case 2: the All.possible.subset.selection script" A-11 to A-12 ／ Appendix. 5, "Case 2: R script for the multiple regression (two-mora nouns)" A-13 onwards ／ Appendix. 6, "Case 2: R script for the multiple regression (two-mora nouns plus particle)".</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the methods and tools cited in the dissertation</h3>
+            <ul class="refs">
+                <li>Stephenson, K. &amp; Zelen, M. (1989) Rethinking Centrality: Methods and Applications. <i>Social Networks</i>, 11, 1–37.　Cited on p.52 as the source for information centrality.</li>
+                <li>Suzuki, Tsutomu (2009) <i>Centrality</i>. Data Science with R: Network Analysis (vol. 8), Kyoritsu Shuppan.　Cited on pp.51–52 as the source for the accounts of degree, betweenness and information centrality.</li>
+                <li>Butts, C. T. (2010) <i>Package &lsquo;sna&rsquo;</i>.　The R package used to compute the centralities.</li>
+                <li>The <code>vif</code> function of the R package <code>car</code> (source p.53).</li>
+                <li>The <code>sensitivity</code> function of the R package <code>accuracy</code> (source p.53, footnote 15). At the time of writing it is noted as no longer developed and unobtainable from CRAN.</li>
+                <li>The function <code>All.possible.subset.selection</code> in Tamaki Yano's R script <code>papca.R</code> (source p.53, footnote 14). The comment at the head of the script reads &ldquo;originaly by S.Aoki / modified by T.Yano&rdquo;.</li>
+            </ul>
+        </div>
+        <div class="sub" style="margin-top:26px">
+            <h3>Provenance of the data</h3>
+            <ul class="refs">
+                <li>Accent: Nakai, Yukihiko (1998) "The accent of the eastern islands of Kagawa Prefecture", 61, 1–26, together with the survey of March 2012 (JSPS Grant-in-Aid, Kiban (A) 2324202, "A detailed account of change in dialect distribution", principal investigator Takuichiro Onishi; led by Professor Shinsuke Kishie, Japanese Linguistics Laboratory, Tokushima University). Source p.47, footnote 10.</li>
+                <li>Population and households: Statistics Bureau, Ministry of Internal Affairs and Communications, "2010 Population Census, small-area tabulation, Table 2: population by sex and number of households — by town, block and district", and "2000 Population Census (small area): total population by sex and total number of households". Source p.48.</li>
+                <li>Connections between settlements: Ministry of Land, Infrastructure, Transport and Tourism, "National Land Numerical Information: bus routes" (SHAPE format, world geodetic system, Kagawa Prefecture, 2011) and "National Land Numerical Information: scheduled passenger shipping routes" (2012). Source p.48.</li>
+                <li>Elevation: Geospatial Information Authority of Japan, MLIT, "Fundamental Geospatial Data" digital elevation model (JPGIS format, 5&nbsp;m mesh). Source p.48.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>Multiple regression treats the true coefficient \(\beta\) as a <b>fixed unknown constant</b>. It is the estimator \(\hat{\beta}\) that is the random quantity, and its fluctuation is evaluated as sampling variation: how far would the coefficient move if the sample were drawn again from the same settlements? The standard error \(\sqrt{\sigma^2 (X^{\top}X)^{-1}_{jj}}\), the \(t\) value and the \(p\) value are all statements about hit rates under that repetition. What VIF measures is likewise nothing other than the factor by which the coefficient scatters within that repetition. This coincides exactly with <b>Perspective 2 (frequentist)</b> of <a href="../">the seven perspectives in equations</a>.</p>
+        <p>The position that places a distribution on the coefficients instead and speaks in terms of priors and posteriors (<a href="../bayesian-estimation/">Bayesian estimation</a>), the position that handles nested structure as random effects (<a href="../mixed-model/">linear mixed models and AIC</a>), and the position that builds spatial dependence itself into the model (<a href="../icar/">ICAR spatial random effects</a>) apply a different yardstick to the very same data.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara used in her own research, written for readers in the same field. Every figure is quoted from the body text and end matter Appendix of the doctoral dissertation; no estimates or approximations have been supplied. Where values within the source do not agree, this has been stated.<br>
+    For how the methods sit relative to one another see <a href="../">the seven perspectives in equations</a>; for which course session falls under which perspective see <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-23 &nbsp;|&nbsp; <a href="../">← Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>

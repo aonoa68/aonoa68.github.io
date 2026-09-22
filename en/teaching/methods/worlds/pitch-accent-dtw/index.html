@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaker-normalized Pitch-Accent Distance — Ayaka Onohara | Teaching</title>
+    <meta name="description" content="Designing an acoustic distance that compares Japanese pitch accent across speakers: semitone and MAD normalization, DTW under a Sakoe-Chiba band, anchoring the axis outside the recorded corpus with virtual references, and evaluating by gradient preservation rather than classification accuracy.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-inner a, .nav-inner span { white-space: nowrap; }
+        .lang-switch { flex-shrink: 0; }
+        /* 英語のパンくずが5階層あり、右側の近道と言語切替が1100pxに収まらない。
+           近道は親ページから辿れるため、こちらでは言語切替を優先して隠す。 */
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#f6f9fc; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+
+        .sub p + p { margin-top:10px; }
+        .filelist { margin-top:14px; font-size:0.86em; color:var(--muted); line-height:1.9; }
+        .filelist code { font-size:0.92em; }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Pitch-Accent Distance</span>
+        <div class="nav-right">
+            <a href="../../../map/">Course map</a>
+            <a href="../../../guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/teaching/methods/worlds/pitch-accent-dtw/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 &nbsp;|&nbsp; <a href="../">Geometry (least squares)</a></span>
+        <h1>Pitch-Accent <span>Distance</span></h1>
+        <p class="lead">Two people reading the same sentence differ in pitch and in speaking rate. This is about designing a distance that removes those differences and <b>compares only the accent pattern</b>.<br>
+        Three things do the work: per-speaker normalization, an alignment that allows time to stretch and shrink (DTW), and <b>anchoring the ends of the axis outside the recorded data</b>. The account follows the measurements taken from 68 speakers in Kashiwabara, Maibara City, Shiga Prefecture.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">To place a speaker on the Tokyo&ndash;Kansai gradient as a coordinate, without relying on a listener's judgement.</p>
+        <p class="body">
+        Comparing Japanese pitch accent across speakers is harder than it looks. Two speakers of the same Tokyo type can differ entirely in absolute \(F_0\); a fast speaker and a slow one place the same pattern at different points along the time axis; phonation differs from person to person. <b>Measure a distance without removing these, and what is measured is the speaker, not the pattern.</b>
+        </p>
+        <p class="body">
+        What this study builds is not a classifier but an <b>instrument</b>. The aim is to place a speaker on the gradient of accent varieties documented in the literature, stably and interpretably. That the goal is instrument design also shapes how it is evaluated (section 6).
+        </p>
+        <p class="body">
+        The speakers are from Kashiwabara in Maibara City. In dialectological description, Kashiwabara lies in the <b>Tarui-type zone, intermediate between the Kansai and Tokyo types</b>. In other words, a prediction of where these speakers should fall is supplied from outside, by prior dialectological description, independently of the data collected here. Being able to use that external prediction as the evaluation criterion is the reason for choosing this location.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Removing the speaker</h2>
+        <p class="q">Normalization removes differences, but removing too much also removes what is to be compared.</p>
+        <p class="body">
+        An \(F_0\) track is extracted from the audio and normalized in two stages.
+        </p>
+        <div class="eq">
+            <div class="lbl">(i) Semitone transform</div>
+            \[ s(t) \;=\; 12 \log_2 \frac{F_0(t)}{\mathrm{median}\,F_0} \]
+            <p class="read">Rather than hertz, this takes the logarithm of <b>the ratio to the speaker's own median</b>. High-pitched and low-pitched speakers alike are placed on the same scale of "how far above my own centre". The factor 12 makes the unit a semitone, so that an octave &mdash; a factor of two &mdash; comes out as exactly 12.<br>
+            Taking the logarithm of a ratio is not an arbitrary choice. <b>Perceived pitch is governed by frequency ratios</b>, so the quantity that behaves additively is the logarithm, not the hertz value.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">(ii) MAD-based z-scoring</div>
+            \[ z(t) \;=\; \frac{s(t) - \mathrm{median}(s)}{\mathrm{MAD}(s)}, \qquad \mathrm{MAD}(s) = \mathrm{median}\bigl(\,|s - \mathrm{median}(s)|\,\bigr) \]
+            <p class="read">The track is then divided by a measure of spread. <b>MAD (median absolute deviation)</b> is used here rather than the standard deviation. \(F_0\) estimation can fail by whole octaves rather than semitones, and a single such outlier inflates a standard deviation considerably. MAD is median-based and is not dragged by a few extreme values.</p>
+        </div>
+        <p class="body">
+        These two steps align <b>pitch height (location) and pitch range (scale)</b> across speakers. What remains is only the shape &mdash; where the rise occurs and where the fall &mdash; and it is this that carries the accent pattern.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>Preprocessing</th><th>Setting</th></tr></thead>
+            <tbody>
+                <tr><td>Voice activity detection (VAD)</td><td><code>top_db = 25</code>, minimum segment 120 ms</td></tr>
+                <tr><td>\(F_0\) estimation</td><td>YIN (pYIN as fallback), \(f_{\min}=50\,\mathrm{Hz}\), \(f_{\max}=700\,\mathrm{Hz}\)</td></tr>
+                <tr><td>Smoothing</td><td>Savitzky&ndash;Golay filter (window 11, order 3)</td></tr>
+                <tr><td>Recording</td><td>16 kHz / 16 bit, indoors</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="warn">
+            <h3>Normalization is a design decision about what to discard</h3>
+            <p>Subtracting the median and dividing by MAD amounts to deciding that <b>a speaker's average pitch height and pitch range carry no information</b>. That is defensible for comparing patterns, but if, say, Kansai-type speakers were characteristically wider in range, that fact has been discarded at this point. What was kept and what was thrown away continues to bear on how the later results should be read.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Aligning while allowing time to stretch</h2>
+        <p class="q">Matching a fast speaker's frames against a slow speaker's, one by one, means nothing.</p>
+        <p class="body">
+        Two sequences \(a = (a_1,\dots,a_n)\) and \(b = (b_1,\dots,b_m)\) are to be compared without being made equal in length. DTW (dynamic time warping) considers <b>every way of putting the points into correspondence</b> and selects the alignment whose total cost is smallest.
+        </p>
+        <div class="eq">
+            <div class="lbl">The dynamic-programming recursion</div>
+            \[ D(i,j) \;=\; \min \begin{cases} D(i-1,\,j) + c_{\mathrm{del}} \\[2pt] D(i,\,j-1) + c_{\mathrm{ins}} \\[2pt] D(i-1,\,j-1) + c_{\mathrm{sub}}\,\bigl|a_i - b_j\bigr| \end{cases} \]
+            <p class="read">\(D(i,j)\) is the minimum cost of having aligned the first \(i\) elements of \(a\) with the first \(j\) of \(b\). Moving <b>diagonally</b> means "align these two"; moving <b>down or across</b> means advancing one side alone, which is what stretching time amounts to. The initial condition is \(D(0,0)=0\), with the remaining boundary set to \(\infty\).<br>
+            The implementation uses \(c_{\mathrm{sub}} = 1.0\) and \(c_{\mathrm{ins}} = c_{\mathrm{del}} = 1.1\). <b>A small penalty is placed on stretching</b>, which discourages forcing a match by warping without limit.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Normalizing by path length</div>
+            \[ \mathrm{dtw}(a,b) \;=\; \frac{D(n,m)}{n+m} \]
+            <p class="read">Used raw, the total cost grows with the length of the utterance. Dividing by \(n+m\) gives an <b>average cost per step</b>, which makes utterances of different lengths comparable.</p>
+        </div>
+        <div class="sub">
+            <h3>The Sakoe&ndash;Chiba band: how far apart may points be aligned</h3>
+            <p>If alignment is left entirely free, points far apart in time end up joined and the judgement of similarity breaks down. An upper bound is therefore placed on \(|i-j|\). Here the band width is <b>0.15 times</b> the sequence length (<code>band_ratio = 0.15</code>). The cost also drops from \(O(nm)\) to \(O(n \cdot \text{band})\).</p>
+            <p>As section 7 shows, this band width turns out to be <b>the parameter that moves the results most</b>.</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Combining static height with its rate of change</div>
+            \[ D \;=\; \alpha \cdot \mathrm{dtw}(z) \;+\; (1-\alpha)\cdot \mathrm{dtw}(\Delta z), \qquad \alpha = 0.7 \]
+            <p class="read">DTW is computed not only on \(z(t)\) itself (where the pitch is) but also on its difference \(\Delta z(t)\) (whether it is rising or falling), and the two are combined with weights. <b>An accent pattern is determined less by height than by the location of the fall</b>, so change is entered as a separate term.<br>
+            The difference is computed by central differences, skipping unvoiced stretches where \(F_0\) is unavailable. If either \(\mathrm{dtw}(z)\) or \(\mathrm{dtw}(\Delta z)\) cannot be computed, the weights are renormalized over whichever term remains.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Anchoring the ends of the axis outside the data</h2>
+        <p class="q">When one says "closer to Tokyo", where exactly is Tokyo?</p>
+        <p class="body">
+        This is the most consequential design decision in the study. A distance matrix computed among the speakers alone yields an axis that expresses only <b>relative position within the 68 people recorded</b>. Record elsewhere and the axis means something else; results cannot be compared across studies.
+        </p>
+        <p class="body">
+        Four reference points &mdash; Tokyo, Kansai, Tarui and Kagoshima types &mdash; are therefore <b>synthesized from phonological descriptions rather than from recordings</b>. The L / H / R symbol strings found in the descriptions of Uwano (1999), Kibe (2010) and others are converted into numerical contours that serve as virtual reference utterances.
+        </p>
+        <div class="eq">
+            <div class="lbl">From symbols to contours</div>
+            \[ \mathrm{L} \mapsto -1.0, \qquad \mathrm{H} \mapsto +1.0, \qquad \mathrm{R} \mapsto +0.5 \]
+            <p class="read">Declination &mdash; the tendency of the whole contour to drift downward as an utterance proceeds &mdash; is added with a slope between \(-0.05\) and \(-0.10\), and the result is smoothed with the same Savitzky&ndash;Golay filter (window 11, order 3) used on the real audio. Passing the references through the same smoothing as the speakers ensures that <b>the same processing is applied to both sequences being compared</b>.</p>
+        </div>
+        <p class="body">
+        Each speaker is thereby represented as a vector of distances to four reference points. <b>Because the ends of the axis are defined by external descriptions, the coordinates do not close over this dataset.</b> Without this design, the evaluation in the next section could not be carried out at all.
+        </p>
+        <div class="warn">
+            <h3>The virtual references are idealized types, not real speakers</h3>
+            <p>A contour synthesized from a symbol string is a phonological description rendered numerically. It is not an utterance by an actual speaker of the Tokyo dialect. What is being measured is therefore distance from a <b>described</b> type, not distance from a real Tokyo speaker. Assigning \(-1.0\) / \(+1.0\) / \(+0.5\) to L / H / R is itself a design decision, and whether placing R at \(+0.5\) rather than midway between H and L is appropriate cannot be tested from inside this framework.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>What it was compared against</h2>
+        <p class="body">
+        Presenting the proposed method alone would say nothing about whether it is any good. Three families of baselines are used.
+        </p>
+        <ol class="steps">
+            <li><b>Mean \(F_0\)</b> &mdash; the speaker's average pitch and nothing else. The crudest baseline, carrying no temporal information at all.</li>
+            <li><b>Histogram EMD</b> &mdash; the Earth Mover's Distance between distributions of \(z\) (30 bins over \([-3, 3]\)). It sees <b>how long the speaker spent at each height</b> but not the order in which.</li>
+            <li><b>wav2vec 2.0 (XLSR-53)</b> &mdash; a self-supervised speech representation, in three configurations: <b>3a</b> mean pooling of the final layer (L24) with cosine distance; <b>3b</b> frame-level DTW on the final layer; <b>3c</b> frame-level DTW on an intermediate layer (L9). The intermediate layer in 3c follows prior findings that prosodic information is better preserved there (Pasad et al. 2021, among others).</li>
+        </ol>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Evaluating by gradient preservation, not by accuracy</h2>
+        <p class="q">With no ground-truth labels, how is an instrument judged?</p>
+        <p class="body">
+        No speaker carries a label saying "this person is Tarui type". Any attempt to assign one would come down to somebody's auditory judgement, which returns the problem to subjectivity. The study therefore uses a criterion that <b>is not classification accuracy</b>.
+        </p>
+        <p class="body">
+        Kashiwabara is described dialectologically as lying in the zone intermediate between the Kansai and Tokyo types. A good instrument should therefore <b>place the 68 speakers in the intermediate region of the Kansai&ndash;Tokyo axis</b>. Three indicators describe how they are placed.
+        </p>
+        <div class="eq">
+            <div class="lbl">The three indicators</div>
+            \[ \text{Inter.\%} = \text{proportion placed in the intermediate region}, \qquad r = \overline{\left(\frac{d_T}{d_K}\right)}, \qquad s = \overline{\left(\frac{d_K - d_T}{d_K + d_T}\right)} \]
+            <p class="read">\(d_T\) is the distance to the Tokyo reference and \(d_K\) to the Kansai reference. <b>\(r\)</b> is a balance ratio: the closer to 1, the more symmetric the axis is with respect to its two poles. <b>\(s\)</b> is a symmetry index: the closer to 0, the less the placement leans toward either pole. Without \(r \approx 1\) and \(s \approx 0\), a high Inter.% means only that the axis has collapsed to one side.</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>Method</th><th class="num">Inter.%</th><th class="num">\(r\)</th><th class="num">\(s\)</th><th>Reading</th></tr></thead>
+            <tbody>
+                <tr><td>Mean \(F_0\)</td><td class="num">1.5%</td><td class="num">1.42</td><td class="num">&minus;0.05</td><td>Gradient collapses</td></tr>
+                <tr><td>Histogram EMD</td><td class="num">85.3%</td><td class="num">0.83</td><td class="num">+0.12</td><td>Gradient over-flattened</td></tr>
+                <tr><td>wav2vec 2.0 (3a: mean pool, L24)</td><td class="num">0%</td><td class="num">4.46</td><td class="num">&minus;0.61</td><td>Collapses to a pole</td></tr>
+                <tr><td>wav2vec 2.0 (3b: DTW, L24)</td><td class="num">0%</td><td class="num">1.55</td><td class="num">&minus;0.21</td><td>Collapses to a pole</td></tr>
+                <tr><td>wav2vec 2.0 (3c: DTW, L9)</td><td class="num">22.1%</td><td class="num">0.99</td><td class="num">+0.01</td><td>Off-axis</td></tr>
+                <tr><td><b>DTW (proposed)</b></td><td class="num"><b>57.4%</b></td><td class="num"><b>1.01</b></td><td class="num"><b>&minus;0.01</b></td><td><b>Gradient preserved</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Converted to counts out of 68 speakers: 1.5% = 1, 22.1% = 15, 57.4% = 39, 85.3% = 58.</p>
+        <div class="sub">
+            <h3>No single number ranks these methods</h3>
+            <p>On Inter.% alone, histogram EMD's 85.3% beats the proposed method's 57.4%. It is nonetheless judged over-flattened, because \(r = 0.83\) and \(s = +0.12\) show the axis leaning to one side. <b>An instrument that places almost everyone in the middle has lost the ability to distinguish intermediate from non-intermediate.</b> The claim takes the form that only the proposed method satisfies all three indicators at once.</p>
+            <p>That is a defensible evaluation design, but it also means <b>a judgement about how to weigh the indicators has entered the conclusion</b>. The ranking does not fall out mechanically from a single score.</p>
+        </div>
+        <div class="sub">
+            <h3>The gap to wav2vec 3c is not a gap in accuracy</h3>
+            <p>Configuration 3c matches the proposed method on symmetry (\(r = 0.99\), \(s = +0.01\)) but reaches only 22.1% on Inter.%. The repository reads this as <b>measuring a different axis</b>: the self-supervised instrument does have an internal axis, but it is skewed relative to the linguistically defined Kansai&ndash;Tokyo gradient. This is a distinction from a difference in accuracy along a shared axis.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>What happens when the parameters move</h2>
+        <p class="q">Agreement of the auxiliary hard-label diagnostic as band and &alpha; are swept.</p>
+        <p class="body">
+        The primary output is the continuous four-pole distance vector, but a two-stage hard-label classifier is run alongside it as a diagnostic (stage 1: Tokyo / Kagoshima / Kansai block; stage 2: Kansai block &rarr; Kansai / Tarui). Its agreement rate across Sakoe&ndash;Chiba band widths and values of \(\alpha\) is as follows.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th class="num">band</th><th class="num">&alpha;</th><th class="num">Agreement</th><th class="num">Withheld</th><th class="num">Withheld %</th></tr></thead>
+            <tbody>
+                <tr><td class="num">0.12</td><td class="num">0.5</td><td class="num">77.9%</td><td class="num">30</td><td class="num">44.1%</td></tr>
+                <tr><td class="num">0.12</td><td class="num">0.7</td><td class="num">75.0%</td><td class="num">28</td><td class="num">41.2%</td></tr>
+                <tr><td class="num">0.12</td><td class="num">0.9</td><td class="num">72.1%</td><td class="num">26</td><td class="num">38.2%</td></tr>
+                <tr><td class="num">0.15</td><td class="num">0.5</td><td class="num">98.5%</td><td class="num">14</td><td class="num">20.6%</td></tr>
+                <tr><td class="num"><b>0.15</b></td><td class="num"><b>0.7</b></td><td class="num"><b>100.0%</b></td><td class="num">15</td><td class="num">22.1%</td></tr>
+                <tr><td class="num">0.15</td><td class="num">0.9</td><td class="num">97.1%</td><td class="num">15</td><td class="num">22.1%</td></tr>
+                <tr><td class="num">0.2</td><td class="num">0.5</td><td class="num">64.7%</td><td class="num">10</td><td class="num">14.7%</td></tr>
+                <tr><td class="num">0.2</td><td class="num">0.7</td><td class="num">61.8%</td><td class="num">10</td><td class="num">14.7%</td></tr>
+                <tr><td class="num">0.2</td><td class="num">0.9</td><td class="num">52.9%</td><td class="num">11</td><td class="num">16.2%</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Agreement is measured against the adopted setting (band = 0.15, &alpha; = 0.7), which is why that row reads 100% by definition. "Withheld" counts the speakers caught by the ambiguity thresholds (\(m_{\mathrm{abs}} < 0.011\), \(m_{\mathrm{rel}} < 0.035\)).</p>
+        <div class="warn">
+            <h3>This table needs reading with care</h3>
+            <p>An agreement of 100% says only that <b>the adopted setting agrees with itself</b>; it is not an accuracy. What the table shows is <b>the size of the sensitivity</b> &mdash; that moving the band to 0.12 or 0.2 shifts the assignments substantially &mdash; not that 0.15 is correct.</p>
+            <p>The striking feature is rather that widening the band to 0.2 cuts the withheld cases to 10 while agreement falls to 52.9%. <b>It hesitates less but answers differently</b> &mdash; the behaviour one expects when free alignment produces forced matches and, with them, unwarranted confidence. Whether the choice of band = 0.15 rests on grounds outside the Inter.% of section 6 cannot be determined from the repository's materials.</p>
+        </div>
+        <div class="sub">
+            <h3>A check by unsupervised clustering</h3>
+            <p>Ward clustering on the 68&times;68 distance matrix (FastDTW) gives silhouette coefficients of 0.660 at \(k=2\), 0.466 at \(k=3\), 0.357 at \(k=4\), 0.343 at \(k=5\) and 0.331 at \(k=6\). <b>The value falls monotonically with \(k\), with no clear elbow or trough.</b> This is no evidence that the Kashiwabara speakers fall into discrete types; it is consistent instead with the study's treatment of them as a continuous gradient.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Computational cost</h2>
+        <p class="body">
+        To be usable as an instrument, the method has to run in a realistic amount of time. Measured times per pair are as follows.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead><tr><th>Method</th><th class="num">Time (ms)</th><th class="num">Relative</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>Mean \(F_0\)</td><td class="num">0.04</td><td class="num">1&times;</td><td>No temporal information</td></tr>
+                <tr><td>Histogram EMD</td><td class="num">0.20</td><td class="num">5&times;</td><td>Distribution only</td></tr>
+                <tr><td>DTW (static \(z\) only)</td><td class="num">0.26</td><td class="num">7&times;</td><td>Sakoe&ndash;Chiba band</td></tr>
+                <tr><td>DTW (proposed, full)</td><td class="num">0.99</td><td class="num">25&times;</td><td>\(z(t)\) + \(\Delta z(t)\), \(\alpha=0.7\)</td></tr>
+                <tr><td>wav2vec 2.0</td><td class="num">approx. 450</td><td class="num">approx. 11000&times;</td><td>GPU recommended</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">With Numba JIT acceleration, the full set of 68 speakers &times; 25 phrases &times; 4 references completes in under 30 seconds. Requiring no GPU matters for something meant to be used as a working tool.</p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Limits</h2>
+        <div class="warn">
+            <h3>The evaluation criterion is a dialectological prediction</h3>
+            <p>Inter.% takes the prior description of Kashiwabara as an intermediate zone to be correct and measures how many speakers are placed there. <b>If the description is wrong, so is the evaluation.</b> The criterion also carries a direction &mdash; more in the middle is better &mdash; so if some speakers genuinely are not intermediate, it cannot detect them. There is still no ground truth for any individual speaker.</p>
+        </div>
+        <div class="warn">
+            <h3>One location, 68 speakers</h3>
+            <p>Only Kashiwabara is covered; no validation at other locations is included. Anchoring the poles in external descriptions should in principle transfer, but <b>whether the same properties hold when it is transferred has not been checked</b>. The indicator values are computed on a sample of 68, and no credible intervals are given.</p>
+        </div>
+        <div class="warn">
+            <h3>Parameters were chosen on the same data the performance is measured on</h3>
+            <p>The band width of 0.15, \(\alpha = 0.7\) and the ambiguity thresholds were settled while looking at these 68 speakers, and the indicators of section 6 are computed on the same 68. <b>The data used to choose the settings is not separated from the data used to measure performance</b>, so the reported figures may be optimistic as estimates of performance on independent data.</p>
+        </div>
+        <div class="warn">
+            <h3>DTW alignment knows nothing of linguistic units</h3>
+            <p>The recursion operates on a sequence of frames, not on morae or syllables. Warping is decided purely by cost, with no constraint saying "align these because they are the same mora". <b>Alignments that are linguistically impossible can therefore come out as minimum-cost.</b> The band constraint mitigates this but does not remove it.</p>
+        </div>
+        <div class="warn">
+            <h3>The audio is not public</h3>
+            <p>The recordings are withheld for privacy reasons. The per-speaker de-identified metadata is likewise excluded from the public repository, because the combination of hometown and school-name fields exceeds the aggregate-distribution scope of the ethics consent; it is available under restricted access on reasonable request. <b>The code and the symbolic pattern table are public, but a third party cannot at present fully reproduce the main results of this study</b> &mdash; only aggregate-level consistency checks are possible.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">10</span>Sources and code</h2>
+        <p class="body">
+        The code is released under the MIT licence, structured so that normalization, DTW, synthesis of the virtual references, the baselines, the sensitivity sweep and the figures all run as one pipeline. The manuscript is under review.
+        </p>
+        <ul class="refs">
+            <li>Onohara, A. &ldquo;Speaker-normalized Acoustic Distance for Japanese Pitch Accent: Design Principles and Evaluation&rdquo;. <a href="https://github.com/aonoa68/pitch-accent-dtw2025" target="_blank" rel="noopener noreferrer">github.com/aonoa68/pitch-accent-dtw2025</a> (v1.0.0, 2026-07-08). Licence: MIT</li>
+            <li>ORCID: <a href="https://orcid.org/0009-0004-3082-3267" target="_blank" rel="noopener noreferrer">0009-0004-3082-3267</a></li>
+            <li>The symbolic accent patterns (L/H/R) are public as <code>data/accent_types_20251027.xlsx</code>. The audio is not.</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>Structure of the implementation</h3>
+            <div class="filelist">
+                <code>src/extractor.py</code> &mdash; \(F_0\) extraction and normalization (VAD, YIN, semitone, MAD-z, smoothing)<br>
+                <code>src/dtw_distance.py</code> &mdash; DTW under the Sakoe&ndash;Chiba constraint, in a Numba version and a pure-Python one<br>
+                <code>src/virtual_reference.py</code> &mdash; synthesis of virtual reference contours from symbolic descriptions (L/H/R)<br>
+                <code>src/baselines.py</code> &mdash; mean \(F_0\), histogram EMD<br>
+                <code>src/wav2vec_enhanced.py</code> &mdash; wav2vec 2.0 variants 3a / 3b / 3c and the layer sweep<br>
+                <code>src/classifier.py</code> &mdash; the two-stage hard-label assignment (diagnostic)<br>
+                <code>src/unsupervised.py</code> &mdash; the 68&times;68 distance matrix, MDS, Ward clustering<br>
+                <code>sensitivity_sweep.py</code> &mdash; the sweep over band width and \(\alpha\)<br>
+                <code>benchmark_timing.py</code> &mdash; the timing measurements
+            </div>
+        </div>
+        <div class="sub" style="margin-top:22px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Sakoe, H. &amp; Chiba, S. (1978) Dynamic programming algorithm optimization for spoken word recognition. <i>IEEE Transactions on Acoustics, Speech, and Signal Processing</i>, 26(1), 43&ndash;49.</li>
+                <li>de Cheveign&eacute;, A. &amp; Kawahara, H. (2002) YIN, a fundamental frequency estimator for speech and music. <i>Journal of the Acoustical Society of America</i>, 111(4), 1917&ndash;1930.</li>
+                <li>Conneau, A. et al. (2021) Unsupervised cross-lingual representation learning for speech recognition (XLSR-53). <i>Interspeech 2021</i>.</li>
+                <li>Pasad, A., Chou, J.-C., &amp; Livescu, K. (2021) Layer-wise analysis of a self-supervised speech representation model. <i>ASRU 2021</i>.</li>
+                <li>Phonological descriptions of the accent varieties: Uwano (1999), Kibe (2010), among others.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective this method belongs to</h3>
+        <p>What DTW minimizes is not a sum of squares but <b>a total cost over an alignment</b>. In that sense it is not least squares. It sits under Perspective 1 nonetheless, because it shares the stance of <b>fixing a distance first and minimizing under it</b> &mdash; and because everything downstream lands squarely in the least-squares world. The MDS that projects the 68&times;68 matrix onto a plane, and the Ward clustering, both minimize sums of squares. It occupies the distance-building end of <b>Perspective 1 (geometry)</b> in <a href="../">Seven Perspectives in Equations</a>.</p>
+        <p style="margin-top:10px">As an exercise in building a distance, it pairs with <a href="../gower-distance/">Gower's distance</a> (a distance from nominal-scale data) and <a href="../ncd/">normalized compression distance</a> (a distance from compressibility). The objects differ &mdash; an acoustic time series, symbol agreement, a byte string &mdash; but the idea of <b>designing the distance itself to fit what is to be compared</b> is the same.</p>
+    </div>
+
+    <p class="note">
+    This page sets out, for readers in the same field, a method Onohara uses in actual research. Every figure is quoted from the published repository's output files and README; no estimated or approximate values are given. The manuscript is under review, so the conclusions should be read as provisional.<br>
+    The whole picture of where each method sits is in <a href="../">Seven Perspectives in Equations</a>, and which teaching session falls under which perspective is in <a href="../../">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-09-23 &nbsp;|&nbsp; <a href="../">← Back to Seven Perspectives in Equations</a></p>
+</footer>
+
+</body>
+</html>
