@@ -2,405 +2,215 @@
 
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publications — Ayaka Onohara | Spatial Cultural Dynamics</title>
-    <meta name="description" content="Full list of publications (25 items) by Ayaka Onohara. Organized into four categories: A Core, B Core-adjacent, C Peripheral, and D Education &amp; Outreach, with DOI, Zenodo, and GitHub links.">
-    <link rel="alternate" hreflang="ja" href="https://aonoa68.github.io/publications/">
-    <link rel="alternate" hreflang="en" href="https://aonoa68.github.io/en/publications/">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Publications — Ayaka Onohara | Spatial Cultural Dynamics</title>
+<meta content="Full list of publications (25 items) by Ayaka Onohara. Organized into four categories: A Core, B Core-adjacent, C Peripheral, and D Education &amp; Outreach, with DOI, Zenodo, and GitHub links." name="description"/>
+<link href="https://aonoa68.github.io/publications/" hreflang="ja" rel="alternate"/>
+<link href="https://aonoa68.github.io/en/publications/" hreflang="en" rel="alternate"/>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<style>
-    :root {
-        --navy:#1a2535;--navy2:#2c3e50;--gold:#c9a84c;--gold-lt:#f0d98a;
-        --col-a:#1e5c1e;--col-a-bg:#e8f5e8;--col-a-bd:#a8d5a2;
-        --col-b:#1c3fa0;--col-b-bg:#eef0ff;--col-b-bd:#a8b8f0;
-        --col-d:#7a4500;--col-d-bg:#fff4e0;--col-d-bd:#f0cc88;
-        --col-c:#5b3f8c;--col-c-bg:#f3effa;--col-c-bd:#cdbbe8;
-        --text:#2c3e50;--muted:#5a6c7d;--bg:#f7f8fa;--white:#ffffff;--radius:12px;
-    }
-    * { margin:0;padding:0;box-sizing:border-box; }
-    body { font-family:'DM Sans',"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.7; }
 
-    .site-nav { position:sticky;top:0;z-index:100;background:rgba(26,37,53,0.97);backdrop-filter:blur(12px);border-bottom:2px solid var(--gold);height:56px;display:flex;align-items:center; }
-    .nav-inner { max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:24px;width:100%; }
-    .nav-logo { color:var(--gold);text-decoration:none;font-weight:600;font-size:0.95em;white-space:nowrap;font-family:'DM Serif Display',serif; }
-    .nav-sep { color:rgba(255,255,255,0.3); }
-    .nav-current { color:rgba(255,255,255,0.85);font-size:0.9em; }
-    .nav-links-right { margin-left:auto;display:flex;gap:4px; }
-    .nav-links-right a { color:rgba(255,255,255,0.7);text-decoration:none;font-size:0.85em;padding:6px 14px;border-radius:20px;transition:all 0.2s; }
-    .nav-links-right a:hover { background:rgba(255,215,0,0.15);color:var(--gold); }
-    .lang-switch { display:flex;align-items:center;gap:4px;flex-shrink:0; }
-    .lang-btn { padding:4px 10px;border-radius:12px;font-size:0.78em;font-weight:700;text-decoration:none;border:1.5px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.6);transition:all 0.2s; }
-    .lang-btn:hover { border-color:var(--gold);color:var(--gold); }
-    .lang-btn.active { background:var(--gold);border-color:var(--gold);color:#1a2535; }
-
-    .page-header { background:linear-gradient(135deg,var(--navy) 0%,#243447 60%,#1a3040 100%);color:white;padding:64px 0 56px;position:relative;overflow:hidden; }
-    .page-header::before { content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(201,168,76,0.03) 40px,rgba(201,168,76,0.03) 41px); }
-    .page-header-inner { max-width:1200px;margin:0 auto;padding:0 32px;position:relative;z-index:1; }
-    .page-header h1 { font-family:'DM Serif Display',serif;font-size:2.8em;font-weight:400;margin-bottom:10px;line-height:1.2; }
-    .page-header h1 span { color:var(--gold);font-style:italic; }
-    .page-header .lead { color:rgba(255,255,255,0.75);font-size:1em;max-width:600px;line-height:1.8; }
-
-    .stats-bar { background:var(--white);border-bottom:1px solid rgba(0,0,0,0.08);padding:18px 0; }
-    .stats-inner { max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;flex-wrap:wrap; }
-    .stat-item { display:flex;flex-direction:column;align-items:center;padding:0 28px;border-right:1px solid rgba(0,0,0,0.1);min-width:90px; }
-    .stat-item:last-child { border-right:none; }
-    .stat-num { font-size:2em;font-weight:700;font-family:'DM Serif Display',serif;line-height:1;color:var(--navy2); }
-    .stat-label { font-size:0.75em;color:var(--muted);margin-top:4px;text-align:center; }
-
-    .filter-bar { background:var(--white);border-bottom:1px solid rgba(0,0,0,0.07);padding:20px 0;position:sticky;top:56px;z-index:90;box-shadow:0 2px 12px rgba(0,0,0,0.06); }
-    .filter-inner { max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap; }
-    .filter-tabs { display:flex;gap:6px;flex-wrap:wrap; }
-    .filter-tab { padding:8px 18px;border-radius:20px;border:1.5px solid rgba(0,0,0,0.12);background:transparent;color:var(--muted);font-size:0.88em;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:inherit; }
-    .filter-tab:hover { border-color:var(--navy2);color:var(--navy2); }
-    .filter-tab.active { background:var(--navy2);border-color:var(--navy2);color:white; }
-    .filter-tab.tab-a.active { background:var(--col-a);border-color:var(--col-a); }
-    .filter-tab.tab-b.active { background:var(--col-b);border-color:var(--col-b); }
-    .filter-tab.tab-c.active { background:var(--col-c);border-color:var(--col-c); }
-    .filter-tab.tab-d.active { background:var(--col-d);border-color:var(--col-d); }
-    .filter-search { margin-left:auto;position:relative;min-width:220px; }
-    .filter-search input { width:100%;padding:8px 16px 8px 36px;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;font-size:0.88em;font-family:inherit;color:var(--text);outline:none;background:var(--bg);transition:border-color 0.2s; }
-    .filter-search input:focus { border-color:var(--navy2);background:white; }
-    .filter-search .search-icon { position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.85em; }
-    .year-select { padding:8px 16px;border:1.5px solid rgba(0,0,0,0.12);border-radius:20px;font-size:0.88em;font-family:inherit;color:var(--text);background:var(--bg);cursor:pointer;outline:none; }
-    .result-bar { max-width:1200px;margin:0 auto;padding:16px 32px 0;font-size:0.88em;color:var(--muted); }
-    .main-content { max-width:1200px;margin:0 auto;padding:28px 32px 80px; }
-
-    .section-label { display:flex;align-items:center;gap:12px;margin:36px 0 20px;font-size:0.8em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted); }
-    .section-label::after { content:'';flex:1;height:1px;background:rgba(0,0,0,0.1); }
-
-    .pub-card { background:var(--white);border:1px solid rgba(0,0,0,0.07);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px;position:relative;transition:all 0.25s ease;border-left:4px solid transparent; }
-    .pub-card[data-cat="A"] { border-left-color:var(--col-a); }
-    .pub-card[data-cat="B"] { border-left-color:var(--col-b); }
-    .pub-card[data-cat="D"] { border-left-color:var(--col-d); }
-    .pub-card:hover { transform:translateX(4px);box-shadow:0 6px 24px rgba(0,0,0,0.09); }
-    .pub-card.selected-pub { background:linear-gradient(135deg,#fffef7 0%,#fffdf2 100%); }
-    .pub-card.hidden { display:none; }
-    .pub-top { display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;flex-wrap:wrap; }
-    .pub-year { font-size:0.78em;font-weight:700;color:var(--muted);min-width:36px;padding-top:4px; }
-    .badge { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:10px;font-size:0.74em;font-weight:700;white-space:nowrap;flex-shrink:0; }
-    .badge-a { background:var(--col-a-bg);color:var(--col-a);border:1px solid var(--col-a-bd); }
-    .badge-b { background:var(--col-b-bg);color:var(--col-b);border:1px solid var(--col-b-bd); }
-    .badge-c { background:var(--col-c-bg);color:var(--col-c);border:1px solid var(--col-c-bd); }
-    .badge-d { background:var(--col-d-bg);color:var(--col-d);border:1px solid var(--col-d-bd); }
-    .badge-peer { background:#e8f4fd;color:#1a6fa8;border:1px solid #a8d0f0; }
-    .badge-nonpeer { background:#f5f5f5;color:#777;border:1px solid #ddd; }
-    .badge-lead { background:#fff0e0;color:#c06000;border:1px solid #f0c080; }
-    .badge-coauth { background:#f0f0f0;color:#555;border:1px solid #d0d0d0; }
-    .badge-invited { background:#f3effa;color:#5b3f8c;border:1px solid #cdbbe8; }
-    .badge-selected { background:linear-gradient(135deg,var(--gold) 0%,#e0b030 100%);color:#3a2800;border:none; }
-    .badge-thesis { background:#f0e8ff;color:#5a1a9a;border:1px solid #c8a0e8; }
-    .pub-title { font-size:1.02em;font-weight:600;color:var(--navy2);line-height:1.5;margin-bottom:6px;font-family:'DM Serif Display',serif;font-style:italic; }
-    .pub-authors { font-size:0.88em;color:var(--muted);margin-bottom:6px; }
-    .pub-authors u, .pub-authors strong { color:var(--navy2); }
-    .pub-venue { font-size:0.88em;color:var(--text);margin-bottom:12px; }
-    .pub-venue em { font-style:italic;font-weight:500; }
-    .pub-meta { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px; }
-    .pub-links { display:flex;flex-wrap:wrap;gap:10px;margin-top:4px; }
-    .pub-link-btn { display:inline-flex;align-items:center;gap:6px;font-size:0.82em;font-weight:500;text-decoration:none;padding:5px 14px;border-radius:8px;transition:all 0.2s; }
-    .btn-doi { background:#e8f4fd;color:#1a6fa8;border:1px solid #a8d0f0; }
-    .btn-doi:hover { background:#1a6fa8;color:white; }
-    .btn-zenodo { background:#e8f0ff;color:#2a4fa8;border:1px solid #a8bef0; }
-    .btn-zenodo:hover { background:#2a4fa8;color:white; }
-    .btn-researchmap { background:#f0faf0;color:#1a6a1a;border:1px solid #90cc90; }
-    .btn-researchmap:hover { background:#1a6a1a;color:white; }
-    .no-results { text-align:center;padding:60px 20px;color:var(--muted);font-size:1.1em;display:none; }
-    .no-results.visible { display:block; }
-    .page-footer { background:var(--navy2);color:rgba(255,255,255,0.7);text-align:center;padding:32px 0;font-size:0.88em; }
-    .page-footer a { color:var(--gold);text-decoration:none; }
-    @media(max-width:700px) { .page-header h1{font-size:2em;} .main-content{padding:20px 16px 60px;} .filter-inner,.nav-inner{padding:0 16px;} .filter-search{min-width:100%;} .nav-links-right{display:none;} }
-    @media(prefers-reduced-motion:reduce) { .pub-card{transition:none;} }
-
-        /* category definitions (A/B/C/D, 2026-09-14) */
-        .cat-defs{max-width:1100px;margin:20px auto 4px;padding:0 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;box-sizing:border-box;}
-        .cat-def{border-radius:10px;padding:10px 14px;font-size:.82em;line-height:1.6;border:1px solid;color:#2c3e50;}
-        .cat-def b{display:block;font-size:1.02em;margin-bottom:2px;}
-        .cat-def.def-a{background:#e8f5e8;border-color:#a8d5a2;} .cat-def.def-a b{color:#1e5c1e;}
-        .cat-def.def-b{background:#eef0ff;border-color:#a8b8f0;} .cat-def.def-b b{color:#1c3fa0;}
-        .cat-def.def-c{background:#f3effa;border-color:#cdbbe8;} .cat-def.def-c b{color:#5b3f8c;}
-        .cat-def.def-d{background:#fff4e0;border-color:#f0cc88;} .cat-def.def-d b{color:#7a4500;}
-        @media(max-width:860px){.cat-defs{grid-template-columns:1fr 1fr;padding:0 16px;}}
-        @media(max-width:480px){.cat-defs{grid-template-columns:1fr;}}
-</style>
-
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
-    <script>
+<!-- Google tag (gtag.js) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+<script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-7Z7WMV3QS4');
     </script>
-</head>
-<body>
-
+<link href="/home.css" rel="stylesheet"/><link href="/publications/publications.css" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&amp;family=DM+Serif+Display:ital@0;1&amp;display=swap" rel="stylesheet"/></head>
+<body class="publications-page"><a class="skip-link" href="#publication-index">Skip to publications</a>
 <nav class="site-nav">
-    <div class="nav-inner">
-        <a href="../" class="nav-logo">Ayaka Onohara</a>
-        <span class="nav-sep">/</span>
-        <span class="nav-current">Publications</span>
-        <div class="lang-switch">
-            <a href="/publications/" class="lang-btn">JA</a>
-            <span class="lang-btn active">EN</span>
-        </div>
-        <div class="nav-links-right">
-            <a href="../#about">About</a>
-            <a href="../#research">Research</a>
-            <a href="../projects/">Projects</a>
-            <a href="../#data-code">Data &amp; Code</a>
-            <a href="../#contact">Contact</a>
-        </div>
-    </div>
+<div class="nav-inner">
+<a class="nav-logo" href="../">Ayaka Onohara<span>小野原 彩香</span></a>
+
+
+<div class="lang-switch">
+<a class="lang-btn" href="/publications/">JA</a>
+<span class="lang-btn active">EN</span>
+</div>
+<div class="nav-links-right">
+<a href="../#about">About</a>
+<a href="../#research">Research</a>
+<a href="../projects/">Projects</a>
+<a href="../#data-code">Data &amp; Code</a>
+<a href="../#contact">Contact</a>
+<a href="../projects/">Projects</a></div>
+</div>
 </nav>
-
 <header class="page-header">
-    <div class="page-header-inner">
-        <h1>Publications <span>&amp; Outputs</span></h1>
-        <p class="lead">Complete list of publications (25 items). Filter by category, decade, or keyword.<br>
+<div class="page-header-inner"><p class="eyebrow">RESEARCH ARCHIVE / AYAKA ONOHARA</p>
+<h1>Publications<em>&amp; outputs.</em></h1>
+<p class="lead">Complete list of publications (25 items). Filter by category, decade, or keyword.<br/>
         DOI, data (Zenodo), and code (GitHub) links are provided where available.</p>
-    </div>
-</header>
-
+</div>
 <div class="stats-bar">
-    <div class="stats-inner">
-        <div class="stat-item"><span class="stat-num" id="count-all">25</span><span class="stat-label">Total</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-a)">17</span><span class="stat-label">A — Core</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-b)">4</span><span class="stat-label">B — Core-adjacent</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-c)">2</span><span class="stat-label">C — Peripheral</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:var(--col-d)">2</span><span class="stat-label">D — Education &amp; Outreach</span></div>
-        <div class="stat-item"><span class="stat-num" style="color:#2a7d7d">5</span><span class="stat-label">Selected</span></div>
-    </div>
+<div class="stats-inner">
+<div class="stat-item"><span class="stat-num" id="count-all">25</span><span class="stat-label">Total</span></div>
+<div class="stat-item"><span class="stat-num">17</span><span class="stat-label">A — Core</span></div>
+<div class="stat-item"><span class="stat-num">4</span><span class="stat-label">B — Core-adjacent</span></div>
+<div class="stat-item"><span class="stat-num">2</span><span class="stat-label">C — Peripheral</span></div>
+<div class="stat-item"><span class="stat-num">2</span><span class="stat-label">D — Education &amp; Outreach</span></div>
+<div class="stat-item"><span class="stat-num">5</span><span class="stat-label">Selected</span></div>
 </div>
+</div></header>
 
-<div class="cat-defs" role="list" aria-label="Category definitions">
-    <div class="cat-def def-a" role="listitem"><b>A — Core</b>The main arena of Spatial Cultural Dynamics (space × cultural traits × dynamics): language change, emotion, phylogeny, and diffusion.</div>
-    <div class="cat-def def-b" role="listitem"><b>B — Core-adjacent</b>Space × computation (GeoAI, deep learning, implementation) that can connect to the core.</div>
-    <div class="cat-def def-c" role="listitem"><b>C — Peripheral</b>General informatics and statistics education, not directly tied to the core.</div>
-    <div class="cat-def def-d" role="listitem"><b>D — Education &amp; Outreach</b>Teaching materials, serial articles, and educational practice.</div>
+
+<div class="filter-bar" hidden="">
+<div class="filter-inner">
+<div aria-label="Research category" class="filter-tabs" role="group">
+<button aria-pressed="true" class="filter-tab active" data-filter="all" type="button">All</button>
+<button aria-pressed="false" class="filter-tab tab-a" data-filter="A" type="button">A — Core</button>
+<button aria-pressed="false" class="filter-tab tab-b" data-filter="B" type="button">B — Core-adjacent</button>
+<button aria-pressed="false" class="filter-tab tab-c" data-filter="C" type="button">C — Peripheral</button>
+<button aria-pressed="false" class="filter-tab tab-d" data-filter="D" type="button">D — Education &amp; Outreach</button>
+<button aria-pressed="false" class="filter-tab" data-filter="selected" type="button">★ Selected</button>
 </div>
+<select aria-label="Publication decade" class="year-select" id="year-filter">
+<option value="all">All years</option>
+<option value="2020s">2020s (2020–)</option>
+<option value="2010s">2010s (2010–2019)</option>
+</select>
+<div class="filter-search">
 
-<div class="filter-bar">
-    <div class="filter-inner">
-        <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">All</button>
-            <button class="filter-tab tab-a" data-filter="A">A — Core</button>
-            <button class="filter-tab tab-b" data-filter="B">B — Core-adjacent</button>
-            <button class="filter-tab tab-c" data-filter="C">C — Peripheral</button>
-            <button class="filter-tab tab-d" data-filter="D">D — Education &amp; Outreach</button>
-            <button class="filter-tab" data-filter="selected">★ Selected</button>
-        </div>
-        <select class="year-select" id="year-filter">
-            <option value="all">All years</option>
-            <option value="2020s">2020s (2020–)</option>
-            <option value="2010s">2010s (2010–2019)</option>
-        </select>
-        <div class="filter-search">
-            <i class="fas fa-search search-icon"></i>
-            <input type="search" id="search-input" placeholder="Search title, author, journal…">
-        </div>
-    </div>
+<input aria-label="Search title, author or journal" id="search-input" placeholder="Search title, author, journal…" type="search"/>
 </div>
-
-<div class="result-bar"><span id="result-count">Showing 25 items</span></div>
-
-<main class="main-content">
-    <div class="section-label" id="label-selected">★ Selected 5</div>
-    <div id="pub-list">
-
-    <!-- 0. 2026 ISPRS Archives (FOSS4G 2026 Academic Track) -->
-    <article class="pub-card" data-cat="B" data-year="2026" data-selected="false"
-        data-search="tatara iron production grassland distribution western japan open geospatial approach historical landscape analysis ayaka onohara takatora bito nobusuke iwasaki isprs archives foss4g 2026">
-        <div class="pub-top"><span class="pub-year">2026</span><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Examining the Relationship Between Tatara Iron Production and Grassland Distribution in Western Japan: An Open Geospatial Approach to Historical Landscape Analysis</div>
-        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; Takatora Bito; Nobusuke Iwasaki</div>
-        <div class="pub-venue"><em>The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences</em>, L-4/W1-2026, pp. 205–211, 2026.</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">tatara iron production</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">grassland</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">historical landscape</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">open geospatial</span></div>
-        <div class="pub-links">
-            <a href="https://doi.org/10.5194/isprs-archives-L-4-W1-2026-205-2026" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.5194/isprs-archives-L-4-W1-2026-205-2026</a>
-            <a href="https://isprs-archives.copernicus.org/articles/L-4-W1-2026/205/2026/" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> ISPRS Archives</a>
-            <a href="https://doi.org/10.5281/zenodo.19042339" target="_blank" class="pub-link-btn btn-zenodo"><i class="fas fa-database"></i> Code (Zenodo)</a>
-        </div>
-    </article>
-
-    <!-- 1. 2026 A WCTP Proceedings -->
-    <article class="pub-card selected-pub" data-cat="A" data-year="2026" data-selected="true"
-        data-search="gan generative adversarial network emotional dynamics cultural evolution niche construction integrated empirical approach ayaka onohara hiroki ouchi wctp 2025 atlantis press proceedings">
-        <div class="pub-top"><span class="pub-year">2026</span><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction: An Integrated Empirical Approach</div>
-        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; Hiroki Ouchi</div>
-        <div class="pub-venue"><em>Proceedings of the Workshop on Computation: Theory and Practice (WCTP 2025)</em>, Atlantis Press, pp. 499–519, 2026.</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">cultural evolution</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">niche construction</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">GAN</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">emotion dynamics</span></div>
-        <div class="pub-links">
-            <a href="https://doi.org/10.2991/978-94-6239-638-8_25" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.2991/978-94-6239-638-8_25</a>
-            <a href="https://www.atlantis-press.com/proceedings/wctp-25/126023816" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> Atlantis Press</a>
-        </div>
-    </article>
-
-    <!-- 1b. 2026 D Remedial Education -->
-    <article class="pub-card" data-cat="D" data-year="2026" data-selected="false"
-        data-search="dialogue with the inner other generative ai statistics exercises reflection metacognition learning emotion developmental education jade ayaka onohara">
-        <div class="pub-top"><span class="pub-year">2026</span><span class="badge badge-d">D — Education &amp; Outreach</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Dialogue with the Inner Other: A Practical Report on Learning Support in Statistics Exercises Using Generative AI (in Japanese)</div>
-        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong> (single author)</div>
-        <div class="pub-venue"><em>Journal of the Japan Association for Developmental Education</em> (advance publication), 2026.</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">generative AI</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">statistics education</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">reflection</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">metacognition</span></div>
-        <div class="pub-links">
-            <a href="https://doi.org/10.18950/jade.2026.03.10.01" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.18950/jade.2026.03.10.01</a>
-            <a href="https://www.jstage.jst.go.jp/article/jade/advpub/0/advpub_2026.03.10.01/_article/-char/ja" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> J-STAGE</a>
-        </div>
-    </article>
-
-    <!-- 2. 2025 A SELECTED -->
-    <article class="pub-card" data-cat="A" data-year="2025" data-selected="false"
-        data-search="phase-dependent emotion maps place mantel analysis text embeddings spatial proximity ayaka onohara hiroki ouchi">
-        <div class="pub-top"><span class="pub-year">2025</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Phase-Dependent Emotion Maps of Place — Mantel Analysis Using Text Embeddings and Spatial Proximity</div>
-        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; Hiroki Ouchi</div>
-        <div class="pub-venue">Under review</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">emotion maps</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">text embeddings</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">spatial autocorrelation</span></div>
-        <div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div>
-    </article>
-
-    <!-- 2. 2024 A SELECTED -->
-    <article class="pub-card selected-pub" data-cat="A" data-year="2024" data-selected="true"
-        data-search="bayesian phylogenetic analysis pitch-accent accentual class merger japanese dialects takuya takahashi ayaka onohara yasuo ihara journal language evolution">
-        <div class="pub-top"><span class="pub-year">2024</span><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects</div>
-        <div class="pub-authors">Takuya Takahashi; <strong><u>Ayaka Onohara</u></strong>; Yasuo Ihara</div>
-        <div class="pub-venue"><em>Journal of Language Evolution</em>, 8(2): 169–191, 2024.</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">Bayesian phylogenetics</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">pitch accent</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">Japanese dialects</span></div>
-        <div class="pub-links">
-            <a href="https://doi.org/10.1093/jole/lzae004" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.1093/jole/lzae004</a>
-            <a href="https://doi.org/10.5281/zenodo.11154180" target="_blank" class="pub-link-btn btn-zenodo"><i class="fas fa-database"></i> Data &amp; Code (Zenodo)</a>
-        </div>
-    </article>
-
-    <!-- 3. 2024 D -->
-    <article class="pub-card" data-cat="D" data-year="2024" data-selected="false"
-        data-search="conversational AI model speech educational content creation generative AI onohara">
-        <div class="pub-top"><span class="pub-year">2024</span><span class="badge badge-d">D — Education &amp; Outreach</span><span class="badge badge-lead">Lead author</span></div>
-        <div class="pub-title">Creating Educational Content Using Conversational AI Models and AI Speech</div>
-        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div>
-        <div class="pub-venue">Educational journal/report (see researchmap for details)</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">generative AI</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">speech synthesis</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">education</span></div>
-        <div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div>
-    </article>
-
-    <!-- 4. 2023 B -->
-    <article class="pub-card" data-cat="B" data-year="2023" data-selected="false"
-        data-search="machine learning vineyard wine suitability GIS estimation iwasaki hayashi tanaka katori onohara">
-        <div class="pub-top"><span class="pub-year">2023</span><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Estimating Vineyard Suitability Using Machine Learning</div>
-        <div class="pub-authors">N. Iwasaki; T. Tanaka; <strong><u>A. Onohara</u></strong>; K. Hayashi; M. Katori; et al.</div>
-        <div class="pub-venue">GIS Association of Japan, 2023. <em>(Best Poster Award)</em></div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">GeoAI</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">machine learning</span></div>
-        <div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div>
-    </article>
-
-    <!-- 5. 2022 A SELECTED -->
-    <article class="pub-card selected-pub" data-cat="A" data-year="2022" data-selected="true"
-        data-search="inferring temporal spatial evolution accent systems japanese dialects phylogeographic approach takahashi ayaka onohara ihara JCoLE">
-        <div class="pub-top"><span class="pub-year">2022</span><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Inferring the temporal and spatial evolution of accent systems in Japanese dialects: a phylogeographic approach</div>
-        <div class="pub-authors">Takuya Takahashi; <strong><u>Ayaka Onohara</u></strong>; Yasuo Ihara</div>
-        <div class="pub-venue"><em>Proceedings of the Joint Conference on Language Evolution (JCoLE)</em>, 2022.</div>
-        <div class="pub-meta"><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">phylogeography</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">accent</span><span class="badge" style="background:#f5f5f5;color:#555;border:1px solid #ddd;">spatiotemporal evolution</span></div>
-        <div class="pub-links"><a href="https://doi.org/10.17617/2.3398549" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.17617/2.3398549</a> <a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div>
-    </article>
-
-    <!-- 6. 2022 B SELECTED -->
-    <article class="pub-card selected-pub" data-cat="B" data-year="2022" data-selected="true"
-        data-search="client side web mapping vineyard suitability assessment ISPRS iwasaki hayashi tanaka katori onohara oguchi FOSS4G">
-        <div class="pub-top"><span class="pub-year">2022</span><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
-        <div class="pub-title">Client-Side Web Mapping System for Vineyard Suitability Assessment</div>
-        <div class="pub-authors">N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <strong><u>A. Onohara</u></strong>; T. Oguchi</div>
-        <div class="pub-venue"><em>ISPRS Archives</em>, 2022. (FOSS4G 2022)</div>
-        <div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div>
-    </article>
-
-    <!-- 7. 2016 A SELECTED -->
-    <article class="pub-card selected-pub" data-cat="A" data-year="2016" data-selected="true"
-        data-search="言語 消失 獲得 環境 社会 要因 environmental social factors language loss gain onohara theory applications GIS">
-        <div class="pub-top"><span class="pub-year">2016</span><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-lead">Lead author</span><span class="badge badge-invited">Invited</span></div>
-        <div class="pub-title">言語の消失と獲得に関連する環境・社会的要因 [Environmental and social factors related to language loss and gain]</div>
-        <div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div>
-        <div class="pub-venue"><em>Theory and Applications of GIS</em> (GIS－理論と応用), 24(2), 2016.</div>
-        <div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div>
-    </article>
-
-    <!-- 8–22: remaining papers (condensed) -->
-    <article class="pub-card" data-cat="A" data-year="2016" data-selected="false" data-search="environmental social factors gain loss language change ayaka onohara"><div class="pub-top"><span class="pub-year">2016</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span></div><div class="pub-title">Environmental and social factors associated with the gain or loss rate of language change</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue"><em>Proceedings of the Annual Conference of the GIS Association of Japan</em> (CD-ROM), 25, p. 40, 2016.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="B" data-year="2016" data-selected="false" data-search="classification land use cover change kanto region FOSS4G open data iwasaki sprague onohara"><div class="pub-top"><span class="pub-year">2016</span><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Classification of land use/cover change in the Kanto region, Japan using FOSS4G and Open Data</div><div class="pub-authors">N. Iwasaki; D. Sprague; <strong><u>A. Onohara</u></strong></div><div class="pub-venue"><em>FOSS4G 2016 Conference Proceedings</em>, 2016.</div><div class="pub-links"><a href="https://doi.org/10.7275/R5PN93TQ" target="_blank" class="pub-link-btn btn-doi"><i class="fas fa-external-link-alt"></i> DOI: 10.7275/R5PN93TQ</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2014" data-selected="false" data-search="mathematical approach language change extralinguistic factors PhD thesis doshisha onohara"><div class="pub-top"><span class="pub-year">2014</span><span class="badge badge-a">A — Core</span><span class="badge badge-thesis">Ph.D. Thesis</span></div><div class="pub-title">A Mathematical Approach to the Relationship between Language Change and Extralinguistic Factors</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Ph.D. Thesis, Doshisha University, Graduate School of Culture and Information Science, March 2014.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="C" data-year="2013" data-selected="false" data-search="statistics education course content trends student evaluation onohara"><div class="pub-top"><span class="pub-year">2013</span><span class="badge badge-c">C — Peripheral</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Trends in Statistics Education Course Content and Student Evaluations</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Education-related journal, 2013.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false" data-search="ibigawa lexical types geographic distribution onohara dialect gifu"><div class="pub-top"><span class="pub-year">2012</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Lexical Types and Geographic Distribution in the Upper Ibigawa Region</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Dialectology / linguistic geography journal, 2012.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false" data-search="mathematical analysis dialect distribution data onohara quantitative"><div class="pub-top"><span class="pub-year">2012</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Mathematical Analysis of Dialect Distribution Data</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics journal, 2012.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false" data-search="ibigawa lexical phylogenetic estimation onohara"><div class="pub-top"><span class="pub-year">2012</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Phylogenetic Estimation of Lexicon in the Upper Ibigawa Region</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Dialectology journal, 2012.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2012" data-selected="false" data-search="gifu tokuya geographic network linguistic distance onohara"><div class="pub-top"><span class="pub-year">2012</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Geographic Network Analysis and Linguistic Distance in Former Tokuyama Village, Gifu</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics journal, 2012.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2011" data-selected="false" data-search="tokuyama accent traffic network onohara gifu"><div class="pub-top"><span class="pub-year">2011</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Relationship between Accent Patterns and Transport Networks in Former Tokuyama Village, Gifu</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Dialectology / phonetics journal, 2011.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2011" data-selected="false" data-search="language dynamics spatial analysis tokuyama part 2 onohara"><div class="pub-top"><span class="pub-year">2011</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Spatial Analysis of Language Dynamics in Former Tokuyama Village, Gifu (2)</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics / dialectology journal, 2011.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2011" data-selected="false" data-search="language dynamics spatial analysis tokuyama onohara"><div class="pub-top"><span class="pub-year">2011</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Spatial Analysis of Language Dynamics in Former Tokuyama Village, Gifu</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics / dialectology journal, 2011.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="C" data-year="2010" data-selected="false" data-search="ITMA NCD UML analysis process visualization sharing information science onohara"><div class="pub-top"><span class="pub-year">2010</span><span class="badge badge-c">C — Peripheral</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Practicality of NCD in ITMA and Visualization of Analysis Process Using UML</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Information science / quantitative linguistics journal, 2010.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2010" data-selected="false" data-search="gifu dialect virtual cultural region lexical change direction onohara"><div class="pub-top"><span class="pub-year">2010</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Virtual Cultural Region Extraction and Direction of Lexical Change from Gifu Dialect Vocabulary</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Culture and information science / dialectology journal, 2010.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2010" data-selected="false" data-search="dialect distribution cultural diffusion stagnation onohara"><div class="pub-top"><span class="pub-year">2010</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Cultural Diffusion and Stagnation as Seen through Dialect Distribution</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Culture and information science / dialectology journal, 2010.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
-    <article class="pub-card" data-cat="A" data-year="2010" data-selected="false" data-search="cultural information diffusion channels stagnation onohara"><div class="pub-top"><span class="pub-year">2010</span><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><div class="pub-title">Diffusion Channels and Stagnation of Cultural Information</div><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Culture and information science / dialectology journal, 2010.</div><div class="pub-links"><a href="https://researchmap.jp/aonohr/published_papers" target="_blank" class="pub-link-btn btn-researchmap"><i class="fas fa-external-link-alt"></i> researchmap</a></div></article>
-
 </div>
-<p class="no-results" id="no-results"><i class="fas fa-search" style="font-size:2em;display:block;margin-bottom:12px;opacity:0.4;"></i>No matching publications found.</p>
-
-</main>
-
+</div>
+<div class="result-bar"><span aria-atomic="true" aria-live="polite" id="result-count">Showing 25 items</span></div>
+<main class="main-content" id="publication-index" tabindex="-1">
+<h2 class="section-label" id="label-selected">All publications</h2>
+<div id="pub-list">
+<!-- 0. 2026 ISPRS Archives (FOSS4G 2026 Academic Track) -->
+<article class="pub-card" data-cat="B" data-search="tatara iron production grassland distribution western japan open geospatial approach historical landscape analysis ayaka onohara takatora bito nobusuke iwasaki isprs archives foss4g 2026" data-selected="false" data-year="2026"><span class="pub-year">2026</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Examining the Relationship Between Tatara Iron Production and Grassland Distribution in Western Japan: An Open Geospatial Approach to Historical Landscape Analysis</h3>
+<div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; Takatora Bito; Nobusuke Iwasaki</div>
+<div class="pub-venue"><em>The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences</em>, L-4/W1-2026, pp. 205–211, 2026.</div>
+<div class="pub-meta"><span class="badge">tatara iron production</span><span class="badge">grassland</span><span class="badge">historical landscape</span><span class="badge">open geospatial</span></div>
+<div class="pub-links">
+<a class="pub-link-btn btn-doi" href="https://doi.org/10.5194/isprs-archives-L-4-W1-2026-205-2026" rel="noopener noreferrer" target="_blank"> DOI: 10.5194/isprs-archives-L-4-W1-2026-205-2026</a>
+<a class="pub-link-btn btn-doi" href="https://isprs-archives.copernicus.org/articles/L-4-W1-2026/205/2026/" rel="noopener noreferrer" target="_blank"> ISPRS Archives</a>
+<a class="pub-link-btn btn-zenodo" href="https://doi.org/10.5281/zenodo.19042339" rel="noopener noreferrer" target="_blank"> Code (Zenodo)</a>
+</div>
+</div></article>
+<!-- 1. 2026 A WCTP Proceedings -->
+<article class="pub-card selected-pub" data-cat="A" data-search="gan generative adversarial network emotional dynamics cultural evolution niche construction integrated empirical approach ayaka onohara hiroki ouchi wctp 2025 atlantis press proceedings" data-selected="true" data-year="2026"><span class="pub-year">2026</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">GAN-Based Modeling of Emotional Dynamics in Cultural Evolution and Niche Construction: An Integrated Empirical Approach</h3>
+<div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; Hiroki Ouchi</div>
+<div class="pub-venue"><em>Proceedings of the Workshop on Computation: Theory and Practice (WCTP 2025)</em>, Atlantis Press, pp. 499–519, 2026.</div>
+<div class="pub-meta"><span class="badge">cultural evolution</span><span class="badge">niche construction</span><span class="badge">GAN</span><span class="badge">emotion dynamics</span></div>
+<div class="pub-links">
+<a class="pub-link-btn btn-doi" href="https://doi.org/10.2991/978-94-6239-638-8_25" rel="noopener noreferrer" target="_blank"> DOI: 10.2991/978-94-6239-638-8_25</a>
+<a class="pub-link-btn btn-doi" href="https://www.atlantis-press.com/proceedings/wctp-25/126023816" rel="noopener noreferrer" target="_blank"> Atlantis Press</a>
+</div>
+</div></article>
+<!-- 1b. 2026 D Remedial Education -->
+<article class="pub-card" data-cat="D" data-search="dialogue with the inner other generative ai statistics exercises reflection metacognition learning emotion developmental education jade ayaka onohara" data-selected="false" data-year="2026"><span class="pub-year">2026</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-d">D — Education &amp; Outreach</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Dialogue with the Inner Other: A Practical Report on Learning Support in Statistics Exercises Using Generative AI (in Japanese)</h3>
+<div class="pub-authors"><strong><u>Ayaka Onohara</u></strong> (single author)</div>
+<div class="pub-venue"><em>Journal of the Japan Association for Developmental Education</em> (advance publication), 2026.</div>
+<div class="pub-meta"><span class="badge">generative AI</span><span class="badge">statistics education</span><span class="badge">reflection</span><span class="badge">metacognition</span></div>
+<div class="pub-links">
+<a class="pub-link-btn btn-doi" href="https://doi.org/10.18950/jade.2026.03.10.01" rel="noopener noreferrer" target="_blank"> DOI: 10.18950/jade.2026.03.10.01</a>
+<a class="pub-link-btn btn-doi" href="https://www.jstage.jst.go.jp/article/jade/advpub/0/advpub_2026.03.10.01/_article/-char/ja" rel="noopener noreferrer" target="_blank"> J-STAGE</a>
+</div>
+</div></article>
+<!-- 2. 2025 A SELECTED -->
+<article class="pub-card" data-cat="A" data-search="phase-dependent emotion maps place mantel analysis text embeddings spatial proximity ayaka onohara hiroki ouchi" data-selected="false" data-year="2025"><span class="pub-year">2025</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Phase-Dependent Emotion Maps of Place — Mantel Analysis Using Text Embeddings and Spatial Proximity</h3>
+<div class="pub-authors"><strong><u>Ayaka Onohara</u></strong>; Hiroki Ouchi</div>
+<div class="pub-venue">Under review</div>
+<div class="pub-meta"><span class="badge">emotion maps</span><span class="badge">text embeddings</span><span class="badge">spatial autocorrelation</span></div>
+<div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div>
+</div></article>
+<!-- 2. 2024 A SELECTED -->
+<article class="pub-card selected-pub" data-cat="A" data-search="bayesian phylogenetic analysis pitch-accent accentual class merger japanese dialects takuya takahashi ayaka onohara yasuo ihara journal language evolution" data-selected="true" data-year="2024"><span class="pub-year">2024</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Bayesian phylogenetic analysis of pitch-accent systems based on accentual class merger: a new method applied to Japanese dialects</h3>
+<div class="pub-authors">Takuya Takahashi; <strong><u>Ayaka Onohara</u></strong>; Yasuo Ihara</div>
+<div class="pub-venue"><em>Journal of Language Evolution</em>, 8(2): 169–191, 2024.</div>
+<div class="pub-meta"><span class="badge">Bayesian phylogenetics</span><span class="badge">pitch accent</span><span class="badge">Japanese dialects</span></div>
+<div class="pub-links">
+<a class="pub-link-btn btn-doi" href="https://doi.org/10.1093/jole/lzae004" rel="noopener noreferrer" target="_blank"> DOI: 10.1093/jole/lzae004</a>
+<a class="pub-link-btn btn-zenodo" href="https://doi.org/10.5281/zenodo.11154180" rel="noopener noreferrer" target="_blank"> Data &amp; Code (Zenodo)</a>
+</div>
+</div></article>
+<!-- 3. 2024 D -->
+<article class="pub-card" data-cat="D" data-search="conversational AI model speech educational content creation generative AI onohara" data-selected="false" data-year="2024"><span class="pub-year">2024</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-d">D — Education &amp; Outreach</span><span class="badge badge-lead">Lead author</span></div>
+<h3 class="pub-title">Creating Educational Content Using Conversational AI Models and AI Speech</h3>
+<div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div>
+<div class="pub-venue">Educational journal/report (see researchmap for details)</div>
+<div class="pub-meta"><span class="badge">generative AI</span><span class="badge">speech synthesis</span><span class="badge">education</span></div>
+<div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div>
+</div></article>
+<!-- 4. 2023 B -->
+<article class="pub-card" data-cat="B" data-search="machine learning vineyard wine suitability GIS estimation iwasaki hayashi tanaka katori onohara" data-selected="false" data-year="2023"><span class="pub-year">2023</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Estimating Vineyard Suitability Using Machine Learning</h3>
+<div class="pub-authors">N. Iwasaki; T. Tanaka; <strong><u>A. Onohara</u></strong>; K. Hayashi; M. Katori; et al.</div>
+<div class="pub-venue">GIS Association of Japan, 2023. <em>(Best Poster Award)</em></div>
+<div class="pub-meta"><span class="badge">GeoAI</span><span class="badge">machine learning</span></div>
+<div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div>
+</div></article>
+<!-- 5. 2022 A SELECTED -->
+<article class="pub-card selected-pub" data-cat="A" data-search="inferring temporal spatial evolution accent systems japanese dialects phylogeographic approach takahashi ayaka onohara ihara JCoLE" data-selected="true" data-year="2022"><span class="pub-year">2022</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Inferring the temporal and spatial evolution of accent systems in Japanese dialects: a phylogeographic approach</h3>
+<div class="pub-authors">Takuya Takahashi; <strong><u>Ayaka Onohara</u></strong>; Yasuo Ihara</div>
+<div class="pub-venue"><em>Proceedings of the Joint Conference on Language Evolution (JCoLE)</em>, 2022.</div>
+<div class="pub-meta"><span class="badge">phylogeography</span><span class="badge">accent</span><span class="badge">spatiotemporal evolution</span></div>
+<div class="pub-links"><a class="pub-link-btn btn-doi" href="https://doi.org/10.17617/2.3398549" rel="noopener noreferrer" target="_blank"> DOI: 10.17617/2.3398549</a> <a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div>
+</div></article>
+<!-- 6. 2022 B SELECTED -->
+<article class="pub-card selected-pub" data-cat="B" data-search="client side web mapping vineyard suitability assessment ISPRS iwasaki hayashi tanaka katori onohara oguchi FOSS4G" data-selected="true" data-year="2022"><span class="pub-year">2022</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div>
+<h3 class="pub-title">Client-Side Web Mapping System for Vineyard Suitability Assessment</h3>
+<div class="pub-authors">N. Iwasaki; K. Hayashi; T. Tanaka; M. Katori; <strong><u>A. Onohara</u></strong>; T. Oguchi</div>
+<div class="pub-venue"><em>ISPRS Archives</em>, 2022. (FOSS4G 2022)</div>
+<div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div>
+</div></article>
+<!-- 7. 2016 A SELECTED -->
+<article class="pub-card selected-pub" data-cat="A" data-search="言語 消失 獲得 環境 社会 要因 environmental social factors language loss gain onohara theory applications GIS" data-selected="true" data-year="2016"><span class="pub-year">2016</span><div class="pub-copy">
+<div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-selected">★ Selected</span><span class="badge badge-lead">Lead author</span><span class="badge badge-invited">Invited</span></div>
+<h3 class="pub-title">言語の消失と獲得に関連する環境・社会的要因 [Environmental and social factors related to language loss and gain]</h3>
+<div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div>
+<div class="pub-venue"><em>Theory and Applications of GIS</em> (GIS－理論と応用), 24(2), 2016.</div>
+<div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div>
+</div></article>
+<!-- 8–22: remaining papers (condensed) -->
+<article class="pub-card" data-cat="A" data-search="environmental social factors gain loss language change ayaka onohara" data-selected="false" data-year="2016"><span class="pub-year">2016</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span></div><h3 class="pub-title">Environmental and social factors associated with the gain or loss rate of language change</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue"><em>Proceedings of the Annual Conference of the GIS Association of Japan</em> (CD-ROM), 25, p. 40, 2016.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="B" data-search="classification land use cover change kanto region FOSS4G open data iwasaki sprague onohara" data-selected="false" data-year="2016"><span class="pub-year">2016</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-b">B — Core-adjacent</span><span class="badge badge-coauth">Co-author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Classification of land use/cover change in the Kanto region, Japan using FOSS4G and Open Data</h3><div class="pub-authors">N. Iwasaki; D. Sprague; <strong><u>A. Onohara</u></strong></div><div class="pub-venue"><em>FOSS4G 2016 Conference Proceedings</em>, 2016.</div><div class="pub-links"><a class="pub-link-btn btn-doi" href="https://doi.org/10.7275/R5PN93TQ" rel="noopener noreferrer" target="_blank"> DOI: 10.7275/R5PN93TQ</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="mathematical approach language change extralinguistic factors PhD thesis doshisha onohara" data-selected="false" data-year="2014"><span class="pub-year">2014</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-thesis">Ph.D. Thesis</span></div><h3 class="pub-title">A Mathematical Approach to the Relationship between Language Change and Extralinguistic Factors</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Ph.D. Thesis, Doshisha University, Graduate School of Culture and Information Science, March 2014.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="C" data-search="statistics education course content trends student evaluation onohara" data-selected="false" data-year="2013"><span class="pub-year">2013</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-c">C — Peripheral</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Trends in Statistics Education Course Content and Student Evaluations</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Education-related journal, 2013.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="ibigawa lexical types geographic distribution onohara dialect gifu" data-selected="false" data-year="2012"><span class="pub-year">2012</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Lexical Types and Geographic Distribution in the Upper Ibigawa Region</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Dialectology / linguistic geography journal, 2012.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="mathematical analysis dialect distribution data onohara quantitative" data-selected="false" data-year="2012"><span class="pub-year">2012</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Mathematical Analysis of Dialect Distribution Data</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics journal, 2012.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="ibigawa lexical phylogenetic estimation onohara" data-selected="false" data-year="2012"><span class="pub-year">2012</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Phylogenetic Estimation of Lexicon in the Upper Ibigawa Region</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Dialectology journal, 2012.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="gifu tokuya geographic network linguistic distance onohara" data-selected="false" data-year="2012"><span class="pub-year">2012</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Geographic Network Analysis and Linguistic Distance in Former Tokuyama Village, Gifu</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics journal, 2012.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="tokuyama accent traffic network onohara gifu" data-selected="false" data-year="2011"><span class="pub-year">2011</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Relationship between Accent Patterns and Transport Networks in Former Tokuyama Village, Gifu</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Dialectology / phonetics journal, 2011.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="language dynamics spatial analysis tokuyama part 2 onohara" data-selected="false" data-year="2011"><span class="pub-year">2011</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Spatial Analysis of Language Dynamics in Former Tokuyama Village, Gifu (2)</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics / dialectology journal, 2011.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="language dynamics spatial analysis tokuyama onohara" data-selected="false" data-year="2011"><span class="pub-year">2011</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Spatial Analysis of Language Dynamics in Former Tokuyama Village, Gifu</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Quantitative linguistics / dialectology journal, 2011.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="C" data-search="ITMA NCD UML analysis process visualization sharing information science onohara" data-selected="false" data-year="2010"><span class="pub-year">2010</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-c">C — Peripheral</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Practicality of NCD in ITMA and Visualization of Analysis Process Using UML</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Information science / quantitative linguistics journal, 2010.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="gifu dialect virtual cultural region lexical change direction onohara" data-selected="false" data-year="2010"><span class="pub-year">2010</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Virtual Cultural Region Extraction and Direction of Lexical Change from Gifu Dialect Vocabulary</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Culture and information science / dialectology journal, 2010.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="dialect distribution cultural diffusion stagnation onohara" data-selected="false" data-year="2010"><span class="pub-year">2010</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Cultural Diffusion and Stagnation as Seen through Dialect Distribution</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Culture and information science / dialectology journal, 2010.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+<article class="pub-card" data-cat="A" data-search="cultural information diffusion channels stagnation onohara" data-selected="false" data-year="2010"><span class="pub-year">2010</span><div class="pub-copy"><div class="pub-top"><span class="badge badge-a">A — Core</span><span class="badge badge-lead">Lead author</span><span class="badge badge-peer">Peer-reviewed</span></div><h3 class="pub-title">Diffusion Channels and Stagnation of Cultural Information</h3><div class="pub-authors"><strong><u>Ayaka Onohara</u></strong></div><div class="pub-venue">Culture and information science / dialectology journal, 2010.</div><div class="pub-links"><a class="pub-link-btn btn-researchmap" href="https://researchmap.jp/aonohr/published_papers" rel="noopener noreferrer" target="_blank"> researchmap</a></div></div></article>
+</div>
+<div class="no-results" hidden="" id="no-results">No matching publications found.<button id="reset-filters" type="button">Clear filters</button></div>
+<details class="classification"><summary>About the A–D categories</summary><div aria-label="Category definitions" class="cat-defs" role="list">
+<div class="cat-def def-a" role="listitem"><b>A — Core</b>The main arena of Spatial Cultural Dynamics (space × cultural traits × dynamics): language change, emotion, phylogeny, and diffusion.</div>
+<div class="cat-def def-b" role="listitem"><b>B — Core-adjacent</b>Space × computation (GeoAI, deep learning, implementation) that can connect to the core.</div>
+<div class="cat-def def-c" role="listitem"><b>C — Peripheral</b>General informatics and statistics education, not directly tied to the core.</div>
+<div class="cat-def def-d" role="listitem"><b>D — Education &amp; Outreach</b>Teaching materials, serial articles, and educational practice.</div>
+</div></details></main>
 <footer class="page-footer">
-    <p>Based on publicly available information. For corrections: <a href="mailto:a-onohara@hokusei.ac.jp">a-onohara@hokusei.ac.jp</a><br>
-    Last updated: 2026-09-14 &nbsp;|&nbsp; <a href="../">← Back to top</a></p>
+<p>Based on publicly available information. For corrections: <a href="mailto:a-onohara@hokusei.ac.jp">a-onohara@hokusei.ac.jp</a><br/>
+    Last updated: 2026-10-12  |  <a href="../">← Back to top</a></p>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-
-(function(){
-const cards=Array.from(document.querySelectorAll('.pub-card'));
-const noResults=document.getElementById('no-results');
-const countEl=document.getElementById('result-count');
-const labelSelected=document.getElementById('label-selected');
-let activeFilter='all',activeYear='all',activeSearch='';
-function applyFilters(){
-let visible=0;
-cards.forEach(card=>{
-const cat=card.dataset.cat,year=parseInt(card.dataset.year),isSelected=card.dataset.selected==='true';
-const searchText=card.dataset.search+' '+card.textContent.toLowerCase();
-let show=true;
-if(activeFilter==='selected') show=isSelected;
-else if(activeFilter!=='all') show=(cat===activeFilter);
-if(show&&activeYear!=='all'){if(activeYear==='2020s')show=year>=2020;if(activeYear==='2010s')show=year>=2010&&year<2020;}
-if(show&&activeSearch) show=searchText.includes(activeSearch);
-card.classList.toggle('hidden',!show);
-if(show)visible++;
-});
-countEl.textContent='Showing '+visible+' item'+(visible===1?'':'s');
-noResults.classList.toggle('visible',visible===0);
-labelSelected.style.display=(activeFilter==='all'&&!activeSearch&&activeYear==='all')?'':'none';
-}
-document.querySelectorAll('.filter-tab').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));this.classList.add('active');activeFilter=this.dataset.filter;applyFilters();});});
-document.getElementById('year-filter').addEventListener('change',function(){activeYear=this.value;applyFilters();});
-document.getElementById('search-input').addEventListener('input',function(){activeSearch=this.value.toLowerCase().trim();applyFilters();});
-})();
-</script>
-</body>
+<script defer="True" src="/publications/publications.js"></script></body>
 </html>
