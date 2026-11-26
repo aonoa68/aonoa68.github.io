@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invasion and Fixation — Ayaka Onohara | Methods</title>
+    <meta name="description" content="Evolutionary game theory in finite populations: invasion fitness, pairwise Fermi imitation, the fixation criterion ρ<1/N, the distinction between expected- and realised-payoff processes, and second-order enforcement, as used in a model where the way of judging is itself the strategy.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (Games and adversaries) */
+            --w:      #8a5a2f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e6c9a8; background:rgba(138,90,47,0.42); border:1px solid rgba(230,201,168,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(230,201,168,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf7f2; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Invasion and Fixation</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">Course map</a>
+            <a href="../../teaching/guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/worlds/evolutionary-game/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 6 ｜ <a href="../">Games and adversaries</a></span>
+        <h1>Invasion and <span>Fixation</span></h1>
+        <p class="lead">That a state is possible and that a population is carried to it are separate claims. Evolutionary game theory addresses the second, turning parameters into strategies and running a process in which payoff differences become rates of increase.<br>It follows the model in which Onohara makes the way of judging itself the strategy, and sets out how trajectories, invasion fitness and fixation probability are used for different claims.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Turning parameters into strategies, and asking whether a state is selected.</p>
+        <p class="body">
+        Dynamical analysis answers what happens if a condition holds (see <a href="../fold-bifurcation/">Saddle-Node Bifurcation</a>). But if the quantities in that condition are ways people behave, a question remains: <b>is the population carried there?</b> Left alone, does it approach that state or not?
+        </p>
+        <p class="body">
+        Evolutionary game theory addresses this. Quantities that were parameters become <b>strategies</b> carried by individuals, and one writes down the process by which higher-paying strategies spread. The question is not optimisation but whether a minority holding a strategy grows among a majority. The framework was built in biology for kin selection and the evolution of cooperation; here <b>the way of judging</b> is the strategy.
+        </p>
+        <p class="body">
+        There is one departure from the standard use. Normally the strategy is whether to cooperate. Here cooperating is not a strategy: the strategies are <b>how heavily one reads others' judgements</b> (\(\eta\)) and <b>how categorical one makes one's own</b> (\(k\)). Neither is a moral disposition; both are ways of reasoning, and their product is the quantity that appears in the bifurcation condition.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Payoffs have exactly two components</h2>
+        <p class="q">Accuracy disciplines; conformity inflates. Both go into one equation.</p>
+        <p class="body">
+        Each agent \(j\) carries \((\eta_j,k_j)\), forms \(r_{ji}\) from a private cue and the support \(i\) currently receives, and supports with probability \(\sigma(k_j(r_{ji}-\theta))\). The payoff has exactly two terms.
+        </p>
+        <div class="eq">
+            <div class="lbl">Payoff</div>
+            \[ \pi_j \;=\; \underbrace{S_{ji}\,(b\,a_i - c)}_{\text{epistemic}}\;-\;\underbrace{w\,\big|S_{ji}-\bar s_{-j,i}\big|}_{\text{second-order}} \]
+            <p class="read"><b>epistemic term</b> &hellip; whether support is reaching people worth supporting. With \(c = b\theta\), \(\theta\) is precisely the contribution at which supporting breaks even<br>
+            <b>second-order term</b> &hellip; the cost of deviating from the group's verdict; \(w\) is its strength<br>
+            <b>\(S_{ji}\)</b> &hellip; whether \(j\) supported \(i\) (0 or 1)<br>
+            <b>\(\bar s_{-j,i}\)</b> &hellip; how much the others support \(i\)</p>
+        </div>
+        <div class="sub">
+            <h3>The two terms pull in opposite directions</h3>
+            <p>The first <b>disciplines</b> \(\eta\): weighting the crowd too heavily produces worse decisions and is punished. The second <b>inflates</b> it: a judge's own standing is set by the same machinery, so backing someone the others have written off marks the judge as a poor one, and withholding from someone everyone else supports marks them as uncharitable. Which way it goes is the question of this section.</p>
+        </div>
+        <div class="sub">
+            <h3>The second term is a reduced form of an existing mechanism</h3>
+            <p>What makes indirect reciprocity evolutionarily stable is the second-order requirement that one withhold from the unworthy or become unworthy oneself (Panchanathan &amp; Boyd 2004). In that mechanism the cost is <b>internal</b>: the deviating judge loses standing and therefore loses support. The equation above debits the payoff directly. Being a reduced form is a possible weakness, so Section 7 closes the loop and reports what survives.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Origins &mdash; evolutionary dynamics in finite populations</h2>
+        <p class="q">A stochastic process in a finite population, not a differential equation in an infinite one.</p>
+        <div class="sub">
+            <h3>Pairwise Fermi imitation</h3>
+            <p>Individual \(i\) imitates \(j\) with probability \(\sigma(\beta(\pi_j-\pi_i))\). The selection intensity \(\beta\) interpolates between neutral drift (\(\beta\to0\)) and always copying the higher payoff (\(\beta\to\infty\)). The form comes from the Fermi distribution in statistical physics and is the standard update rule for finite-population dynamics. Mutation adds Gaussian noise to \((\eta,k)\), bounded by \(\eta\in[0,6]\) and \(k\in[0.1,30]\).</p>
+        </div>
+        <div class="sub">
+            <h3>In a finite population, &ldquo;stable&rdquo; is defined differently</h3>
+            <p>An ESS in an infinite population is defined by negative invasion fitness. In a finite population drift lets a disadvantaged mutant reach fixation with some probability, so Nowak et al. (2004) replaced the criterion: a resident \(R\) resists a mutant \(M\) exactly when <b>a single \(M\) mutant reaches fixation less often than a neutral one</b>, that is when \(\rho_M<1/N\).</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">Fixation probability</div>
+            \[ \rho_M=\Big[1+\sum_{k=1}^{N-1}\exp\Big(-\beta\sum_{j=1}^{k}\Delta\pi(j)\Big)\Big]^{-1} \]
+            <p class="read"><b>\(\Delta\pi(j)\)</b> &hellip; the difference in expected payoff between mutant and resident when \(j\) mutants are present<br>
+            <b>derivation</b> &hellip; for the pairwise-comparison update the transition probabilities satisfy \(T^-(j)/T^+(j)=\exp(-\beta\Delta\pi(j))\), which gives this form<br>
+            <b>How to read it</b> &hellip; the payoff difference is accumulated along the whole path, so small per-generation differences compound and the margins become large</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Three criteria, used for different claims</h2>
+        <p class="q">Trajectories depend on where you start, so stability cannot rest on them.</p>
+        <p class="body">
+        Three measurements are used side by side, and which claim rests on which is kept separate. They are ordered here not by strength but by <b>what they depend on</b>.
+        </p>
+        <ol class="steps">
+            <li><b>Trajectories</b>&emsp;Run selection and mutation from an initial strategy and read \(\overline{k\eta}\) after 400 generations. <b>Depends on the start.</b> Without a neutral control (\(\beta=0\)) run from the same start, the effect of selection cannot be separated from the effect of drift.</li>
+            <li><b>Sign of the invasion fitness</b>&emsp;Fix a resident and a minority mutant and read the sign of the mean payoff difference. Independent of the start. <b>Judged by sign, not significance</b> &mdash; a cell in which neither invasion is significant is a cell with low power, whereas evolutionary bistability requires both invasion fitnesses to be <b>negative</b>.</li>
+            <li><b>Fixation probability</b>&emsp;Evaluate (7) over the whole range of \(\Delta\pi(j)\) and compare with \(1/N\). Independent of the start, and the standard definition for a stochastic process in a finite population.</li>
+        </ol>
+        <div class="warn">
+            <h3>The levels in the trajectories were an artefact of the start</h3>
+            <p>Running the same sweep from other initial strategies gives, at \(w=0\), a selected \(\overline{k\eta}\) of 2.89 from \((\eta_0,k_0)=(0.2,4)\) against a neutral 1.53; 4.26 from \((1.0,4)\) against 3.97; 7.01 from \((3.0,4)\) against <b>11.15</b>; 4.85 from \((0.2,10)\) against 3.88; and 29.63 from \((3.0,10)\) against 29.13. From \(\eta_0=3\) the selected value sits at or <b>below</b> its own neutral baseline: four hundred generations of drift-limited imitation do not carry a population back from a strategy it began at.</p>
+            <p>The boundary rule was checked too. Replacing clipping with reflection moves \(\overline{k\eta}\) from 2.89 to 3.03 at \(w=0\) and from 5.88 to 5.92 at \(w=0.5\). <b>What survives every start and both boundary rules is the effect of \(w\) itself</b>, raising \(\overline{k\eta}\) from 2.89 to 5.88, 4.26 to 8.90, 7.01 to 14.48 and 4.85 to 8.76. The trajectory tables are therefore presented as illustrations of the direction in which the second-order cost moves a population, and the stability claims were moved onto the invasion and fixation analyses.</p>
+        </div>
+        <div class="sub">
+            <h3>Too little selection never reaches the optimum</h3>
+            <p>At \(\beta=6\) the payoff differences are of order \(0.01\)&ndash;\(0.08\), so copying probabilities sit near \(0.515\) and the population is drift-limited rather than at its optimum. Under efficient selection (\(\beta=30\), \(w=0\)) <b>the epistemic term by itself carries every replicate past the fold</b>, to \(\overline{k\eta}=5.13\pm0.76\). The returns to accurate judgement do not stop short of the fold; they stop <b>just past it</b>. This agrees with the independently measured selection gradient: at fixed \(k=7\) the zero crossing is at \(\eta^\ast\approx0.62\), i.e. \(\overline{k\eta}^\ast\approx4.4\), eight per cent above the threshold of 4.0. The mutant offset used to estimate the gradient (0.25) straddles the bifurcation, so this locates the crossing only to within the grid spacing of 0.13 and should be read as &ldquo;at the fold, slightly above&rdquo; rather than as a point estimate.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The expected-payoff process and the realised-payoff process are not the same</h2>
+        <p class="q">Two processes that go by the same name need not agree row by row.</p>
+        <p class="body">
+        The identity \(T^-/T^+=\exp(-\beta\Delta\pi)\) used to derive (7) holds for pairwise comparison on the <b>expected</b> payoffs of two strategies, which is the standard setting of the criterion and the one evaluated here. The trajectory runs instead let each imitation event compare the <b>realised</b> payoffs of two individuals.
+        </p>
+        <div class="eq">
+            <div class="lbl">Why they differ</div>
+            \[ \mathbb{E}\big[\sigma(\beta D)\big] \;\neq\; \sigma\big(\beta\,\mathbb{E}[D]\big) \]
+            <p class="read"><b>\(D\)</b> &hellip; the realised payoff difference; equality fails whenever its variance is positive<br>
+            <b>consequence</b> &hellip; individual variation in contribution adds payoff noise that weakens the bias in the realised process. The two processes need not agree row by row</p>
+        </div>
+        <div class="sub">
+            <h3>Why this is stated explicitly</h3>
+            <p>When the fixation table and the trajectory table disagree, a reader concludes that one of them is wrong. In fact they compute different quantities. The fixation table is <b>the standard criterion applied to the standard process</b>, not a calculation of what the trajectories would do if run to fixation. Alongside speed versus stability, this is the second reason the two need not agree row by row.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Results</h2>
+        <p class="q">Past a threshold in the second-order cost the regime switches. No bistable band appears.</p>
+        <p class="body">
+        Two-way invasion over \(w\). &ldquo;Resists&rdquo; means the named strategy is not invaded by the other one tested; with only two strategies compared this is resistance to that mutant, not evolutionary stability against the whole \((\eta,k)\) space.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(w\)</th><th class="num">gated invades graded</th><th class="num">graded invades gated</th><th>verdict</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0.00</td><td class="num">\(-0.00346\pm0.00114\)</td><td class="num">\(+0.03128\pm0.00163\)</td><td>graded resists</td></tr>
+                <tr><td class="num">0.10</td><td class="num">\(+0.00034\pm0.00124\)</td><td class="num">\(+0.01040\pm0.00159\)</td><td>neither resists</td></tr>
+                <tr><td class="num">0.12</td><td class="num">\(+0.00110\pm0.00126\)</td><td class="num">\(+0.00623\pm0.00159\)</td><td>neither resists</td></tr>
+                <tr><td class="num">0.15</td><td class="num">\(+0.00224\pm0.00129\)</td><td class="num">\(-0.00003\pm0.00159\)</td><td>gated resists</td></tr>
+                <tr><td class="num">0.60</td><td class="num">\(+0.01932\pm0.00176\)</td><td class="num">\(-0.09396\pm0.00183\)</td><td>gated resists</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">60 replicates per cell, mean &plusmn; 95 per cent interval. Residents at \((\eta,k)=(0.30,7)\) and \((1.50,7)\). Output of <code>evolution.py</code>.</p>
+        <div class="warn">
+            <h3>A prediction that failed: there was no bistable band</h3>
+            <p>A band in which each regime resists the other &mdash; a range of \(w\) where either state can defend itself &mdash; was expected and <b>was not found</b>. At no \(w\) examined are both invasion fitnesses negative. The intermediate region at \(w=0.10\)&ndash;\(0.12\) is the <b>opposite</b> of bistability: it is a region in which <b>neither</b> strategy resists the other. The switch completes by \(w\approx0.14\).</p>
+            <p>This bears on what can be inferred from a comparison between populations, so it is stated in the paper. Among the two judging strategies compared, at the values of \(w\) examined, and holding the rest of the ecology fixed, no pair of regimes each of which resists the other was observed. That <b>bounds</b> the scope for path dependence in the judging rule rather than excluding it &mdash; a different pair of strategies, a mixed state, a value of \(w\) between those tested, or a long transient could each produce it. A difference in regime between two populations is therefore <b>consistent with</b> a difference in \(w\) and does not identify one.</p>
+            <p>What matters is that this is <b>a claim about strategies, not about outcomes</b>. The <a href="../fold-bifurcation/">fold</a> and <a href="../small-world/">support-matrix</a> analyses show that the support matrix is bistable wherever \(\eta qk>4\), so identical individuals in identical populations can and do end up on different sides of it. Whatever the absence of a bistable band bounds, it is path dependence in the judging rule, not path dependence in who is included.</p>
+        </div>
+        <div class="sub">
+            <h3>The fixation criterion returns the same conclusion</h3>
+            <p>At \(N=150\), \(\beta=6\) the neutral value is \(1/N=6.7\times10^{-3}\). At \(w=0\) a lone gated mutant fixes with probability \(2.7\times10^{-7}\) and a lone graded mutant with \(1.8\times10^{-1}\), so the graded strategy resists; at \(w=0.60\) the figures are \(1.0\times10^{-1}\) and \(5.2\times10^{-22}\) and the verdict reverses. On both criteria the switch falls between 0.10 and 0.15. <b>No row has both probabilities below \(1/N\)</b>; in every row exactly one of them falls below it. Repeating at \(\beta=30\), and evaluating \(\Delta\pi(j)\) at every \(j\) rather than interpolating from seventeen grid points, changes no verdict.</p>
+        </div>
+        <div class="sub">
+            <h3>The cost acts on \(\eta\), not on \(k\)</h3>
+            <p>The second term admits another reading. Since \(S_{ji}\) is binary and \(\bar s\) continuous, \(\mathbb{E}|S_{ji}-\bar s|=2p(1-p)\), which is largest at \(p=1/2\) and vanishes as \(p\) saturates. A cost of that shape could be paid down by <b>polarising</b> the support pattern &mdash; raising \(k\) &mdash; with no deference to anyone's verdict. It is not. Over \(w\) from 0 to 1.2, \(\eta\) rises from 0.415 to 1.355, a factor of <b>3.3</b>, while \(k\) rises from 6.990 to 8.069, a factor of <b>1.15</b>. The second-order cost operates on the weight placed on the community's verdict, which is the mechanism claimed for it.</p>
+        </div>
+        <div class="sub">
+            <h3>Selection overshoots the collective optimum</h3>
+            <p>Measuring only the epistemic component &mdash; whether support reaches people worth supporting &mdash; an \(\eta\) sweep at fixed \(k=7\) puts the optimum at the fold (\(0.0836\pm0.0096\) at \(k\eta=3.99\)) and declining beyond it: \(0.0723\) at \(k\eta=7.00\), \(0.0369\) at \(10.5\), and \(-0.0137\pm0.0118\) at \(21.0\), with accuracy falling from \(.987\) to \(.504\).</p>
+            <p>But <b>the payoff is not a function of \(k\eta\)</b>. The support probability is \(\sigma\{k(x-\theta)+(k\eta)\bar s\}\), so \(k\) also sets the weight on private information. Holding \(k\eta=10.5\) and varying \(k\) over 3.5, 7, 14 and 21 moves the payoff over \(-0.0130\), \(0.0369\), \(0.0836\) and \(0.0869\) &mdash; the whole range of the table. The product is what the bifurcation condition depends on; the payoff is not. The right place to read it is therefore <b>at the strategies that actually evolve</b>. Measured at the six evolved pairs (where \(k\) rises from 6.99 to 8.07), the payoff is \(0.0829\), \(0.0840\), \(0.0836\), \(0.0789\), \(0.0657\) and \(0.0478\) (standard errors \(0.0092\)&ndash;\(0.0118\)). Along the path selection actually takes, the payoff is maximised at the pairs evolved under \(w=0.20\) and \(0.30\), just past the fold, and <b>has fallen by about two fifths by the largest \(w\) examined, without reaching zero</b>. What selection is shown to do is overshoot the optimum, not destroy the benefit.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Making the reduced form internal</h2>
+        <p class="q">Stop debiting the payoff; close the loop with machinery the model already has.</p>
+        <p class="body">
+        Equation (6) debits a deviating judge's payoff directly, which is a reduced form: in the mechanism it stands for, the judge loses <b>standing</b> and therefore loses support. Since the model already contains the machinery that assigns standing, the loop can be closed instead of assumed.
+        </p>
+        <div class="eq">
+            <div class="lbl">Endogenous second-order cost</div>
+            \[ a^{\text{eff}}_j = a_j - w\,d_j,\qquad
+               d_j=\overline{\big|S_{jl}-\mathbb{1}[\bar s_{-j,l}>1/2]\big|\cdot\big|2\bar s_{-j,l}-1\big|} \]
+            <p class="read"><b>How to read it</b> &hellip; backing someone the community has clearly written off, or withholding from someone it clearly supports, counts against \(j\), while marginal cases count for little<br>
+            <b>the point</b> &hellip; others then judge \(j\) on \(a^{\text{eff}}_j\) by <b>the same rule applied to everyone</b>. There is no payoff penalty anywhere</p>
+        </div>
+        <div class="sub">
+            <h3>Three things carry over, two change</h3>
+            <p>Carried over: the cost still acts on \(\eta\) rather than on \(k\) (over \(w\) from 0 to 3, \(\eta\) rises from 0.467 to 0.885 while \(k\) goes from 6.450 to 7.191); the regime still switches from the graded strategy resisting to the gated one resisting; and there is still no \(w\) at which both invasion fitnesses are negative, so <b>the absence of a bistable band is not an artefact of the reduced form</b>.</p>
+            <p>Changed: the threshold moves from \(w^\ast\approx0.13\) to \(w^\ast\approx0.6\)&ndash;\(0.8\), and the effect at comparable \(w\) is roughly <b>a third</b> the size. <b>Debiting the payoff directly overstates what the reputational channel actually delivers</b>, which is worth knowing and does not change what the section concludes. In the endogenous formulation, \(w=0.5\) gives both fixation probabilities above \(1/N\) (\(2.4\times10^{-2}\) and \(5.2\times10^{-2}\)) &mdash; the other way bistability can fail, with <b>neither</b> resisting.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>A second negative result worth recording</h2>
+        <p class="q">An effect not being visible is not the same as a mechanism not being there.</p>
+        <div class="warn">
+            <h3>The dependence on \(v\) is real but masked by merit noise</h3>
+            <p>The marginal cost of dissent should scale with \(v\), the value of being included. In the evolutionary sweep it does not: at \(w=1\), over \(v\in[0.1,2.0]\), \(\overline{k\eta}\) is 3.99, 3.58, 4.13, 5.03, 3.80 &mdash; flat to non-monotone and within the replicate spread.</p>
+            <p>The reason is not that the mechanism is absent. Holding \(a\) fixed as in the invasion runs, the standing component of the payoff difference between a gated mutant and its graded residents grows <b>exactly linearly</b> in \(v\), from \(7.3\times10^{-4}\) at \(v=0.1\) to \(1.45\times10^{-2}\) at \(v=2\). But so does the spread of payoff <b>within</b> a strategy, which comes almost entirely from \(a_j\) (its correlation with payoff among residents is 0.98&ndash;0.99) and is <b>thirty times larger</b>, 0.022 to 0.44 over the same range. Since \(a_j\) is redrawn each generation and carries no information about strategy, raising \(v\) adds noise to the selection signal as fast as it adds second-order signal.</p>
+            <p>This can be confirmed by intervention. With \(\sigma_a\) set to zero the per-encounter imitation bias grows with \(v\) as 0.010, 0.026, 0.051, 0.101, 0.194; at the paper's \(\sigma_a\) it is 0.002, 0.010, 0.021, 0.033, 0.042 and flattens by \(v\approx1\). At \(\sigma_a=0.15\) and \(0.05\) the trajectories become monotone in \(v\). <b>The \(v\)-dependence is real but, at the paper's \(\sigma_a\), covered by merit noise.</b> The instrument that sees it is the invasion analysis, which holds \(a\) fixed and compares matched groups, and that is the analysis the conclusion rests on.</p>
+        </div>
+        <div class="sub">
+            <h3>In a heterogeneous population \(\overline{k\eta}>4\) is only necessary</h3>
+            <p>If judges were homogeneous the population would fold at \(\overline{k\eta}>4\). With heterogeneous judges the self-consistent map has maximum slope \(N^{-1}\sum_j k_j\eta_j\,\sigma_j(1-\sigma_j)\le\overline{k\eta}/4\), with equality only <b>when every judge sits at their inflection point at once</b>. So \(\overline{k\eta}>4\) is necessary rather than sufficient, and the crossing shares in the tables should be read as upper bounds. The same inequality governs the measurability argument in <a href="../logistic-reduction/">Logistic Reduction</a>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources and code</h2>
+        <p class="body">
+        Invasion fitness, the Fermi-imitation trajectories and the selection gradient are implemented in <code>evolution.py</code>. The neutral control, the \(\eta\)/\(k\) split and the sign-based invasion test are in <code>check_f234_evolution.py</code>; fixation probabilities in <code>check_fixation.py</code>; the endogenous second-order cost in <code>evolution_endog.py</code>; other initial strategies and the reflecting boundary in <code>check_evo_boundaries.py</code>; the effect of interpolation in <code>check_fixation_interp.py</code>; the \(v\)-dependence in <code>check_k4b_v.py</code> and <code>check_k4b_v_sweep.py</code>; and the test of whether the epistemic payoff is a function of \(k\eta\) in <code>check_epi_product.py</code>.
+        </p>
+        <ul class="refs">
+            <li>Code and logs: <a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a> (MIT licence).</li>
+            <li>The manuscript is in preparation for submission to the <i>Journal of Theoretical Biology</i>.</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Nowak, M. A., Sasaki, A., Taylor, C. &amp; Fudenberg, D. (2004) Emergence of cooperation and evolutionary stability in finite populations. <i>Nature</i>, 428, 646&ndash;650.</li>
+                <li>Panchanathan, K. &amp; Boyd, R. (2004) Indirect reciprocity can stabilize cooperation without the second-order free rider problem. <i>Nature</i>, 432, 499&ndash;502.</li>
+                <li>Traulsen, A. &amp; Hauert, C. (2009) Stochastic evolutionary game dynamics. In <i>Reviews of Nonlinear Dynamics and Complexity</i>, vol. 2. Wiley. (the pairwise-comparison process)</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>Perspective 6 covers structures in which several agents act and each one's choice bears on the others' outcomes. Two methods already sit there. The objective of <a href="../gan/">adversarial cultural dynamics</a>, \(\min_G \max_D V(D,G)\), is <b>zero-sum</b>: the players are two networks and the solution is a balance point. <a href="../economic-games/">Economic games</a> are non-zero-sum: the players are people and the solution is an observed distribution of choices.</p>
+        <p>This method is a third kind. The player is a <b>population</b> and the solution is <b>which strategy spreads over time</b>. Nothing is solved for equilibrium and nothing is observed; a process is run in which payoff differences are converted into rates of increase. The answer is fixation in an evolutionary process, not equilibrium in a game. This method sits under <b>perspective 6 (games and adversaries)</b> in <a href="../">Read the eight perspectives in equations</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the logged output of the published repository; no estimates or approximations are given. The manuscript is in preparation, so the conclusions should be read as provisional.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the eight perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../teaching/methods/">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-11-26 &nbsp;|&nbsp; <a href="../">← Back to Read the eight perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>

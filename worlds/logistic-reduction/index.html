@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ロジスティック縮約と非崩壊性 — 小野原彩香 | Methods</title>
+    <meta name="description" content="分岐条件を一本のロジスティック回帰係数に縮約する手法について、係数の非崩壊性・集計応答と必要条件／十分条件の区別・設計効果による有効観測数・焼き戻し尤度と厳密推論との照合を、評判に条件づけられた支援のモデルに即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（頻度論（標本変動・推定・検定）） */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">ロジスティック縮約</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">科目の重なり</a>
+            <a href="../../teaching/guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/worlds/logistic-reduction/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 2 ｜ <a href="../">頻度論（標本変動・推定・検定）</a></span>
+        <h1>Logistic <span>Reduction</span></h1>
+        <p class="lead">力学系が出す条件は内部変数の不等式で、そのままでは検証できません。この手法は支援規則に不動点の関係を代入し、分岐条件を<b>ロジスティック回帰の係数一本</b>に落とします。<br>縮約が通ったあとに残る二つの要件——判定者内で推定すること、そしてそれが必要条件にすぎないこと——を、反例と測定に即して整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">理論の分岐条件を、実験で測れる一本の量に落とす。</p>
+        <p class="body">
+        力学系の分析が出す条件は、たとえば \(\eta qk>4\) のように、モデルの内部変数についての不等式である（<a href="../fold-bifurcation/">折り畳み分岐</a>）。この形のままでは検証できない。\(\eta\)（他人の判断をどれだけ重く読むか）も \(q\)（他人の判断がどれだけ見えているか）も \(k\)（判断の切れ味）も、人に直接訊いて答えが返る量ではない。
+        </p>
+        <p class="body">
+        この手法がすることは一つだけである。モデルの支援規則に不動点の関係を代入し、<b>ロジスティック回帰の係数として読める形に書き直す</b>。すると三つの内部変数のうち二つが一つの係数にまとまり、分岐条件が係数についての不等式になる。理論が実験にかかるかどうかは、この縮約が通るかどうかで決まる。
+        </p>
+        <p class="body">
+        ただし縮約が通ったあとに、二つの要件が残る。<b>その係数をどう推定すれば構造的な値が返るのか</b>（第4節）と、<b>その係数が閾値を超えていたら何が言えるのか</b>（第5節）である。この二つは互いに逆方向に推論を制限する。片方だけを見ると、測定可能性の主張は壊れる。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>縮約</h2>
+        <p class="q">代入すると、分岐条件が回帰係数一本になる。</p>
+        <p class="body">
+        支援規則 \(P(\text{支援}) = \sigma(k(r-\theta))\) に不動点の関係 \(r = a + \eta q\,\bar s\) を代入する。\(a\) は相手の貢献、\(\bar s\) は相手が他者から受けている支援の割合である。
+        </p>
+        <div class="eq">
+            <div class="lbl">縮約形</div>
+            \[ P(\text{支援}) = \sigma\big(k a + k\eta q\,\bar s - k\theta\big) \]
+            \[ \mathrm{logit}\,P = \underbrace{k}_{\beta_a}\,a + \underbrace{k\eta q}_{\beta_s}\,\bar s - k\theta \]
+            <p class="read"><b>\(\beta_a = k\)</b> … 相手の貢献にかかる係数<br>
+            <b>\(\beta_s = k\eta q\)</b> … 相手が受けている支援にかかる係数。<b>これが分岐条件の左辺そのもの</b></p>
+        </div>
+        <div class="eq">
+            <div class="lbl">検証可能な形にした分岐条件</div>
+            \[ \boxed{\;\beta_s > 4\;} \]
+            <p class="read"><b>\(\beta_s\)</b> … 相手が受けている支援が「誰もいない」から「全員」に変わったときの、支援する対数オッズの変化<br>
+            <b>目安</b> … \(\beta_s=4\) はオッズ比で約55にあたる</p>
+        </div>
+        <div class="sub">
+            <h3>何が測れて、何が測れないか</h3>
+            <p>回帰が返すのは \(k\) と<b>積 \(\eta q\)</b> であって、\(\eta\) と \(q\) は別々には出てこない。条件 (3) の検証にはこれで足りる——条件が依存するのが積だけだからこそ、一対の不等式ではなく一本の不等式に潰れる。しかし<b>なぜ</b>その集団が閾値の上にいるのかを言うには足りない。高い \(\beta_s\) は「支援決定がよく見えている」とも「見えたものを鋭く読んでいる」とも整合し、回帰は両者を区別しない。分けるには、判定者の応答を経由しない \(q\) の測定——支援決定が実際にどこまで流通しているか——が必要になる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>起源 ―― 非崩壊性と設計効果</h2>
+        <p class="q">この手法が借りているのは、既存の二つの「ずれ」の理論である。</p>
+        <div class="sub">
+            <h3>ロジスティック係数の非崩壊性</h3>
+            <p>線形回帰では、無関係な共変量を落としても傾きは変わらない。ロジスティック回帰では変わる。個体ごとに異なる切片（ここでは \(\theta_j\)）や傾き（\(k_j\)）を持つ集団をプールすると、返ってくる係数は<b>各個体が実際に使っている構造的な値より系統的に小さい</b>。これは誤差でも交絡でもなく、非線形リンクの数学的な性質である（Gail et al. 1984、Greenland, Robins &amp; Pearl 1999）。周辺係数と条件付き係数が一致しないという、この分野で「非崩壊性」と呼ばれる現象である。</p>
+        </div>
+        <div class="sub">
+            <h3>設計効果と有効標本数</h3>
+            <p>標本調査では、クラスタ抽出した \(n\) 個の観測は独立な \(n\) 個分の情報を持たない。相関があるぶん目減りし、その比を設計効果、割り戻した大きさを有効標本数と呼ぶ（Kish 1965）。本来は推定の精度についての概念だが、ここでは<b>判定者が群衆を何個分の証拠として数えるべきか</b>という形で使う。第6節がそれである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>要件① 判定者内で推定しなければならない</h2>
+        <p class="q">プールした係数は構造値より小さく出る。だから有意でない結果は反証にならない。</p>
+        <p class="body">
+        非崩壊性から直接出てくる要件である。\(k\) や \(\theta\) の異なる判定者をプールして推定した \(\beta_s\) は、各判定者が使っている値より小さい。したがって \(\beta_s\) は<b>判定者内で</b>推定しなければならない——\(\bar s\) を参加者内で操作し、係数をランダム傾きとして回収する——そして記述される貢献は適格性の境界付近に置く必要がある。
+        </p>
+        <div class="warn">
+            <h3>飽和した条件は係数を偏らせないが、標準誤差を膨らませる</h3>
+            <p>閾値から遠い対象を記述したヴィネットは \(P\) を0または1に押しつける。これは<b>正しく特定されたモデルの係数を偏らせない</b>が、係数を推定するための情報のほとんどを奪う。重み \(P(1-P)\) が小さくなるからである。結果として標準誤差が膨らみ、有意にならない。</p>
+            <p>二つを合わせると結論は一つになる。<b>プールされた横断的な \(\beta_s<4\) は、このモデルに対する反証ではない</b>。推定の設計がこの要件を満たしていないだけでありうる。これは「効果がないこと」と「検出できていないこと」の区別（<a href="../power-simulation/">検出力シミュレーション</a>）と同型の問題で、ここでは非線形リンクが原因になっている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>要件② 判定者内の \(\beta_s>4\) は必要条件にすぎない</h2>
+        <p class="q">効くのは個人の係数ではなく、判定者たちの集計応答である。</p>
+        <p class="body">
+        条件 (5) が本当にかかっているのは、\(\bar s\) を作っている判定者たちの<b>集計応答</b>である。
+        </p>
+        <div class="eq">
+            <div class="lbl">集計応答と一般条件</div>
+            \[ F(r)=N^{-1}\sum_j\sigma\big(k_j(r-\theta_j)\big),
+               \qquad \eta q\,\max F' > 1 \]
+            <p class="read"><b>判定者が閾値を共有するとき</b> … \(\max F' = \bar k/4\) で、(5) は \(\beta_s\) を判定者間の平均と読めば厳密。ランダム傾きモデルが返すのがこれ<br>
+            <b>共有しないとき</b> … \(\max F'\le\bar k/4\)。等号が成り立つのは<b>全判定者が同時に自分の変曲点にいるとき</b>だけ</p>
+        </div>
+        <div class="sub">
+            <h3>反例で限界を示す</h3>
+            <p>判定者の半数が \(\sigma[5(s-0.25)]\)、半数が \(\sigma[5(s-0.75)]\) で応答するとする。<b>全員の \(\beta_s\) は 5</b> で、閾値4を超えている。しかし集計すると \(\max F'=0.866<1\) で、写像は縮小写像になり、不動点は一つしかない。折り畳みは起こらない。</p>
+            <p>どこまで分散が許されるかも測った。閾値の半間隔が約 0.15 までは折り畳みが残り、<b>0.20 で消える</b>。したがって測定された \(\beta_s\) を集団に持っていくには、傾き<b>と</b>閾値の同時分布から \(F\) を再構成する必要があり、ランダム傾きモデルがそれを供給するのはランダム切片も載せている場合だけである。</p>
+        </div>
+        <div class="warn">
+            <h3>この不等式は節をまたいで矛盾していた</h3>
+            <p>同じ不等式 \(\max F'\le\bar k/4\) は、<a href="../evolutionary-game/">進化ゲーム</a>の節では不均質な集団についての上限として最初から書かれていた。しかし測定可能性を論じる節では「判定者内 \(\beta_s>4\) で条件が満たされる」と書いてあった。<b>同じ原理を二箇所で使っていて、片方だけが制限を認識していた</b>ことになる。投稿前の第三回レビューで指摘され、反例を独立に再現したうえで両方を必要条件の言い方に揃えた。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>群衆は独立観測何個分か</h2>
+        <p class="q">設計効果を、判定者が群衆に与えるべき重みとして使う。</p>
+        <p class="body">
+        観察される \(m\) 人の他者が \((a,\theta)\) を与えたときに条件付き独立なのは、各人が自分の私的な手がかりだけを使った場合だけである。走っている系では彼らも互いを見ているので、決定に共通成分が入る。\(m\) 個の観測を \(m\) 個分の証拠として数える判定者は二重計上している。
+        </p>
+        <ol class="steps">
+            <li><b>相関を測る</b>　グラフ・貢献・私的基準を固定し、支援の抽選だけを変えて \(\bar s_i\) の分散を取る。分散は<b>状態内の二項部分</b>（判定者間で独立）と<b>状態自身のドリフト部分</b>（その人の判定者全員に共通）に分かれる。後者が、素朴な判定者が無視している相関である。</li>
+            <li><b>設計効果で \(m_{\text{eff}}\) に変換する</b>　標本調査の設計効果と同じ計算で、群衆が独立観測何個分かを出す。</li>
+            <li><b>判定者に組み込む</b>　尤度に指数 \(m_{\text{eff}}/m\) を掛ける（焼き戻し尤度）。これは「相関を測って正しい量だけ割り引く判定者」の表現である。</li>
+            <li><b>近似であることを確かめる</b>　分散から導いた有効標本数を尤度の指数として入れることは、観測の真の同時分布のもとでの厳密推論と一般には同じ物ではない。相関係数は同時分布を決めないからである。そこで共通ショック \(\tau\) を持つ \(m\) 人について<b>厳密推論する判定者</b>と突き合わせた。</li>
+        </ol>
+        <div class="sub">
+            <h3>近似は折り畳みの判定を変えない</h3>
+            <p>厳密推論する判定者と比べて、焼き戻し判定者は<b>試したすべての \(\tau\) で同じ折り畳み判定</b>を返し、折り畳みが起こる範囲（\(\tau\le0.75\)、\(\rho\le0.33\)）では \(\beta_s\) が 1.00 から 1.06 倍の範囲で一致する。両者が分かれるのは折り畳みが起こらない領域の奥で、そこでは \(\beta_s\) が 2 を下回っていて判定に疑いがない。共通ショックについての積分はガウス–エルミート求積41ノードで行っている。</p>
+        </div>
+        <p class="body">
+        そのうえで \(\beta_s\) は \(m_{\text{eff}}\) にほぼ線形になる。折り畳みは \(m_{\text{eff}}=1.25\) と \(1.30\) の間で現れる。これはロジスティック当てはめの産物ではない——真の自己無撞着写像 \(s=\sum_n\binom{m}{n}s^n(1-s)^{m-n}P(a,n/m)\) を反復して安定不動点を直接数えると、\(1.25\) で一つ、\(1.30\) で二つになり、試したすべての値で \(\beta_s>4\) という基準と一致する。
+        </p>
+        <p class="body">
+        では判定者は<b>どれだけ</b>群衆を信用するべきなのか。それは経験的な問いで、<a href="../small-world/">網のモデル</a>が答えを出す。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>網の設定</th><th class="num">\(\eta qk\)</th><th>レジーム</th><th class="num">\(\rho\)</th><th class="num">\(m_{\text{eff}}\)</th><th class="num">含意される \(\beta_s\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>\(\eta=0.9,\,k=2.0\)</td><td class="num">1.80</td><td>段階的</td><td class="num">0.019</td><td class="num">8.52</td><td class="num">28.1</td></tr>
+                <tr><td>\(\eta=0.9,\,k=3.5\)</td><td class="num">3.15</td><td>段階的</td><td class="num">0.079</td><td class="num">5.83</td><td class="num">19.4</td></tr>
+                <tr><td>\(\eta=0.5,\,k=7.0\)</td><td class="num">3.50</td><td>段階的</td><td class="num">0.095</td><td class="num">5.40</td><td class="num">18.8</td></tr>
+                <tr><td>\(\eta=0.9,\,k=4.0\)</td><td class="num">3.60</td><td>段階的</td><td class="num">0.119</td><td class="num">4.82</td><td class="num">15.9</td></tr>
+                <tr><td>\(\eta=0.9,\,k=12\)</td><td class="num">10.80</td><td><b>双安定</b></td><td class="num"><b>0.983</b></td><td class="num"><b>1.02</b></td><td class="num"><b>3.4</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(m=10\)、200反復、400個体、対象についての中央値。<code>check_m_eff_network.py</code> の出力。折り畳みの<b>手前</b>で測るのは意図的である。双安定領域では反復が別の basin に落ちるので相関が構成上ほぼ1になり、そこで判定者を校正して折り畳みを説明するのは循環になる。</p>
+        <div class="sub">
+            <h3>折り畳みは相関無視を必要としない</h3>
+            <p>段階的な網では観察される他者の相関は \(\rho\) が 0.02 から 0.12 と弱く、群衆は本当に5個から9個分の独立観測に値する。<b>相関を測って正しい量だけ割り引く判定者でも \(\beta_s\) は 16 から 28 になり、閾値の4倍から7倍である</b>。素朴な群集行動（Eyster &amp; Rabin 2010）や説得バイアス（DeMarzo et al. 2003）を仮定する必要はない。正しい推論で足りる。段階的なレジームは、それについての正確な推論に対して不安定である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>どこで圧力が止まるか ―― そして、これは感度分析である</h2>
+        <p class="q">測っているのは圧力の符号であって、落ち着く場所ではない。</p>
+        <p class="body">
+        折り畳みを越えると同じ測定が \(\rho=0.983\)、\(m_{\text{eff}}=1.02\) を返す。全判定者が互いと一緒に動いていて、どんな大きさの群衆もほぼ正確に新鮮な私的観測1個分の価値しかない。そこで正しく割り引く判定者が作る \(\beta_s\) は 3.4 で、閾値をわずかに<b>下回る</b>。
+        </p>
+        <p class="body">
+        ここで言葉を慎重に選ぶ必要がある。段階的な状態では、正しい割引がその状態を壊すだけの重みを群衆に与えることを正当化する。折り畳んだ状態ではそうならない。つまり系を押し上げた圧力は、着いた先では働いていない。しかしこれは<b>「折り畳んだ状態が正確な推論の固定点である」ことを意味しない</b>。
+        </p>
+        <div class="eq">
+            <div class="lbl">固定点が要求する式</div>
+            \[ H(C) = C \qquad\text{（解いていない）} \]
+            <p class="read"><b>\(H(\eta qk)\)</b> … パラメータ \(\eta qk\) の集団で、正しく割り引く判定者が作る係数<br>
+            <b>測定されたのは</b> … \(H(10.80)=3.4\) という一点の値と、\(H(C)-4\) の符号<br>
+            <b>固定点が要求するのは</b> … \(H(C)=C\) という別の方程式。これは解いていない</p>
+        </div>
+        <div class="sub">
+            <h3>圧力が止まるのは折り畳みのところではない</h3>
+            <p>測定を上方へ延長すると、\(m_{\text{eff}}\) は \(\eta qk=\) 5.40、7.20、9.00、9.90、10.80 でそれぞれ 2.57、1.20、1.05、1.03、1.02 になる。必要なのは 1.30 なので、<b>交差は 5.40 と 7.20 の間にある</b>。正しい割引は \(\eta qk\) が概ね6から7、臨界値の約1.5倍に達するまで系を押し上げ続け、そこで初めて止まる。精度は系を縁に置くのではなく、通り過ぎさせて少し先で押すのをやめる。その点は、この配置が自ら作り出した相関が、ついに群衆を無視することを正当化する点である。</p>
+        </div>
+        <div class="warn">
+            <h3>この議論は本稿の三本の論証のうち最も弱い。感度分析に格下げした</h3>
+            <p>折り畳みの両側の数点で有効観測数を測り、正しい割引が段階的な系を押し上げ、折り畳んだ系を押さないことを観察した。<b>\(H\) を数点で測って \(H(C)-4\) の符号を読んだのであり、\(H(C)=C\) を解いていない。内生的な \(\eta qk\) を持つ系がどこかに収束することも示していない</b>。どちらをやるにも、判定者の推論が自分たちの生む パラメータをどう更新するかを特定する必要があり、それは別のモデルである。</p>
+            <p>したがってこの節の結果は「調べた相関構造のもとで、相関を正しく割り引く判定者は折り畳みの手前では臨界値より上の係数を作り、折り畳みの先では下の係数を作る」という<b>感度分析</b>であり、そうした系がどこで落ち着くかについての言明ではない。原稿では「落ち着く」ではなく「押すのをやめる」と書いている。レビューで指摘されて書き換えた箇所で、最初の版には「正確な推論の固定点」と書いてあった。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>数値についての注記</h2>
+        <p class="q">ステップ状の量を点推定として報告しない。</p>
+        <div class="sub">
+            <h3>臨界値は階段の縁である</h3>
+            <p>支援決定は \(\{0,1\}\) で \(n_+\) は \(m+1\) 通りしか取らないので、\(\beta_s\) は \(m_{\text{eff}}\) に対して階段状に動き、上に書いた臨界値はその縁である。解像度 \((m,n_x)\) を \((10,41)\)、\((10,81)\)、\((20,81)\)、\((30,101)\) と変えると \(m^\ast_{\text{eff}}\) は 1.296、1.296、1.152、1.196、\(\beta_s|_{m_{\text{eff}}=1}\) は 3.07、3.37、3.32、3.30 になる。<b>点推定ではなく区間として報告する</b>。\(m_{\text{eff}}\le0.5\) の領域は解像されていないので使わない。</p>
+        </div>
+        <div class="sub">
+            <h3>積分格子が粗いと係数を過小評価する（最初の計算の誤り）</h3>
+            <p>この節で引用するすべての値は、格子幅が最大で \(\sigma_x/4\) 以下になる積分格子を使っている。最初に書いたときは固定格子を使っていて、それは \(\sigma_x=0.20\) では<b>手がかりそれ自体より粗く</b>、そこで \(\beta_s\) を過小評価していた。解像度を揃えてから数値を作り直した。</p>
+        </div>
+        <div class="sub">
+            <h3>測定値の頑健性</h3>
+            <p>表の \(m_{\text{eff}}\) は走行長で変わらない（150、300、600、1200ステップで 5.86、5.83、5.83、5.84）。反復数でも変わらない。貢献の散らばりを広げると上がる（\(a_{sd}=0.03,\,0.10,\,0.30\) で 5.83、6.46、8.51）ので、引用している値は保守的な側である。最も保守的な測定値 \(m_{\text{eff}}=4.82\) を、\(\sigma_x\in\{0.35,0.75,1.50\}\) と \(s_\theta\in\{0.05,0.30,1.00\}\) のすべての組合せで判定者に通すと \(\beta_s\) は 13.5 から 50.1 になる。結論は二つのモデルのパラメータを一致させることに依存していない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>直接の経験的検定</h2>
+        <p class="q">操作するのは第三者の行動の報告だけ。返ってくるのは一本の係数。</p>
+        <p class="body">
+        式 (5) があるので、理論は一本の係数で検証できる。<b>操作する量が「ある人を助けた他者の割合の報告」だけ</b>であるヴィネット実験で、参加者自身の援助意思をロジスティック回帰すれば \(\beta_s\) が直接出る。心理の違いについて何も前提を置かずに集団間で比較できる。
+        </p>
+        <div class="sub">
+            <h3>設計が満たさなければならないこと</h3>
+            <p>第4節と第5節がそのまま要件になる。参加者<b>内</b>で \(\bar s\) を操作し、適格性の境界付近の貢献を記述し、傾きの分布と同時に<b>切片の分布も推定して \(F\) を再構成する</b>。測定された \(\beta_s>4\) が立てるのは必要条件であって十分条件ではない。</p>
+        </div>
+        <div class="sub">
+            <h3>派生する三つの予測</h3>
+            <p>第一に、貢献が見えにくくなると \(\eta q\) は上がるが \(\beta_s\) は上がらないので（\(\sigma_x\) を 0.20 から 2.00 へ動かすと \(\eta q\) は 5.4 から 38.3 へ7倍になるのに対し、\(\beta_s\) は 33.0 から 38.1 の範囲に留まる）、構造的・不可視な原因を持つ困難を判定する集団では、\(\beta_s\) が高くなくても \(\eta q\) が高いはずである。</p>
+            <p>第二に、条件が不透明になるほど必要な軽信は下がり、\(s_\theta=0.57\) を過ぎると必要な \(m^\ast_{\text{eff}}\) が1を割る（\(s_\theta=\) 0.05、0.30、0.57、1.00 で 1.50、1.30、0.99、0.59）。したがって<b>適格性の基準を明示することは、まったく軽信的でない判定者においても \(\beta_s\) を下げる</b>はずである。なお \(s_\theta\) を上げる操作は二つの役割を同時に動かすので分離した。他者の分散を 0.30 に固定して判定者の不確実性だけ上げると \(\beta_s\) は 28.2 から 109.0 へ、判定者の不確実性を 0.30 に固定して他者の分散だけ上げると 37.6 から 21.0 へ動く。互いに逆方向に引くので、合算した数値は不透明性の経路を<b>過小評価している</b>。</p>
+            <p>第三に、観察される支援者間の相関それ自体がレジーム依存なので、同じ参加者は、記述された共同体が「全員が目に見えて一緒に動いている」場合には群衆を<b>軽く</b>重みづけ、「各人が別々に決めているように見える」場合には重く重みづけるはずである。誰かの性質ではなく、知覚される \(\rho\) の操作である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">10</span>出典とコード</h2>
+        <p class="body">
+        縮約形と、二項重み付き最小二乗によるロジット当てはめ、焼き戻し尤度は <code>rationality_trap.py</code> に実装されている。網での有効観測数の測定は <code>check_m_eff_network.py</code>、その頑健性は <code>check_m_eff_robust.py</code>、厳密な相関ベルヌーイ推論との照合は <code>check_meff_exact.py</code>、集計応答と \(\max F'\) の反例は <code>check_threshold_dispersion.py</code>、\(s_\theta\) の二役の分離は <code>check_stheta_split.py</code>、積分解像度の統制は <code>check_f5_resolution.py</code> と <code>regen_section4_numbers.py</code> にある。
+        </p>
+        <ul class="refs">
+            <li>コードとログ：<a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a>（MIT ライセンス）。</li>
+            <li>原稿は <i>Journal of Theoretical Biology</i> への投稿準備中。ヴィネット実験はまだ実施していない。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Gail, M. H., Wieand, S. &amp; Piantadosi, S. (1984) Biased estimates of treatment effect in randomized experiments with nonlinear regressions and omitted covariates. <i>Biometrika</i>, 71(3), 431&ndash;444.</li>
+                <li>Greenland, S., Robins, J. M. &amp; Pearl, J. (1999) Confounding and collapsibility in causal inference. <i>Statistical Science</i>, 14(1), 29&ndash;46.</li>
+                <li>Kish, L. (1965) <i>Survey Sampling</i>. Wiley.（設計効果と有効標本数）</li>
+                <li>Eyster, E. &amp; Rabin, M. (2010) Naive herding in rich-information settings. <i>American Economic Journal: Microeconomics</i>, 2(4), 221&ndash;243.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>観点2（頻度論）が評価するのは、標本を取り直したときに手続きがどれだけ当たるかである。この手法が持ち込んでいるのは、その枠組みの中で生じる<b>二つのずれ</b>である。ロジスティック係数の非崩壊性は、プールという操作が構造値を縮めるずれであり、設計効果は、相関した観測が独立な観測ほどの情報を持たないずれである。どちらも推定量の性質についての言明で、観点2の守備範囲にある。</p>
+        <p>この手法が特異なのは、二つ目のずれを<b>推定の精度ではなく、判定者の信念の重みとして</b>使っている点である。設計効果が答えるのは「この標本は何個分か」だが、ここで答えさせているのは「この群衆は何個分の証拠とみなすべきか」である。同じ計算が、推定論の道具から、モデル内の主体の推論の記述に転用されている。<a href="../">8つの観点を式で読む</a>の<b>観点2（頻度論）</b>に、この手法が置かれている。構造的な条件そのものは<a href="../fold-bifurcation/">観点8</a>にある。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて公開リポジトリの実行ログから引用し、推定値や概算は記載していません。原稿は投稿準備中のため、結論は変わりうるものとしてお読みください。<br>
+    手法の位置づけの全体像は <a href="../">8つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../teaching/methods/">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-11-26 &nbsp;|&nbsp; <a href="../">← 8つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

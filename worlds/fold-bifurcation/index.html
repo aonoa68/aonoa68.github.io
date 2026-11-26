@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自己無撞着写像と折り畳み分岐 — 小野原彩香 | Methods</title>
+    <meta name="description" content="自己無撞着写像の不動点とサドルノード（折り畳み）分岐について、分岐条件 ηqk>4 の導出・閉形式の分岐点・支援規則の一般性・ヒステリシス・揺らぐ閾値のもとでの準安定性を、評判に条件づけられた支援のモデルに即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（力学系・分岐） */
+            --w:      #17697b;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bfdfe6; background:rgba(23,105,123,0.42); border:1px solid rgba(191,223,230,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(191,223,230,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f1f8fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">折り畳み分岐</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">科目の重なり</a>
+            <a href="../../teaching/guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/worlds/fold-bifurcation/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 8 ｜ <a href="../">力学系・分岐</a></span>
+        <h1>Saddle-Node <span>Bifurcation</span></h1>
+        <p class="lead">「転換点がある」という言い方は社会科学では古くからありますが、多くの場合それは<b>仮定</b>です。この手法は一段前に戻り、転換点が存在する条件そのものを、ある量が自分自身の関数になっている方程式の解の個数として導きます。<br>小野原が評判に条件づけられた支援のモデルで用いた折り畳み分岐に即して、何が導出で何がパラメータ依存なのかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">ティッピングを仮定せずに、どの条件で起こるかを導く。</p>
+        <p class="body">
+        社会の仕組みに「転換点」があるという言い方は古くからある。閾値モデルもティッピング・モデルも、人がある割合を超えたら行動を変えると<b>仮定した上で</b>、そこから何が起こるかを調べる枠組みである（Schelling 1971、Granovetter 1978）。この手法が答えるのは一段前の問いで、<b>その転換点が存在する条件そのもの</b>を、仮定ではなく導出として書く。
+        </p>
+        <p class="body">
+        使う道具は不動点である。ある量が自分自身の関数になっている状況を書き、その方程式の解がいくつあるかを数える。解が一つなら系は滑らかに応答し、三つになれば同じ条件のもとで異なる状態が共存する。一つから三つへ変わる瞬間が分岐で、その瞬間を与える不等式が、この手法の出力である。
+        </p>
+        <p class="body">
+        小野原がこれを使っているのは、支援が評判に条件づけられ、かつ<b>評判が受けている支援から逆に読まれる</b>場面である。助けられていない人は何か問題があるのだろうと推し量る——その推論が当たっているかどうかではなく、その推論が入っていること自体が系の形を変える。入っていれば不動点の方程式が自分自身を参照し、入っていなければ参照しない。この違いが分岐の有無として現れる。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>不動点を数える</h2>
+        <p class="q">立場が自分自身の関数になる。その方程式の解の個数を数える。</p>
+        <p class="body">
+        個人の立場（周囲がその人に割り当てている位置）を \(r\)、本人の観察可能な貢献を \(a\)、適格性の基準を \(\theta\) とする。立場は二つの源から更新される。本人が何をしたか、そして<b>周囲がその人に対して何をしているように見えるか</b>である。
+        </p>
+        <div class="eq">
+            <div class="lbl">更新の式</div>
+            \[ r_{t+1} = (1-\lambda)\,r_t + \lambda\Big[\,a + \eta\,q\,\sigma\big(k(r_t-\theta)\big)\Big],
+               \qquad \sigma(x)=1/(1+e^{-x}) \]
+            <p class="read"><b>\(\sigma(k(r_t-\theta))\)</b> … いま支援している人の割合<br>
+            <b>\(k\)</b> … その割合が立場にどれだけ鋭く応答するか（判断の切れ味）<br>
+            <b>\(q\)</b> … 他者の支援決定がどれだけ見えているか（可観測性）<br>
+            <b>\(\eta\)</b> … 見えたものを立場にどれだけ重く読み込むか（逆推論の重み）<br>
+            <b>\(\lambda\)</b> … 更新の速さ。<b>不動点の位置には効かない</b>（安定性と接近の速さだけを変える）</p>
+        </div>
+        <p class="body">
+        不動点は \(r = g(r) := a + b\,\sigma(k(r-\theta))\) を満たす \(r\) である（\(b:=\eta q\)）。導関数は \(g'(r) = bk\,\sigma(1-\sigma)\) で、\(\sigma=1/2\) のときに最大値 \(bk/4\) を取る。写像の傾きが1を超えられるかどうかが、解が増えるかどうかを決める。
+        </p>
+        <div class="eq">
+            <div class="lbl">分岐条件</div>
+            \[ \boxed{\;\eta\,q\,k \;>\; 4\;} \]
+            <p class="read"><b>読み方</b> … 三つの量の<b>積</b>が4を超えると、解が複数ある貢献 \(a\) が存在する。どれか一つが小さければ、残りがどれだけ大きくても折り畳みは起こらない</p>
+        </div>
+        <div class="sub">
+            <h3>積であることが、この条件の中身である</h3>
+            <p>範疇的な適格性判断はあるが逆推論がない社会は折り畳まない。受けている支援から立場を読むが、互いの支援行動が見えない社会も折り畳まない。両方あっても判断が段階的であれば折り畳まない。<b>三つの特徴は個別には無害で、揃ったときに十分になる</b>。これが不等式が積の形をしていることの解釈上の中身である。</p>
+        </div>
+        <div class="sub">
+            <h3>これは集団の条件であって、個人の条件ではない</h3>
+            <p>条件 \(\eta qk>4\) が言っているのは「複数の解を持つ \(a\) の区間が空でない」ということだけである。特定の個人が二つの安定状態を持つには、その人の貢献がその区間の中に入っていることも必要になる。次節の数値例がその区別を示している。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>分岐点は閉じた形で書ける</h2>
+        <p class="q">数値探索ではなく、解析解として求める。</p>
+        <p class="body">
+        サドルノード（折り畳み）分岐の位置は \(g'(r)=1\) を解けば出る。二次方程式になるので、解は初等関数で書ける。
+        </p>
+        <div class="eq">
+            <div class="lbl">折り畳み点</div>
+            \[ \sigma_{\pm}=\frac{1\pm\sqrt{1-4/bk}}{2},
+               \qquad r_\pm = \theta + k^{-1}\mathrm{logit}(\sigma_\pm) \]
+            \[ (a_{\text{low}},\,a_{\text{high}}) = \big(r_+ - b\sigma_+,\; r_- - b\sigma_-\big) \]
+            <p class="read"><b>\(\sqrt{1-4/bk}\)</b> … 根号の中が正であることが、ちょうど \(bk>4\) にあたる<br>
+            <b>\((a_{\text{low}},a_{\text{high}})\)</b> … 双安定になる貢献の区間。この幅を \(\Delta a\) と書く</p>
+        </div>
+        <div class="sub">
+            <h3>数値例</h3>
+            <p>\(b=0.9\)、\(k=12\)、\(\theta=0.5\) では区間は \((-0.127,\,0.227)\) になる。この集団では \(\eta qk=10.8\) で条件を大きく超えているが、\(a=0.5\) を貢献している個人の不動点は \(r=1.400\) ただ一つである。<b>集団が折り畳む領域にあることと、ある個人が二つの状態を持つことは、別の主張である</b>。</p>
+        </div>
+        <div class="sub">
+            <h3>解析解を持つことが何を可能にするか</h3>
+            <p>分岐点を数値的に探す実装では、「見つからなかった」が「存在しない」なのか「探索が粗かった」なのか区別できない。閉じた形があれば、条件の成否は代入だけで決まる。後述の関数形依存性の検査（第5節）も、比べる相手が解析的に分かっているからこそ検査になる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>起源 ―― 分岐理論と、社会科学の閾値モデル</h2>
+        <p class="q">道具は力学系から、問いは社会科学から来ている。</p>
+        <div class="sub">
+            <h3>サドルノード分岐</h3>
+            <p>一つのパラメータを動かしたとき、安定な不動点と不安定な不動点が対になって現れる（あるいは衝突して消える）のがサドルノード分岐である。一次元写像でも微分方程式でも同じ標準形に帰着し、分岐の直前には系の応答が遅くなる（臨界減速）という共通の性質を持つ。生態学では湖の富栄養化や植生の砂漠化、気候では氷床の後退といった「元に戻らない転換」の標準的な記述になっている。</p>
+        </div>
+        <div class="sub">
+            <h3>社会科学の閾値モデルとの差分</h3>
+            <p>Schelling (1971) の分居モデルと Granovetter (1978) の集合行動の閾値モデルは、社会科学におけるティッピングの原型である。どちらも、各人が「周囲の何割が動いたら自分も動くか」という閾値を持つと仮定し、その分布からティッピングを導く。</p>
+            <p>この手法の差分は二点ある。第一に、<b>ティッピング条件が仮定ではなく導出である</b>こと。\(\eta qk>4\) は三つの別々に解釈できるパラメータについての言明で、それぞれ原理的には測定できる（ただし一本の回帰からは別々には同定されない。<a href="../logistic-reduction/">ロジスティック縮約</a>の節を参照）。第二に、<b>ティップするのが近傍の構成や群衆の人数ではなく、個人の立場である</b>こと。Schelling のモデルでティップするのは街区であり、Granovetter のモデルでティップするのは集団である。ここでティップするのは一人の人間の立場である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>定数4は一般でない。積であることは一般である</h2>
+        <p class="q">関数形を変えたら何が残り、何が変わるかを確かめる。</p>
+        <p class="body">
+        4という数はロジスティック関数の性質である。支援の規則を \(r = a + b\,F(k(r-\theta))\) と一般に書くと、同じ議論から \(\max_r bk\,F' > 1\)、すなわち次の条件が出る。
+        </p>
+        <div class="eq">
+            <div class="lbl">一般形</div>
+            \[ \eta\,q\,k \;>\; \frac{1}{\max F'} \]
+            <p class="read"><b>読み方</b> … 分岐の閾値は支援規則の最大傾きの逆数で決まる。ロジスティックなら \(\max F'=1/4\) なので4になる</p>
+        </div>
+        <p class="body">
+        これは当てはめではなく予測なので、検査ができる。三つの別の規則について、<b>この式を一切使わずに</b>安定不動点の個数を直接数え、臨界 \(\eta qk\) を測った結果が次である。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>支援規則 \(F\)</th><th class="num">測定された臨界値</th><th class="num">予測 \(1/\max F'\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>probit（正規分布の累積）</td><td class="num">2.5066</td><td class="num">2.5066</td></tr>
+                <tr><td>\((1+\tanh)/2\)</td><td class="num">2.0000</td><td class="num">2</td></tr>
+                <tr><td>区分線形（クリップ）</td><td class="num">1.0000</td><td class="num">1</td></tr>
+                <tr><td>ロジスティック</td><td class="num">4</td><td class="num">4</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">数値は <code>check_link_generality.py</code> の出力。当てはめは行っておらず、安定不動点の数え上げだけで臨界値を決めている。</p>
+        <div class="sub">
+            <h3>何が残るか</h3>
+            <p>規則を変えても残るのは、<b>三つの量が積として入ること</b>であり、それに伴う「個別には無害、揃って十分」という解釈である。数の4は残らない。論文で主張を立てるときにどちらに体重をかけるかが、この検査で決まった。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>ヒステリシス ―― 落ちるのは安く、戻るのは高い</h2>
+        <p class="q">双安定窓の幅が、そのまま復帰の代償になる。</p>
+        <p class="body">
+        双安定窓の幅 \(\Delta a\) には直接の読みがある。折り畳みより下では、貢献が下がれば立場も比例して下がり、回復すれば戻る。折り畳みより上では、立場が崩れるには貢献が \(a_{\text{low}}\) を下回らなければならず、<b>立場が戻るには \(a_{\text{high}}\) を上回らなければならない</b>。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(bk\)</th><th class="num">\(\Delta a\)</th><th>状態</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">4.00</td><td class="num">0</td><td>分岐点ちょうど。窓が生まれる</td></tr>
+                <tr><td class="num">7.20</td><td class="num">0.132</td><td>双安定</td></tr>
+                <tr><td class="num">10.80</td><td class="num">0.354</td><td>双安定</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(\theta=0.5\)。窓の幅は分岐点でゼロ、以後単調に広がる。</p>
+        <div class="sub">
+            <h3>再参入の代償</h3>
+            <p>\(b=0.9,\;k=12\) では、個人は \(a<-0.127\) で落ち、\(a>0.227\) で初めて戻る。差は \(\Delta a=0.354\) で、<b>再参入の閾値それ自体の156パーセントに当たる</b>。落ちたときに持っていた貢献に戻るだけでは足りない。足りたことは一度もない、というのがこの不等式の内容である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>基準が揺らぐと、排除は吸収状態ではなく準安定になる</h2>
+        <p class="q">「出られない」ではなく「出にくい」。測るべき量は水準ではなく時間になる。</p>
+        <p class="body">
+        適格性の基準が明示されず、しかも時期によって変わるという状況を、\(\theta\) を毎期 \(N(\bar\theta, s_\theta^2)\) から引き直すことで表す。全員に<b>同じ</b>貢献 \(a\) を与え、全員を包摂された状態から始める。すると結果のばらつきは、ほかに何もばらついていないのだから、基準の揺らぎだけに帰属する。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>排除された割合（600ステップ後）</th><th class="num">\(s_\theta=0\)</th><th class="num">0.05</th><th class="num">0.10</th><th class="num">0.15</th><th class="num">0.20</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>\(a\) が窓の中央</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.019</td><td class="num">0.423</td></tr>
+                <tr><td>\(a\) が下側の折り畳み近く</td><td class="num">0.000</td><td class="num">0.015</td><td class="num">1.000</td><td class="num">—</td><td class="num">—</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">貢献の分散はゼロ。<code>model.py</code> の出力。個体は互いに区別がつかないので、結果をその人の性質で説明する記述はどれも正しくありえない。それでも事後には、その人の性質しか観察者の手元に残らない。</p>
+        <div class="sub">
+            <h3>窓の中央では、水準は測定ではなく恒等式である</h3>
+            <p>\(a=(a_{\text{low}}+a_{\text{high}})/2\) を取ると \(a=\bar\theta-b/2\) が厳密に成り立ち、不安定な中間不動点——二つの basin の境界——がちょうど \(r=\bar\theta\) に来る。\(u=r-\bar\theta\) と置くと更新は \(u'=(1-\lambda)u+\lambda b[\sigma(k(u-\varepsilon))-1/2]\) となり、\(\varepsilon=\theta_t-\bar\theta\) は0について対称、\(\sigma(x)-1/2\) は奇関数なので、写像は \((u,\varepsilon)\) について同時に奇である。したがって \(u\) の定常分布は対称で、<b>定常排除割合はこの位置では \(s_\theta\) の値によらず厳密に \(1/2\)</b> になる。</p>
+            <p>上の表の 0.423 はその定常値ではなく、600ステップ時点の値である。この区別を立てないと、水準そのものを結果として報告してしまう。この節が主張しているのは水準ではなく、<b>位置による順序</b>と、次に述べる時間尺度である。</p>
+        </div>
+        <div class="warn">
+            <h3>解析解がシミュレーションの誤読を捕まえた</h3>
+            <p>この厳密解は、最初に書いた原稿にはなかった。原稿には有限時間のシミュレーション値（0.39）が「定常排除割合」として載っていた。対称性から \(1/2\) が出ることに気づいたことで、0.39 が定常値ではなく<b>まだ混合していない過程の途中の値</b>だと分かった。</p>
+            <p>実際、\(s_\theta=0.15\) では排除割合は 600・2000・5000・10,000・20,000 ステップで 0.019、0.070、0.161、0.288、0.394 と上がり続け、2万ステップでもまだ \(1/2\) に向かう途中である。\(s_\theta=0.20\) では2000ステップ以内に 0.49 に達してそこに留まる。<b>緩和が遅いこと自体が結果であり</b>、\(s_\theta=0.15\) で引用される排除割合は、どれも地平線についての言明になる。</p>
+        </div>
+        <div class="sub">
+            <h3>打切りを明示する</h3>
+            <p>排除の持続を測るときの落とし穴は、観測期間内に終わらなかった滞在（打切り）である。\(s_\theta=0.15\) では打切りは端数ではない。<b>1577本の打切りスペルが排除時間全体の66パーセントを占めており</b>、その平均観測長は8429ステップで、完了した4155本の平均1662ステップを大きく上回る。完了スペルだけで平均を取ると、典型的な滞在を<b>過大評価するのではなく過小評価する</b>。</p>
+            <p>そこで報告する統計量を水準ではなく「排除時間のうち100ステップより長いスペルに費やされた割合」に変えた。この量は打切りの扱いに頑健で、完了スペルだけで 0.9989、打切りを観測長のまま含めて 0.9996 になる。\(s_\theta\) を上げると 0.959（0.20）、0.587（0.25）、0.189（0.30）と下がる。基準が騒がしくなると、排除も復帰も頻発し、滞在は短くなる。</p>
+        </div>
+        <div class="sub">
+            <h3>終わらせるには何が要るか</h3>
+            <p>600ステップ後に排除されていた個体を取り、<b>貢献をそのままにしておく</b>——落ちたときの貢献をいま持っているのだから、これが無介入の対照になる——と、雑音だけで10ステップ以内に3パーセント、100ステップ以内に23パーセント、400ステップ以内に66パーセントが回復する。貢献を \(a_{\text{high}}\) まで上げると、10ステップで53パーセント、50ステップで全員が回復する。<b>再参入の代償は基準が騒がしくなっても残る</b>。騒がしい基準は復帰を可能にするが、安くはしない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>この手法で言えないこと</h2>
+        <p class="q">平均場であること、数値が例示であること、収束を示していないこと。</p>
+        <div class="warn">
+            <h3>三つの限界</h3>
+            <p><b>平均場である。</b>式 (1) は全員が参照する単一の量 \(r\) を前提にしている。現実の集団にそんな台帳はない。中央の記録係を置かない定式化は<a href="../small-world/">スモールワールド網と部分可観測性</a>で別に扱っており、そこでは系の状態は支援行列そのものになる。分岐条件 \(\eta qk>4\) は解析結果なのでそちらでも効くが、数値の水準は変わる。</p>
+            <p><b>数値はパラメータに依存する。</b>解析結果（分岐条件と閉形式の分岐点）はパラメータに依存しないが、表に載っている水準は特定のパラメータ設定での値である。効果の大きさが無視できないことの<b>例示</b>として読むべきで、推定値として読むべきではない。</p>
+            <p><b>収束は示していない。</b>この手法は不動点の個数と位置を与えるが、\(\eta qk\) 自身が内生的に動く系がどこかに落ち着くかどうかは別の問題である。関連する議論は<a href="../logistic-reduction/">ロジスティック縮約</a>のページの最後に置いたが、そこで扱っているのは圧力の符号であって、収束ではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典とコード</h2>
+        <p class="body">
+        平均場の写像、折り畳み点の閉形式解、ヒステリシスの掃引、揺らぐ基準のもとでの排除割合は <code>model.py</code> に実装されている。折り畳みの数え上げによる独立検証は <code>check_f1_fold.py</code>、支援規則の一般性は <code>check_link_generality.py</code>、準安定性の地平線の延長は <code>check_metastability.py</code>、滞在時間・打切り・回復曲線は <code>check_dwell_time.py</code> にある。
+        </p>
+        <ul class="refs">
+            <li>コードとログ：<a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a>（MIT ライセンス）。本文に出てくる数値はすべてこのアーカイブの実行ログに対応している。</li>
+            <li>実証データは使っていない。すべての結果はコードから生成される決定的な出力であり、乱数種はコードに記録されている。</li>
+            <li>原稿は <i>Journal of Theoretical Biology</i> への投稿準備中。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Schelling, T. C. (1971) Dynamic models of segregation. <i>Journal of Mathematical Sociology</i>, 1(2), 143&ndash;186.</li>
+                <li>Granovetter, M. (1978) Threshold models of collective behavior. <i>American Journal of Sociology</i>, 83(6), 1420&ndash;1443.</li>
+                <li>Strogatz, S. H. (2015) <i>Nonlinear Dynamics and Chaos</i>, 2nd ed. Westview Press.（サドルノード分岐の標準的な扱い）</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>観点1から観点7は、いずれも<b>データから推論する</b>ための観点である。観点8はそうではない。ここで問うのは「このデータから何が言えるか」ではなく、<b>「この規則が走り続けたらどんな状態が可能か」</b>である。推定も損失も出てこない。出てくるのは方程式の解の個数である。</p>
+        <p>観点2（頻度論）と観点8の関係は、同じ系を違う側から見る関係になっている。観点8が与えるのは \(\eta qk>4\) という構造的な条件で、観点2はそれを<a href="../logistic-reduction/">一本の回帰係数</a>に翻訳して測定可能にする。<a href="../">8つの観点を式で読む</a>の<b>観点8（力学系・分岐）</b>に、この手法が置かれている。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて公開リポジトリの実行ログから引用し、推定値や概算は記載していません。原稿は投稿準備中のため、結論は変わりうるものとしてお読みください。<br>
+    手法の位置づけの全体像は <a href="../">8つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../teaching/methods/">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-11-26 &nbsp;|&nbsp; <a href="../">← 8つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

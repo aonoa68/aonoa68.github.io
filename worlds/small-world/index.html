@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スモールワールド網と部分可観測性 — 小野原彩香 | Methods</title>
+    <meta name="description" content="中央の評判台帳を置かない網上の評判動態について、Watts–Strogatz型スモールワールド網・部分可観測性 q・私的な基準・空間クラスタリング・多重ネットワークへの埋め込みと可読性 ρ を、支援行列そのものを状態とするモデルに即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（幾何（最小二乗）） */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">スモールワールド網</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">科目の重なり</a>
+            <a href="../../teaching/guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/worlds/small-world/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 1 ｜ <a href="../">幾何（最小二乗）</a></span>
+        <h1>A Web without a <span>Spider</span></h1>
+        <p class="lead">評判のモデルはたいてい「その人の評判」という単一の量を置きますが、現実の集団にそんな台帳はありません。この手法は台帳を取り払い、系の状態を<b>支援行列そのもの</b>——いま誰が誰を支援しているか——とします。<br>小野原が用いた網上の定式化に即して、配置を明示的に置いたうえでそれが結果を説明しないことを測る、という使い方を整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">中央の記録係を置かずに、評判の動きを書く。</p>
+        <p class="body">
+        評判についてのモデルは、たいてい「その人の評判」という<b>単一の量</b>を置く。間接互恵性の image scoring も、各人に一つのスコアを与え、全員がそれを参照する（<a href="../fold-bifurcation/">平均場の定式化</a>も同じである）。計算の都合としては自然だが、現実の集団にそんな台帳はない。誰かが持っているわけでもない。
+        </p>
+        <p class="body">
+        この手法は台帳を取り払う。系の状態は<b>支援行列 \(S_{ji}\) そのもの</b>——いま誰が誰を支援しているか——であり、それ以外に何もない。各判定者は自分の目に見える範囲から相手の立場を私的に推定し、自分の私的な基準と比べて支援するかどうかを決める。評判という単一の量はどこにも存在せず、存在するのは行列だけである。
+        </p>
+        <p class="body">
+        この定式化が払うコストは、解析的な扱いやすさである。得られるものは二つある。第一に、分岐条件が中央の台帳の産物ではないことを確かめられる。第二に、<b>「誰が排除したのか」という問いに答えがない</b>状況を、比喩ではなく構成として作れる。排除しているのは \(S\) であり、\(S\) は誰の頭の中にもない。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>構成</h2>
+        <p class="q">環状格子を少し張り替え、各判定者に私的な基準と限られた視野を与える。</p>
+        <div class="eq">
+            <div class="lbl">判定者 \(j\) が隣人 \(i\) について行うこと</div>
+            \[ \hat r_{ji} = a_i + \eta\Big[q\cdot\frac{\sum_{l\neq j}S_{li}}{d_i-1} + (1-q)\,\bar s\Big],
+               \qquad S_{ji}\sim\mathrm{Bern}\big(\sigma(k(\hat r_{ji}-\theta_j))\big) \]
+            <p class="read"><b>\(q\)</b> … \(i\) の他の支援者を、それぞれ確率 \(q\) で観察する。見えなかった分は固定の基準値 \(\bar s\) で代用する<br>
+            <b>\(\theta_j\)</b> … 判定者ごとに異なる私的な基準。<b>誰もこれを決めていない</b><br>
+            <b>\(\hat r_{ji}\)</b> … 判定者 \(j\) の頭の中にだけある推定値。judge ごとに違う</p>
+        </div>
+        <ol class="steps">
+            <li><b>網を作る</b>　\(n=400\) 個体の環状格子（次数12）を作り、各辺を確率 0.10 で無作為な相手へ張り替える。Watts&ndash;Strogatz 型のスモールワールド網で、近傍の密な結合と少数の遠距離の近道が共存する。</li>
+            <li><b>私的な基準を配る</b>　\(\theta_j\) を判定者ごとに引く。判定者が違うのは<b>この一点だけ</b>である。</li>
+            <li><b>同じ規則を全員に使わせる</b>　上の式を全員が使う。規則は局所的に合理的で、悪意を含まない。</li>
+            <li><b>選好を一切与えない</b>　<b>モデル内のどの個体も、\(i\) が包摂されるかどうかについて選好を持たない</b>。誰も誰かを排除したいと思っていない。</li>
+        </ol>
+        <div class="sub">
+            <h3>なぜスモールワールドなのか</h3>
+            <p>完全グラフでは全員が全員を見るので平均場に戻ってしまい、部分可観測性が意味を失う。純粋な環状格子では情報が局所に閉じすぎる。張り替え確率 0.10 のスモールワールド網は、その中間——<b>近傍は互いを見ているが、集団全体を見ている者はいない</b>——にあたり、評判が流通する集団の記述として標準的に使われる構造である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>起源</h2>
+        <p class="q">網の構造は Watts &amp; Strogatz から、台帳を外す動機は間接互恵性の研究史から来ている。</p>
+        <div class="sub">
+            <h3>スモールワールド網</h3>
+            <p>Watts &amp; Strogatz (1998) は、規則的な格子の辺をわずかに張り替えるだけで、クラスタ係数は格子並みに高いまま平均経路長が無作為グラフ並みに短くなることを示した。「六次の隔たり」が成り立つ構造の最小の説明であり、以後、感染・同調・情報伝播のモデルの標準的な台になっている。ここで使っているのはその最も素直な形である。</p>
+        </div>
+        <div class="sub">
+            <h3>台帳を外すという動機</h3>
+            <p>間接互恵性の理論は、協力が「評判を介して」維持される機構を扱う（Nowak &amp; Sigmund、Ohtsuki &amp; Iwasa の leading eight など）。多くの定式化は各人に一つのスコアを与え、それが正しく共有されていると置く。そのうえで「情報の誤りや不完全さに対して機構がどれだけ頑健か」を問う系譜がある。この手法はその問いを一歩進めて、<b>共有されたスコアという対象そのものを置かない</b>。残るのは、各自が自分の視野から作る私的な推定値の集まりである。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>見える量を上げるだけで、持続的な排除が出る</h2>
+        <p class="q">変えたのは、互いの行動がどれだけ見えるかだけである。</p>
+        <p class="body">
+        網のモデルで可観測性 \(q\) だけを上げる。他は何も動かさない。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(q\)</th><th class="num">排除された割合</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">\(\le 0.6\)</td><td class="num">誰も排除されない</td></tr>
+                <tr><td class="num">0.8</td><td class="num">3パーセント</td></tr>
+                <tr><td class="num">1.0</td><td class="num"><b>53パーセント</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap"><code>model.py</code> の出力。双安定領域の内側では、排除率は貢献が窓のどこに位置するかで階調的に決まる——窓の10パーセンタイルで98パーセント、90パーセンタイルで2パーセント。</p>
+        <div class="warn">
+            <h3>何を仮定していないかを明示する</h3>
+            <p>判定者は全員同じ規則を使っている。どの判定者もどの結果も望んでいない。どの判定者も何も間違えていない。<b>排除がない状態と過半数が排除される状態の間で変わったのは、判定者たちが互いの行動をどれだけ見られるかだけである。</b></p>
+            <p>これは「情報の透明性を上げれば公正になる」という直観の反対側を示している。見えるようになったものは他者の支援決定であり、それを立場の証拠として読むことが局所的には合理的であるために、見えるほど逆推論の材料が増える。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>排除者がいない ―― そして、配置では説明されない</h2>
+        <p class="q">網の上の位置を明示的に置いたうえで、それが結果を説明しないことを測る。</p>
+        <p class="body">
+        「誰が排除したのか」と問えば、このモデルには答えがない。各判定者の決定は確率的で、どの決定も単独では結果を決めず、誰もその結果を望んでいない。排除しているのは支援行列であり、支援行列は誰の頭の中にもない。
+        </p>
+        <p class="body">
+        では網の上の<b>位置</b>が説明するのだろうか。これは測れる問いである。排除された個体の近傍に占める排除者の割合を、集団全体の基準率で割る。1.00倍ならクラスタしていない。
+        </p>
+        <div class="eq">
+            <div class="lbl">空間クラスタリング</div>
+            \[ \text{clustering} = \frac{\text{排除者の近傍に占める排除者の割合}}{\text{集団全体の排除率}} \;=\; 1.00 \]
+            <p class="read"><b>読み方</b> … 排除された個体の隣は、集団の平均と同じ割合でしか排除されていない。<b>排除は網の上で固まっていない</b><br>
+            <b>限界</b> … 調べたパラメータ設定のもとでの結果である。同類選択的な網構造がクラスタを生むかは未解決</p>
+        </div>
+        <div class="sub">
+            <h3>これが観点1との関係である</h3>
+            <p>観点1 に置かれている他の手法——<a href="../betweenness-centrality/">媒介中心性</a>、<a href="../gower-distance/">Gower距離</a>、<a href="../pca/">主成分分析</a>——はいずれも、配置や距離を使って<b>結果を説明する</b>。この手法は逆向きに使っている。配置を明示的に構成し、そのうえで配置が結果を説明しないことを示す。</p>
+            <p>これは消極的な結果ではない。もしクラスタしていたら、排除は「網の端にいること」で説明できてしまい、モデルの要点——誰の性質でも位置でもなく、行列の状態が排除している——が崩れる。<b>配置で説明されないことを確かめるために、配置を置く必要があった。</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>帰属のギャップを、尺度不変な幾何量で測る</h2>
+        <p class="q">見えない原因と見える結果が、同じ二群をどれだけ分けるか。</p>
+        <p class="body">
+        \(q=1\) で、包摂された群と排除された群を二つの量について比べる。観察者に<b>見えない</b>実際の貢献と、観察者に<b>見える</b>受けている支援である。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>量</th><th class="num">AUC</th><th class="num">密度の重なり</th><th class="num">Cohen's \(d\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>貢献 \(a\)（見えない原因）</td><td class="num">0.646</td><td class="num">0.476</td><td class="num">0.53</td></tr>
+                <tr><td>受けている支援（見える結果）</td><td class="num"><b>1.000</b></td><td class="num"><b>0.000</b></td><td class="num">47.05</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">AUC は無作為に選んだ包摂個体が無作為に選んだ排除個体を上回る確率。0.5 が偶然。重なりは二つの密度の共有面積。</p>
+        <div class="sub">
+            <h3>なぜ Cohen's \(d\) を主役にしないか</h3>
+            <p>\(d=47.05\) は一見すると最も劇的な数字だが、ここでは<b>報告してはいけない量</b>に近い。両群は有界な量の両端に密集しているので、支援についてのプールされた標準偏差が小さく（約 0.02）、\(d\) は \(k\) を上げるといくらでも大きくなる。<b>AUC と重なりは既に飽和していて、それ以上大きくなれない。</b>比較可能性のために \(d\) も併記するが、主役は尺度不変な二つに置く。</p>
+            <p>これは測定の選択が結論の性格を変える例である。\(d\) を主役にすれば「圧倒的な差」の話になるが、AUC と重なりを主役にすれば「<b>一方は完全に分け、他方は偶然よりわずかに良いだけ</b>」という比較の話になる。モデルが言いたいのは後者である。</p>
+        </div>
+        <div class="sub">
+            <h3>帰属の誤りではなく、証拠に忠実な推論</h3>
+            <p>二つの量は同じ二群を分けている。一方は完全に、他方は偶然よりわずかに良いだけである。結果から値打ちを推し量る観察者——そしてほかに推し量る材料はない——は、貢献が範囲のほぼ半分で重なっている個体たちに、範疇的な差を帰属することになる。</p>
+            <p>「誰も助けていない人には何か問題があるのだろう」という推論は、<b>証拠からの逸脱という意味での偏りではない</b>。この均衡のもとでは証拠に忠実である。だから動かしにくい。基本的帰属錯誤（Ross 1977）として知られる現象と結論は同じ形をとるが、ここではそれが<b>錯誤としてではなく正しい推論として</b>出てくる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>網が複数あるとき ―― 多重ネットワークへの埋め込み</h2>
+        <p class="q">逃げ道を増やすことが、助けになるとは限らない。</p>
+        <p class="body">
+        一本の網のモデルは「その人が包摂されるか」を問える。「何かを望むことがその人にいくら掛かるか」は問えない。そこで個人を \(G\) 本の網に同時に置く——家庭、商売、親族、近隣、信仰。各網 \(g\) は異なる生き方を報酬する。個人は \(c\) を選び、網 \(g\) は \(c_g\) を求め、網 \(g\) での貢献は \(a_g(c) = \alpha - |c-c_g|\) になる。
+        </p>
+        <div class="eq">
+            <div class="lbl">網どうしの結合</div>
+            \[ \rho \;=\; \text{ある網での支援決定が他の網にどれだけ読めるか（可読性）} \]
+            \[ \kappa \;=\; \text{生存に必要な結びつきの本数} \]
+            <p class="read"><b>\(\kappa=1\)</b> … 選言的。どれか一本あればよい<br>
+            <b>\(\kappa>1\)</b> … 連言的。良い従業員<b>かつ</b>良い息子であれ</p>
+        </div>
+        <div class="sub">
+            <h3>選ぶ単位で測った復帰の値段</h3>
+            <p>基本設定の門では、個人は網が求めるものから \(|c-c_g| = 0.477\) より遠くへ漂うと落ち、\(0.123\) の内側に入って初めて受け入れられる。<b>手放されたときの距離の3.9倍近くまで寄らなければならない。</b>別に、同じ人・同じ望む生き方・同じ網で、「すでに結びついている」か「新たに受け入れられなければならない」かだけが違う場合を比べると、結びつきが一つも残らない確率は<b>新規参入者で2.6倍から5.1倍高い</b>。一度落ちたことが、本人について何も変わっていないのに条件を変える。</p>
+        </div>
+        <p class="body">
+        次の表は、自分の望みどおりに生きたときに結びつきが一つも残らない確率である。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">網の本数 \(G\)</th><th class="num">\(\rho=0.0\)</th><th class="num">\(\rho=0.3\)</th><th class="num">\(\rho=0.6\)</th><th class="num">\(\rho=1.0\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">1</td><td class="num">0.500</td><td class="num">0.482</td><td class="num">0.477</td><td class="num">0.490</td></tr>
+                <tr><td class="num">2</td><td class="num">0.315</td><td class="num">0.367</td><td class="num">0.477</td><td class="num">0.657</td></tr>
+                <tr><td class="num">5</td><td class="num">0.105</td><td class="num">0.175</td><td class="num">0.517</td><td class="num">0.690</td></tr>
+                <tr><td class="num">8</td><td class="num"><b>0.050</b></td><td class="num">0.135</td><td class="num">0.545</td><td class="num"><b>0.792</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(\sigma_c=0.5\)、\(\kappa=1\)。<code>gates.py</code> の出力。</p>
+        <div class="sub">
+            <h3>網を増やすのは、網が互いに見えないときだけ助けになる</h3>
+            <p>互いに見えない網であれば、1本から8本にすると危険は10分の1になる。互いに読める網だと 0.79 まで<b>上がる</b>——網が1本しかない場合より悪い。機構は単純で、\(\rho\) が高いと、その人が収まったはずの唯一の網が、他の全部の評決を<b>輸入する</b>。互いを読める網を足すことは、逃げ道を足すのではなく<b>証人を足す</b>。</p>
+            <p>この結果はモデル上の選択に依存するので、本文に明記した。\(\rho\) は立場を<b>平均</b>で集約している。これは「その人がどういう人かについての、一つの流通する評判」に対応する。もし立場が<b>最大</b>で集約されるなら——誰か一人の良い言葉があれば足りる、推薦者や保証人のように——<b>結果は逆転する</b>。どちらが与えられた場面をよく記述するかは経験的な問いで、それ自体が検証可能である。</p>
+        </div>
+        <div class="sub">
+            <h3>どの生き方も足りなくなるとき</h3>
+            <p>次の表は、\(\kappa\) 本の網を同時に満たす生き方がまったく存在しない確率である。\(G=4\)、\(\rho=0\)——網が互いを見ることさえできない、最も寛容な場合である。</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(\sigma_c\)</th><th class="num">\(\kappa=1\)</th><th class="num">\(\kappa=2\)</th><th class="num">\(\kappa=3\)</th><th class="num">\(\kappa=4\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0.30</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.005</td><td class="num">0.130</td></tr>
+                <tr><td class="num">0.50</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.070</td><td class="num"><b>0.535</b></td></tr>
+                <tr><td class="num">1.20</td><td class="num">0.000</td><td class="num">0.028</td><td class="num">0.598</td><td class="num">0.932</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(\kappa=1\) では集合は決して空にならない。一つの結びつきで足りるなら、要求がどれだけ離れていても行き場はある。四本すべてを要求し、要求が中程度に散らばっているだけで、生きられる道が53.5パーセントの構成で<b>一つもない</b>。</p>
+        <div class="sub">
+            <h3>散らばりは両方に切る</h3>
+            <p>本人の望みを固定して網の要求の散らばりだけを動かすと、\(\kappa=1\) で取り残される確率は<b>U字</b>になり、\(\sigma_c\approx0.4\)–\(0.6\) 付近で最小になる。要求が一様なら違う者は誰でも取り残され、広く散らばれば落ちる隙間ができる。一方 \(\kappa=3\) で何も合わない確率は単調に上がる。<b>二つを同時に小さくすることはできない。</b>したがって「支援の供給源を多様化せよ」という処方はこのモデルからは出てこない。出てくるのは<b>\(\kappa\) を下げよ</b>——一つの結びつきで足りるように事を整えよ——という処方である。</p>
+        </div>
+        <div class="sub">
+            <h3>「蜘蛛の糸」はここで名前の由来になっている</h3>
+            <p>芥川の物語では一本の糸が地獄の男に垂らされ、彼が登り、後から登ってくる者たちを見て「これは自分の糸だ」と叫んだところで糸は彼の上で切れ、落ちる（芥川 1918/2006）。糸はふつう、好機がどれほど細かったかの比喩として、あるいは彼の利己がどれほどそれに値しなかったかとして読まれる。このモデルではどちらでもない。見慣れた帰結——去る、消える、死ぬ——の条件は、一本の糸が細いことではなく、登る者がどんな人間かにも依らない。条件は \(\{c: I(c)\ge\kappa\} = \emptyset\)、つまり<b>十分な数の網を同時に満たす生き方が、手の届く範囲に存在しないこと</b>である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>この手法で言えないこと</h2>
+        <div class="warn">
+            <h3>三つの限界</h3>
+            <p><b>網の構造は一種類しか調べていない。</b>張り替え確率 0.10 のスモールワールド網で結果を出している。無スケール網、同類選択的な網、コミュニティ構造を持つ網では、特に第5節の空間クラスタリングが変わりうる。これは未解決として本文に書いた。</p>
+            <p><b>数値はパラメータ設定に依存する。</b>解析結果（分岐条件）は依存しないが、表の水準は特定の設定での値であり、効果の大きさが無視できないことの例示として読むべきである。</p>
+            <p><b>範疇的な偏見は扱っていない。</b>このモデルが扱うのは排除の一つの機構だけで、他の機構——とりわけ範疇的な偏見——については何も言わない。それらは確かに並行して働いており、相互作用しうる。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典とコード</h2>
+        <p class="body">
+        網の生成（<code>small_world</code>）、網上の力学（<code>network_sim</code>）、空間クラスタリング、分離度の尺度は <code>model.py</code> に実装されている。多重ネットワークへの埋め込みと \(\rho\)・\(\kappa\) の掃引は <code>gates.py</code>、プーリング規則を平均から最大に替えた場合の検査は <code>check_pooling.py</code> にある。
+        </p>
+        <ul class="refs">
+            <li>コードとログ：<a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a>（MIT ライセンス）。</li>
+            <li>原稿は <i>Journal of Theoretical Biology</i> への投稿準備中。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Watts, D. J. &amp; Strogatz, S. H. (1998) Collective dynamics of &lsquo;small-world&rsquo; networks. <i>Nature</i>, 393, 440&ndash;442.</li>
+                <li>Ross, L. (1977) The intuitive psychologist and his shortcomings: distortions in the attribution process. <i>Advances in Experimental Social Psychology</i>, 10, 173&ndash;220.</li>
+                <li>芥川龍之介 (1918/2006)「蜘蛛の糸」。</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>観点1 に置かれている手法は、どれも<b>距離と配置</b>を使う。<a href="../gower-distance/">Gower距離</a>は名義尺度から距離を作り、<a href="../betweenness-centrality/">媒介中心性</a>は最短経路から行きにくさを測り、<a href="../pca/">主成分分析</a>は分散が最大になる方向を探す。この手法もまず配置を置く——環状格子と張り替えが、誰が誰を見られるかを決める。</p>
+        <p>違うのは、置いた配置を<b>説明変数としてではなく統制として</b>使っている点である。空間クラスタリングが 1.00倍であることを示して、排除が網の上の位置では説明されないと言う。分離度を測るのに Cohen's \(d\) ではなく密度の重なり（共有面積）と AUC（順位確率）を主役にしたのも、同じ性格の選択である——どちらも尺度を変えても動かない幾何量で、\(k\) を上げれば膨らむ \(d\) とは違う。<a href="../">8つの観点を式で読む</a>の<b>観点1（幾何）</b>に、この手法が置かれている。この網の上で起こる折り畳みそのものは<a href="../fold-bifurcation/">観点8</a>にある。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて公開リポジトリの実行ログから引用し、推定値や概算は記載していません。原稿は投稿準備中のため、結論は変わりうるものとしてお読みください。<br>
+    手法の位置づけの全体像は <a href="../">8つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../teaching/methods/">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-11-26 &nbsp;|&nbsp; <a href="../">← 8つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

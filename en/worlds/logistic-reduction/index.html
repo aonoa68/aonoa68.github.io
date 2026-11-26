@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistic Reduction — Ayaka Onohara | Methods</title>
+    <meta name="description" content="Reducing a bifurcation condition to a single logistic regression coefficient: non-collapsibility, the aggregate response and the necessary/sufficient distinction, effective sample size from the design effect, and a tempered likelihood checked against exact inference.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (Frequentist (sampling variation, estimation, testing)) */
+            --w:      #8a464f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e8c3c8; background:rgba(138,70,79,0.42); border:1px solid rgba(232,195,200,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(232,195,200,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf4f5; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Logistic Reduction</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">Course map</a>
+            <a href="../../teaching/guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/worlds/logistic-reduction/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 2 ｜ <a href="../">Frequentist (sampling variation, estimation, testing)</a></span>
+        <h1>Logistic <span>Reduction</span></h1>
+        <p class="lead">The condition a dynamical analysis returns is an inequality in internal variables, and in that form it cannot be tested. This method substitutes the fixed-point relation into the support rule and reduces the condition to <b>a single logistic regression coefficient</b>.<br>It then sets out the two requirements that remain &mdash; that the estimate be made within judge, and that the bound is only necessary &mdash; through a counterexample and a measurement.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Reducing a theoretical bifurcation condition to one quantity an experiment can measure.</p>
+        <p class="body">
+        The condition a dynamical analysis returns &mdash; \(\eta qk>4\), say (see <a href="../fold-bifurcation/">Saddle-Node Bifurcation</a>) &mdash; is an inequality in the model's internal variables. In that form it cannot be tested. Neither \(\eta\) (how heavily one reads others' judgements), nor \(q\) (how much of them one sees), nor \(k\) (how categorical one's own judgement is) is a quantity one can simply ask people about.
+        </p>
+        <p class="body">
+        The method does one thing. It substitutes the fixed-point relation into the support rule and <b>rewrites it so that it reads as the coefficients of a logistic regression</b>. Two of the three internal variables then collapse into a single coefficient, and the bifurcation condition becomes an inequality in that coefficient. Whether the theory is testable at all turns on whether this reduction goes through.
+        </p>
+        <p class="body">
+        Two requirements remain once it does: <b>how the coefficient must be estimated for the structural value to come back</b> (Section 4), and <b>what follows if it exceeds the threshold</b> (Section 5). The two limit the inference in opposite directions. Attend to only one and the measurability claim breaks.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>The reduction</h2>
+        <p class="q">Substituting turns the bifurcation condition into one regression coefficient.</p>
+        <p class="body">
+        Substituting the fixed-point relation \(r = a + \eta q\,\bar s\) into the support rule \(P(\text{support}) = \sigma(k(r-\theta))\), where \(a\) is the target's contribution and \(\bar s\) the fraction of others supporting them:
+        </p>
+        <div class="eq">
+            <div class="lbl">Reduced form</div>
+            \[ P(\text{support}) = \sigma\big(k a + k\eta q\,\bar s - k\theta\big) \]
+            \[ \mathrm{logit}\,P = \underbrace{k}_{\beta_a}\,a + \underbrace{k\eta q}_{\beta_s}\,\bar s - k\theta \]
+            <p class="read"><b>\(\beta_a = k\)</b> &hellip; the coefficient on the target's contribution<br>
+            <b>\(\beta_s = k\eta q\)</b> &hellip; the coefficient on the support the target receives. <b>This is the left-hand side of the bifurcation condition</b></p>
+        </div>
+        <div class="eq">
+            <div class="lbl">The condition in testable form</div>
+            \[ \boxed{\;\beta_s > 4\;} \]
+            <p class="read"><b>\(\beta_s\)</b> &hellip; the change in the log-odds of supporting someone as the observed support they receive goes from none to all<br>
+            <b>for scale</b> &hellip; \(\beta_s=4\) corresponds to an odds ratio of about 55</p>
+        </div>
+        <div class="sub">
+            <h3>What is measurable and what is not</h3>
+            <p>The regression returns \(k\) and <b>the product \(\eta q\)</b>, not \(\eta\) and \(q\) separately. For testing the condition this is sufficient &mdash; it is because the condition depends on the product alone that it collapses to a single bound rather than a pair of them. It is not sufficient for saying <b>why</b> a population sits above the threshold: a high \(\beta_s\) is consistent both with support decisions being highly visible and with standing being read sharply off them, and the regression cannot distinguish the two. Separating them needs a measurement of \(q\) that does not run through any judge's response &mdash; how far support decisions in fact circulate.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Origins &mdash; non-collapsibility and the design effect</h2>
+        <p class="q">The method borrows two existing theories of discrepancy.</p>
+        <div class="sub">
+            <h3>Logistic coefficients are not collapsible</h3>
+            <p>In linear regression, dropping an irrelevant covariate leaves the slope unchanged. In logistic regression it does not. Pooling a population whose members differ in intercept (here \(\theta_j\)) or slope (\(k_j\)) returns a coefficient <b>systematically smaller than the structural one each member is actually using</b>. This is neither error nor confounding but a mathematical property of the non-linear link (Gail et al. 1984; Greenland, Robins &amp; Pearl 1999) &mdash; the failure of the marginal and conditional coefficients to coincide, known in this literature as non-collapsibility.</p>
+        </div>
+        <div class="sub">
+            <h3>The design effect and effective sample size</h3>
+            <p>In survey sampling, \(n\) observations drawn in clusters do not carry the information of \(n\) independent ones. The loss is quantified by the design effect, and the discounted size is the effective sample size (Kish 1965). The concept belongs to the precision of estimates; here it is used instead to ask <b>how many pieces of evidence a judge should count a crowd as</b>. That is Section 6.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Requirement 1: the estimate must be made within judge</h2>
+        <p class="q">A pooled coefficient comes back smaller than the structural one, so a null is uninformative.</p>
+        <p class="body">
+        This follows directly from non-collapsibility. A \(\beta_s\) estimated by pooling judges who differ in \(k\) or \(\theta\) is smaller than the value each judge is using. So \(\beta_s\) must be estimated <b>within</b> judge &mdash; manipulating \(\bar s\) within participants and recovering the coefficient as a random slope &mdash; and with described merit near the eligibility margin.
+        </p>
+        <div class="warn">
+            <h3>Saturated conditions do not bias the coefficient, but inflate its standard error</h3>
+            <p>Vignettes describing targets far from the threshold push \(P\) towards 0 or 1. This <b>does not bias the coefficient of a correctly specified model</b>, but it removes most of the information available to estimate it, because the weight \(P(1-P)\) becomes small. The standard error inflates and the estimate fails to reach significance.</p>
+            <p>Put together, the conclusion is one sentence. <b>A pooled cross-sectional \(\beta_s<4\) is not evidence against the model.</b> It may only mean that the design did not meet the requirement. This is the same shape of problem as distinguishing absence of effect from failure to detect (<a href="../power-simulation/">Power Simulation</a>), with the non-linear link as the cause.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Requirement 2: a within-judge \(\beta_s>4\) is only necessary</h2>
+        <p class="q">What matters is not an individual's coefficient but the aggregate response of the judges.</p>
+        <p class="body">
+        Condition (5) is really a condition on the <b>aggregate response</b> of the judges whose decisions make up \(\bar s\).
+        </p>
+        <div class="eq">
+            <div class="lbl">Aggregate response and the general condition</div>
+            \[ F(r)=N^{-1}\sum_j\sigma\big(k_j(r-\theta_j)\big),
+               \qquad \eta q\,\max F' > 1 \]
+            <p class="read"><b>when judges share a threshold</b> &hellip; \(\max F' = \bar k/4\) and the bound is exact with \(\beta_s\) read as its mean across judges, which is what a random-slope model returns<br>
+            <b>when they do not</b> &hellip; \(\max F'\le\bar k/4\), with equality only <b>if every judge sits at their inflection point at once</b></p>
+        </div>
+        <div class="sub">
+            <h3>A counterexample fixes the limit</h3>
+            <p>Suppose half the judges respond as \(\sigma[5(s-0.25)]\) and half as \(\sigma[5(s-0.75)]\). <b>Every judge has \(\beta_s=5\)</b>, above the threshold of 4. Yet the aggregate has \(\max F'=0.866<1\), so the map is a contraction, the fixed point is unique, and no fold occurs.</p>
+            <p>How much dispersion is tolerated was also measured: the fold survives a half-separation of thresholds up to about 0.15 and <b>is gone by 0.20</b>. Taking a measured \(\beta_s\) to the population therefore requires reconstructing \(F\) from the joint distribution of slopes <b>and</b> thresholds, which a random-slope model supplies only if it carries a random intercept as well.</p>
+        </div>
+        <div class="warn">
+            <h3>This inequality was in conflict across sections</h3>
+            <p>The same inequality \(\max F'\le\bar k/4\) had been written down from the start in the <a href="../evolutionary-game/">evolutionary</a> section, as an upper bound for a heterogeneous population. But the section on measurability said that a within-judge \(\beta_s>4\) satisfied the condition. <b>The same principle was in use in two places and only one of them recognised the limit.</b> It was raised in the third pre-submission review; the counterexample was reproduced independently, and both passages were brought into line as a necessary condition.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>How many independent observations is a crowd worth?</h2>
+        <p class="q">Using the design effect as the weight a judge should give a crowd.</p>
+        <p class="body">
+        The \(m\) observed others are conditionally independent given \((a,\theta)\) only if each used nothing but their own private cue. In a running system they are all also watching each other, so their decisions carry a common component, and a judge who counts \(m\) observations as \(m\) pieces of evidence double-counts.
+        </p>
+        <ol class="steps">
+            <li><b>Measure the correlation</b>&emsp;Holding the graph, the contributions and the private standards fixed and varying only the support draws, take the variance of \(\bar s_i\). It splits into a <b>within-state binomial part</b>, independent across judges, and a part driven by <b>drift in the state itself</b>, common to all of that target's judges. The second is the correlation a naive judge ignores.</li>
+            <li><b>Convert it with the design effect</b>&emsp;The same calculation as in survey sampling turns it into \(m_{\text{eff}}\), the number of independent observations the crowd is worth.</li>
+            <li><b>Put it inside the judge</b>&emsp;Raise the likelihood to the exponent \(m_{\text{eff}}/m\) (a tempered likelihood). This represents a judge who measures the correlation and discounts by exactly the right amount.</li>
+            <li><b>Check that the approximation holds</b>&emsp;A variance-derived effective sample size entered as a likelihood exponent is not in general the same object as exact inference under the true joint distribution of the observations, since a correlation coefficient does not determine that distribution. So it was compared against <b>a judge performing exact inference</b> about \(m\) observers sharing a common shock \(\tau\).</li>
+        </ol>
+        <div class="sub">
+            <h3>The approximation does not change the fold verdict</h3>
+            <p>Against the exact judge, the tempered judge returns <b>the same fold verdict at every \(\tau\) tested</b>, and the same \(\beta_s\) to within a factor of 1.00 to 1.06 throughout the range in which the fold occurs (\(\tau\le0.75\), \(\rho\le0.33\)). The two part company only well inside the no-fold region, where \(\beta_s\) is under 2 and the verdict is not in doubt. The integral over the common shock is computed by Gauss&ndash;Hermite quadrature on 41 nodes.</p>
+        </div>
+        <p class="body">
+        Given that, \(\beta_s\) is close to linear in \(m_{\text{eff}}\), and the fold appears between \(m_{\text{eff}}=1.25\) and \(1.30\). This is not an artefact of the logistic fit: iterating the true self-consistency map \(s=\sum_n\binom{m}{n}s^n(1-s)^{m-n}P(a,n/m)\) and counting its stable fixed points directly gives one at \(1.25\) and two at \(1.30\), agreeing with the fitted criterion \(\beta_s>4\) at every value tested.
+        </p>
+        <p class="body">
+        How much <b>should</b> a judge credit the crowd with? That question is empirical, and the <a href="../small-world/">network model</a> answers it.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>network</th><th class="num">\(\eta qk\)</th><th>regime</th><th class="num">\(\rho\)</th><th class="num">\(m_{\text{eff}}\)</th><th class="num">implied \(\beta_s\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>\(\eta=0.9,\,k=2.0\)</td><td class="num">1.80</td><td>graded</td><td class="num">0.019</td><td class="num">8.52</td><td class="num">28.1</td></tr>
+                <tr><td>\(\eta=0.9,\,k=3.5\)</td><td class="num">3.15</td><td>graded</td><td class="num">0.079</td><td class="num">5.83</td><td class="num">19.4</td></tr>
+                <tr><td>\(\eta=0.5,\,k=7.0\)</td><td class="num">3.50</td><td>graded</td><td class="num">0.095</td><td class="num">5.40</td><td class="num">18.8</td></tr>
+                <tr><td>\(\eta=0.9,\,k=4.0\)</td><td class="num">3.60</td><td>graded</td><td class="num">0.119</td><td class="num">4.82</td><td class="num">15.9</td></tr>
+                <tr><td>\(\eta=0.9,\,k=12\)</td><td class="num">10.80</td><td><b>bistable</b></td><td class="num"><b>0.983</b></td><td class="num"><b>1.02</b></td><td class="num"><b>3.4</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(m=10\), 200 replicates, 400 agents; median over targets. Output of <code>check_m_eff_network.py</code>. Measuring <b>below</b> the fold is deliberate: inside the bistable regime replicates land in different basins and the correlation is near-total by construction, so calibrating a judge there and then using it to account for the fold would be circular.</p>
+        <div class="sub">
+            <h3>The fold does not require correlation neglect</h3>
+            <p>In a graded network the observed others are only weakly correlated &mdash; \(\rho\) between 0.02 and 0.12 &mdash; so the crowd genuinely is worth between five and nine independent observations. <b>A judge that measures that correlation and discounts by exactly the right amount still produces \(\beta_s\) between 16 and 28, four to seven times the threshold.</b> No appeal to naive herding (Eyster &amp; Rabin 2010) or persuasion bias (DeMarzo et al. 2003) is needed. Correct inference suffices: the graded regime is unstable to accurate reasoning about it.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Where the pressure stops &mdash; and why this is a sensitivity analysis</h2>
+        <p class="q">What is measured is the sign of a pressure, not a resting point.</p>
+        <p class="body">
+        Past the fold the same measurement returns \(\rho=0.983\) and \(m_{\text{eff}}=1.02\): every judge is moving with every other, and a crowd of any size is worth almost exactly one fresh private observation. A judge that discounts correctly there produces \(\beta_s=3.4\), just <b>under</b> the threshold.
+        </p>
+        <p class="body">
+        The words have to be chosen carefully here. In the graded state, correct discounting warrants weighting the crowd heavily enough to destroy that state; in the folded state it does not, so the pressure that carried the system up is absent once it is there. But this <b>does not mean that the folded state is a fixed point of correct reasoning</b>.
+        </p>
+        <div class="eq">
+            <div class="lbl">The equation a fixed point would require</div>
+            \[ H(C) = C \qquad\text{(not solved)} \]
+            <p class="read"><b>\(H(\eta qk)\)</b> &hellip; the coefficient a correctly discounting judge produces in a population whose parameter is \(\eta qk\)<br>
+            <b>what was measured</b> &hellip; the single value \(H(10.80)=3.4\), and the sign of \(H(C)-4\)<br>
+            <b>what a fixed point requires</b> &hellip; \(H(C)=C\), a different equation, which is not solved here</p>
+        </div>
+        <div class="sub">
+            <h3>The pressure does not stop at the fold</h3>
+            <p>Extending the measurement upwards gives \(m_{\text{eff}}\) = 2.57, 1.20, 1.05, 1.03 and 1.02 at \(\eta qk\) = 5.40, 7.20, 9.00, 9.90 and 10.80, against the 1.30 required: <b>the crossing lies between 5.40 and 7.20</b>. Correct discounting therefore continues to push the system up until \(\eta qk\) reaches roughly 6 to 7, some one and a half times the critical value, and only then stops. Accuracy does not deposit the system on the edge; it carries it past and stops pushing somewhat beyond, at the point where the correlation the arrangement has itself produced finally justifies ignoring the crowd.</p>
+        </div>
+        <div class="warn">
+            <h3>This is the weakest of the paper's three lines of argument, and was downgraded to a sensitivity analysis</h3>
+            <p>The effective number of independent observations was measured at a handful of settings on either side of the fold, and correct discounting was observed to push a graded system up and to stop pushing a folded one. <b>\(H\) was measured at a set of points and the sign of \(H(C)-4\) read off; \(H(C)=C\) was not solved, and a system with endogenous \(\eta qk\) was not shown to converge anywhere at all.</b> Doing either would require specifying how the judges' inference updates the parameters they generate, which is a different model.</p>
+            <p>The results of this section are therefore a <b>sensitivity analysis</b> &mdash; under the correlation structures examined, a judge discounting correlation correctly still produces a coefficient above the critical value below the fold, and below it above the fold &mdash; and not a statement about where such a system comes to rest. The manuscript says &ldquo;stops pushing&rdquo; rather than &ldquo;comes to rest&rdquo;. This was rewritten after review; the first version said &ldquo;a fixed point of correct reasoning&rdquo;.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>Numerical notes</h2>
+        <p class="q">A quantity that moves in steps is not reported as a point estimate.</p>
+        <div class="sub">
+            <h3>The critical values are step edges</h3>
+            <p>Support decisions are \(\{0,1\}\) and \(n_+\) takes only \(m+1\) values, so \(\beta_s\) moves in steps with \(m_{\text{eff}}\) and the critical values above are the edges of those steps. Across resolutions \((m,n_x)\) = \((10,41)\), \((10,81)\), \((20,81)\), \((30,101)\) we obtain \(m^\ast_{\text{eff}}\) = 1.296, 1.296, 1.152, 1.196 and \(\beta_s|_{m_{\text{eff}}=1}\) = 3.07, 3.37, 3.32, 3.30. <b>Intervals are reported rather than point estimates.</b> The region \(m_{\text{eff}}\le0.5\) is not resolved and is not used.</p>
+        </div>
+        <div class="sub">
+            <h3>A coarse integration grid understates the coefficient (an error in the first pass)</h3>
+            <p>Every value quoted in this section uses an integration grid whose spacing is at most \(\sigma_x/4\). The first pass used a fixed grid, which at \(\sigma_x=0.20\) is <b>coarser than the cue itself</b> and understates \(\beta_s\) there. The numbers were regenerated at controlled resolution.</p>
+        </div>
+        <div class="sub">
+            <h3>Robustness of the measurement</h3>
+            <p>The measured \(m_{\text{eff}}\) is unchanged by run length (5.86, 5.83, 5.83, 5.84 at 150, 300, 600 and 1200 steps) and by the number of replicates, and rises if the spread of contributions is widened (5.83, 6.46, 8.51 at \(a_{sd}=0.03\), \(0.10\), \(0.30\)), so the value quoted is the conservative one. Feeding the most conservative measured value, \(m_{\text{eff}}=4.82\), through the judge at every combination of \(\sigma_x\in\{0.35,0.75,1.50\}\) and \(s_\theta\in\{0.05,0.30,1.00\}\) gives \(\beta_s\) between 13.5 and 50.1, so the conclusion does not depend on matching the two models' parameters.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>A direct empirical test</h2>
+        <p class="q">Manipulate only the reported behaviour of third parties; read off one coefficient.</p>
+        <p class="body">
+        Because of the bound, the theory is testable by a single coefficient. In a vignette study in which <b>the only manipulated quantity is the reported fraction of other people who have helped a described individual</b>, a logistic regression of the participant's own willingness to help yields \(\beta_s\) directly &mdash; and comparably across populations, without any commitment to differences in psychology.
+        </p>
+        <div class="sub">
+            <h3>What the design must satisfy</h3>
+            <p>Sections 4 and 5 become the requirements. Manipulate \(\bar s\) <b>within</b> participant, describe merit near the eligibility margin, and <b>estimate the distribution of intercepts alongside the slopes so that \(F\) can be reconstructed</b>. A measured \(\beta_s>4\) establishes the necessary condition, not the sufficient one.</p>
+        </div>
+        <div class="sub">
+            <h3>Three further predictions</h3>
+            <p>First, \(\eta q\) rises as merit becomes harder to observe while \(\beta_s\) does not: as \(\sigma_x\) goes from 0.20 to 2.00, \(\eta q\) rises from 5.4 to 38.3, a factor of seven, while \(\beta_s\) stays within 33.0 to 38.1. Populations judging difficulties with structural or hidden causes should therefore show a higher \(\eta q\) without necessarily showing a higher \(\beta_s\).</p>
+            <p>Second, the credulity required falls as the condition becomes more opaque, and past \(s_\theta\approx0.57\) the requirement falls below one (\(m^\ast_{\text{eff}}\) = 1.50, 1.30, 0.99, 0.59 at \(s_\theta\) = 0.05, 0.30, 0.57, 1.00). <b>Making eligibility criteria explicit should reduce \(\beta_s\) even among judges who are not credulous at all.</b> Raising \(s_\theta\) moves two things at once, so the roles were separated: holding the others' dispersion at 0.30 and raising only the judge's uncertainty takes \(\beta_s\) from 28.2 to 109.0, while holding the judge's uncertainty at 0.30 and raising only the others' dispersion takes it from 37.6 to 21.0. They pull in opposite directions, so the joint figure <b>understates</b> the opacity channel rather than being an artefact of it.</p>
+            <p>Third, the correlation among observed supporters is itself regime-dependent, so the same participants should weight the crowd <b>less</b> when the described community is one in which everyone visibly moves together, and more when its members appear to be deciding separately &mdash; a manipulation of perceived \(\rho\) rather than of anyone's disposition.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">10</span>Sources and code</h2>
+        <p class="body">
+        The reduced form, the binomially weighted least-squares logit fit and the tempered likelihood are implemented in <code>rationality_trap.py</code>. The network measurement of the effective number of observations is in <code>check_m_eff_network.py</code> and its robustness in <code>check_m_eff_robust.py</code>; the comparison against exact correlated-Bernoulli inference in <code>check_meff_exact.py</code>; the aggregate response and the \(\max F'\) counterexample in <code>check_threshold_dispersion.py</code>; the separation of the two roles of \(s_\theta\) in <code>check_stheta_split.py</code>; and the control of integration resolution in <code>check_f5_resolution.py</code> and <code>regen_section4_numbers.py</code>.
+        </p>
+        <ul class="refs">
+            <li>Code and logs: <a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a> (MIT licence).</li>
+            <li>The manuscript is in preparation for submission to the <i>Journal of Theoretical Biology</i>. The vignette experiment has not yet been run.</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Gail, M. H., Wieand, S. &amp; Piantadosi, S. (1984) Biased estimates of treatment effect in randomized experiments with nonlinear regressions and omitted covariates. <i>Biometrika</i>, 71(3), 431&ndash;444.</li>
+                <li>Greenland, S., Robins, J. M. &amp; Pearl, J. (1999) Confounding and collapsibility in causal inference. <i>Statistical Science</i>, 14(1), 29&ndash;46.</li>
+                <li>Kish, L. (1965) <i>Survey Sampling</i>. Wiley. (the design effect and effective sample size)</li>
+                <li>Eyster, E. &amp; Rabin, M. (2010) Naive herding in rich-information settings. <i>American Economic Journal: Microeconomics</i>, 2(4), 221&ndash;243.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>Perspective 2 evaluates how often a procedure is right when the sample is drawn again. What this method brings into that frame is <b>two discrepancies</b>. The non-collapsibility of logistic coefficients is the discrepancy that pooling introduces between the structural value and the returned one; the design effect is the discrepancy between correlated observations and independent ones. Both are statements about the properties of estimators, squarely within perspective 2.</p>
+        <p>What is unusual is that the second discrepancy is used <b>not as the precision of an estimate but as the weight in an agent's belief</b>. The design effect answers &ldquo;how many independent observations is this sample worth?&rdquo;; here it is made to answer &ldquo;how many pieces of evidence should this crowd be counted as?&rdquo; The same calculation is carried over from estimation theory into the description of an agent's reasoning inside the model. This method sits under <b>perspective 2 (frequentist)</b> in <a href="../">Read the eight perspectives in equations</a>; the structural condition itself is under <a href="../fold-bifurcation/">perspective 8</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the logged output of the published repository; no estimates or approximations are given. The manuscript is in preparation, so the conclusions should be read as provisional.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the eight perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../teaching/methods/">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-11-26 &nbsp;|&nbsp; <a href="../">← Back to Read the eight perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>

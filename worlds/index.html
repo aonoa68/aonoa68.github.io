@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>7つの観点を式で読む — 小野原彩香 | Methods</title>
-    <meta name="description" content="統計・機械学習の7つの世界観（幾何・頻度論・ベイズ・学習理論・情報理論・ゲーム・因果）を、それぞれ中心となる数式で説明したページ。">
+    <title>8つの観点を式で読む — 小野原彩香 | Methods</title>
+    <meta name="description" content="統計・機械学習と力学系の8つの世界観（幾何・頻度論・ベイズ・学習理論・情報理論・ゲーム・因果・分岐）を、それぞれ中心となる数式で説明したページ。">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -219,9 +219,9 @@
 
 <header class="page-header">
     <div class="page-header-inner">
-        <h1>Seven <span>Perspectives</span></h1>
-        <p class="lead">7つの観点を、それぞれ<b>中心となる1本の式</b>から説明します。観点が分かれるのは、問いに加えて、データに置く仮定・良さの評価基準・計算上の制約が違うためです。互いに排他ではありません。<br>
-        記号の読み方と、そこから出てくる代表的な手法の式を並べました。数式に慣れていなくても、何を小さく（大きく）しようとしているのかだけは読み取れるように書いています。<br>各観点の終わりに、<strong>その観点に当たる手法の解説ページ</strong>を並べています。実際の研究で使っているもので、全部で21本あります。</p>
+        <h1>Eight <span>Perspectives</span></h1>
+        <p class="lead">8つの観点を、それぞれ<b>中心となる1本の式</b>から説明します。観点が分かれるのは、問いに加えて、データに置く仮定・良さの評価基準・計算上の制約が違うためです。互いに排他ではありません。観点1から観点7はいずれも<b>データから推論する</b>ための観点で、観点8だけは別で、規則が走り続けたときに何が可能かを問います。<br>
+        記号の読み方と、そこから出てくる代表的な手法の式を並べました。数式に慣れていなくても、何を小さく（大きく）しようとしているのかだけは読み取れるように書いています。<br>各観点の終わりに、<strong>その観点に当たる手法の解説ページ</strong>を並べています。実際の研究で使っているもので、全部で25本あります。</p>
     </div>
 </header>
 
@@ -248,6 +248,7 @@
 <p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="pca/">主成分分析 ―― 分散が最大になる方向を探すと、固有値問題になる</a></p>
 <p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="betweenness-centrality/">媒介中心性 ―― 交通網の最短経路から、集落の行きにくさを測る</a></p>
 <p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="pitch-accent-dtw/">話者正規化つきアクセント距離 ―― 時間の伸び縮みを許して音声の型を比べる</a></p>
+<p class="where method" style="--w:#3d6fa8">研究で使う手法：<a href="small-world/">スモールワールド網と部分可観測性 ―― 配置を置いたうえで、それが結果を説明しないことを測る</a></p>
     </section>
     <section class="wblock" style="--w:#8a464f">
         <h2><span class="no">2</span>頻度論（標本変動・推定・検定）</h2>
@@ -269,6 +270,7 @@
 <p class="where method" style="--w:#8a464f">研究で使う手法：<a href="mantel/">Mantel検定 ―― 距離行列どうしの対応を、行と列の同時並べ替えで検定する</a></p>
 <p class="where method" style="--w:#8a464f">研究で使う手法：<a href="mixed-model/">線形混合モデルとAIC ―― 入れ子の観測を最尤で扱い、モデルを選ぶ</a></p>
 <p class="where method" style="--w:#8a464f">研究で使う手法：<a href="multiple-regression/">重回帰分析と変数選択 ―― VIFで共線性を見て、全部分集合から選ぶ</a></p>
+<p class="where method" style="--w:#8a464f">研究で使う手法：<a href="logistic-reduction/">ロジスティック縮約と非崩壊性 ―― 分岐条件を回帰係数一本に落とす</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
         <h2><span class="no">3</span>ベイズ</h2>
@@ -336,6 +338,7 @@
 <p class="methodlead">この観点に当たる、実際の研究で使っている手法</p>
 <p class="where method" style="--w:#8a5a2f">研究で使う手法：<a href="gan/">敵対的生成ネットワークによる文化動態のモデリング ―― λで敵対と特徴報酬の配分を時間で切り替える</a></p>
 <p class="where method" style="--w:#8a5a2f">研究で使う手法：<a href="economic-games/">経済ゲームによる協力行動の実験 ―― アクセントを社会的なタグとして、誰と協力するかを測る</a></p>
+<p class="where method" style="--w:#8a5a2f">研究で使う手法：<a href="evolutionary-game/">進化ゲームと固定確率 ―― 集団がその状態へ運ばれるかを、侵入と固定で判定する</a></p>
     </section>
     <section class="wblock" style="--w:#22456d">
         <h2><span class="no">7</span>因果</h2>
@@ -354,6 +357,24 @@
 <p class="where method" style="--w:#22456d">研究で使う手法：<a href="apparent-time/">見かけ上の時間法 ―― 世代差を時間変化の代用として読む</a></p>
     </section>
 
+    <section class="wblock" style="--w:#17697b">
+        <h2><span class="no">8</span>力学系・分岐</h2>
+        <p class="q">規則が走り続けたときにどんな状態が可能かを問う。推定も損失も出てこない。出てくるのは方程式の解の個数である。</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">微I</span><span class="mtag" style="--m:#8a464f">微II</span></div>
+        <div class="eq" style="--w:#17697b">
+            <div class="lbl">ある量が自分自身の関数になる</div>
+            \[r \;=\; g(r) \;:=\; a + b\,\sigma\big(k(r-\theta)\big), \qquad \sigma(x)=1/(1+e^{-x})\]
+            <p class="read"><b>\(r\)</b> … 解きたい量。右辺にも現れるのが要点<br><b>\(b=\eta q\)</b> … 他者の判断を読み込む重みと、それがどれだけ見えるかの積<br><b>不動点</b> … この等式を満たす \(r\)。それが何個あるかを数える</p>
+        </div>
+<div class="sub"><h3>解が増える条件は、傾きが1を超えること</h3><div class="eq" style="--w:#17697b">\[\max_r g'(r) = \frac{bk}{4} \;>\; 1 \quad\Longleftrightarrow\quad \eta q k > 4\]<p class="read">\(g'=bk\,\sigma(1-\sigma)\) は \(\sigma=1/2\) で最大になる。三つの量の積が4を超えると、不動点が複数ある状態が存在する。どれか一つが小さければ、残りがいくら大きくても起こらない。</p></div></div>
+<div class="sub"><h3>分岐点は閉じた形で書ける</h3><div class="eq" style="--w:#17697b">\[\sigma_{\pm}=\frac{1\pm\sqrt{1-4/bk}}{2}, \qquad r_\pm = \theta + k^{-1}\mathrm{logit}(\sigma_\pm)\]<p class="read">\(g'(r)=1\) を解くと二次方程式になるので、サドルノード（折り畳み）分岐の位置は初等関数で書ける。根号の中が正であることが、ちょうど条件 \(bk>4\) にあたる。</p></div></div>
+<div class="sub"><h3>定数は一般でないが、積であることは一般である</h3><div class="eq" style="--w:#17697b">\[\eta q k \;>\; \frac{1}{\max F'}\]<p class="read">任意の滑らかな支援規則 \(F\) について同じ議論が通る。4という数はロジスティック関数の性質（\(\max F'=1/4\)）であり、probit なら 2.5066、区分線形なら 1 になる。規則を変えても残るのは、三つの量が積として入ることである。</p></div></div>
+<div class="sub"><h3>ヒステリシスが「落ちるのは安く、戻るのは高い」を定量化する</h3><div class="eq" style="--w:#17697b">\[\Delta a \;=\; a_{\text{high}} - a_{\text{low}}\]<p class="read">双安定窓の幅。崩れるには \(a_{\text{low}}\) を下回らなければならず、戻るには \(a_{\text{high}}\) を上回らなければならない。落ちたときの値まで戻すだけでは足りない。\(\Delta a\) は分岐点でゼロ、以後単調に広がる。</p></div></div>
+<p class="where" style="--w:#17697b">授業で扱う回：<span style="color:var(--muted)">いまのところなし</span></p>
+<p class="methodlead">この観点に当たる、実際の研究で使っている手法</p>
+<p class="where method" style="--w:#17697b">研究で使う手法：<a href="fold-bifurcation/">自己無撞着写像と折り畳み分岐 ―― ティッピングの条件を、仮定せずに導く</a></p>
+    </section>
+
     <div class="cross">
         <h3>同じ式が、別の観点で読める</h3>
         <p>
@@ -370,7 +391,7 @@
 </main>
 
 <footer class="page-footer">
-    <p>最終更新：2026-09-19 &nbsp;|&nbsp; <a href="../teaching/methods/">← 手法と数学の地図へ戻る</a></p>
+    <p>最終更新：2026-11-26 &nbsp;|&nbsp; <a href="../teaching/methods/">← 手法と数学の地図へ戻る</a></p>
 </footer>
 
 </body>

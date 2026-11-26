@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seven Perspectives — Ayaka Onohara | Methods</title>
-    <meta name="description" content="Seven perspectives on statistics and machine learning — geometry, frequentist, Bayesian, learning theory, information theory, games, causality — each explained from the one equation at its centre.">
+    <title>Eight Perspectives — Ayaka Onohara | Methods</title>
+    <meta name="description" content="Eight perspectives on statistics, machine learning and dynamical systems — geometry, frequentist, Bayesian, learning theory, information theory, games, causality, bifurcation — each explained from the one equation at its centre.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -154,9 +154,9 @@
 
 <header class="page-header">
     <div class="page-header-inner">
-        <h1>Seven <span>Perspectives</span></h1>
-        <p class="lead">Each of the seven perspectives, explained from the one equation at its centre. They divide not only by the question asked, but by the assumptions placed on the data, the criteria for what counts as good, and the constraints on computation. They are not mutually exclusive.<br>
-        For each one: how to read the symbols, and the equations of the methods that follow from it. Written so that a reader not used to equations can still see what is being made small, or large.<br>At the end of each perspective sit <strong>pages on the methods that fall under it</strong> — methods used in actual research, twenty-one in all.</p>
+        <h1>Eight <span>Perspectives</span></h1>
+        <p class="lead">Each of the eight perspectives, explained from the one equation at its centre. They divide not only by the question asked, but by the assumptions placed on the data, the criteria for what counts as good, and the constraints on computation. They are not mutually exclusive. Perspectives 1 to 7 are all ways of <b>inferring from data</b>; perspective 8 alone is not, and asks instead what states are possible if a rule keeps running.<br>
+        For each one: how to read the symbols, and the equations of the methods that follow from it. Written so that a reader not used to equations can still see what is being made small, or large.<br>At the end of each perspective sit <strong>pages on the methods that fall under it</strong> — methods used in actual research, twenty-five in all.</p>
     </div>
 </header>
 
@@ -183,6 +183,7 @@
 <p class="where method" style="--w:#3d6fa8">In research: <a href="pca/">Principal component analysis — seeking the direction of maximum variance leads to an eigenvalue problem</a></p>
 <p class="where method" style="--w:#3d6fa8">In research: <a href="betweenness-centrality/">Betweenness centrality — measuring how hard a village is to reach from shortest paths through the road network</a></p>
 <p class="where method" style="--w:#3d6fa8">In research: <a href="pitch-accent-dtw/">Speaker-normalized pitch-accent distance — comparing accent patterns while allowing time to stretch</a></p>
+<p class="where method" style="--w:#3d6fa8">In research: <a href="small-world/">A web without a spider — laying down a geometry in order to measure that it does not explain the outcome</a></p>
     </section>
     <section class="wblock" style="--w:#8a464f">
         <h2><span class="no">2</span>Frequentist (sampling variation, estimation, testing)</h2>
@@ -204,6 +205,7 @@
 <p class="where method" style="--w:#8a464f">In research: <a href="mantel/">Mantel test — testing the correspondence of two distance matrices by permuting rows and columns together</a></p>
 <p class="where method" style="--w:#8a464f">In research: <a href="mixed-model/">Linear mixed models and AIC — nested observations by maximum likelihood, and choosing among models</a></p>
 <p class="where method" style="--w:#8a464f">In research: <a href="multiple-regression/">Multiple regression and variable selection — reading collinearity with VIF, choosing among all subsets</a></p>
+<p class="where method" style="--w:#8a464f">In research: <a href="logistic-reduction/">Logistic reduction and non-collapsibility — reducing a bifurcation condition to one regression coefficient</a></p>
     </section>
     <section class="wblock" style="--w:#6a4d8a">
         <h2><span class="no">3</span>Bayesian</h2>
@@ -271,6 +273,7 @@
 <p class="methodlead">Methods from actual research that fall under this perspective</p>
 <p class="where method" style="--w:#8a5a2f">In research: <a href="gan/">Modelling cultural dynamics with a GAN — shifting the balance of adversarial loss and feature reward over time</a></p>
 <p class="where method" style="--w:#8a5a2f">In research: <a href="economic-games/">Economic games and cooperative behaviour — reading accent as a social tag to see whom people cooperate with</a></p>
+<p class="where method" style="--w:#8a5a2f">In research: <a href="evolutionary-game/">Invasion and fixation — deciding whether a population is carried to a state, by invasion and by fixation</a></p>
     </section>
     <section class="wblock" style="--w:#22456d">
         <h2><span class="no">7</span>Causality</h2>
@@ -289,6 +292,24 @@
 <p class="where method" style="--w:#22456d">In research: <a href="apparent-time/">The apparent-time method — reading generational difference as a proxy for change over time</a></p>
     </section>
 
+    <section class="wblock" style="--w:#17697b">
+        <h2><span class="no">8</span>Dynamical systems and bifurcation</h2>
+        <p class="q">What states are possible if a rule keeps running. No estimator and no loss function appears; what appears is the number of solutions of an equation.</p>
+        <div class="tags" style="margin-top:10px"><span class="mtag" style="--m:#8a5a2f">Calc I</span><span class="mtag" style="--m:#8a464f">Calc II</span></div>
+        <div class="eq" style="--w:#17697b">
+            <div class="lbl">A QUANTITY THAT IS A FUNCTION OF ITSELF</div>
+            \[r \;=\; g(r) \;:=\; a + b\,\sigma\big(k(r-\theta)\big), \qquad \sigma(x)=1/(1+e^{-x})\]
+            <p class="read"><b>\(r\)</b> … the quantity being solved for; the point is that it also appears on the right<br><b>\(b=\eta q\)</b> … the weight placed on others' judgements times how much of them is visible<br><b>fixed points</b> … the \(r\) satisfying this equation. What is counted is how many there are</p>
+        </div>
+<div class="sub"><h3>The solutions multiply once the slope can exceed one</h3><div class="eq" style="--w:#17697b">\[\max_r g'(r) = \frac{bk}{4} \;>\; 1 \quad\Longleftrightarrow\quad \eta q k > 4\]<p class="read">\(g'=bk\,\sigma(1-\sigma)\) attains its maximum at \(\sigma=1/2\). When the product of the three quantities exceeds 4, states with more than one fixed point exist. If any one of them is small, no size of the others produces it.</p></div></div>
+<div class="sub"><h3>The fold points are available in closed form</h3><div class="eq" style="--w:#17697b">\[\sigma_{\pm}=\frac{1\pm\sqrt{1-4/bk}}{2}, \qquad r_\pm = \theta + k^{-1}\mathrm{logit}(\sigma_\pm)\]<p class="read">Solving \(g'(r)=1\) gives a quadratic, so the saddle-node (fold) points are elementary. The radicand being positive is exactly the condition \(bk>4\).</p></div></div>
+<div class="sub"><h3>The constant is not general; the product is</h3><div class="eq" style="--w:#17697b">\[\eta q k \;>\; \frac{1}{\max F'}\]<p class="read">The same argument goes through for any smooth support rule \(F\). The number 4 is a property of the logistic function (\(\max F'=1/4\)); a probit rule gives 2.5066 and a clipped-linear rule 1. What survives a change of rule is that the three quantities enter as a product.</p></div></div>
+<div class="sub"><h3>Hysteresis quantifies &ldquo;falling is cheap, returning is not&rdquo;</h3><div class="eq" style="--w:#17697b">\[\Delta a \;=\; a_{\text{high}} - a_{\text{low}}\]<p class="read">The width of the bistable window. Collapse requires falling below \(a_{\text{low}}\) and recovery requires rising above \(a_{\text{high}}\), so returning to the value one had when one fell is not enough. \(\Delta a\) is zero at the bifurcation and grows monotonically thereafter.</p></div></div>
+<p class="where" style="--w:#17697b">Sessions that cover this: <span style="color:var(--muted)">none as yet</span></p>
+<p class="methodlead">Methods from actual research that fall under this perspective</p>
+<p class="where method" style="--w:#17697b">In research: <a href="fold-bifurcation/">Self-consistency and the fold bifurcation — deriving the condition for tipping instead of assuming it</a></p>
+    </section>
+
     <div class="cross">
         <h3>The same equation reads differently from another perspective</h3>
         <p>
@@ -305,7 +326,7 @@
 </main>
 
 <footer class="page-footer">
-    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../teaching/methods/">&larr; Back to Methods &amp; Mathematics</a></p>
+    <p>Last updated: 2026-11-26 &nbsp;|&nbsp; <a href="../teaching/methods/">&larr; Back to Methods &amp; Mathematics</a></p>
 </footer>
 
 </body>

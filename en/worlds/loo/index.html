@@ -205,7 +205,7 @@
         What learning theory really wants to make small is the expected risk \(R(f)=\mathbb{E}_{(x,y)\sim P}[\ell(f(x),y)]\). But the distribution \(P\) that the data follow is unknown, so the only thing computable from the data at hand is the empirical risk \(\hat{R}(f)\). Fit on one set of data and measure on the same set, and the fit will always come out good. <b>How to close the gap between these two quantities</b> is the central question of Perspective 4.
         </p>
         <p class="body">
-        <a href="../">Reading the seven perspectives in equations</a> gives the generalization bound \(R(f) \le \hat{R}(f) + \mathfrak{C}(\mathcal{F},n,\delta)\) as one tool for holding that gap down from above: the route of evaluating a complexity term theoretically. Cross-validation takes a different route. <b>It actually hides part of the data and measures on the part it hid.</b> Not a theoretical upper bound, but a direct estimate obtained by taking the sample apart and putting it back.
+        <a href="../">Reading the eight perspectives in equations</a> gives the generalization bound \(R(f) \le \hat{R}(f) + \mathfrak{C}(\mathcal{F},n,\delta)\) as one tool for holding that gap down from above: the route of evaluating a complexity term theoretically. Cross-validation takes a different route. <b>It actually hides part of the data and measures on the part it hid.</b> Not a theoretical upper bound, but a direct estimate obtained by taking the sample apart and putting it back.
         </p>
         <p class="body">
         Leave-one-out cross-validation is the most extreme form of this. Only one observation is hidden each time, and the fit uses everything else. It leaves as much data as possible available for training, which makes it easy to use on small samples. That the Maibara–Sekigahara study works at a scale of \(n=25\) settlements is a direct reason for choosing this method.
@@ -252,7 +252,7 @@
         </div>
         <div class="sub">
             <h3>Relation to information criteria</h3>
-            <p>AIC, treated under Perspective 5 (information theory), estimates predictive quality by adding a complexity penalty to the fit. Leave-one-out cross-validation reaches the same target by actually removing points and measuring, instead of deriving the shape of the penalty theoretically. Both aim at &ldquo;prediction on unseen data&rdquo;; one gets there analytically, the other by operating on the sample. This is the kind of relation meant when <a href="../">Reading the seven perspectives in equations</a> says that the same expression can be read from another perspective.</p>
+            <p>AIC, treated under Perspective 5 (information theory), estimates predictive quality by adding a complexity penalty to the fit. Leave-one-out cross-validation reaches the same target by actually removing points and measuring, instead of deriving the shape of the penalty theoretically. Both aim at &ldquo;prediction on unseen data&rdquo;; one gets there analytically, the other by operating on the sample. This is the kind of relation meant when <a href="../">Reading the eight perspectives in equations</a> says that the same expression can be read from another perspective.</p>
         </div>
     </section>
 
@@ -393,17 +393,17 @@
 
     <div class="cross">
         <h3>Which perspective this method belongs to</h3>
-        <p>Leave-one-out cross-validation does not ask whether a probability model is right; it looks only at <b>the loss on data not yet seen</b>. It is a tool for estimating, directly and by taking the sample apart, the gap between the empirical risk that can be computed at hand and the expected risk that is actually wanted. Where a generalization bound holds that gap down from above with a complexity term, this closes it by measurement. It falls under <b>Perspective 4 (learning theory, risk minimization)</b> in <a href="../">Reading the seven perspectives in equations</a>. The same target — prediction on unseen data — seen from the side of information criteria is the AIC of Perspective 5.</p>
+        <p>Leave-one-out cross-validation does not ask whether a probability model is right; it looks only at <b>the loss on data not yet seen</b>. It is a tool for estimating, directly and by taking the sample apart, the gap between the empirical risk that can be computed at hand and the expected risk that is actually wanted. Where a generalization bound holds that gap down from above with a complexity term, this closes it by measurement. It falls under <b>Perspective 4 (learning theory, risk minimization)</b> in <a href="../">Reading the eight perspectives in equations</a>. The same target — prediction on unseen data — seen from the side of information criteria is the AIC of Perspective 5.</p>
     </div>
 
     <p class="note">
     This page sets out, for readers in the same field, a method Onohara uses in actual research. Every figure is quoted from the output of the analysis scripts; no estimates or approximations are given.<br>
-    The whole layout of where the methods sit is in <a href="../">Reading the seven perspectives in equations</a>; which teaching session falls under which perspective is in <a href="../../teaching/methods/">Methods &amp; Mathematics</a>.</p>
+    The whole layout of where the methods sit is in <a href="../">Reading the eight perspectives in equations</a>; which teaching session falls under which perspective is in <a href="../../teaching/methods/">Methods &amp; Mathematics</a>.</p>
 
 </main>
 
 <footer class="page-footer">
-    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the seven perspectives</a></p>
+    <p>Last updated: 2026-09-20 &nbsp;|&nbsp; <a href="../">&larr; Back to the eight perspectives</a></p>
 </footer>
 
 </body>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>進化ゲームと固定確率 — 小野原彩香 | Methods</title>
+    <meta name="description" content="有限集団の進化ゲーム理論について、侵入適応度・ペアワイズFermi模倣・固定確率 ρ<1/N・期待利得過程と実現利得過程の区別・二次的強制を、判定の仕方そのものを戦略にしたモデルに即して説明したページ。">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* この手法が属する観点の色（ゲーム・敵対） */
+            --w:      #8a5a2f;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#e6c9a8; background:rgba(138,90,47,0.42); border:1px solid rgba(230,201,168,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(230,201,168,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#fdf7f2; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">小野原彩香</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">手法と数学の地図</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">式で読む</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">進化ゲームと固定確率</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">科目の重なり</a>
+            <a href="../../teaching/guide/">統計の考え方ガイド</a>
+        </div>
+        <div class="lang-switch">
+            <span class="lang-btn active">JA</span>
+            <a href="/en/worlds/evolutionary-game/" class="lang-btn">EN</a>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">観点 6 ｜ <a href="../">ゲーム・敵対</a></span>
+        <h1>Invasion and <span>Fixation</span></h1>
+        <p class="lead">ある状態が可能であることと、集団がそこへ運ばれることは別の主張です。進化ゲーム理論は後者を扱い、パラメータだった量を戦略に変えて、利得の差が増殖率に変換される過程を回します。<br>小野原が「判定の仕方そのもの」を戦略にしたモデルに即して、軌跡・侵入適応度・固定確率の三つをどう使い分けたかを整理します。</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>何のための手法か</h2>
+        <p class="q">パラメータを戦略に変えて、「その状態は選ばれるのか」を問う。</p>
+        <p class="body">
+        力学系の分析は、ある条件が成り立てば何が起こるかを答える（<a href="../fold-bifurcation/">折り畳み分岐</a>）。しかし条件に出てくる量が人の振る舞い方であるなら、次の問いが残る。<b>集団はそこへ運ばれるのか</b>。放っておけばその状態に近づくのか、それとも近づかないのか。
+        </p>
+        <p class="body">
+        進化ゲーム理論はこれを扱う。これまでパラメータだった量を個体が持つ<b>戦略</b>に変え、利得の高い戦略が広がる過程を書く。問うのは最適化ではなく、ある戦略を持つ少数者が多数者の中で増えるかどうかである。生物学では血縁選択や協力の進化を扱うために作られた枠組みだが、ここでは<b>判定の仕方そのもの</b>が戦略になる。
+        </p>
+        <p class="body">
+        小野原の使い方には、この枠組みの標準的な使い方からの差分がひとつある。普通は「協力するか／しないか」が戦略である。ここでは協力するかどうかは戦略ではなく、<b>他人の判断をどれだけ重く読むか</b>（\(\eta\)）と<b>判断をどれだけ範疇的にするか</b>（\(k\)）が戦略である。どちらも道徳的な性質ではなく推論の仕方であり、その積が分岐条件に現れる量である。
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>利得は二つの成分からなる</h2>
+        <p class="q">正確さが規律し、同調が膨らませる。両方を一つの式に入れる。</p>
+        <p class="body">
+        各個体 \(j\) は \((\eta_j,k_j)\) を持ち、私的な手がかりと、相手がいま受けている支援から \(r_{ji}\) を作り、確率 \(\sigma(k_j(r_{ji}-\theta))\) で支援する。利得にはちょうど二つの項を置く。
+        </p>
+        <div class="eq">
+            <div class="lbl">利得</div>
+            \[ \pi_j \;=\; \underbrace{S_{ji}\,(b\,a_i - c)}_{\text{認識的}}\;-\;\underbrace{w\,\big|S_{ji}-\bar s_{-j,i}\big|}_{\text{二次的}} \]
+            <p class="read"><b>認識的な項</b> … 支援が支援に値する人に届いているか。\(c = b\theta\) と置くので、\(\theta\) はちょうど支援が損得なしになる貢献にあたる<br>
+            <b>二次的な項</b> … 集団の評決から外れることのコスト。\(w\) がその強さ<br>
+            <b>\(S_{ji}\)</b> … \(j\) が \(i\) を支援したか（0 か 1）<br>
+            <b>\(\bar s_{-j,i}\)</b> … \(j\) 以外が \(i\) をどれだけ支援しているか</p>
+        </div>
+        <div class="sub">
+            <h3>二つの項は反対方向に引く</h3>
+            <p>第一項は \(\eta\) を<b>規律する</b>。群衆を重く読みすぎれば判断が悪くなり、罰される。第二項は \(\eta\) を<b>膨らませる</b>。判定者自身の立場も同じ機械で決まるので、周囲が見切った相手を支援すれば判定者として見る目がないと見なされ、周囲が支援している相手に渋れば薄情と見なされる。どちらに転ぶかが、この節の問いである。</p>
+        </div>
+        <div class="sub">
+            <h3>第二項は既存の機構の縮約形である</h3>
+            <p>間接互恵性を進化的に安定にするのは、「値しない者に与えない、さもなくば自分が値しない者になる」という二次的な要求である（Panchanathan &amp; Boyd 2004）。その機構ではコストは<b>内部的</b>で、外れた判定者は立場を失い、その結果として支援を失う。上の式はそれを利得から直接引いている。縮約形であることは弱点になりうるので、第7節でループを閉じ直して何が残るかを報告する。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>起源 ―― 有限集団の進化動態</h2>
+        <p class="q">無限集団の微分方程式ではなく、有限集団の確率過程として扱う。</p>
+        <div class="sub">
+            <h3>ペアワイズ Fermi 模倣</h3>
+            <p>個体 \(i\) が個体 \(j\) を真似る確率を \(\sigma(\beta(\pi_j-\pi_i))\) とする。\(\beta\) は淘汰の強さで、\(\beta\to0\) なら中立なドリフト、\(\beta\to\infty\) なら常に高利得側を真似る。統計物理の Fermi 分布から来た形で、有限集団の進化動態の標準的な更新規則になっている。ここでは変異として \((\eta,k)\) にガウス雑音を加え、\(\eta\in[0,6]\)、\(k\in[0.1,30]\) で境界を切る。</p>
+        </div>
+        <div class="sub">
+            <h3>有限集団では「安定」の定義が変わる</h3>
+            <p>無限集団の ESS は「侵入適応度が負」で定義される。有限集団ではドリフトがあるため、不利な変異体も確率的に固定しうる。そこで Nowak ら (2004) は基準を置き換えた。定住者 \(R\) が変異体 \(M\) に抵抗するのは、<b>単一の \(M\) 変異体が中立な変異体より固定しにくいとき</b>、すなわち \(\rho_M<1/N\) のときである。</p>
+        </div>
+        <div class="eq">
+            <div class="lbl">固定確率</div>
+            \[ \rho_M=\Big[1+\sum_{k=1}^{N-1}\exp\Big(-\beta\sum_{j=1}^{k}\Delta\pi(j)\Big)\Big]^{-1} \]
+            <p class="read"><b>\(\Delta\pi(j)\)</b> … 変異体が \(j\) 個いるときの、変異体と定住者の期待利得差<br>
+            <b>導出</b> … ペアワイズ比較の更新では遷移確率が \(T^-(j)/T^+(j)=\exp(-\beta\Delta\pi(j))\) を満たすので、この形になる<br>
+            <b>読み方</b> … 利得差を経路全体に沿って足し上げる。一世代あたりの小さな差が経路上で積み上がるので、margin は大きくなる</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>三つの基準を使い分ける</h2>
+        <p class="q">軌跡は初期値に依存する。安定性の主張は軌跡に載せられない。</p>
+        <p class="body">
+        この研究では三つの測り方を併用し、何をどちらに載せるかを分けている。順に、強いことを言えるものではなく、<b>何に依存するか</b>で並べる。
+        </p>
+        <ol class="steps">
+            <li><b>軌跡</b>　初期戦略から淘汰と変異を回し、400世代後の \(\overline{k\eta}\) を見る。<b>初期値に依存する</b>。中立な対照（\(\beta=0\)）を同じ初期値から並走させないと、淘汰の効果とドリフトの効果が区別できない。</li>
+            <li><b>侵入適応度の符号</b>　定住者と少数の変異体を固定し、平均利得差の符号を見る。初期値に依存しない。<b>有意性ではなく符号で判定する</b>——有意にならないセルは検出力が低いだけであり、進化的双安定が要求するのは両方の侵入適応度が<b>負</b>であることだから。</li>
+            <li><b>固定確率</b>　式 (7) を \(\Delta\pi(j)\) の全範囲について評価し、\(1/N\) と比べる。初期値に依存しない。有限集団の確率過程についての標準的な定義そのもの。</li>
+        </ol>
+        <div class="warn">
+            <h3>軌跡の水準は初期値の産物だった</h3>
+            <p>同じ掃引を別の初期戦略から回すと、\(w=0\) で選ばれる \(\overline{k\eta}\) は \((\eta_0,k_0)=(0.2,4)\) から 2.89（中立対照 1.53）、\((1.0,4)\) から 4.26（対照 3.97）、\((3.0,4)\) から 7.01（対照 <b>11.15</b>）、\((0.2,10)\) から 4.85（対照 3.88）、\((3.0,10)\) から 29.63（対照 29.13）になる。\(\eta_0=3\) から始めると、選ばれた値は自分の中立対照<b>以下</b>である。400世代のドリフト律速な模倣では、集団は始めた戦略から戻ってこない。</p>
+            <p>境界の処理も確認した。クリップを反射に替えると \(w=0\) で 2.89 から 3.03、\(w=0.5\) で 5.88 から 5.92 に動くだけである。<b>どの初期値でも両方の境界規則でも残るのは \(w\) 自身の効果</b>で、2.89→5.88、4.26→8.90、7.01→14.48、4.85→8.76 と一貫して上げる。そこで軌跡の表は「二次的コストが集団を動かす方向の例示」と位置づけ、安定性の主張は侵入と固定の分析に載せ替えた。</p>
+        </div>
+        <div class="sub">
+            <h3>淘汰の強さが足りないと、最適点に届かない</h3>
+            <p>\(\beta=6\) では利得差が \(0.01\)–\(0.08\) の程度で、模倣確率は \(0.515\) 付近に留まる。集団は最適点ではなくドリフトに律速されている。淘汰を効率的にすると（\(\beta=30\)、\(w=0\)）、<b>認識的な項だけですべての反復が折り畳みを越え</b>、\(\overline{k\eta}=5.13\pm0.76\) に達する。正確な判断への見返りは折り畳みの手前で尽きるのではなく、<b>折り畳みのすぐ先で尽きる</b>。独立に測った淘汰勾配の零交差（\(k=7\) 固定で \(\eta^\ast\approx0.62\)、すなわち \(\overline{k\eta}^\ast\approx4.4\)、閾値 4.0 の8パーセント上）と整合する。勾配の推定に使った変異体のずらし幅 0.25 は分岐をまたぐので、これは格子幅 0.13 までの精度で「折り畳みのところ、わずかに上」と読むべきで、点推定ではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>期待利得の過程と実現利得の過程は別物である</h2>
+        <p class="q">同じ更新規則の名前で呼ばれる二つの過程が、同じ答えを返す必要はない。</p>
+        <p class="body">
+        式 (7) の導出に使った恒等式 \(T^-/T^+=\exp(-\beta\Delta\pi)\) は、二つの戦略の<b>期待</b>利得についてのペアワイズ比較で成り立つ。これが基準の標準的な設定であり、評価しているのもこれである。一方、軌跡のシミュレーションでは、各模倣イベントが二個体の<b>実現</b>利得を比べている。
+        </p>
+        <div class="eq">
+            <div class="lbl">二つが一致しない理由</div>
+            \[ \mathbb{E}\big[\sigma(\beta D)\big] \;\neq\; \sigma\big(\beta\,\mathbb{E}[D]\big) \]
+            <p class="read"><b>\(D\)</b> … 実現利得の差。分散が正であれば等号は成り立たない<br>
+            <b>帰結</b> … 貢献の個体差が利得に雑音を加え、実現利得の過程では淘汰のバイアスが弱まる。二つの過程は行ごとに一致する必要がない</p>
+        </div>
+        <div class="sub">
+            <h3>なぜこれを明記するか</h3>
+            <p>固定確率の表と軌跡の表が食い違うとき、どちらかが間違っていると読まれる。実際には別の量を計算している。固定確率の表は<b>標準的な基準を標準的な過程に適用したもの</b>であり、軌跡を固定まで走らせたらどうなるかの計算ではない。速度と安定性の違いに加えて、これが両者が行ごとに一致しなくてよい第二の理由である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>この研究での結果</h2>
+        <p class="q">二次的コストが閾値を越えると、切り替わる。双安定帯は現れない。</p>
+        <p class="body">
+        二通りの侵入テストを \(w\) について並べる。「抵抗する」は、比較した相手の変異体に侵入されないという意味であり、\((\eta,k)\) 空間全体に対する進化的安定性ではない。
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(w\)</th><th class="num">範疇的が段階的に侵入</th><th class="num">段階的が範疇的に侵入</th><th>判定</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0.00</td><td class="num">\(-0.00346\pm0.00114\)</td><td class="num">\(+0.03128\pm0.00163\)</td><td>段階的が抵抗</td></tr>
+                <tr><td class="num">0.10</td><td class="num">\(+0.00034\pm0.00124\)</td><td class="num">\(+0.01040\pm0.00159\)</td><td>どちらも抵抗しない</td></tr>
+                <tr><td class="num">0.12</td><td class="num">\(+0.00110\pm0.00126\)</td><td class="num">\(+0.00623\pm0.00159\)</td><td>どちらも抵抗しない</td></tr>
+                <tr><td class="num">0.15</td><td class="num">\(+0.00224\pm0.00129\)</td><td class="num">\(-0.00003\pm0.00159\)</td><td>範疇的が抵抗</td></tr>
+                <tr><td class="num">0.60</td><td class="num">\(+0.01932\pm0.00176\)</td><td class="num">\(-0.09396\pm0.00183\)</td><td>範疇的が抵抗</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">60反復／セル、平均±95パーセント区間。定住者は \((\eta,k)=(0.30,7)\) と \((1.50,7)\)。<code>evolution.py</code> の出力。</p>
+        <div class="warn">
+            <h3>外れた予測：双安定帯はなかった</h3>
+            <p>二つのレジームがそれぞれ相手に抵抗する帯——同じ \(w\) でどちらの状態も自分を守れる領域——を予期していたが、<b>見つからなかった</b>。調べたどの \(w\) でも両方の侵入適応度が負になることはない。\(w=0.10\)–\(0.12\) の中間領域は、双安定の<b>逆</b>で、<b>どちらも相手に抵抗しない</b>領域である。切り替えは \(w\approx0.14\) で完了する。</p>
+            <p>これは集団間の比較から何が言えるかに関わるので、本文に明記した。比較した二つの判定戦略について、調べた \(w\) の範囲で、他の生態を固定したうえでは、互いに抵抗する一対のレジームは観察されなかった。これは判定規則における経路依存性の<b>余地を限定する</b>が、排除するわけではない——別の戦略対、混合状態、調べた値の間の \(w\)、長い過渡状態のいずれでも生じうる。したがって二集団のレジームの違いは \(w\) の違いと<b>整合する</b>が、\(w\) の違いを同定しない。</p>
+            <p>重要なのは、これが<b>戦略についての主張であって結果についての主張ではない</b>ことである。<a href="../fold-bifurcation/">折り畳み分岐</a>と<a href="../small-world/">支援行列</a>の分析が示すのは、\(\eta qk>4\) ならどこでも支援行列が双安定だということで、同じ集団の同じ個体が別の側に落ち着きうる。双安定帯の不在が限定するのは、判定規則の経路依存性であって、誰が包摂されるかの経路依存性ではない。</p>
+        </div>
+        <div class="sub">
+            <h3>固定確率の基準も同じ結論を返す</h3>
+            <p>\(N=150\)、\(\beta=6\) で中立値は \(1/N=6.7\times10^{-3}\)。\(w=0\) では範疇的な単一変異体の固定確率が \(2.7\times10^{-7}\)、段階的な単一変異体が \(1.8\times10^{-1}\) で、段階的が抵抗する。\(w=0.60\) では \(1.0\times10^{-1}\) と \(5.2\times10^{-22}\) で逆転する。切り替えは両方の基準で 0.10 と 0.15 の間に落ちる。<b>両方の確率が \(1/N\) を下回る行はひとつもなく</b>、どの行でもちょうど一方が下回る。\(\beta=30\) で繰り返しても、\(\Delta\pi(j)\) を17点格子からの内挿ではなく全 \(j\) で評価しても、判定は変わらない。</p>
+        </div>
+        <div class="sub">
+            <h3>コストは \(\eta\) に効き、\(k\) には効かない</h3>
+            <p>第二項には別の読み方がありうる。\(S_{ji}\) が二値で \(\bar s\) が連続なので \(\mathbb{E}|S_{ji}-\bar s|=2p(1-p)\) となり、これは \(p=1/2\) で最大、\(p\) が飽和すると消える。この形のコストは、誰の評決にも従わずに支援パターンを<b>先鋭化する</b>（\(k\) を上げる）ことで払い下げられてしまう。実際にはそうならない。\(w\) を 0 から 1.2 まで動かすと \(\eta\) は 0.415 から 1.355 へ<b>3.3倍</b>になるが、\(k\) は 6.990 から 8.069 へ<b>1.15倍</b>にしかならない。二次的コストは、主張されている機構どおり、共同体の評決に置く重みに効いている。</p>
+        </div>
+        <div class="sub">
+            <h3>淘汰は集団の最適点を通り過ぎる</h3>
+            <p>認識的な成分だけ——支援が支援に値する人に届いているか——を測ると、\(k=7\) 固定の \(\eta\) 掃引で最適は折り畳みのところ（\(k\eta=3.99\) で \(0.0836\pm0.0096\)）にあり、その先では \(k\eta=7.00\) で \(0.0723\)、\(10.5\) で \(0.0369\)、\(21.0\) で \(-0.0137\pm0.0118\) と下がる。精度も \(.987\) から \(.504\) へ落ちる。</p>
+            <p>ただし<b>利得は \(k\eta\) の関数ではない</b>。支援確率は \(\sigma\{k(x-\theta)+(k\eta)\bar s\}\) なので \(k\) は私的情報の重みも決める。積を \(k\eta=10.5\) に固定して \(k\) を 3.5、7、14、21 と振ると、利得は \(-0.0130\)、\(0.0369\)、\(0.0836\)、\(0.0869\) と表全体の幅にわたって動く。分岐条件が依存するのは積だが、利得は積の関数ではない。したがって読むべき場所は格子ではなく<b>実際に進化した戦略</b>である。表9 が報告する6対（\(k\) は 6.99 から 8.07 へ上がる）で測ると、利得は \(0.0829\)、\(0.0840\)、\(0.0836\)、\(0.0789\)、\(0.0657\)、\(0.0478\)（標準誤差 \(0.0092\)–\(0.0118\)）となる。淘汰が実際にたどる経路では、最適は \(w=0.20\) と \(0.30\) で進化した対——折り畳みのすぐ先——にあり、調べた最大の \(w\) では<b>そこから約五分の二まで落ちるが、ゼロには達しない</b>。淘汰がするのは最適点を通り過ぎることであって、利益を消すことではない。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>縮約形を内生化する</h2>
+        <p class="q">利得から直接引くのをやめ、モデル内の機構でループを閉じる。</p>
+        <p class="body">
+        式 (6) は外れた判定者の利得を直接引く縮約形である。それが代理している機構では、判定者は<b>立場</b>を失い、その結果として支援を失う。モデルはすでに立場を割り当てる機械を持っているので、仮定する代わりにループを閉じられる。
+        </p>
+        <div class="eq">
+            <div class="lbl">内生化した二次的コスト</div>
+            \[ a^{\text{eff}}_j = a_j - w\,d_j,\qquad
+               d_j=\overline{\big|S_{jl}-\mathbb{1}[\bar s_{-j,l}>1/2]\big|\cdot\big|2\bar s_{-j,l}-1\big|} \]
+            <p class="read"><b>読み方</b> … 共同体が明確に見切った相手を支援すること、明確に支援している相手に渋ることが \(j\) の不利になり、境界的なケースはほとんど数えない<br>
+            <b>肝</b> … 他者は \(a^{\text{eff}}_j\) について \(j\) を<b>全員と同じ規則で</b>判定する。利得への罰則はどこにもない</p>
+        </div>
+        <div class="sub">
+            <h3>三つが引き継がれ、二つが変わる</h3>
+            <p>引き継がれるもの。コストは依然として \(\eta\) に効いて \(k\) には効かない（\(w\) を 0 から 3 へ動かすと \(\eta\) は 0.467 から 0.885、\(k\) は 6.450 から 7.191）。レジームは依然として段階的が抵抗する側から範疇的が抵抗する側へ切り替わる。そして依然として両方の侵入適応度が負になる \(w\) は存在しない——<b>双安定帯の不在は縮約形の産物ではない</b>。</p>
+            <p>変わるもの。閾値が \(w^\ast\approx0.13\) から \(w^\ast\approx0.6\)–\(0.8\) へ動き、同程度の \(w\) での効果の大きさは<b>約三分の一</b>になる。<b>利得から直接引く定式化は、評判の経路が実際に届けるものを過大評価している</b>。これは知っておく価値があり、節の結論は変えない。なお内生形では \(w=0.5\) で両方の固定確率が \(1/N\) を超える（\(2.4\times10^{-2}\) と \(5.2\times10^{-2}\)）——双安定が崩れるもう一つの形、つまり<b>どちらも抵抗しない</b>場合である。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>記録しておく二つ目の負の結果</h2>
+        <p class="q">効果が見えないことと、機構がないことは違う。</p>
+        <div class="warn">
+            <h3>\(v\) 依存性は実在するが、貢献の雑音に隠れている</h3>
+            <p>異議のコストは \(v\)——包摂されていることの価値——に比例して増えるはずである。進化の掃引ではそうならない。\(w=1\) で \(v\) を 0.1 から 2.0 まで動かすと \(\overline{k\eta}\) は 3.99、3.58、4.13、5.03、3.80 で、反復のばらつきの中で平坦から非単調である。</p>
+            <p>機構がないからではない。侵入テストのように \(a\) を固定すると、範疇的な変異体と段階的な定住者の利得差の立場成分は \(v\) に<b>厳密に線形</b>で、\(v=0.1\) の \(7.3\times10^{-4}\) から \(v=2\) の \(1.45\times10^{-2}\) へ増える。しかし同時に、戦略<b>内</b>の利得のばらつきも増える。それはほぼすべて \(a_j\) から来ており（定住者内での利得との相関は 0.98–0.99）、大きさは<b>30倍</b>、同じ範囲で 0.022 から 0.44 になる。\(a_j\) は毎世代引き直され、戦略についての情報を持たない。つまり \(v\) を上げることは、二次的な信号を足すのと同じ速さで淘汰の信号に雑音を足している。</p>
+            <p>これは操作で確認できる。\(\sigma_a\) をゼロにすると模倣バイアスは 0.010、0.026、0.051、0.101、0.194 と \(v\) に伸びるが、論文の \(\sigma_a\) では 0.002、0.010、0.021、0.033、0.042 で \(v\approx1\) で平坦化する。\(\sigma_a=0.15\) と \(0.05\) では軌跡も \(v\) について単調になる。<b>\(v\) 依存性は実在するが、論文の \(\sigma_a\) では貢献の雑音に覆われている</b>。これが見えるのは \(a\) を固定して群を揃える侵入分析であり、結論が載っているのもその分析である。</p>
+        </div>
+        <div class="sub">
+            <h3>不均質な集団では \(\overline{k\eta}>4\) は必要条件にすぎない</h3>
+            <p>判定者が均質なら集団は \(\overline{k\eta}>4\) で折り畳む。不均質な判定者では、自己無撞着写像の最大傾きが \(N^{-1}\sum_j k_j\eta_j\,\sigma_j(1-\sigma_j)\le\overline{k\eta}/4\) になり、等号は<b>全判定者が同時に自分の変曲点にいるとき</b>だけ成り立つ。したがって \(\overline{k\eta}>4\) は必要条件であって十分条件ではなく、表の「折り畳みを越えた反復の割合」は上限として読むべきである。同じ不等式は<a href="../logistic-reduction/">ロジスティック縮約</a>の測定可能性の議論にも効いている。</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>出典とコード</h2>
+        <p class="body">
+        侵入適応度、Fermi 模倣の軌跡、淘汰勾配は <code>evolution.py</code> に実装されている。中立対照・\(\eta\)/\(k\) の分解・符号による侵入テストは <code>check_f234_evolution.py</code>、固定確率は <code>check_fixation.py</code>、内生化した二次的コストは <code>evolution_endog.py</code>、別の初期戦略と反射境界での再現は <code>check_evo_boundaries.py</code>、内挿の影響は <code>check_fixation_interp.py</code>、\(v\) 依存性の切り分けは <code>check_k4b_v.py</code> と <code>check_k4b_v_sweep.py</code>、認識的利得が \(k\eta\) の関数でないことの検査は <code>check_epi_product.py</code> にある。
+        </p>
+        <ul class="refs">
+            <li>コードとログ：<a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a>（MIT ライセンス）。</li>
+            <li>原稿は <i>Journal of Theoretical Biology</i> への投稿準備中。</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>手法の文献</h3>
+            <ul class="refs">
+                <li>Nowak, M. A., Sasaki, A., Taylor, C. &amp; Fudenberg, D. (2004) Emergence of cooperation and evolutionary stability in finite populations. <i>Nature</i>, 428, 646&ndash;650.</li>
+                <li>Panchanathan, K. &amp; Boyd, R. (2004) Indirect reciprocity can stabilize cooperation without the second-order free rider problem. <i>Nature</i>, 432, 499&ndash;502.</li>
+                <li>Traulsen, A. &amp; Hauert, C. (2009) Stochastic evolutionary game dynamics. In <i>Reviews of Nonlinear Dynamics and Complexity</i>, vol. 2. Wiley.（ペアワイズ比較過程の扱い）</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>この手法がどの観点に属するか</h3>
+        <p>観点6 が扱うのは「複数の主体がいて、各自の選択が他者の結果を左右する」構造である。この観点には既に二つの手法が置かれている。<a href="../gan/">敵対的生成ネットワーク</a>の \(\min_G \max_D V(D,G)\) は<b>零和</b>で、プレイヤーは2つのネットワークであり、解は釣り合った点である。<a href="../economic-games/">経済ゲーム</a>は非零和で、プレイヤーは生身の人間であり、解は観察された選択の分布である。</p>
+        <p>この手法は三つ目の型になる。プレイヤーは<b>集団</b>で、解は<b>どの戦略が時間とともに広がるか</b>である。釣り合いを解くのでも選択を観察するのでもなく、利得の差が増殖率に変換される過程を回す。ゲーム理論の「均衡」ではなく、進化動態の「固定」が答えになる。<a href="../">8つの観点を式で読む</a>の<b>観点6（ゲーム・敵対）</b>に、この手法が置かれている。</p>
+    </div>
+
+    <p class="note">
+    このページは、小野原が実際の研究で使っている手法を、同じ分野の読み手に向けて整理したものです。数値はすべて公開リポジトリの実行ログから引用し、推定値や概算は記載していません。原稿は投稿準備中のため、結論は変わりうるものとしてお読みください。<br>
+    手法の位置づけの全体像は <a href="../">8つの観点を式で読む</a>、どの授業回がどの観点に当たるかは <a href="../../teaching/methods/">手法と数学の地図</a> にあります。</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>最終更新：2026-11-26 &nbsp;|&nbsp; <a href="../">← 8つの観点を式で読む へ戻る</a></p>
+</footer>
+
+</body>
+</html>

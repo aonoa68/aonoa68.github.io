@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saddle-Node Bifurcation — Ayaka Onohara | Methods</title>
+    <meta name="description" content="Fixed points of a self-consistency map and the saddle-node (fold) bifurcation: deriving the condition ηqk>4, closed-form fold points, generality across support rules, hysteresis, and metastability under a fluctuating threshold, as used in a model of reputation-gated support.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (Dynamical systems and bifurcation) */
+            --w:      #17697b;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#bfdfe6; background:rgba(23,105,123,0.42); border:1px solid rgba(191,223,230,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(191,223,230,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f1f8fa; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">Fold Bifurcation</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">Course map</a>
+            <a href="../../teaching/guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/worlds/fold-bifurcation/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 8 ｜ <a href="../">Dynamical systems and bifurcation</a></span>
+        <h1>Saddle-Node <span>Bifurcation</span></h1>
+        <p class="lead">Social science has long spoken of tipping points, but usually as an <b>assumption</b>. This method steps back and derives the condition for such a point to exist, as the number of solutions of an equation in which a quantity is a function of itself.<br>It follows the fold bifurcation Onohara uses in a model of reputation-gated support, separating what is derived from what depends on the parameters.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Deriving the condition under which tipping occurs, instead of assuming it.</p>
+        <p class="body">
+        Social arrangements are often said to have tipping points. Threshold models and tipping models take as given that people change their behaviour once some fraction of others has changed, and work out the consequences (Schelling 1971; Granovetter 1978). This method answers the question one step before that: it writes down <b>the condition for such a point to exist at all</b>, as a derivation rather than an assumption.
+        </p>
+        <p class="body">
+        The tool is the fixed point. One writes down a situation in which a quantity is a function of itself, and counts the solutions of that equation. With one solution the system responds smoothly; with three, different states coexist under identical conditions. The moment at which one becomes three is the bifurcation, and the inequality that marks that moment is what the method returns.
+        </p>
+        <p class="body">
+        Onohara uses it where support is conditional on standing and <b>standing is in turn read off the support someone receives</b> &mdash; the inference that a person nobody is helping probably has something wrong with them. What matters is not whether that inference is correct but that it is present: with it, the fixed-point equation refers to itself; without it, it does not. That difference shows up as the presence or absence of a fold.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Counting fixed points</h2>
+        <p class="q">Standing becomes a function of itself. Count the solutions.</p>
+        <p class="body">
+        Let \(r\) be an individual's standing &mdash; the position others assign them &mdash; \(a\) their own observable contribution, and \(\theta\) the standard for eligibility. Standing is updated from two sources: what the person does, and <b>what the group is observed to be doing about them</b>.
+        </p>
+        <div class="eq">
+            <div class="lbl">The update</div>
+            \[ r_{t+1} = (1-\lambda)\,r_t + \lambda\Big[\,a + \eta\,q\,\sigma\big(k(r_t-\theta)\big)\Big],
+               \qquad \sigma(x)=1/(1+e^{-x}) \]
+            <p class="read"><b>\(\sigma(k(r_t-\theta))\)</b> &hellip; the fraction of the group currently supporting the individual<br>
+            <b>\(k\)</b> &hellip; how sharply that fraction responds to standing<br>
+            <b>\(q\)</b> &hellip; how much of others' support decisions a judge sees<br>
+            <b>\(\eta\)</b> &hellip; how heavily a judge reads what they see back into standing<br>
+            <b>\(\lambda\)</b> &hellip; the rate of updating. It <b>does not affect where the fixed points are</b>, only their stability and the speed of approach</p>
+        </div>
+        <p class="body">
+        Fixed points solve \(r = g(r) := a + b\,\sigma(k(r-\theta))\) with \(b:=\eta q\). Since \(g'(r) = bk\,\sigma(1-\sigma)\) attains its maximum \(bk/4\) at \(\sigma=1/2\), whether the slope of the map can exceed one is what decides whether the solutions multiply.
+        </p>
+        <div class="eq">
+            <div class="lbl">The bifurcation condition</div>
+            \[ \boxed{\;\eta\,q\,k \;>\; 4\;} \]
+            <p class="read"><b>How to read it</b> &hellip; when the <b>product</b> of the three quantities exceeds 4, there is a contribution \(a\) at which the map has more than one fixed point. If any one of them is small, no size of the others produces a fold</p>
+        </div>
+        <div class="sub">
+            <h3>That it is a product is the content of the condition</h3>
+            <p>A society with categorical eligibility judgements but no inverse inference does not fold. A society in which people read standing off received help but cannot observe each other's helping does not fold. Nor does a society with both if judgements are graded rather than categorical. <b>The three features are individually harmless and jointly sufficient.</b> That is what the product form says.</p>
+        </div>
+        <div class="sub">
+            <h3>This is a condition on the population, not on an individual</h3>
+            <p>Condition \(\eta qk>4\) says only that the interval of contributions with multiple solutions is non-empty. For a particular individual to have two stable states, their contribution must also lie inside that interval. The numerical example below makes the distinction concrete.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>The fold points are available in closed form</h2>
+        <p class="q">Solved analytically, not searched for numerically.</p>
+        <p class="body">
+        The location of the saddle-node (fold) points follows from solving \(g'(r)=1\). The equation is quadratic, so the solutions are elementary.
+        </p>
+        <div class="eq">
+            <div class="lbl">Fold points</div>
+            \[ \sigma_{\pm}=\frac{1\pm\sqrt{1-4/bk}}{2},
+               \qquad r_\pm = \theta + k^{-1}\mathrm{logit}(\sigma_\pm) \]
+            \[ (a_{\text{low}},\,a_{\text{high}}) = \big(r_+ - b\sigma_+,\; r_- - b\sigma_-\big) \]
+            <p class="read"><b>\(\sqrt{1-4/bk}\)</b> &hellip; the radicand being positive is exactly the condition \(bk>4\)<br>
+            <b>\((a_{\text{low}},a_{\text{high}})\)</b> &hellip; the interval of contributions over which the system is bistable; we write its width \(\Delta a\)</p>
+        </div>
+        <div class="sub">
+            <h3>A numerical example</h3>
+            <p>At \(b=0.9\), \(k=12\), \(\theta=0.5\) the interval is \((-0.127,\,0.227)\). This population has \(\eta qk=10.8\), far above the condition, yet an individual contributing \(a=0.5\) has the single fixed point \(r=1.400\). <b>That a population lies in the folding regime and that a given individual has two states are separate claims.</b></p>
+        </div>
+        <div class="sub">
+            <h3>What having a closed form buys</h3>
+            <p>An implementation that searches for fold points numerically cannot distinguish &ldquo;not found&rdquo; from &ldquo;does not exist&rdquo;. With a closed form, the condition is settled by substitution. The check on functional form in Section 5 is only a check because the thing being checked against is known analytically.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Origins &mdash; bifurcation theory, and threshold models in social science</h2>
+        <p class="q">The tool comes from dynamical systems; the question comes from social science.</p>
+        <div class="sub">
+            <h3>The saddle-node bifurcation</h3>
+            <p>As one parameter is varied, a stable and an unstable fixed point appear as a pair, or collide and vanish. This is the saddle-node bifurcation; one-dimensional maps and differential equations reduce to the same normal form, and both show critical slowing down as the bifurcation is approached. It is the standard description of transitions that do not simply reverse: lake eutrophication, desertification of vegetation, retreat of an ice sheet.</p>
+        </div>
+        <div class="sub">
+            <h3>How this differs from the social-science threshold models</h3>
+            <p>Schelling's (1971) segregation model and Granovetter's (1978) threshold model of collective behaviour are the originals here. Both assume that each person carries a threshold &mdash; what fraction of others must move before they move &mdash; and derive tipping from the distribution of those thresholds.</p>
+            <p>This method differs in two ways. First, <b>the tipping condition is derived rather than assumed</b>: \(\eta qk>4\) is a statement about three separately interpretable parameters, each measurable in principle, though not all separately identified from a single regression (see <a href="../logistic-reduction/">Logistic Reduction</a>). Second, <b>what tips is an individual's standing</b>, not the composition of a neighbourhood or the size of a crowd. In Schelling's model a block tips; in Granovetter's, a population tips. Here one person's standing tips.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>The constant 4 is not general. That it is a product is</h2>
+        <p class="q">Change the functional form and see what survives.</p>
+        <p class="body">
+        The number 4 is a property of the logistic function. Writing the support rule generally as \(r = a + b\,F(k(r-\theta))\), the same argument gives \(\max_r bk\,F' > 1\), that is:
+        </p>
+        <div class="eq">
+            <div class="lbl">General form</div>
+            \[ \eta\,q\,k \;>\; \frac{1}{\max F'} \]
+            <p class="read"><b>How to read it</b> &hellip; the critical value is the reciprocal of the steepest slope of the support rule. For the logistic rule \(\max F'=1/4\), hence 4</p>
+        </div>
+        <p class="body">
+        This is a prediction rather than a fit, so it can be checked. Counting stable fixed points directly under three other rules, <b>without using the formula at all</b>, returns the predicted constant in each case.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>support rule \(F\)</th><th class="num">measured critical value</th><th class="num">predicted \(1/\max F'\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>probit (normal CDF)</td><td class="num">2.5066</td><td class="num">2.5066</td></tr>
+                <tr><td>\((1+\tanh)/2\)</td><td class="num">2.0000</td><td class="num">2</td></tr>
+                <tr><td>clipped linear</td><td class="num">1.0000</td><td class="num">1</td></tr>
+                <tr><td>logistic</td><td class="num">4</td><td class="num">4</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Values from the output of <code>check_link_generality.py</code>. No fitting is involved; the critical value is fixed by counting stable fixed points.</p>
+        <div class="sub">
+            <h3>What survives</h3>
+            <p>What survives a change of rule is that <b>the three quantities enter as a product</b>, and with it the reading that they are individually harmless and jointly sufficient. The number 4 does not. This check decided which of the two the paper puts its weight on.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Hysteresis &mdash; falling is cheap, returning is not</h2>
+        <p class="q">The width of the bistable window is the price of return.</p>
+        <p class="body">
+        The width \(\Delta a\) has a direct reading. Below the fold, an individual whose contribution declines loses standing proportionately and regains it on recovery. Above the fold, contribution must fall below \(a_{\text{low}}\) before standing collapses, and <b>must then rise above \(a_{\text{high}}\) before it recovers</b>.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(bk\)</th><th class="num">\(\Delta a\)</th><th>state</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">4.00</td><td class="num">0</td><td>exactly at the bifurcation; the window is born</td></tr>
+                <tr><td class="num">7.20</td><td class="num">0.132</td><td>bistable</td></tr>
+                <tr><td class="num">10.80</td><td class="num">0.354</td><td>bistable</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(\theta=0.5\). The width is zero at the bifurcation and grows monotonically thereafter.</p>
+        <div class="sub">
+            <h3>The re-entry penalty</h3>
+            <p>At \(b=0.9,\;k=12\) the individual falls at \(a<-0.127\) and returns only at \(a>0.227\). The difference, \(\Delta a=0.354\), is <b>156 per cent of the re-entry threshold itself</b>. Returning to the contribution one had when one fell is not sufficient; it never is.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>A fluctuating standard makes exclusion metastable, not absorbing</h2>
+        <p class="q">Not &ldquo;cannot leave&rdquo; but &ldquo;hard to leave&rdquo;. The quantity to measure becomes a time, not a level.</p>
+        <p class="body">
+        A condition that is neither stated nor stable is modelled by redrawing \(\theta\) each period from \(N(\bar\theta, s_\theta^2)\). Give every individual the <b>same</b> contribution \(a\) and start them all included. Variance in outcome is then attributable entirely to the fluctuating standard, because there is no variance in anything else.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>fraction excluded (after 600 steps)</th><th class="num">\(s_\theta=0\)</th><th class="num">0.05</th><th class="num">0.10</th><th class="num">0.15</th><th class="num">0.20</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>\(a\) mid-window</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.019</td><td class="num">0.423</td></tr>
+                <tr><td>\(a\) near the lower fold</td><td class="num">0.000</td><td class="num">0.015</td><td class="num">1.000</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Zero variance in merit; output of <code>model.py</code>. Since the individuals do not differ, no account of the outcome in terms of their properties can be correct &mdash; and yet, after the fact, their properties are the only variables available to an observer.</p>
+        <div class="sub">
+            <h3>At the midpoint of the window the level is an identity, not a measurement</h3>
+            <p>Taking \(a=(a_{\text{low}}+a_{\text{high}})/2\) gives \(a=\bar\theta-b/2\) exactly, which puts the unstable middle fixed point &mdash; the boundary between the basins &mdash; exactly at \(r=\bar\theta\). Writing \(u=r-\bar\theta\), the update becomes \(u'=(1-\lambda)u+\lambda b[\sigma(k(u-\varepsilon))-1/2]\) with \(\varepsilon=\theta_t-\bar\theta\) symmetric about zero and \(\sigma(x)-1/2\) odd, so the map is odd in \((u,\varepsilon)\) jointly and the stationary law of \(u\) is symmetric. <b>The stationary excluded fraction at that position is therefore exactly \(1/2\) for every \(s_\theta\).</b></p>
+            <p>The 0.423 in the table is not that stationary value; it is the value at step 600. Without that distinction one reports the level itself as a result. What this section claims is not the level but <b>the ordering across positions</b>, and the time scale set out next.</p>
+        </div>
+        <div class="warn">
+            <h3>An analytic solution caught a misreading of the simulation</h3>
+            <p>The identity above was not in the first draft. That draft carried a finite-horizon simulation value &mdash; 0.39 &mdash; as the &ldquo;stationary excluded fraction&rdquo;. Noticing that symmetry forces \(1/2\) showed that 0.39 was not a stationary value but <b>a value part-way through a process that had not yet mixed</b>.</p>
+            <p>At \(s_\theta=0.15\) the excluded fraction climbs 0.019, 0.070, 0.161, 0.288, 0.394 at 600, 2000, 5000, 10,000 and 20,000 steps, still rising towards \(1/2\) after twenty thousand. At \(s_\theta=0.20\) it reaches 0.49 within two thousand steps and stays there. <b>The slow relaxation is itself the result</b>, and any excluded fraction quoted at \(s_\theta=0.15\) is a statement about the horizon.</p>
+        </div>
+        <div class="sub">
+            <h3>Stating the censoring</h3>
+            <p>The trap in measuring how long exclusion lasts is spells still running when observation ends. At \(s_\theta=0.15\) they are not a remainder: <b>1577 censored spells hold 66 per cent of all the excluded time</b>, with a mean observed length of 8429 steps against the 1662 of the 4155 completed ones. Averaging completed spells alone therefore <b>understates</b> the typical spell rather than overstating it.</p>
+            <p>The statistic reported was accordingly changed from a level to the share of excluded time spent in spells longer than a hundred steps. That quantity is robust to the treatment of censoring: 0.9989 over completed spells, 0.9996 with censored spells included at their observed length. It falls to 0.959 at \(s_\theta=0.20\), 0.587 at 0.25 and 0.189 at 0.30 &mdash; a noisier standard both ejects and readmits more often, and the spells shorten accordingly.</p>
+        </div>
+        <div class="sub">
+            <h3>What it takes to end a spell</h3>
+            <p>Taking the individuals excluded after 600 steps and <b>leaving their contribution where it was</b> &mdash; the no-intervention control, since the contribution they had when they fell is the one they still have &mdash; recovers 3 per cent of them within ten steps, 23 per cent within a hundred and 66 per cent within four hundred, by noise alone. Lifting the contribution to \(a_{\text{high}}\) instead recovers 53 per cent within ten steps and all of them within fifty. <b>The re-entry penalty survives the threshold being noisy</b>: a noisy standard makes return possible without making it cheap.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>What the method cannot say</h2>
+        <p class="q">It is mean-field, its numbers are illustrations, and it shows no convergence.</p>
+        <div class="warn">
+            <h3>Three limits</h3>
+            <p><b>It is mean-field.</b> The update presumes a single quantity \(r\) that everyone consults. Real groups have no such register. The formulation without a central registrar is treated separately in <a href="../small-world/">A Web without a Spider</a>, where the state of the system is the support matrix itself. The analytic condition \(\eta qk>4\) carries over, but the numerical levels do not.</p>
+            <p><b>The numbers depend on the parameters.</b> The analytic results &mdash; the condition and the closed-form fold points &mdash; do not, but the levels in the tables are values at particular settings. They should be read as demonstrations that the effects are of appreciable size, not as estimates.</p>
+            <p><b>No convergence is shown.</b> The method gives the number and location of fixed points. Whether a system in which \(\eta qk\) is itself endogenous settles anywhere is a different question. The related argument at the end of <a href="../logistic-reduction/">Logistic Reduction</a> is about the sign of a pressure, not about convergence.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources and code</h2>
+        <p class="body">
+        The mean-field map, the closed-form fold points, the hysteresis sweep and the excluded fractions under a fluctuating standard are implemented in <code>model.py</code>. Independent verification by counting folds is in <code>check_f1_fold.py</code>; generality across support rules in <code>check_link_generality.py</code>; the extended horizon for metastability in <code>check_metastability.py</code>; and spell lengths, censoring and recovery curves in <code>check_dwell_time.py</code>.
+        </p>
+        <ul class="refs">
+            <li>Code and logs: <a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a> (MIT licence). Every figure quoted on this page corresponds to a logged run in that archive.</li>
+            <li>No empirical data were used. All results are deterministic output of the code, from the seeds it records.</li>
+            <li>The manuscript is in preparation for submission to the <i>Journal of Theoretical Biology</i>.</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Schelling, T. C. (1971) Dynamic models of segregation. <i>Journal of Mathematical Sociology</i>, 1(2), 143&ndash;186.</li>
+                <li>Granovetter, M. (1978) Threshold models of collective behavior. <i>American Journal of Sociology</i>, 83(6), 1420&ndash;1443.</li>
+                <li>Strogatz, S. H. (2015) <i>Nonlinear Dynamics and Chaos</i>, 2nd ed. Westview Press. (standard treatment of the saddle-node bifurcation)</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>Perspectives 1 to 7 are all ways of <b>inferring from data</b>. Perspective 8 is not. The question here is not what can be said from these data but <b>what states are possible if this rule keeps running</b>. No estimator and no loss function appears. What appears is the number of solutions of an equation.</p>
+        <p>Perspective 2 and perspective 8 look at the same system from different sides. Perspective 8 supplies the structural condition \(\eta qk>4\); perspective 2 translates it into <a href="../logistic-reduction/">a single regression coefficient</a> and makes it measurable. This method sits under <b>perspective 8 (dynamical systems and bifurcation)</b> in <a href="../">Read the eight perspectives in equations</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the logged output of the published repository; no estimates or approximations are given. The manuscript is in preparation, so the conclusions should be read as provisional.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the eight perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../teaching/methods/">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-11-26 &nbsp;|&nbsp; <a href="../">← Back to Read the eight perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>

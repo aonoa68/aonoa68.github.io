@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Methods &amp; Mathematics — Ayaka Onohara | Teaching</title>
-    <meta name="description" content="Which session of which course falls under each of seven perspectives on statistics and machine learning, with the stage each one reaches and the mathematics it uses and connects to.">
+    <meta name="description" content="Which session of which course falls under each of eight perspectives on statistics, machine learning and dynamical systems, with the stage each one reaches and the mathematics it uses and connects to.">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -198,7 +198,7 @@
 <header class="page-header">
     <div class="page-header-inner">
         <h1>Methods <span>&amp; Mathematics</span></h1>
-        <p class="lead">Which session of which course falls under each of the <b>seven perspectives</b> on statistics and machine learning.<br>
+        <p class="lead">Which session of which course falls under each of the <b>eight perspectives</b> on statistics and machine learning.<br>
         Every session carries the <b>stage it reaches</b> — concepts, computation, derivation — together with <b>the mathematics used in that session</b> and <b>the mathematics it connects to when taken further</b>, kept in separate columns.</p>
     </div>
 </header>
@@ -206,17 +206,18 @@
 <main class="main-content">
 
     <section>
-        <h2 class="sec">Seven perspectives</h2>
+        <h2 class="sec">Eight perspectives</h2>
         <p style="font-size:0.92em;color:var(--muted);margin-top:6px">Methods divide for more than one reason. The <b>question</b> differs, certainly. But so do the <b>assumptions placed on the data</b>, the <b>criteria for what counts as good</b>, and the <b>constraints on computation</b>. Change any one of those and a different method suits the same prediction task.<br>
-        The seven are not mutually exclusive; they <b>look at different dimensions</b>. The same equation often reads in several of them at once. Ridge regression, for instance, is a penalty in the geometric view, a MAP estimate under a Gaussian prior in the Bayesian view, and a control on complexity in learning theory. In the tables, a session that fits more than one perspective has the related perspectives named alongside it.</p>
+        The eight are not mutually exclusive; they <b>look at different dimensions</b>. The same equation often reads in several of them at once. Ridge regression, for instance, is a penalty in the geometric view, a MAP estimate under a Gaussian prior in the Bayesian view, and a control on complexity in learning theory. In the tables, a session that fits more than one perspective has the related perspectives named alongside it.</p>
         <div class="worlds"><div class="world" style="--w:#3d6fa8"><span class="no">1</span><h3>Geometry (least squares)</h3><p>Minimize the sum of squared deviations. Concerned with how the structure of the data and the model is represented.<span class="dim">What it looks at: how structure is represented</span></p></div>
 <div class="world" style="--w:#8a464f"><span class="no">2</span><h3>Frequentist (sampling variation, estimation, testing)</h3><p>Judge the quality of an estimate or a decision by how it varies when the sample is drawn again.<span class="dim">What it looks at: how uncertainty is handled</span></p></div>
 <div class="world" style="--w:#6a4d8a"><span class="no">3</span><h3>Bayesian</h3><p>Combine what was known before observing with the data, and update belief into a posterior distribution.<span class="dim">What it looks at: how uncertainty is handled</span></p></div>
 <div class="world" style="--w:#2f6b57"><span class="no">4</span><h3>Learning theory</h3><p>Keep the loss on data not yet seen in view, and balance fit against complexity.<span class="dim">What it looks at: how predictive performance is judged</span></p></div>
 <div class="world" style="--w:#96702f"><span class="no">5</span><h3>Information theory</h3><p>Treat a short encoding as a good explanation.<span class="dim">What it looks at: evaluation in terms of information</span></p></div>
 <div class="world" style="--w:#8a5a2f"><span class="no">6</span><h3>Games and adversaries</h3><p>Read learning as the interaction of several agents in competition.<span class="dim">What it looks at: interaction between agents</span></p></div>
-<div class="world" style="--w:#22456d"><span class="no">7</span><h3>Causality</h3><p>Ask what would happen under an intervention — a counterfactual question.<span class="dim">What it looks at: the kind of question asked</span></p></div></div>
-        <p style="font-size:0.92em;color:var(--muted);margin-top:14px"><a href="../../worlds/" style="color:var(--navy2);font-weight:600">&rarr; Read the seven perspectives in equations</a>　A child page setting out the equation at the centre of each one, and how to read the symbols. Beyond it sit twenty-one pages on the methods used in actual research, grouped by perspective.</p>
+<div class="world" style="--w:#22456d"><span class="no">7</span><h3>Causality</h3><p>Ask what would happen under an intervention — a counterfactual question.<span class="dim">What it looks at: the kind of question asked</span></p></div>
+<div class="world" style="--w:#17697b"><span class="no">8</span><h3>Dynamical systems and bifurcation</h3><p>Ask what states are possible if a rule keeps running. Nothing is estimated; what is counted is the number of solutions of an equation.<span class="dim">What it looks at: the number of solutions and their stability</span></p></div></div>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:14px"><a href="../../worlds/" style="color:var(--navy2);font-weight:600">&rarr; Read the eight perspectives in equations</a>　A child page setting out the equation at the centre of each one, and how to read the symbols. Beyond it sit twenty-five pages on the methods used in actual research, grouped by perspective. Perspective 8 is one used in research; no teaching session in the tables below falls under it as yet.</p>
     </section>
 
     <section style="margin-top:36px">
@@ -423,7 +424,7 @@
     </section>
 
     <p class="note" style="margin-top:40px;font-size:0.86em;color:var(--muted);line-height:1.85">
-    Source document: &ldquo;Mathematical techniques and their relation to statistical methods and machine learning&rdquo; (Onohara, September 2025). It is a set of notes Onohara wrote privately in order to think through the curriculum of the Faculty of Information Science, and it speaks for no one but its author. The seven perspectives and the mathematics tags come from it. The distinction between stages, and the assignment of each session, were worked out for this page.<br>
+    Source document: &ldquo;Mathematical techniques and their relation to statistical methods and machine learning&rdquo; (Onohara, September 2025). It is a set of notes Onohara wrote privately in order to think through the curriculum of the Faculty of Information Science, and it speaks for no one but its author. The eight perspectives and the mathematics tags come from it. The distinction between stages, and the assignment of each session, were worked out for this page.<br>
     The ideas themselves are explained in <a href="../guide/">A Guide to Statistical Thinking</a>, and which session of which course covers what is set out in the <a href="../map/">course map</a>.</p>
 
 </main>

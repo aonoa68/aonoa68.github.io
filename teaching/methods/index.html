@@ -198,7 +198,7 @@
 <header class="page-header">
     <div class="page-header-inner">
         <h1>Methods <span>&amp; Mathematics</span></h1>
-        <p class="lead">統計・機械学習の<b>7つの観点</b>ごとに、担当科目のどの回がそこに当たるかを並べた一覧です。<br>
+        <p class="lead">統計・機械学習の<b>8つの観点</b>ごとに、担当科目のどの回がそこに当たるかを並べた一覧です。<br>
         各回には<b>到達段階</b>（概念理解・計算・実装・理論の導出）と、<b>この回で使う数学</b>／<b>発展させると接続する数学</b>を分けて添えています。</p>
     </div>
 </header>
@@ -206,17 +206,18 @@
 <main class="main-content">
 
     <section>
-        <h2 class="sec">7つの観点</h2>
+        <h2 class="sec">8つの観点</h2>
         <p style="font-size:0.92em;color:var(--muted);margin-top:6px">手法が分かれるのは、<b>問い</b>が違うからだけではありません。<b>データに置く仮定</b>、<b>良さの評価基準</b>、<b>計算上の制約</b>が違えば、同じ予測課題でも適した手法は変わります。<br>
-        7つは互いに排他ではなく、<b>見ている次元が異なります</b>。同じ式が複数の観点で読めることも多く、たとえば Ridge 回帰は、幾何では罰則、ベイズではガウス事前のMAP推定、学習理論では複雑さの制御です。表でも、複数の観点が当てはまる回には関連の観点を併記しています。</p>
+        8つは互いに排他ではなく、<b>見ている次元が異なります</b>。同じ式が複数の観点で読めることも多く、たとえば Ridge 回帰は、幾何では罰則、ベイズではガウス事前のMAP推定、学習理論では複雑さの制御です。表でも、複数の観点が当てはまる回には関連の観点を併記しています。</p>
         <div class="worlds"><div class="world" style="--w:#3d6fa8"><span class="no">1</span><h3>幾何（最小二乗）</h3><p>ずれの二乗和を最小にする。データやモデルの構造をどう表すかを見る。<span class="dim">見ている次元：構造の表し方</span></p></div>
 <div class="world" style="--w:#8a464f"><span class="no">2</span><h3>頻度論（標本変動・推定・検定）</h3><p>標本を取り直したときのばらつきで、推定や判断の質を測る。<span class="dim">見ている次元：不確実性の扱い</span></p></div>
 <div class="world" style="--w:#6a4d8a"><span class="no">3</span><h3>ベイズ</h3><p>観測前の知識とデータを合わせ、信念を事後分布に更新する。<span class="dim">見ている次元：不確実性の扱い</span></p></div>
 <div class="world" style="--w:#2f6b57"><span class="no">4</span><h3>学習理論</h3><p>まだ見ていないデータでの損失を見据え、当てはまりと複雑さを釣り合わせる。<span class="dim">見ている次元：予測性能の評価</span></p></div>
 <div class="world" style="--w:#96702f"><span class="no">5</span><h3>情報理論</h3><p>短く符号化できることを、よい説明とみなす。<span class="dim">見ている次元：情報量による評価</span></p></div>
 <div class="world" style="--w:#8a5a2f"><span class="no">6</span><h3>ゲーム・敵対</h3><p>競い合う複数の主体の相互作用として学習を捉える。<span class="dim">見ている次元：主体間の相互作用</span></p></div>
-<div class="world" style="--w:#22456d"><span class="no">7</span><h3>因果</h3><p>介入したらどうなるかという、反実仮想の問いを扱う。<span class="dim">見ている次元：問いの種類</span></p></div></div>
-        <p style="font-size:0.92em;color:var(--muted);margin-top:14px"><a href="../../worlds/" style="color:var(--navy2);font-weight:600">→ 7つの観点を式で読む</a>　それぞれの中心となる数式と、記号の読み方を並べた子ページです。さらにその先に、実際の研究で使っている手法の解説が観点ごとに21本あります。</p>
+<div class="world" style="--w:#22456d"><span class="no">7</span><h3>因果</h3><p>介入したらどうなるかという、反実仮想の問いを扱う。<span class="dim">見ている次元：問いの種類</span></p></div>
+<div class="world" style="--w:#17697b"><span class="no">8</span><h3>力学系・分岐</h3><p>規則が走り続けたときに、どんな状態が可能かを問う。推定ではなく、方程式の解の個数を数える。<span class="dim">見ている次元：解の個数と安定性</span></p></div></div>
+        <p style="font-size:0.92em;color:var(--muted);margin-top:14px"><a href="../../worlds/" style="color:var(--navy2);font-weight:600">→ 8つの観点を式で読む</a>　それぞれの中心となる数式と、記号の読み方を並べた子ページです。さらにその先に、実際の研究で使っている手法の解説が観点ごとに25本あります。なお観点8は研究で使っている観点で、下の表に当たる授業回はまだありません。</p>
     </section>
 
     <section style="margin-top:36px">
@@ -424,7 +425,7 @@
     </section>
 
     <p class="note" style="margin-top:40px;font-size:0.86em;color:var(--muted);line-height:1.85">
-    もとにした資料：「数学的技法と統計手法・機械学習との関係」（小野原、2025年9月）。情報科学部のカリキュラムを検討するために小野原が個人で作成した整理で、学部の公式文書ではありません。7つの観点と数学のタグはこの資料によります。到達段階の区別と、各回への割り当ては、このページで新たに整理したものです。<br>
+    もとにした資料：「数学的技法と統計手法・機械学習との関係」（小野原、2025年9月）。情報科学部のカリキュラムを検討するために小野原が個人で作成した整理で、学部の公式文書ではありません。8つの観点と数学のタグはこの資料によります。到達段階の区別と、各回への割り当ては、このページで新たに整理したものです。<br>
     考え方そのものの解説は <a href="../guide/">統計の考え方ガイド</a>、どの科目のどの回で何を扱うかは <a href="../map/">科目の重なり一覧</a> にあります。</p>
 
 </main>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Web without a Spider — Ayaka Onohara | Methods</title>
+    <meta name="description" content="Reputation dynamics on a graph with no central register: Watts–Strogatz small-world structure, partial observability q, private standards, spatial clustering, and multi-network embedding with legibility ρ, in a model whose state is the support matrix itself.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:   #1a2535;
+            --navy2:  #2c3e50;
+            --gold:   #c9a84c;
+            --text:   #2c3e50;
+            --muted:  #5a6c7d;
+            --line:   rgba(0,0,0,0.08);
+            --bg:     #f7f8fa;
+            --white:  #ffffff;
+            --radius: 12px;
+            /* colour of the perspective this method belongs to (Geometry (least squares)) */
+            --w:      #3d6fa8;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'DM Sans', "Hiragino Kaku Gothic Pro", Meiryo, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+
+        /* NAV */
+        .site-nav {
+            position: sticky; top:0; z-index:100;
+            background: rgba(26,37,53,0.97);
+            backdrop-filter: blur(12px);
+            border-bottom: 2px solid var(--gold);
+            height: 56px;
+            display: flex; align-items: center;
+        }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 20px; width: 100%; }
+        .nav-logo { color: var(--gold); text-decoration: none; font-weight: 600; font-size: 0.95em; font-family: 'DM Serif Display', serif; }
+        .nav-sep  { color: rgba(255,255,255,0.3); }
+        .nav-current { color: rgba(255,255,255,0.85); font-size: 0.9em; }
+        .nav-right { margin-left: auto; display: flex; gap: 4px; }
+        .nav-right { display: none; }
+        .nav-right a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85em; padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+        .nav-right a:hover { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .lang-switch { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+        .lang-btn { padding:4px 10px; border-radius:12px; font-size:0.78em; font-weight:700; letter-spacing:0.04em; text-decoration:none; border:1.5px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.6); transition:all 0.2s; line-height:1; }
+        .lang-btn:hover { border-color:var(--gold); color:var(--gold); }
+        .lang-btn.active { background:var(--gold); border-color:var(--gold); color:#1a2535; }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #243447 60%, #1a3040 100%);
+            color: white; padding: 56px 0 48px;
+            position: relative; overflow: hidden;
+        }
+        .page-header::before {
+            content:''; position:absolute; inset:0;
+            background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(201,168,76,0.03) 40px, rgba(201,168,76,0.03) 41px);
+        }
+        .page-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index:1; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2.6em; font-weight: 400; margin-bottom: 10px; line-height: 1.2; }
+        .page-header h1 span { color: var(--gold); font-style: italic; }
+        .page-header .lead { color: rgba(255,255,255,0.74); font-size: 0.97em; max-width: 640px; line-height: 1.85; }
+        .page-header .belong { display:inline-block; margin-bottom:14px; font-size:0.78em; font-weight:700; letter-spacing:0.08em; padding:3px 11px; border-radius:8px;
+                               color:#c5daf2; background:rgba(61,111,168,0.42); border:1px solid rgba(197,218,242,0.36); }
+        .page-header .belong a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(197,218,242,0.5); }
+
+        .main-content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; }
+
+        /* 本文ブロック（worlds/ と共通の作り） */
+        .wblock { margin-top:48px; border-left:4px solid var(--w); padding-left:20px; }
+        .wblock > h2 { font-family:'DM Serif Display', "Hiragino Mincho ProN", serif; font-weight:400; font-size:1.6em; color:var(--w); line-height:1.3; }
+        .wblock .no { font-family:'DM Serif Display',serif; color:var(--w); opacity:.5; margin-right:10px; }
+        .wblock .q { font-size:0.95em; color:var(--muted); margin-top:4px; max-width:66ch; }
+        .wblock > p.body { font-size:0.92em; color:var(--text); line-height:1.95; margin-top:14px; max-width:66ch; }
+        .eq { background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:18px 22px; margin-top:16px; overflow-x:auto; }
+        .eq .lbl { font-size:0.76em; font-weight:700; letter-spacing:0.1em; color:var(--w); margin-bottom:8px; }
+        .eq .read { font-size:0.88em; color:var(--muted); line-height:1.9; margin-top:10px; }
+        .eq .read b { color:var(--text); font-weight:600; }
+        .sub { margin-top:22px; }
+        .sub h3 { font-size:1em; color:var(--navy2); font-weight:600; margin-bottom:6px; }
+        .sub p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .sub p + p { margin-top:10px; }
+        .where { margin-top:16px; font-size:0.87em; color:var(--muted); }
+        .where a { color:var(--w); font-weight:600; text-decoration:none; }
+        .where a:hover { text-decoration:underline; }
+
+        /* 注意・限界（この手法の弱点を書く箱） */
+        .warn { background:#f2f6fb; border:1px solid color-mix(in srgb, var(--w) 30%, white); border-radius:var(--radius); padding:16px 20px; margin-top:24px; }
+        .warn h3 { font-size:1em; color:var(--w); margin-bottom:6px; }
+        .warn p { font-size:0.9em; color:var(--muted); line-height:1.9; max-width:66ch; }
+        .warn p + p { margin-top:10px; }
+
+        /* 参考（金色の箱、worlds/ の .cross と同じ役割） */
+        .cross { background:#fff8e8; border:1px solid color-mix(in srgb,var(--gold) 35%,white); border-radius:var(--radius); padding:16px 20px; margin-top:34px; }
+        .cross h3 { font-size:1em; color:var(--navy2); margin-bottom:6px; }
+        .cross p { font-size:0.9em; color:var(--muted); line-height:1.9; }
+        .cross p + p { margin-top:10px; }
+
+        /* 結果表 */
+        .scroller { overflow-x:auto; background:var(--white); border:1px solid var(--line); border-radius:var(--radius); margin-top:16px; }
+        table.res { border-collapse:collapse; width:100%; min-width:520px; font-size:0.88em; }
+        table.res th, table.res td { padding:10px 14px; border-bottom:1px solid rgba(0,0,0,0.06); text-align:left; vertical-align:top; }
+        table.res thead th { background:#f1f4f7; font-weight:600; font-size:0.86em; color:var(--muted); }
+        table.res td.num, table.res th.num { font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+        table.res tbody tr:last-child td { border-bottom:none; }
+        table.res tr:hover td { background:#faf9fa; }
+        .cap { font-size:0.82em; color:var(--muted); margin-top:8px; line-height:1.8; max-width:66ch; }
+
+        /* 手順リスト */
+        ol.steps { margin:16px 0 0 0; padding-left:0; list-style:none; counter-reset:st; }
+        ol.steps li { counter-increment:st; position:relative; padding-left:38px; margin-bottom:12px; font-size:0.9em; color:var(--muted); line-height:1.9; max-width:64ch; }
+        ol.steps li::before { content:counter(st); position:absolute; left:0; top:1px; width:24px; height:24px; border-radius:50%;
+                              background:color-mix(in srgb, var(--w) 12%, white); border:1px solid color-mix(in srgb, var(--w) 32%, white);
+                              color:var(--w); font-size:0.78em; font-weight:700; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+        ol.steps li b { color:var(--text); font-weight:600; }
+
+        /* 文献 */
+        ul.refs { list-style:none; margin-top:14px; }
+        ul.refs li { font-size:0.87em; color:var(--muted); line-height:1.85; padding-left:20px; text-indent:-20px; margin-bottom:10px; }
+        ul.refs a { color:var(--w); text-decoration:none; }
+        ul.refs a:hover { text-decoration:underline; }
+
+        code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:0.9em;
+               background:#eef1f4; border-radius:4px; padding:1px 5px; color:var(--navy2); }
+
+        .note { margin-top:36px; font-size:0.86em; color:var(--muted); line-height:1.85; }
+        .note a { color:var(--w); font-weight:600; text-decoration:none; }
+
+        .page-footer { background: var(--navy2); color: rgba(255,255,255,0.7); text-align: center; padding: 32px 16px; font-size: 0.88em; }
+        .page-footer a { color: var(--gold); text-decoration: none; }
+
+        mjx-container { font-size:1.05em !important; }
+
+        @media (max-width: 640px) {
+            .page-header h1 { font-size: 2em; }
+            .main-content { padding: 20px 16px 60px; }
+            .nav-inner, .page-header-inner { padding: 0 16px; }
+            .nav-right { display: none; }
+            .wblock { padding-left:14px; }
+        }
+</style>
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+                         options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7Z7WMV3QS4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7Z7WMV3QS4');
+    </script>
+</head>
+<body>
+
+<nav class="site-nav">
+    <div class="nav-inner">
+        <a href="../../" class="nav-logo">Ayaka Onohara</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Teaching</a>
+        <span class="nav-sep">/</span>
+        <a href="../../teaching/methods/" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">Methods &amp; Mathematics</a>
+        <span class="nav-sep">/</span>
+        <a href="../" class="nav-current" style="text-decoration:none;color:rgba(255,255,255,0.6)">In Equations</a>
+        <span class="nav-sep">/</span>
+        <span class="nav-current">A Web without a Spider</span>
+        <div class="nav-right">
+            <a href="../../teaching/map/">Course map</a>
+            <a href="../../teaching/guide/">Guide to statistical thinking</a>
+        </div>
+        <div class="lang-switch">
+            <a href="/worlds/small-world/" class="lang-btn">JA</a>
+            <span class="lang-btn active">EN</span>
+        </div>
+    </div>
+</nav>
+
+<header class="page-header">
+    <div class="page-header-inner">
+        <span class="belong">Perspective 1 ｜ <a href="../">Geometry (least squares)</a></span>
+        <h1>A Web without a <span>Spider</span></h1>
+        <p class="lead">Models of reputation almost always posit a single quantity &mdash; a person's reputation &mdash; but real groups keep no such register. This method removes it and makes the state of the system <b>the support matrix itself</b>: who is currently supporting whom.<br>It follows the network formulation Onohara uses, and sets out how a geometry is laid down explicitly in order to measure that it does not account for the outcome.</p>
+    </div>
+</header>
+
+<main class="main-content">
+
+    <section class="wblock">
+        <h2><span class="no">1</span>What the method is for</h2>
+        <p class="q">Writing down the dynamics of reputation without a central registrar.</p>
+        <p class="body">
+        Models of reputation almost always posit <b>a single quantity</b> &mdash; a person's reputation. Image scoring in indirect reciprocity gives each individual one score that everyone consults, and so does the <a href="../fold-bifurcation/">mean-field formulation</a>. It is a natural convenience, but real groups have no such register, and nobody holds one.
+        </p>
+        <p class="body">
+        This method removes the register. The state of the system is <b>the support matrix \(S_{ji}\) itself</b> &mdash; who is currently supporting whom &mdash; and nothing else. Each judge forms a private estimate of a neighbour's standing from what they can see, compares it with their own private standard, and decides. No single quantity called reputation exists anywhere; only the matrix does.
+        </p>
+        <p class="body">
+        The cost of the formulation is analytic tractability. There are two gains. First, one can check that the bifurcation condition is not an artefact of the central register. Second, one can construct &mdash; not as a metaphor but as a construction &mdash; a situation in which <b>the question &ldquo;who excluded them?&rdquo; has no answer</b>. What excludes is \(S\), and \(S\) is not inside anyone's head.
+        </p>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">2</span>Construction</h2>
+        <p class="q">Rewire a ring lattice slightly; give each judge a private standard and a limited view.</p>
+        <div class="eq">
+            <div class="lbl">What judge \(j\) does about neighbour \(i\)</div>
+            \[ \hat r_{ji} = a_i + \eta\Big[q\cdot\frac{\sum_{l\neq j}S_{li}}{d_i-1} + (1-q)\,\bar s\Big],
+               \qquad S_{ji}\sim\mathrm{Bern}\big(\sigma(k(\hat r_{ji}-\theta_j))\big) \]
+            <p class="read"><b>\(q\)</b> &hellip; each of \(i\)'s other supporters is observed with probability \(q\); unobserved decisions are replaced by a fixed baseline \(\bar s\)<br>
+            <b>\(\theta_j\)</b> &hellip; a private standard that differs by judge. <b>No one set it</b><br>
+            <b>\(\hat r_{ji}\)</b> &hellip; an estimate that exists only inside judge \(j\), and differs between judges</p>
+        </div>
+        <ol class="steps">
+            <li><b>Build the graph</b>&emsp;A ring lattice of \(n=400\) agents with degree 12, each edge rewired to a random partner with probability 0.10. This is a Watts&ndash;Strogatz small-world graph: dense local connection together with a few long-range shortcuts.</li>
+            <li><b>Distribute private standards</b>&emsp;Draw \(\theta_j\) per judge. This is <b>the only respect in which judges differ</b>.</li>
+            <li><b>Give everyone the same rule</b>&emsp;Every judge uses the equation above. The rule is locally rational and contains no malice.</li>
+            <li><b>Give no one a preference</b>&emsp;<b>No agent in the model holds any preference over whether \(i\) is included.</b> Nobody wants anybody excluded.</li>
+        </ol>
+        <div class="sub">
+            <h3>Why a small-world graph</h3>
+            <p>On a complete graph everyone sees everyone, which returns the mean field and makes partial observability vacuous. On a pure ring lattice information stays too local. A small-world graph at rewiring probability 0.10 sits between the two &mdash; <b>neighbourhoods see each other, but nobody sees the population</b> &mdash; and is the standard substrate for modelling a group through which reputation circulates.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">3</span>Origins</h2>
+        <p class="q">The graph comes from Watts and Strogatz; the motive for removing the register comes from indirect reciprocity.</p>
+        <div class="sub">
+            <h3>Small-world graphs</h3>
+            <p>Watts &amp; Strogatz (1998) showed that rewiring only a few edges of a regular lattice leaves the clustering coefficient as high as the lattice while shortening the mean path length to that of a random graph. It is the minimal account of why &ldquo;six degrees&rdquo; holds, and it has been the standard substrate for models of contagion, conformity and information spread ever since. The form used here is the plainest one.</p>
+        </div>
+        <div class="sub">
+            <h3>The motive for removing the register</h3>
+            <p>Theories of indirect reciprocity treat mechanisms by which cooperation is maintained &ldquo;through reputation&rdquo; (Nowak &amp; Sigmund; the leading eight of Ohtsuki &amp; Iwasa). Most formulations give each individual one score and take it to be correctly shared, and a well-developed literature then asks how robust the mechanism is to errors and incompleteness in that information. This method takes the question one step further and <b>does not posit the shared score as an object at all</b>. What remains is a collection of private estimates, each built from one agent's own field of view.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">4</span>Raising only what is visible produces persistent exclusion</h2>
+        <p class="q">The only thing that changed is how much of each other's behaviour the judges can see.</p>
+        <p class="body">
+        In the network model, raise the observability \(q\) alone. Nothing else moves.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(q\)</th><th class="num">fraction excluded</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">\(\le 0.6\)</td><td class="num">no one is excluded</td></tr>
+                <tr><td class="num">0.8</td><td class="num">three per cent</td></tr>
+                <tr><td class="num">1.0</td><td class="num"><b>fifty-three per cent</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">Output of <code>model.py</code>. Within the bistable regime the exclusion rate is graded by where merit sits in the window: 98 per cent at the tenth percentile, 2 per cent at the ninetieth.</p>
+        <div class="warn">
+            <h3>Stating what has not been assumed</h3>
+            <p>Every judge uses the same rule. No judge prefers any outcome. No judge is mistaken about anything. <b>The only thing that changed between the regime with no exclusion and the regime with a majority excluded is how much of each other's behaviour the judges can see.</b></p>
+            <p>This is the other side of the intuition that transparency produces fairness. What becomes visible is other people's support decisions, and because reading those as evidence of standing is locally rational, more visibility means more material for the inverse inference.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">5</span>Exclusion without an excluder &mdash; and position does not explain it</h2>
+        <p class="q">Lay down the geometry explicitly, then measure that it does not account for the outcome.</p>
+        <p class="body">
+        If one asks which agent excluded \(i\), the model has no answer. Each judge's decision is stochastic, no single decision settles the outcome, and no one wants it. What excludes is the support matrix, and the support matrix is not inside anyone's head.
+        </p>
+        <p class="body">
+        Does <b>position</b> in the graph explain it, then? That is a measurable question. Divide the fraction of excluded agents among an excluded agent's neighbours by the population base rate. A ratio of 1.00 means no clustering.
+        </p>
+        <div class="eq">
+            <div class="lbl">Spatial clustering</div>
+            \[ \text{clustering} = \frac{\text{excluded share among an excluded agent's neighbours}}{\text{population exclusion rate}} \;=\; 1.00 \]
+            <p class="read"><b>How to read it</b> &hellip; the neighbours of an excluded agent are excluded at exactly the population rate. <b>Exclusion does not clump on the graph</b><br>
+            <b>limit</b> &hellip; this holds under the parameterisations examined; whether assortative network structure produces clustering is open</p>
+        </div>
+        <div class="sub">
+            <h3>This is the relation to perspective 1</h3>
+            <p>The other methods under perspective 1 &mdash; <a href="../betweenness-centrality/">betweenness centrality</a>, <a href="../gower-distance/">Gower's distance</a>, <a href="../pca/">principal component analysis</a> &mdash; all use position and distance <b>to explain an outcome</b>. This method uses them the other way round: the geometry is constructed explicitly, and then shown not to explain the outcome.</p>
+            <p>That is not a negative result. If exclusion did clump, it could be explained by sitting at the edge of the graph, and the point of the model &mdash; that what excludes is the state of the matrix, neither anyone's properties nor anyone's position &mdash; would collapse. <b>The geometry had to be laid down in order to establish that the geometry does not account for it.</b></p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">6</span>Measuring the attribution gap with scale-free geometric quantities</h2>
+        <p class="q">How well the invisible cause and the visible outcome each separate the same two groups.</p>
+        <p class="body">
+        At \(q=1\), compare the included and the excluded on two quantities: their actual contribution, which an observer <b>cannot</b> see, and the support they receive, which an observer <b>can</b>.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th>quantity</th><th class="num">AUC</th><th class="num">density overlap</th><th class="num">Cohen's \(d\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>contribution \(a\) (the unobservable cause)</td><td class="num">0.646</td><td class="num">0.476</td><td class="num">0.53</td></tr>
+                <tr><td>support received (the observable outcome)</td><td class="num"><b>1.000</b></td><td class="num"><b>0.000</b></td><td class="num">47.05</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">AUC is the probability that a randomly chosen included individual exceeds a randomly chosen excluded one; 0.5 is chance. Overlap is the shared area of the two densities.</p>
+        <div class="sub">
+            <h3>Why Cohen's \(d\) is not the lead</h3>
+            <p>\(d=47.05\) is the most dramatic-looking number here and comes closest to being a figure <b>one should not report</b>. Both groups are tightly clustered at their respective ends of a bounded quantity, so the pooled standard deviation for support is small (about 0.02) and \(d\) grows without limit as \(k\) is raised. <b>AUC and overlap are already saturated and cannot.</b> \(d\) is given for comparability, but the two scale-free measures lead.</p>
+            <p>This is a case where the choice of measure changes the character of the conclusion. Leading with \(d\) makes it a story about an overwhelming difference; leading with AUC and overlap makes it a comparison &mdash; <b>one quantity separates the groups perfectly and the other barely better than chance</b>. The latter is what the model is about.</p>
+        </div>
+        <div class="sub">
+            <h3>Not an error of attribution but an inference faithful to the evidence</h3>
+            <p>The two quantities separate the same two groups, one perfectly and one barely better than chance. An observer who infers merit from outcome &mdash; and there is nothing else to infer it from &mdash; therefore attributes a categorical difference to individuals whose contributions overlap across nearly half their range.</p>
+            <p>The inference &ldquo;someone whom nobody is helping probably has something wrong with them&rdquo; is <b>not a bias in the sense of a departure from the evidence</b>. Under this equilibrium it is faithful to the evidence, which is what makes it difficult to dislodge. The conclusion has the same shape as the fundamental attribution error (Ross 1977), but here it arrives <b>as correct inference rather than as error</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">7</span>Several networks at once &mdash; multi-network embedding</h2>
+        <p class="q">Adding exits does not necessarily help.</p>
+        <p class="body">
+        A single-gate model can ask whether a person is included. It cannot ask what it costs them to want something. So the individual is embedded in \(G\) networks simultaneously &mdash; household, trade, kin, neighbourhood, congregation &mdash; each rewarding a different way of living. The individual chooses \(c\), network \(g\) demands \(c_g\), and contribution at \(g\) is \(a_g(c) = \alpha - |c-c_g|\).
+        </p>
+        <div class="eq">
+            <div class="lbl">How the networks are coupled</div>
+            \[ \rho \;=\; \text{how far support decisions in one network are legible in the others} \]
+            \[ \kappa \;=\; \text{the number of attachments survival requires} \]
+            <p class="read"><b>\(\kappa=1\)</b> &hellip; disjunctive: any thread will do<br>
+            <b>\(\kappa>1\)</b> &hellip; conjunctive: be a good employee <b>and</b> a good son</p>
+        </div>
+        <div class="sub">
+            <h3>The price of return, in the units the person actually chooses</h3>
+            <p>With the baseline gate, an individual falls out on drifting further than \(|c-c_g| = 0.477\) from what a network wants, and is taken back only within \(0.123\): <b>they must come 3.9 times closer than the distance at which they were let go.</b> Separately, comparing the same person, with the same preferred life and the same networks, who differs only in whether they are already attached or must be taken in afresh, the probability of ending with no attachment at all is <b>2.6 to 5.1 times higher for the newcomer</b>. Having once fallen alters the terms without anything about the person having changed.</p>
+        </div>
+        <p class="body">
+        The table gives the probability that living by one's own preference leaves no attachment at all.
+        </p>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">networks \(G\)</th><th class="num">\(\rho=0.0\)</th><th class="num">\(\rho=0.3\)</th><th class="num">\(\rho=0.6\)</th><th class="num">\(\rho=1.0\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">1</td><td class="num">0.500</td><td class="num">0.482</td><td class="num">0.477</td><td class="num">0.490</td></tr>
+                <tr><td class="num">2</td><td class="num">0.315</td><td class="num">0.367</td><td class="num">0.477</td><td class="num">0.657</td></tr>
+                <tr><td class="num">5</td><td class="num">0.105</td><td class="num">0.175</td><td class="num">0.517</td><td class="num">0.690</td></tr>
+                <tr><td class="num">8</td><td class="num"><b>0.050</b></td><td class="num">0.135</td><td class="num">0.545</td><td class="num"><b>0.792</b></td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">\(\sigma_c=0.5\), \(\kappa=1\). Output of <code>gates.py</code>.</p>
+        <div class="sub">
+            <h3>More threads help only if the networks are blind to each other</h3>
+            <p>With mutually blind networks, going from one to eight cuts the risk tenfold. With mutually legible networks it <b>rises</b> to 0.79 &mdash; worse than having a single network at all. The mechanism is that under high \(\rho\) the one network in which the person would have fitted <b>imports</b> everyone else's verdict. Adding networks that can read each other does not add exits; it <b>adds witnesses</b>.</p>
+            <p>This result depends on a modelling choice, stated plainly in the paper: \(\rho\) pools standing as a <b>mean</b>, corresponding to a single circulating account of what someone is like. Were standing instead pooled as a <b>maximum</b> &mdash; one good word from anyone suffices, as with a reference or a sponsor &mdash; <b>the result would reverse</b>. Which of the two better describes a given setting is an empirical question, and is itself testable.</p>
+        </div>
+        <div class="sub">
+            <h3>When no life satisfies enough networks</h3>
+            <p>The next table gives the probability that no way of living satisfies \(\kappa\) networks at once, with \(G=4\) and \(\rho=0\) &mdash; the most forgiving case, in which the networks cannot even see each other.</p>
+        </div>
+        <div class="scroller">
+        <table class="res">
+            <thead>
+                <tr><th class="num">\(\sigma_c\)</th><th class="num">\(\kappa=1\)</th><th class="num">\(\kappa=2\)</th><th class="num">\(\kappa=3\)</th><th class="num">\(\kappa=4\)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td class="num">0.30</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.005</td><td class="num">0.130</td></tr>
+                <tr><td class="num">0.50</td><td class="num">0.000</td><td class="num">0.000</td><td class="num">0.070</td><td class="num"><b>0.535</b></td></tr>
+                <tr><td class="num">1.20</td><td class="num">0.000</td><td class="num">0.028</td><td class="num">0.598</td><td class="num">0.932</td></tr>
+            </tbody>
+        </table>
+        </div>
+        <p class="cap">With \(\kappa=1\) the set is never empty: if one attachment suffices, there is always somewhere to go, however far apart the demands lie. With all four required and demands only moderately dispersed, <b>no life at all</b> is available in 53.5 per cent of configurations.</p>
+        <div class="sub">
+            <h3>Dispersion cuts both ways</h3>
+            <p>Holding the individual's own preference fixed and varying only how far apart the networks' demands lie, the probability of being stranded under \(\kappa=1\) is <b>U-shaped</b>, with a minimum near \(\sigma_c\approx0.4\)&ndash;\(0.6\): uniform demands strand anyone who differs, and widely scattered demands leave gaps to fall into. The probability that nothing fits under \(\kappa=3\) rises monotonically. <b>The two cannot be made small together.</b> A prescription of the form &ldquo;diversify the sources of support&rdquo; therefore does not follow from the model; what follows is a prescription to <b>reduce \(\kappa\)</b> &mdash; to arrange matters so that one attachment is enough.</p>
+        </div>
+        <div class="sub">
+            <h3>Where the project's name comes from</h3>
+            <p>In Akutagawa's story a single thread is let down to a man in hell; he climbs, and when he sees others climbing behind him he shouts that the thread is his, at which it snaps above him and he falls back (Akutagawa 1918/2006). The thread is usually read either as how slender the chance was or as how little his selfishness deserved it. In this model it is neither. The condition for the familiar narrative outcome &mdash; leaving, disappearing, dying &mdash; is not that a single thread is thin, and it does not turn on what the person climbing it is like. It is that \(\{c: I(c)\ge\kappa\} = \emptyset\): <b>no available way of living satisfies enough of the networks at once</b>.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">8</span>What the method cannot say</h2>
+        <div class="warn">
+            <h3>Three limits</h3>
+            <p><b>Only one class of graph was examined.</b> The results come from a small-world graph at rewiring probability 0.10. Scale-free graphs, assortative graphs and graphs with community structure could change things, Section 5's spatial clustering above all. That is recorded in the paper as open.</p>
+            <p><b>The numbers depend on the parameterisation.</b> The analytic result (the bifurcation condition) does not, but the levels in the tables are values at particular settings and should be read as demonstrations that the effects are of appreciable size.</p>
+            <p><b>Categorical prejudice is not modelled.</b> The model addresses one mechanism of exclusion and is silent about others &mdash; categorical prejudice above all &mdash; which certainly operate alongside it and may interact with it.</p>
+        </div>
+    </section>
+
+    <section class="wblock">
+        <h2><span class="no">9</span>Sources and code</h2>
+        <p class="body">
+        Graph generation (<code>small_world</code>), the dynamics on the graph (<code>network_sim</code>), spatial clustering and the separation measures are implemented in <code>model.py</code>. The multi-network embedding and the sweeps over \(\rho\) and \(\kappa\) are in <code>gates.py</code>, and the check of replacing mean pooling with maximum pooling is in <code>check_pooling.py</code>.
+        </p>
+        <ul class="refs">
+            <li>Code and logs: <a href="https://doi.org/10.5281/zenodo.23854066" target="_blank" rel="noopener noreferrer">10.5281/zenodo.23854066</a> (MIT licence).</li>
+            <li>The manuscript is in preparation for submission to the <i>Journal of Theoretical Biology</i>.</li>
+        </ul>
+        <div class="sub" style="margin-top:26px">
+            <h3>References for the method</h3>
+            <ul class="refs">
+                <li>Watts, D. J. &amp; Strogatz, S. H. (1998) Collective dynamics of &lsquo;small-world&rsquo; networks. <i>Nature</i>, 393, 440&ndash;442.</li>
+                <li>Ross, L. (1977) The intuitive psychologist and his shortcomings: distortions in the attribution process. <i>Advances in Experimental Social Psychology</i>, 10, 173&ndash;220.</li>
+                <li>Akutagawa, R. (1918/2006) <i>The Spider's Thread</i>.</li>
+            </ul>
+        </div>
+    </section>
+
+    <div class="cross">
+        <h3>Which perspective the method belongs to</h3>
+        <p>Every method under perspective 1 uses <b>distance and position</b>. <a href="../gower-distance/">Gower's distance</a> builds a distance from nominal measurements; <a href="../betweenness-centrality/">betweenness centrality</a> measures how hard a place is to reach from shortest paths; <a href="../pca/">principal component analysis</a> looks for the direction of greatest variance. This method, too, lays down a geometry first: the ring lattice and its rewiring fix who can see whom.</p>
+        <p>What differs is that the geometry is used <b>as a control rather than as an explanatory variable</b>. Showing that spatial clustering is 1.00 times the base rate is how one says that exclusion is not explained by position on the graph. Leading with density overlap (a shared area) and AUC (a rank probability) rather than Cohen's \(d\) is a choice of the same character &mdash; both are geometric quantities invariant to the scale, unlike \(d\), which inflates as \(k\) is raised. This method sits under <b>perspective 1 (geometry)</b> in <a href="../">Read the eight perspectives in equations</a>; the fold that occurs on this graph is under <a href="../fold-bifurcation/">perspective 8</a>.</p>
+    </div>
+
+    <p class="note">
+    This page sets out a method Onohara uses in actual research, written for readers in the same field. All figures are quoted from the logged output of the published repository; no estimates or approximations are given. The manuscript is in preparation, so the conclusions should be read as provisional.<br>
+    For the whole picture of where the methods sit, see <a href="../">Read the eight perspectives in equations</a>; for which course sessions fall under which perspective, see <a href="../../teaching/methods/">Methods &amp; Mathematics</a>.</p>
+
+</main>
+
+<footer class="page-footer">
+    <p>Last updated: 2026-11-26 &nbsp;|&nbsp; <a href="../">← Back to Read the eight perspectives in equations</a></p>
+</footer>
+
+</body>
+</html>
